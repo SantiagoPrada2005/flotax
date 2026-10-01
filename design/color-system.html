@@ -1,0 +1,841 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      tailwind = { config: { corePlugins: { preflight: false } } };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter%3Awght%40100..900&family=JetBrains+Mono%3Awght%40100..800&family=Space+Grotesk%3Awght%40300..700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *, ::before, ::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+      }
+    </style>
+
+    <style>
+      body {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body style="background-color: #FFFFFF">
+    <div class="relative w-[4600px] h-[50300px]">
+      <div
+        data-pencil-name="Canvas BG"
+        class="box-border w-[4600px] h-[50300px] absolute left-0 top-0 bg-[#F1F0EC]"
+      ></div>
+      <div
+        data-pencil-name="02 Color System"
+        class="box-border w-[1376px] h-fit absolute left-[1148px] top-[1147px] flex flex-col gap-[36px] p-[64px] justify-start items-start bg-[#FFFFFF] overflow-hidden"
+      >
+        <div
+          data-pencil-name="Header 02"
+          class="box-border w-full h-fit shrink-0 flex flex-col gap-0 justify-start items-start bg-[#FFFFFF]"
+        >
+          <div
+            data-pencil-name="Header Row"
+            class="box-border w-full h-fit shrink-0 flex flex-row gap-[28px] justify-start items-center"
+          >
+            <div
+              data-pencil-name="NumChip"
+              class="box-border w-[72px] shrink-0 h-[72px] flex flex-row gap-0 justify-center items-center bg-[#131211] rounded-[20px]"
+            >
+              <div
+                data-pencil-name="Num"
+                class="text-[26px]/[normal] box-border text-[#FFFFFF] font-['Space_Grotesk',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+              >
+                02
+              </div>
+            </div>
+            <div
+              data-pencil-name="TitleCol"
+              class="box-border [flex:1_1_0] h-fit flex flex-col gap-[6px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="Title"
+                class="text-[38px]/[normal] box-border text-[#131211] font-['Space_Grotesk',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+              >
+                Color System
+              </div>
+              <div
+                data-pencil-name="Sub"
+                class="text-[15px]/[normal] box-border text-[#6E6C66] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                Base neutra, negro profundo y acentos saturados en proporción 80 / 20 / 8
+              </div>
+            </div>
+            <div
+              data-pencil-name="Meta"
+              class="text-[13px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+            >
+              COLOR · TOKENS
+            </div>
+          </div>
+          <div
+            data-pencil-name="Rule"
+            class="box-border w-full h-[2px] shrink-0 bg-[#131211]"
+          ></div>
+        </div>
+        <div
+          data-pencil-name="Group ESCALA NEUTRA — 70–80 % DE LA INTERFAZ"
+          class="box-border w-full h-fit shrink-0 flex flex-col gap-[16px] justify-start items-start"
+        >
+          <div
+            data-pencil-name="K"
+            class="box-border w-full h-fit shrink-0 flex flex-row gap-[10px] justify-start items-center"
+          >
+            <div
+              data-pencil-name="bar"
+              class="box-border w-[34px] shrink-0 h-[6px] bg-[#131211] rounded-[3px]"
+            ></div>
+            <div
+              data-pencil-name="lbl"
+              class="text-[12px]/[normal] box-border text-[#131211] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[1.2px] text-left [white-space:nowrap]"
+            >
+              ESCALA NEUTRA — 70–80 % DE LA INTERFAZ
+            </div>
+          </div>
+          <div
+            data-pencil-name="Neutrals"
+            class="box-border w-full h-fit shrink-0 flex flex-row gap-[12px] justify-start items-start"
+          >
+            <div
+              data-pencil-name="N bg-canvas"
+              class="box-border w-[164px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="sw"
+                class="box-border w-[164px] h-[112px] shrink-0 bg-[#F1F0EC] rounded-[20px]"
+              ></div>
+              <div
+                data-pencil-name="nm"
+                class="text-[14px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+              >
+                bg-canvas
+              </div>
+              <div
+                data-pencil-name="hx"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                #F1F0EC
+              </div>
+              <div
+                data-pencil-name="us"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                lienzo de la app
+              </div>
+            </div>
+            <div
+              data-pencil-name="N bg-app"
+              class="box-border w-[164px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="sw"
+                class="box-border w-[164px] h-[112px] shrink-0 bg-[#F6F5F1] rounded-[20px]"
+              ></div>
+              <div
+                data-pencil-name="nm"
+                class="text-[14px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+              >
+                bg-app
+              </div>
+              <div
+                data-pencil-name="hx"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                #F6F5F1
+              </div>
+              <div
+                data-pencil-name="us"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                fondo de pantalla
+              </div>
+            </div>
+            <div
+              data-pencil-name="N surface"
+              class="box-border w-[164px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="sw"
+                class="box-border w-[164px] h-[112px] shrink-0 bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[20px]"
+              ></div>
+              <div
+                data-pencil-name="nm"
+                class="text-[14px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+              >
+                surface
+              </div>
+              <div
+                data-pencil-name="hx"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                #FFFFFF
+              </div>
+              <div
+                data-pencil-name="us"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                tarjetas · paneles
+              </div>
+            </div>
+            <div
+              data-pencil-name="N surface-muted"
+              class="box-border w-[164px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="sw"
+                class="box-border w-[164px] h-[112px] shrink-0 bg-[#F4F3EF] rounded-[20px]"
+              ></div>
+              <div
+                data-pencil-name="nm"
+                class="text-[14px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+              >
+                surface-muted
+              </div>
+              <div
+                data-pencil-name="hx"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                #F4F3EF
+              </div>
+              <div
+                data-pencil-name="us"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                zonas pasivas
+              </div>
+            </div>
+            <div
+              data-pencil-name="N surface-2"
+              class="box-border w-[164px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="sw"
+                class="box-border w-[164px] h-[112px] shrink-0 bg-[#ECEBE6] rounded-[20px]"
+              ></div>
+              <div
+                data-pencil-name="nm"
+                class="text-[14px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+              >
+                surface-2
+              </div>
+              <div
+                data-pencil-name="hx"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                #ECEBE6
+              </div>
+              <div
+                data-pencil-name="us"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                secciones hundidas
+              </div>
+            </div>
+            <div
+              data-pencil-name="N charcoal"
+              class="box-border w-[164px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="sw"
+                class="box-border w-[164px] h-[112px] shrink-0 bg-[#34332F] rounded-[20px]"
+              ></div>
+              <div
+                data-pencil-name="nm"
+                class="text-[14px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+              >
+                charcoal
+              </div>
+              <div
+                data-pencil-name="hx"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                #34332F
+              </div>
+              <div
+                data-pencil-name="us"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                superficie oscura
+              </div>
+            </div>
+            <div
+              data-pencil-name="N ink"
+              class="box-border w-[164px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="sw"
+                class="box-border w-[164px] h-[112px] shrink-0 bg-[#131211] rounded-[20px]"
+              ></div>
+              <div
+                data-pencil-name="nm"
+                class="text-[14px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+              >
+                ink
+              </div>
+              <div
+                data-pencil-name="hx"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                #131211
+              </div>
+              <div
+                data-pencil-name="us"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                texto · navegación
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          data-pencil-name="Group ACCENT COLORS — 5–10 % · BLOQUES DE PERSONALIDAD"
+          class="box-border w-full h-fit shrink-0 flex flex-col gap-[16px] justify-start items-start"
+        >
+          <div
+            data-pencil-name="K"
+            class="box-border w-full h-fit shrink-0 flex flex-row gap-[10px] justify-start items-center"
+          >
+            <div
+              data-pencil-name="bar"
+              class="box-border w-[34px] shrink-0 h-[6px] bg-[#131211] rounded-[3px]"
+            ></div>
+            <div
+              data-pencil-name="lbl"
+              class="text-[12px]/[normal] box-border text-[#131211] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[1.2px] text-left [white-space:nowrap]"
+            >
+              ACCENT COLORS — 5–10 % · BLOQUES DE PERSONALIDAD
+            </div>
+          </div>
+          <div
+            data-pencil-name="Accents"
+            class="box-border w-full h-fit shrink-0 flex flex-row gap-[12px] justify-start items-start"
+          >
+            <div
+              data-pencil-name="A coral"
+              class="box-border w-[196px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="sw"
+                class="box-border w-[196px] h-[112px] shrink-0 flex flex-row gap-0 p-[14px] justify-between items-center bg-[#FF5A1F] rounded-[20px]"
+              >
+                <div
+                  data-pencil-name="nm"
+                  class="text-[13px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+                >
+                  coral
+                </div>
+                <div
+                  data-pencil-name="dot"
+                  class="box-border w-[18px] shrink-0 h-[18px] bg-[#FFFFFF] rounded-full"
+                ></div>
+              </div>
+              <div
+                data-pencil-name="hx"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                #FF5A1F
+              </div>
+              <div
+                data-pencil-name="us"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                acción activa · energía
+              </div>
+            </div>
+            <div
+              data-pencil-name="A blue"
+              class="box-border w-[196px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="sw"
+                class="box-border w-[196px] h-[112px] shrink-0 flex flex-row gap-0 p-[14px] justify-between items-center bg-[#2D6BFF] rounded-[20px]"
+              >
+                <div
+                  data-pencil-name="nm"
+                  class="text-[13px]/[normal] box-border text-[#FFFFFF] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+                >
+                  blue
+                </div>
+                <div
+                  data-pencil-name="dot"
+                  class="box-border w-[18px] shrink-0 h-[18px] bg-[#FFFFFF] rounded-full"
+                ></div>
+              </div>
+              <div
+                data-pencil-name="hx"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                #2D6BFF
+              </div>
+              <div
+                data-pencil-name="us"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                información · tecnología
+              </div>
+            </div>
+            <div
+              data-pencil-name="A yellow"
+              class="box-border w-[196px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="sw"
+                class="box-border w-[196px] h-[112px] shrink-0 flex flex-row gap-0 p-[14px] justify-between items-center bg-[#FFC52E] rounded-[20px]"
+              >
+                <div
+                  data-pencil-name="nm"
+                  class="text-[13px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+                >
+                  yellow
+                </div>
+                <div
+                  data-pencil-name="dot"
+                  class="box-border w-[18px] shrink-0 h-[18px] bg-[#FFFFFF] rounded-full"
+                ></div>
+              </div>
+              <div
+                data-pencil-name="hx"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                #FFC52E
+              </div>
+              <div
+                data-pencil-name="us"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                atención · avisos suaves
+              </div>
+            </div>
+            <div
+              data-pencil-name="A green"
+              class="box-border w-[196px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="sw"
+                class="box-border w-[196px] h-[112px] shrink-0 flex flex-row gap-0 p-[14px] justify-between items-center bg-[#12B886] rounded-[20px]"
+              >
+                <div
+                  data-pencil-name="nm"
+                  class="text-[13px]/[normal] box-border text-[#FFFFFF] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+                >
+                  green
+                </div>
+                <div
+                  data-pencil-name="dot"
+                  class="box-border w-[18px] shrink-0 h-[18px] bg-[#FFFFFF] rounded-full"
+                ></div>
+              </div>
+              <div
+                data-pencil-name="hx"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                #12B886
+              </div>
+              <div
+                data-pencil-name="us"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                disponible · positivo
+              </div>
+            </div>
+            <div
+              data-pencil-name="A red"
+              class="box-border w-[196px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="sw"
+                class="box-border w-[196px] h-[112px] shrink-0 flex flex-row gap-0 p-[14px] justify-between items-center bg-[#F43F47] rounded-[20px]"
+              >
+                <div
+                  data-pencil-name="nm"
+                  class="text-[13px]/[normal] box-border text-[#FFFFFF] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+                >
+                  red
+                </div>
+                <div
+                  data-pencil-name="dot"
+                  class="box-border w-[18px] shrink-0 h-[18px] bg-[#FFFFFF] rounded-full"
+                ></div>
+              </div>
+              <div
+                data-pencil-name="hx"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                #F43F47
+              </div>
+              <div
+                data-pencil-name="us"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                crítico · bloqueo
+              </div>
+            </div>
+            <div
+              data-pencil-name="A violet"
+              class="box-border w-[196px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="sw"
+                class="box-border w-[196px] h-[112px] shrink-0 flex flex-row gap-0 p-[14px] justify-between items-center bg-[#8B5CF6] rounded-[20px]"
+              >
+                <div
+                  data-pencil-name="nm"
+                  class="text-[13px]/[normal] box-border text-[#FFFFFF] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+                >
+                  violet
+                </div>
+                <div
+                  data-pencil-name="dot"
+                  class="box-border w-[18px] shrink-0 h-[18px] bg-[#FFFFFF] rounded-full"
+                ></div>
+              </div>
+              <div
+                data-pencil-name="hx"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                #8B5CF6
+              </div>
+              <div
+                data-pencil-name="us"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                acento secundario
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          data-pencil-name="Group ROLES SEMÁNTICOS"
+          class="box-border w-full h-fit shrink-0 flex flex-col gap-[16px] justify-start items-start"
+        >
+          <div
+            data-pencil-name="K"
+            class="box-border w-full h-fit shrink-0 flex flex-row gap-[10px] justify-start items-center"
+          >
+            <div
+              data-pencil-name="bar"
+              class="box-border w-[34px] shrink-0 h-[6px] bg-[#131211] rounded-[3px]"
+            ></div>
+            <div
+              data-pencil-name="lbl"
+              class="text-[12px]/[normal] box-border text-[#131211] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[1.2px] text-left [white-space:nowrap]"
+            >
+              ROLES SEMÁNTICOS
+            </div>
+          </div>
+          <div
+            data-pencil-name="Roles"
+            class="box-border w-full h-fit shrink-0 flex flex-row gap-[12px] justify-start items-start"
+          >
+            <div
+              data-pencil-name="R primary"
+              class="box-border w-[164px] shrink-0 h-fit flex flex-col gap-[8px] justify-start items-start bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[20px]"
+            >
+              <div
+                data-pencil-name="h"
+                class="box-border w-fit h-fit shrink-0 flex flex-row gap-[10px] p-[14px] justify-start items-center"
+              >
+                <div
+                  data-pencil-name="d"
+                  class="box-border w-[24px] shrink-0 h-[24px] bg-[#131211] rounded-full"
+                ></div>
+                <div
+                  data-pencil-name="n"
+                  class="text-[13px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+                >
+                  primary
+                </div>
+              </div>
+              <div
+                data-pencil-name="hx"
+                class="text-[10px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                #131211
+              </div>
+              <div
+                data-pencil-name="us"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                acciones · CTA
+              </div>
+            </div>
+            <div
+              data-pencil-name="R secondary"
+              class="box-border w-[164px] shrink-0 h-fit flex flex-col gap-[8px] justify-start items-start bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[20px]"
+            >
+              <div
+                data-pencil-name="h"
+                class="box-border w-fit h-fit shrink-0 flex flex-row gap-[10px] p-[14px] justify-start items-center"
+              >
+                <div
+                  data-pencil-name="d"
+                  class="box-border w-[24px] shrink-0 h-[24px] bg-[#34332F] rounded-full"
+                ></div>
+                <div
+                  data-pencil-name="n"
+                  class="text-[13px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+                >
+                  secondary
+                </div>
+              </div>
+              <div
+                data-pencil-name="hx"
+                class="text-[10px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                #34332F
+              </div>
+              <div
+                data-pencil-name="us"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                alternativas
+              </div>
+            </div>
+            <div
+              data-pencil-name="R accent"
+              class="box-border w-[164px] shrink-0 h-fit flex flex-col gap-[8px] justify-start items-start bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[20px]"
+            >
+              <div
+                data-pencil-name="h"
+                class="box-border w-fit h-fit shrink-0 flex flex-row gap-[10px] p-[14px] justify-start items-center"
+              >
+                <div
+                  data-pencil-name="d"
+                  class="box-border w-[24px] shrink-0 h-[24px] bg-[#FF5A1F] rounded-full"
+                ></div>
+                <div
+                  data-pencil-name="n"
+                  class="text-[13px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+                >
+                  accent
+                </div>
+              </div>
+              <div
+                data-pencil-name="hx"
+                class="text-[10px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                #FF5A1F
+              </div>
+              <div
+                data-pencil-name="us"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                movimiento
+              </div>
+            </div>
+            <div
+              data-pencil-name="R success"
+              class="box-border w-[164px] shrink-0 h-fit flex flex-col gap-[8px] justify-start items-start bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[20px]"
+            >
+              <div
+                data-pencil-name="h"
+                class="box-border w-fit h-fit shrink-0 flex flex-row gap-[10px] p-[14px] justify-start items-center"
+              >
+                <div
+                  data-pencil-name="d"
+                  class="box-border w-[24px] shrink-0 h-[24px] bg-[#12B886] rounded-full"
+                ></div>
+                <div
+                  data-pencil-name="n"
+                  class="text-[13px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+                >
+                  success
+                </div>
+              </div>
+              <div
+                data-pencil-name="hx"
+                class="text-[10px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                #12B886
+              </div>
+              <div
+                data-pencil-name="us"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                confirmaciones
+              </div>
+            </div>
+            <div
+              data-pencil-name="R warning"
+              class="box-border w-[164px] shrink-0 h-fit flex flex-col gap-[8px] justify-start items-start bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[20px]"
+            >
+              <div
+                data-pencil-name="h"
+                class="box-border w-fit h-fit shrink-0 flex flex-row gap-[10px] p-[14px] justify-start items-center"
+              >
+                <div
+                  data-pencil-name="d"
+                  class="box-border w-[24px] shrink-0 h-[24px] bg-[#FFC52E] rounded-full"
+                ></div>
+                <div
+                  data-pencil-name="n"
+                  class="text-[13px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+                >
+                  warning
+                </div>
+              </div>
+              <div
+                data-pencil-name="hx"
+                class="text-[10px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                #FFC52E
+              </div>
+              <div
+                data-pencil-name="us"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                alertas suaves
+              </div>
+            </div>
+            <div
+              data-pencil-name="R danger"
+              class="box-border w-[164px] shrink-0 h-fit flex flex-col gap-[8px] justify-start items-start bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[20px]"
+            >
+              <div
+                data-pencil-name="h"
+                class="box-border w-fit h-fit shrink-0 flex flex-row gap-[10px] p-[14px] justify-start items-center"
+              >
+                <div
+                  data-pencil-name="d"
+                  class="box-border w-[24px] shrink-0 h-[24px] bg-[#F43F47] rounded-full"
+                ></div>
+                <div
+                  data-pencil-name="n"
+                  class="text-[13px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+                >
+                  danger
+                </div>
+              </div>
+              <div
+                data-pencil-name="hx"
+                class="text-[10px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                #F43F47
+              </div>
+              <div
+                data-pencil-name="us"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                errores
+              </div>
+            </div>
+            <div
+              data-pencil-name="R info"
+              class="box-border w-[164px] shrink-0 h-fit flex flex-col gap-[8px] justify-start items-start bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[20px]"
+            >
+              <div
+                data-pencil-name="h"
+                class="box-border w-fit h-fit shrink-0 flex flex-row gap-[10px] p-[14px] justify-start items-center"
+              >
+                <div
+                  data-pencil-name="d"
+                  class="box-border w-[24px] shrink-0 h-[24px] bg-[#2D6BFF] rounded-full"
+                ></div>
+                <div
+                  data-pencil-name="n"
+                  class="text-[13px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+                >
+                  info
+                </div>
+              </div>
+              <div
+                data-pencil-name="hx"
+                class="text-[10px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                #2D6BFF
+              </div>
+              <div
+                data-pencil-name="us"
+                class="text-[11px]/[normal] box-border text-[#A29F99] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                información
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          data-pencil-name="Group PROPORCIÓN VISUAL — LA REGLA 80 / 20"
+          class="box-border w-full h-fit shrink-0 flex flex-col gap-[16px] justify-start items-start"
+        >
+          <div
+            data-pencil-name="K"
+            class="box-border w-full h-fit shrink-0 flex flex-row gap-[10px] justify-start items-center"
+          >
+            <div
+              data-pencil-name="bar"
+              class="box-border w-[34px] shrink-0 h-[6px] bg-[#131211] rounded-[3px]"
+            ></div>
+            <div
+              data-pencil-name="lbl"
+              class="text-[12px]/[normal] box-border text-[#131211] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[1.2px] text-left [white-space:nowrap]"
+            >
+              PROPORCIÓN VISUAL — LA REGLA 80 / 20
+            </div>
+          </div>
+          <div
+            data-pencil-name="Ratio Bar"
+            class="box-border w-full h-[150px] shrink-0 flex flex-row gap-0 justify-start items-start"
+          >
+            <div
+              data-pencil-name="Neutro"
+              class="box-border w-[936px] shrink-0 h-[150px] flex flex-row gap-0 p-[24px] justify-between items-start bg-[#ECEBE6] rounded-[24px]"
+            >
+              <div
+                data-pencil-name="v"
+                class="text-[30px]/[normal] box-border text-[#131211] font-['Space_Grotesk',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+              >
+                75 %
+              </div>
+            </div>
+            <div
+              data-pencil-name="Oscuro"
+              class="box-border w-[212px] shrink-0 h-[150px] flex flex-row gap-0 p-[20px] justify-between items-start bg-[#131211]"
+            >
+              <div
+                data-pencil-name="v"
+                class="text-[26px]/[normal] box-border text-[#FFFFFF] font-['Space_Grotesk',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+              >
+                17 %
+              </div>
+            </div>
+            <div
+              data-pencil-name="Acento"
+              class="box-border w-[100px] shrink-0 h-[150px] flex flex-row gap-0 p-[12px] justify-between items-start bg-[#FF5A1F]"
+            >
+              <div
+                data-pencil-name="v"
+                class="text-[22px]/[normal] box-border text-[#131211] font-['Space_Grotesk',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+              >
+                8 %
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          data-pencil-name="Ratio Cap"
+          class="text-[11px]/[normal] box-border w-full text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left"
+        >
+          Los neutros sostienen la interfaz, el negro estructura y los acentos puntúan. Los colores
+          intensos nunca son el fondo de una pantalla.
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

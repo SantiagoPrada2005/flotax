@@ -1,0 +1,36 @@
+{
+  "description": "在昂贵的 LLM/Agent 之前做一次便宜的路由判断",
+  "questions": {
+    "handler": {
+      "type": "choice",
+      "instructions": "这个用户请求应该交给哪种处理方式？",
+      "criteria": {
+        "chat": "可以直接对话回答，不需要额外工具",
+        "code": "需要写代码、调试或修改项目",
+        "research": "需要联网查资料",
+        "image": "需要生成或编辑图片",
+        "schedule": "日历、提醒、邮件等个人事务操作",
+        "social": "X/Twitter 相关操作",
+        "other": "以上都不符合"
+      }
+    },
+    "complexity": {
+      "type": "score",
+      "instructions": "完成这个请求大概需要多复杂的推理/操作？",
+      "criteria": [
+        "简单一句话",
+        "中等",
+        "困难多步骤",
+        "需要深度推理"
+      ]
+    },
+    "needs_web": {
+      "type": "noul",
+      "instructions": "完成这个请求是否需要联网获取实时或外部信息？"
+    },
+    "needs_private_data": {
+      "type": "noul",
+      "instructions": "完成这个请求是否需要读取本人的邮件、日历、记忆等私有数据？"
+    }
+  }
+}

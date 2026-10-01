@@ -1,0 +1,36 @@
+{
+  "description": "微信群消息/推文/RSS 摘要：是否值得读、话题、新颖度",
+  "questions": {
+    "worth_reading": {
+      "type": "noul",
+      "instructions": "这条内容是否包含具体、可行动的信息（例如新工具/新模型发布、实战经验、数据、机会），而不是闲聊、表情、广告或单纯的情绪表达？",
+      "criteria": {
+        "true": "包含具体的信息增量，值得花时间看",
+        "false": "闲聊、表情包、灌水、广告或情绪化内容，没有实质信息"
+      }
+    },
+    "topic": {
+      "type": "choice",
+      "instructions": "这条内容主要在讨论什么话题？",
+      "criteria": {
+        "ai_coding": "AI 编程、Agent、大模型相关",
+        "indie_dev": "独立开发、出海、变现相关",
+        "apple_dev": "Apple 平台开发、Swift、App Store 上架相关",
+        "marketing": "推广、增长、SEO 相关",
+        "chit_chat": "日常闲聊，没有明确主题",
+        "ad": "广告或引流内容",
+        "other": "以上都不符合"
+      }
+    },
+    "novelty": {
+      "type": "score",
+      "instructions": "这条内容对一个长期关注该领域的人来说有多新颖？",
+      "criteria": [
+        "旧闻或常识",
+        "一般",
+        "有新意",
+        "重大或首发"
+      ]
+    }
+  }
+}

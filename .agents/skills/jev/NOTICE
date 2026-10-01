@@ -1,0 +1,7 @@
+jev
+Copyright 2026 okooo5km(十里)
+
+This is an independent community project. It calls TypeSafe's Jev decision
+model through TypeSafe's own API or OpenRouter's decisions API. No
+affiliation with or endorsement by TypeSafe or OpenRouter is implied; their
+names identify the underlying service only.

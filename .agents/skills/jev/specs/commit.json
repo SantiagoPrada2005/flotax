@@ -1,0 +1,47 @@
+{
+  "description": "根据 git diff --cached 判断 Conventional Commit 类型，并检查密钥泄露/破坏性变更/风险",
+  "questions": {
+    "type": {
+      "type": "choice",
+      "instructions": "根据这段 git diff，最合适的 Conventional Commit 类型是什么？",
+      "criteria": {
+        "feat": "新增功能",
+        "fix": "修复 bug",
+        "refactor": "重构代码，不改变外部行为",
+        "perf": "性能优化",
+        "docs": "只修改文档",
+        "test": "只新增或修改测试",
+        "build": "构建系统或依赖相关改动",
+        "ci": "CI/CD 配置相关改动",
+        "chore": "杂项变更，不影响业务逻辑（如配置、脚手架）",
+        "style": "只涉及格式、空白、命名等不影响逻辑的改动"
+      }
+    },
+    "has_secret": {
+      "type": "noul",
+      "instructions": "这段 diff 中是否新增了看起来真实的密钥、令牌或密码字面量？",
+      "criteria": {
+        "true": "新增了看起来像真实密钥/令牌/密码的硬编码字符串",
+        "false": "没有发现类似内容"
+      }
+    },
+    "breaking": {
+      "type": "noul",
+      "instructions": "这段改动是否会破坏现有 API、配置格式或数据格式的兼容性？",
+      "criteria": {
+        "true": "改动会导致现有调用方、配置文件或数据格式不再兼容",
+        "false": "改动向后兼容，不影响现有使用方式"
+      }
+    },
+    "risk": {
+      "type": "score",
+      "instructions": "这段改动的整体风险有多高？",
+      "criteria": [
+        "琐碎",
+        "低",
+        "中",
+        "高"
+      ]
+    }
+  }
+}

@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@theme {
+  /* Brand & Status Colors */
+  --color-brand-primary: #131211;
+  --color-brand-accent: #2563eb;
+  --color-status-success: #16a34a;
+  --color-status-warning: #f59e0b;
+  --color-status-danger: #dc2626;
+
+  /* Surfaces & Neutral Hierarchy */
+  --color-surface-canvas: #f1f0ec;
+  --color-surface-card: #ffffff;
+  --color-surface-elevated: #fbfbf9;
+  --color-border-subtle: #e5e5e0;
+
+  /* Typography Scales */
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* Radii & Ergonomics */
+  --radius-touch: 20px;
+  --radius-card: 16px;
+  --radius-input: 12px;
+}
+
+/* Universal Mobile Ergonomics Shielding (iOS WebKit Anti-Zoom) */
+@media screen and (max-width: 768px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* Breathing room for virtual keyboards */
+input,
+textarea,
+select {
+  scroll-margin-top: 80px;
+  scroll-margin-bottom: 80px;
+}

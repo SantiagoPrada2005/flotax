@@ -1,0 +1,4 @@
+interface:
+  display_name: "Jev Decisions"
+  short_description: "Typed yes/no, choice and score decisions with calibrated probabilities"
+  default_prompt: "Use $jev to classify or filter this with a calibrated probability."

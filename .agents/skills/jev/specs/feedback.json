@@ -1,0 +1,45 @@
+{
+  "description": "独立 Mac 应用的用户反馈/评价分诊",
+  "questions": {
+    "intent": {
+      "type": "choice",
+      "instructions": "这条用户反馈/评价的主要意图是什么？",
+      "criteria": {
+        "bug": "报告崩溃、卡死或功能异常",
+        "feature_request": "请求新增或改进某个功能",
+        "refund": "要求退款、取消订阅",
+        "license": "激活码、授权、购买流程相关问题",
+        "how_to": "咨询如何使用某个功能",
+        "praise": "好评、感谢、单纯表达满意",
+        "other": "以上都不符合"
+      }
+    },
+    "sentiment": {
+      "type": "score",
+      "instructions": "这条反馈的整体情绪倾向是什么？",
+      "criteria": [
+        "非常负面",
+        "负面",
+        "中性",
+        "正面",
+        "非常正面"
+      ]
+    },
+    "needs_human": {
+      "type": "noul",
+      "instructions": "这条反馈是否是模板回复解决不了、必须由开发者本人处理的情况？",
+      "criteria": {
+        "true": "涉及具体的技术问题、个性化诉求或情绪激烈的投诉，模板话术无法妥善处理",
+        "false": "常见问题，用标准模板或帮助文档即可回复"
+      }
+    },
+    "churn_risk": {
+      "type": "noul",
+      "instructions": "用户是否明确表示要放弃使用、要求退款，或转向竞品？",
+      "criteria": {
+        "true": "明确提到要卸载、退款、取消订阅，或已经在用/准备用其他竞品",
+        "false": "没有明确的流失倾向"
+      }
+    }
+  }
+}
