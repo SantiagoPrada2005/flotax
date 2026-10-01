@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "movix",
+  "name": "flotax",
   "compatibility_date": "2026-09-30",
   "compatibility_flags": [
     "nodejs_compat"
@@ -8,14 +8,14 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "movix-db",
+      "database_name": "flotax-db",
       "database_id": "local-db-placeholder"
     }
   ],
   "r2_buckets": [
     {
       "binding": "BUCKET_MULTIMEDIA",
-      "bucket_name": "movix-multimedia"
+      "bucket_name": "flotax-multimedia"
     }
   ]
 }

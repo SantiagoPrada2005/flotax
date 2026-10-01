@@ -1,5 +1,5 @@
 {
-  "name": "movix",
+  "name": "flotax",
   "type": "module",
   "version": "0.0.1",
   "private": true,
@@ -10,7 +10,7 @@
     "preview": "astro preview",
     "check": "astro check",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "wrangler d1 migrations apply movix-db"
+    "db:migrate": "wrangler d1 migrations apply flotax-db"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.3.3",

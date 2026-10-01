@@ -2,7 +2,7 @@
 
 ## 1. Context & Purpose
 
-In this project (**Movix / Sistema de Alquiler de Vehículos**), the application is architected as a serverless monolith running on **Astro 7+** powered by **Vite** and deployed to **Cloudflare Pages / Workers**, featuring interactive islands driven by **React 19**.
+In this project (**FlotaX / Sistema de Alquiler de Vehículos**), the application is architected as a serverless monolith running on **Astro 7+** powered by **Vite** and deployed to **Cloudflare Pages / Workers**, featuring interactive islands driven by **React 19**.
 
 To achieve sub-5ms edge response times, eliminate styling fragmentation across Astro and React, and maintain strict design token governance, the styling engine is standardized on **Tailwind CSS v4** compiled natively via the **Vite plugin (`@tailwindcss/vite`)**.
 
