@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+        tailwind = { config: { corePlugins: { preflight: false } } };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter%3Awght%40100..900&family=JetBrains+Mono%3Awght%40100..800&family=Space+Grotesk%3Awght%40300..700&display=swap"
+        rel="stylesheet" />
+    <style>
+        *,
+        ::before,
+        ::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+        }
+    </style>
+
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body style="background-color: #FFFFFF">
+    <div data-pencil-name="17 Responsive Grid"
+        class="box-border w-[1376px] h-fit flex flex-col gap-[24px] p-[64px] justify-start items-start bg-[#FFFFFF] overflow-hidden">
+        <div data-pencil-name="Header 17"
+            class="box-border w-full h-fit shrink-0 flex flex-col gap-0 justify-start items-start bg-[#FFFFFF]">
+            <div data-pencil-name="Header Row"
+                class="box-border w-full h-fit shrink-0 flex flex-row gap-[28px] justify-start items-center">
+                <div data-pencil-name="NumChip"
+                    class="box-border w-[72px] shrink-0 h-[72px] flex flex-row gap-0 justify-center items-center bg-[#131211] rounded-[20px]">
+                    <div data-pencil-name="Num"
+                        class="text-[26px]/[normal] box-border text-[#FFFFFF] font-['Space_Grotesk',system-ui,sans-serif] font-bold text-left [white-space:nowrap]">
+                        17
+                    </div>
+                </div>
+                <div data-pencil-name="TitleCol"
+                    class="box-border [flex:1_1_0] h-fit flex flex-col gap-[6px] justify-start items-start">
+                    <div data-pencil-name="Title"
+                        class="text-[38px]/[normal] box-border text-[#131211] font-['Space_Grotesk',system-ui,sans-serif] font-bold text-left [white-space:nowrap]">
+                        Responsive
+                    </div>
+                    <div data-pencil-name="Sub"
+                        class="text-[15px]/[normal] box-border text-[#6E6C66] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        Un mismo lenguaje en cuatro tallas: móvil, tablet, desktop y desktop amplio
+                    </div>
+                </div>
+                <div data-pencil-name="Meta"
+                    class="text-[13px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    RESPONSIVE · GRID
+                </div>
+            </div>
+            <div data-pencil-name="Rule" class="box-border w-full h-[2px] shrink-0 bg-[#131211]"></div>
+        </div>
+        <div data-pencil-name="Breakpoints"
+            class="box-border w-full h-[70px] shrink-0 flex flex-row gap-0 justify-start items-start">
+            <div data-pencil-name="bp ≤ 390" class="box-border w-[337px] shrink-0 h-[70px] bg-[#ECEBE6] relative">
+                <div data-pencil-name="l"
+                    class="text-[10px]/[normal] box-border absolute left-[10px] top-[44px] text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap] [z-index:0]">
+                    ≤ 390
+                </div>
+            </div>
+            <div data-pencil-name="bp 768" class="box-border w-[326px] shrink-0 h-[70px] bg-[#F6F5F1] relative">
+                <div data-pencil-name="l"
+                    class="text-[10px]/[normal] box-border absolute left-[10px] top-[44px] text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap] [z-index:0]">
+                    768
+                </div>
+            </div>
+            <div data-pencil-name="bp 1024"
+                class="box-border w-[222px] shrink-0 h-[70px] bg-[#FFFFFF] [border:1px_solid_#E5E4DF] relative">
+                <div data-pencil-name="l"
+                    class="text-[10px]/[normal] box-border absolute left-[10px] top-[44px] text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap] [z-index:0]">
+                    1024
+                </div>
+            </div>
+            <div data-pencil-name="bp 1440+" class="box-border w-[363px] shrink-0 h-[70px] bg-[#ECEBE6] relative">
+                <div data-pencil-name="l"
+                    class="text-[10px]/[normal] box-border absolute left-[10px] top-[44px] text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap] [z-index:0]">
+                    1440+
+                </div>
+            </div>
+        </div>
+        <div data-pencil-name="Break Cols"
+            class="box-border w-full h-fit shrink-0 flex flex-row gap-[16px] justify-start items-start">
+            <div data-pencil-name="bp MOBILE"
+                class="box-border w-[292px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-start">
+                <div data-pencil-name="head"
+                    class="box-border w-full h-fit shrink-0 flex flex-row gap-[8px] justify-start items-center">
+                    <div data-pencil-name="dot"
+                        class="box-border w-[10px] shrink-0 h-[10px] bg-[#FF5A1F] rounded-[5px]"></div>
+                    <div data-pencil-name="nm"
+                        class="text-[11px]/[normal] box-border text-[#131211] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        MOBILE
+                    </div>
+                    <div data-pencil-name="r"
+                        class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        &lt; 600
+                    </div>
+                </div>
+                <div data-pencil-name="cv"
+                    class="box-border w-[292px] h-[170px] shrink-0 bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[16px] relative">
+                    <div data-pencil-name="card"
+                        class="box-border w-[290px] h-[44px] absolute left-[2px] top-[12px] bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[8px] [z-index:0]">
+                    </div>
+                    <div data-pencil-name="card"
+                        class="box-border w-[290px] h-[44px] absolute left-[2px] top-[60px] bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[8px] [z-index:1]">
+                    </div>
+                    <div data-pencil-name="card"
+                        class="box-border w-[290px] h-[44px] absolute left-[2px] top-[108px] bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[8px] [z-index:2]">
+                    </div>
+                </div>
+                <div data-pencil-name="l1"
+                    class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    fluid · gut 12
+                </div>
+                <div data-pencil-name="l2"
+                    class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    cols 1 · cards 1
+                </div>
+            </div>
+            <div data-pencil-name="bp TABLET"
+                class="box-border w-[292px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-start">
+                <div data-pencil-name="head"
+                    class="box-border w-full h-fit shrink-0 flex flex-row gap-[8px] justify-start items-center">
+                    <div data-pencil-name="dot"
+                        class="box-border w-[10px] shrink-0 h-[10px] bg-[#2D6BFF] rounded-[5px]"></div>
+                    <div data-pencil-name="nm"
+                        class="text-[11px]/[normal] box-border text-[#131211] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        TABLET
+                    </div>
+                    <div data-pencil-name="r"
+                        class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        600–1024
+                    </div>
+                </div>
+                <div data-pencil-name="cv"
+                    class="box-border w-[292px] h-[150px] shrink-0 bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[16px] relative">
+                    <div data-pencil-name="card"
+                        class="box-border w-[144px] h-[52px] absolute left-[2px] top-[12px] bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[8px] [z-index:0]">
+                    </div>
+                    <div data-pencil-name="card"
+                        class="box-border w-[144px] h-[52px] absolute left-[147px] top-[12px] bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[8px] [z-index:1]">
+                    </div>
+                    <div data-pencil-name="card"
+                        class="box-border w-[145px] h-[52px] absolute left-[2px] top-[74px] bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[8px] [z-index:2]">
+                    </div>
+                    <div data-pencil-name="card"
+                        class="box-border w-[144px] h-[52px] absolute left-[147px] top-[74px] bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[8px] [z-index:3]">
+                    </div>
+                </div>
+                <div data-pencil-name="l1"
+                    class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    fluid · gut 16
+                </div>
+                <div data-pencil-name="l2"
+                    class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    cols 2 · cards 2
+                </div>
+            </div>
+            <div data-pencil-name="bp DESKTOP"
+                class="box-border w-[292px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-start">
+                <div data-pencil-name="head"
+                    class="box-border w-full h-fit shrink-0 flex flex-row gap-[8px] justify-start items-center">
+                    <div data-pencil-name="dot"
+                        class="box-border w-[10px] shrink-0 h-[10px] bg-[#131211] rounded-[5px]"></div>
+                    <div data-pencil-name="nm"
+                        class="text-[11px]/[normal] box-border text-[#131211] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        DESKTOP
+                    </div>
+                    <div data-pencil-name="r"
+                        class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        1024–1440
+                    </div>
+                </div>
+                <div data-pencil-name="cv"
+                    class="box-border w-[292px] h-[150px] shrink-0 bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[16px] relative">
+                    <div data-pencil-name="card"
+                        class="box-border w-[71px] h-[52px] absolute left-[2px] top-[12px] bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[8px] [z-index:0]">
+                    </div>
+                    <div data-pencil-name="card"
+                        class="box-border w-[71px] h-[52px] absolute left-[75px] top-[12px] bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[8px] [z-index:1]">
+                    </div>
+                    <div data-pencil-name="card"
+                        class="box-border w-[71px] h-[52px] absolute left-[148px] top-[12px] bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[8px] [z-index:2]">
+                    </div>
+                    <div data-pencil-name="card"
+                        class="box-border w-[71px] h-[52px] absolute left-[221px] top-[12px] bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[8px] [z-index:3]">
+                    </div>
+                </div>
+                <div data-pencil-name="l1"
+                    class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    container 1024 · gut 20
+                </div>
+                <div data-pencil-name="l2"
+                    class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    cols 4 · cards 4
+                </div>
+            </div>
+            <div data-pencil-name="bp LARGE"
+                class="box-border w-[292px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-start">
+                <div data-pencil-name="head"
+                    class="box-border w-full h-fit shrink-0 flex flex-row gap-[8px] justify-start items-center">
+                    <div data-pencil-name="dot"
+                        class="box-border w-[10px] shrink-0 h-[10px] bg-[#12B886] rounded-[5px]"></div>
+                    <div data-pencil-name="nm"
+                        class="text-[11px]/[normal] box-border text-[#131211] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        LARGE
+                    </div>
+                    <div data-pencil-name="r"
+                        class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        1440+
+                    </div>
+                </div>
+                <div data-pencil-name="cv"
+                    class="box-border w-[292px] h-[150px] shrink-0 bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[16px] relative">
+                    <div data-pencil-name="card"
+                        class="box-border w-[46px] h-[52px] absolute left-[2px] top-[12px] bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[8px] [z-index:0]">
+                    </div>
+                    <div data-pencil-name="card"
+                        class="box-border w-[46px] h-[52px] absolute left-[50px] top-[12px] bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[8px] [z-index:1]">
+                    </div>
+                    <div data-pencil-name="card"
+                        class="box-border w-[46px] h-[52px] absolute left-[98px] top-[12px] bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[8px] [z-index:2]">
+                    </div>
+                    <div data-pencil-name="card"
+                        class="box-border w-[46px] h-[52px] absolute left-[146px] top-[12px] bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[8px] [z-index:3]">
+                    </div>
+                    <div data-pencil-name="card"
+                        class="box-border w-[46px] h-[52px] absolute left-[194px] top-[12px] bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[8px] [z-index:4]">
+                    </div>
+                    <div data-pencil-name="card"
+                        class="box-border w-[46px] h-[52px] absolute left-[242px] top-[12px] bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[8px] [z-index:5]">
+                    </div>
+                </div>
+                <div data-pencil-name="l1"
+                    class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    container 1248 · gut 24
+                </div>
+                <div data-pencil-name="l2"
+                    class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    cols 6 · cards 6
+                </div>
+            </div>
+        </div>
+        <div data-pencil-name="resp cap"
+            class="text-[11px]/[normal] box-border w-full text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left">
+            El contenido refluye, el lenguaje no cambia: mismas cards, mismo radio, misma tipografía.
+            Solo cambia cuántas entran por fila.
+        </div>
+    </div>
+</body>
+
+</html>

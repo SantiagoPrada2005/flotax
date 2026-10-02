@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+        tailwind = { config: { corePlugins: { preflight: false } } };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter%3Awght%40100..900&family=JetBrains+Mono%3Awght%40100..800&family=Space+Grotesk%3Awght%40300..700&display=swap"
+        rel="stylesheet" />
+    <style>
+        *,
+        ::before,
+        ::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+        }
+    </style>
+
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body style="background-color: #FFFFFF">
+    <div data-pencil-name="App Bar"
+        class="[box-sizing:content-box] w-[1600px] h-[71.5px] flex flex-row gap-[14px] p-[0px_32px] justify-start items-center bg-[#FFFFFF] [border-width:0px_0px_1px_0px] [border-style:solid] [border-color:#EEEDE8] [margin:0px_0px_-0.5px_0px]">
+        <div data-pencil-name="Logo Chip"
+            class="box-border w-[44px] shrink-0 h-[44px] flex flex-row gap-0 justify-center items-center bg-[#131211] rounded-[14px]">
+            <div data-pencil-name="M"
+                class="text-[22px]/[normal] box-border text-[#FFFFFF] font-['Space_Grotesk',system-ui,sans-serif] font-bold text-left [white-space:nowrap]">
+                M
+            </div>
+        </div>
+        <div data-pencil-name="Brand"
+            class="box-border w-fit shrink-0 h-fit flex flex-col gap-[2px] justify-start items-start">
+            <div data-pencil-name="Wordmark"
+                class="text-[24px]/[24px] box-border text-[#131211] font-['Space_Grotesk',system-ui,sans-serif] font-bold text-left [white-space:nowrap]">
+                Movo
+            </div>
+            <div data-pencil-name="Tag"
+                class="text-[10.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[1px] text-left [white-space:nowrap]">
+                MÓDULO · CATÁLOGO Y GESTIÓN
+            </div>
+        </div>
+        <div data-pencil-name="Sep"
+            class="box-border w-[1px] shrink-0 h-[28px] flex flex-row gap-0 justify-start items-start bg-[#EEEDE8]">
+        </div>
+        <div data-pencil-name="Crumb"
+            class="box-border w-fit shrink-0 h-fit flex flex-row gap-[8px] justify-start items-center">
+            <div data-pencil-name="L1"
+                class="text-[13px]/[normal] box-border text-[#A29F99] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                Catálogo
+            </div>
+            <svg data-pencil-name="Chevron" data-icon-name="chevron_right" data-icon-set="Material Symbols Outlined"
+                viewBox="0 0 14.000015258789062 14" preserveAspectRatio="xMidYMid meet"
+                xmlns="http://www.w3.org/2000/svg" class="box-border w-[16px] shrink-0 h-[16px]">
+                <path
+                    d="M7.75537 7l-2.68652-2.68311 0.41357-0.41357 3.09668 3.09668-3.09668 3.09668-0.41357-0.41357 2.68652-2.68311z"
+                    fill="#A29F99"></path>
+            </svg>
+            <div data-pencil-name="L2"
+                class="text-[13px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                Vista lista + disponibilidad
+            </div>
+        </div>
+        <div data-pencil-name="Spacer"
+            class="box-border [flex:1_1_0] h-full flex flex-row gap-0 justify-start items-start"></div>
+        <div data-pencil-name="Fleet Chip"
+            class="box-border w-fit shrink-0 h-[32px] flex flex-row gap-[8px] p-[0px_14px] justify-start items-center bg-[#F4F3EF] rounded-[999px]">
+            <svg data-pencil-name="Car Icon" data-icon-name="car_rental" data-icon-set="Material Symbols Outlined"
+                viewBox="0 0 14.000015258789062 14" preserveAspectRatio="xMidYMid meet"
+                xmlns="http://www.w3.org/2000/svg" class="box-border w-[16px] shrink-0 h-[16px]">
+                <path
+                    d="M4.89111 4.01611q-0.6084 0-1.03564-0.42382-0.42383-0.42725-0.42383-1.03223 0-0.6084 0.42383-1.03223 0.42725-0.42725 1.03564-0.42724 0.51953 0 0.90918 0.33496 0.39307 0.33154 0.52979 0.83056l4.23828 0 0 0.58448-0.58447 0 0 1.16552-0.58448 0 0-1.16552-3.06933 0q-0.13672 0.49902-0.52979 0.83398-0.38965 0.33154-0.90918 0.33154z m0-0.58447q0.35889 0 0.61524-0.25635 0.25977-0.25635 0.25976-0.61865 0-0.35889-0.25976-0.61523-0.25635-0.25977-0.61524-0.25977-0.35889 0-0.61865 0.25977-0.25635 0.25635-0.25635 0.61523 0 0.3623 0.25635 0.61865 0.25977 0.25635 0.61865 0.25635z m0.1333 6.43945q0.18115 0 0.31446-0.1333 0.13672-0.1333 0.13672-0.31445 0-0.18115-0.13672-0.31445-0.1333-0.1333-0.31446-0.1333-0.17773 0-0.31445 0.1333-0.1333 0.1333-0.1333 0.31445 0 0.18115 0.1333 0.31445 0.13672 0.1333 0.31445 0.1333z m3.95118 0q0.17773 0 0.31103-0.1333 0.13672-0.1333 0.13672-0.31445 0-0.18115-0.13672-0.31445-0.1333-0.1333-0.31103-0.1333-0.18115 0-0.31788 0.1333-0.1333 0.1333-0.1333 0.31445 0 0.18115 0.1333 0.31445 0.13672 0.1333 0.31788 0.1333z m-5.47559-1.4663l0.87158-2.50879q0.04102-0.12646 0.14014-0.19483 0.10254-0.06836 0.22558-0.06836l4.5254 0q0.12305 0 0.22216 0.06836 0.10254 0.06836 0.14356 0.19483l0.87158 2.50879 0 3.37695q0 0.11621-0.0752 0.19141-0.0752 0.07519-0.18798 0.07519l-0.05469 0q-0.11621 0-0.19141-0.07519-0.0752-0.0752-0.07519-0.19141l0-0.89893-5.83106 0 0 0.89893q0 0.11621-0.07519 0.19141-0.0752 0.07519-0.19141 0.07519l-0.05469 0q-0.11279 0-0.18798-0.07519-0.0752-0.0752-0.0752-0.19141l0-3.37695z m0.76221-0.44092l5.47558 0-0.6084-1.75-4.25878 0-0.6084 1.75z m-0.17774 0.58447l0 1.75 0-1.75z m0 1.75l5.83106 0 0-1.75-5.83106 0 0 1.75z"
+                    fill="#34332F"></path>
+            </svg>
+            <div data-pencil-name="Count"
+                class="text-[12px]/[normal] box-border text-[#34332F] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                24 unidades
+            </div>
+        </div>
+        <div data-pencil-name="User Chip"
+            class="box-border w-fit shrink-0 h-fit flex flex-row gap-[10px] justify-start items-center">
+            <div data-pencil-name="Avatar"
+                class="box-border w-[40px] shrink-0 h-[40px] flex flex-row gap-0 justify-center items-center bg-[#131211] rounded-[12px]">
+                <svg data-pencil-name="Person Icon" data-icon-name="person" data-icon-set="Material Symbols Outlined"
+                    viewBox="0 0 14.000015258789062 14" preserveAspectRatio="xMidYMid meet"
+                    xmlns="http://www.w3.org/2000/svg" class="box-border w-[22px] shrink-0 h-[22px]">
+                    <path
+                        d="M7 6.64111q-0.72119 0-1.2373-0.51269-0.5127-0.51611-0.5127-1.23731 0-0.72119 0.5127-1.23388 0.51611-0.51611 1.2373-0.51612 0.72119 0 1.23389 0.51612 0.51611 0.5127 0.51611 1.23388 0 0.72119-0.51611 1.23731-0.5127 0.5127-1.23389 0.51269z m-4.08447 4.21778l0-0.96045q0-0.3623 0.20849-0.67676 0.21191-0.31445 0.56739-0.48877 0.82715-0.39307 1.65429-0.59131 0.82715-0.19824 1.6543-0.19824 0.82715 0 1.6543 0.19824 0.82715 0.19824 1.65429 0.59131 0.35547 0.17432 0.56397 0.48877 0.21191 0.31445 0.21191 0.67676l0 0.96045-8.16894 0z m0.58447-0.58448l7 0 0-0.37597q0-0.19482-0.12646-0.36231-0.12305-0.1709-0.34522-0.29052-0.72119-0.34863-1.48682-0.53321-0.76221-0.18799-1.5415-0.18799-0.7793 0-1.54492 0.18799-0.76221 0.18457-1.4834 0.53321-0.22217 0.11963-0.34863 0.29052-0.12305 0.16748-0.12305 0.36231l0 0.37597z m3.5-4.21777q0.48193 0 0.82373-0.3418 0.3418-0.3418 0.3418-0.82373 0-0.48193-0.3418-0.82373-0.3418-0.3418-0.82373-0.34179-0.48193 0-0.82373 0.34179-0.3418 0.3418-0.3418 0.82373 0 0.48193 0.3418 0.82373 0.3418 0.3418 0.82373 0.3418z"
+                        fill="#FFFFFF"></path>
+                </svg>
+            </div>
+            <div data-pencil-name="User Col"
+                class="box-border w-fit shrink-0 h-fit flex flex-col gap-[2px] justify-start items-start">
+                <div data-pencil-name="Name"
+                    class="text-[13.5px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                    Santiago Peña
+                </div>
+                <div data-pencil-name="Role"
+                    class="text-[11.5px]/[normal] box-border text-[#A29F99] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    Gerente de flota
+                </div>
+            </div>
+            <svg data-pencil-name="User Chevron" data-icon-name="chevron-down" data-icon-set="lucide"
+                viewBox="0 0 13.99993896484375 14" preserveAspectRatio="xMidYMid meet"
+                xmlns="http://www.w3.org/2000/svg" class="box-border w-[20px] shrink-0 h-[20px]">
+                <path
+                    d="M3.34619 4.68945q-0.25293 0.08545-0.37939 0.30762-0.04102 0.08545-0.04102 0.25293 0 0.16748 0.04785 0.25977 0.05127 0.08887 1.8628 1.9038 1.81494 1.81152 1.9038 1.8628 0.09229 0.04785 0.25977 0.04785 0.16748 0 0.25635-0.04785 0.09229-0.05127 1.90381-1.8628 1.81494-1.81494 1.86279-1.9038 0.05127-0.09229 0.05127-0.25977 0-0.16748-0.04102-0.25293-0.09912-0.16748-0.28027-0.2666-0.05811-0.02734-0.09912-0.04102-0.04102-0.01367-0.15381-0.01367-0.11279 0-0.15381 0.01367-0.04101 0.01367-0.11279 0.04102-0.09912 0.05811-1.66455 1.62695l-1.56885 1.56543-2.82666-2.81299q-0.31104-0.29395-0.42041-0.37939-0.08545-0.05469-0.19824-0.05469l-0.02735 0q-0.14014 0-0.18115 0.01367z"
+                    fill="#A29F99"></path>
+            </svg>
+        </div>
+    </div>
+</body>
+
+</html>

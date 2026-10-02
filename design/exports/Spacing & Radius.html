@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+        tailwind = { config: { corePlugins: { preflight: false } } };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter%3Awght%40100..900&family=JetBrains+Mono%3Awght%40100..800&family=Space+Grotesk%3Awght%40300..700&display=swap"
+        rel="stylesheet" />
+    <style>
+        *,
+        ::before,
+        ::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+        }
+    </style>
+
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body style="background-color: #FFFFFF">
+    <div data-pencil-name="05·06 Spacing &amp; Radius"
+        class="box-border w-[1376px] h-fit flex flex-col gap-[26px] p-[64px] justify-start items-start bg-[#FFFFFF] overflow-hidden">
+        <div data-pencil-name="Header 05·06"
+            class="box-border w-full h-fit shrink-0 flex flex-col gap-0 justify-start items-start bg-[#FFFFFF]">
+            <div data-pencil-name="Header Row"
+                class="box-border w-full h-fit shrink-0 flex flex-row gap-[28px] justify-start items-center">
+                <div data-pencil-name="NumChip"
+                    class="box-border w-[72px] shrink-0 h-[72px] flex flex-row gap-0 justify-center items-center bg-[#131211] rounded-[20px]">
+                    <div data-pencil-name="Num"
+                        class="text-[26px]/[normal] box-border text-[#FFFFFF] font-['Space_Grotesk',system-ui,sans-serif] font-bold text-left [white-space:nowrap]">
+                        05
+                    </div>
+                </div>
+                <div data-pencil-name="TitleCol"
+                    class="box-border [flex:1_1_0] h-fit flex flex-col gap-[6px] justify-start items-start">
+                    <div data-pencil-name="Title"
+                        class="text-[38px]/[normal] box-border text-[#131211] font-['Space_Grotesk',system-ui,sans-serif] font-bold text-left [white-space:nowrap]">
+                        Spacing · Radius
+                    </div>
+                    <div data-pencil-name="Sub"
+                        class="text-[15px]/[normal] box-border text-[#6E6C66] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        Densidad controlada y esquinas generosas: el lenguaje táctil del producto
+                    </div>
+                </div>
+                <div data-pencil-name="Meta"
+                    class="text-[13px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    SPACE · RADIUS
+                </div>
+            </div>
+            <div data-pencil-name="Rule" class="box-border w-full h-[2px] shrink-0 bg-[#131211]"></div>
+        </div>
+        <div data-pencil-name="Spacing Group"
+            class="box-border w-full h-fit shrink-0 flex flex-col gap-[12px] justify-start items-start">
+            <div data-pencil-name="K"
+                class="box-border w-full h-fit shrink-0 flex flex-row gap-[10px] justify-start items-center">
+                <div data-pencil-name="bar" class="box-border w-[34px] shrink-0 h-[6px] bg-[#131211] rounded-[3px]">
+                </div>
+                <div data-pencil-name="lbl"
+                    class="text-[12px]/[normal] box-border text-[#131211] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[1px] text-left [white-space:nowrap]">
+                    ESCALA DE ESPACIADO — BASE 4 · RITMO 8
+                </div>
+            </div>
+            <div data-pencil-name="Scale Card"
+                class="box-border w-full h-fit shrink-0 flex flex-row gap-[14px] p-[20px] justify-start items-start bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[24px]">
+                <div data-pencil-name="S sp-1"
+                    class="box-border w-fit shrink-0 h-fit flex flex-col gap-[14px] justify-start items-center">
+                    <div data-pencil-name="sq" class="box-border w-[4px] h-[4px] shrink-0 bg-[#131211] rounded-[2px]">
+                    </div>
+                    <div data-pencil-name="n"
+                        class="text-[10px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        sp-1
+                    </div>
+                    <div data-pencil-name="v"
+                        class="text-[10px]/[normal] box-border text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        4px
+                    </div>
+                </div>
+                <div data-pencil-name="S sp-2"
+                    class="box-border w-fit shrink-0 h-fit flex flex-col gap-[14px] justify-start items-center">
+                    <div data-pencil-name="sq" class="box-border w-[8px] h-[8px] shrink-0 bg-[#131211] rounded-[4px]">
+                    </div>
+                    <div data-pencil-name="n"
+                        class="text-[10px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        sp-2
+                    </div>
+                    <div data-pencil-name="v"
+                        class="text-[10px]/[normal] box-border text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        8px
+                    </div>
+                </div>
+                <div data-pencil-name="S sp-3"
+                    class="box-border w-fit shrink-0 h-fit flex flex-col gap-[14px] justify-start items-center">
+                    <div data-pencil-name="sq" class="box-border w-[12px] h-[12px] shrink-0 bg-[#131211] rounded-[4px]">
+                    </div>
+                    <div data-pencil-name="n"
+                        class="text-[10px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        sp-3
+                    </div>
+                    <div data-pencil-name="v"
+                        class="text-[10px]/[normal] box-border text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        12px
+                    </div>
+                </div>
+                <div data-pencil-name="S sp-4"
+                    class="box-border w-fit shrink-0 h-fit flex flex-col gap-[14px] justify-start items-center">
+                    <div data-pencil-name="sq" class="box-border w-[16px] h-[16px] shrink-0 bg-[#131211] rounded-[4px]">
+                    </div>
+                    <div data-pencil-name="n"
+                        class="text-[10px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        sp-4
+                    </div>
+                    <div data-pencil-name="v"
+                        class="text-[10px]/[normal] box-border text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        16px
+                    </div>
+                </div>
+                <div data-pencil-name="S sp-5"
+                    class="box-border w-fit shrink-0 h-fit flex flex-col gap-[14px] justify-start items-center">
+                    <div data-pencil-name="sq" class="box-border w-[20px] h-[20px] shrink-0 bg-[#131211] rounded-[4px]">
+                    </div>
+                    <div data-pencil-name="n"
+                        class="text-[10px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        sp-5
+                    </div>
+                    <div data-pencil-name="v"
+                        class="text-[10px]/[normal] box-border text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        20px
+                    </div>
+                </div>
+                <div data-pencil-name="S sp-6"
+                    class="box-border w-fit shrink-0 h-fit flex flex-col gap-[14px] justify-start items-center">
+                    <div data-pencil-name="sq" class="box-border w-[24px] h-[24px] shrink-0 bg-[#131211] rounded-[4px]">
+                    </div>
+                    <div data-pencil-name="n"
+                        class="text-[10px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        sp-6
+                    </div>
+                    <div data-pencil-name="v"
+                        class="text-[10px]/[normal] box-border text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        24px
+                    </div>
+                </div>
+                <div data-pencil-name="S sp-7"
+                    class="box-border w-fit shrink-0 h-fit flex flex-col gap-[14px] justify-start items-center">
+                    <div data-pencil-name="sq" class="box-border w-[32px] h-[32px] shrink-0 bg-[#131211] rounded-[4px]">
+                    </div>
+                    <div data-pencil-name="n"
+                        class="text-[10px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        sp-7
+                    </div>
+                    <div data-pencil-name="v"
+                        class="text-[10px]/[normal] box-border text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        32px
+                    </div>
+                </div>
+                <div data-pencil-name="S sp-8"
+                    class="box-border w-fit shrink-0 h-fit flex flex-col gap-[14px] justify-start items-center">
+                    <div data-pencil-name="sq" class="box-border w-[40px] h-[40px] shrink-0 bg-[#131211] rounded-[4px]">
+                    </div>
+                    <div data-pencil-name="n"
+                        class="text-[10px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        sp-8
+                    </div>
+                    <div data-pencil-name="v"
+                        class="text-[10px]/[normal] box-border text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        40px
+                    </div>
+                </div>
+                <div data-pencil-name="S sp-9"
+                    class="box-border w-fit shrink-0 h-fit flex flex-col gap-[14px] justify-start items-center">
+                    <div data-pencil-name="sq" class="box-border w-[48px] h-[48px] shrink-0 bg-[#131211] rounded-[4px]">
+                    </div>
+                    <div data-pencil-name="n"
+                        class="text-[10px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        sp-9
+                    </div>
+                    <div data-pencil-name="v"
+                        class="text-[10px]/[normal] box-border text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        48px
+                    </div>
+                </div>
+                <div data-pencil-name="S sp-10"
+                    class="box-border w-fit shrink-0 h-fit flex flex-col gap-[14px] justify-start items-center">
+                    <div data-pencil-name="sq" class="box-border w-[64px] h-[64px] shrink-0 bg-[#131211] rounded-[4px]">
+                    </div>
+                    <div data-pencil-name="n"
+                        class="text-[10px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        sp-10
+                    </div>
+                    <div data-pencil-name="v"
+                        class="text-[10px]/[normal] box-border text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        64px
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div data-pencil-name="Use Group"
+            class="box-border w-full h-fit shrink-0 flex flex-row gap-[16px] justify-start items-start">
+            <div data-pencil-name="Recipe COMPACT · 12"
+                class="box-border w-[300px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-start bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[22px]">
+                <div data-pencil-name="inner"
+                    class="box-border w-[276px] h-[110px] shrink-0 flex flex-row gap-0 p-[12px] justify-start items-start bg-[#F6F5F1] rounded-[14px]">
+                    <div data-pencil-name="blk"
+                        class="box-border [flex:1_1_0] h-fit flex flex-row gap-[8px] p-[4px] justify-start items-start bg-[#FFFFFF] rounded-[10px]">
+                        <div data-pencil-name="bar"
+                            class="box-border w-[34px] shrink-0 h-[34px] bg-[#131211] rounded-[10px]"></div>
+                        <div data-pencil-name="ln"
+                            class="box-border w-[70px] shrink-0 h-[10px] flex flex-row gap-0 justify-start items-start bg-[#6E6C66] rounded-[5px]">
+                        </div>
+                    </div>
+                </div>
+                <div data-pencil-name="nm"
+                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[1px] text-left [white-space:nowrap]">
+                    COMPACT · 12
+                </div>
+                <div data-pencil-name="us"
+                    class="text-[11.5px]/[normal] box-border text-[#A29F99] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    12px dentro de chips y badges
+                </div>
+            </div>
+            <div data-pencil-name="Recipe CARD · 20"
+                class="box-border w-[300px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-start bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[22px]">
+                <div data-pencil-name="inner"
+                    class="box-border w-[260px] h-[110px] shrink-0 flex flex-row gap-0 p-[20px] justify-start items-start bg-[#F6F5F1] rounded-[14px]">
+                    <div data-pencil-name="blk"
+                        class="box-border [flex:1_1_0] h-fit flex flex-row gap-[8px] p-[4px] justify-start items-start bg-[#FFFFFF] rounded-[10px]">
+                        <div data-pencil-name="bar"
+                            class="box-border w-[34px] shrink-0 h-[34px] bg-[#131211] rounded-[10px]"></div>
+                        <div data-pencil-name="ln"
+                            class="box-border w-[70px] shrink-0 h-[10px] flex flex-row gap-0 justify-start items-start bg-[#6E6C66] rounded-[5px]">
+                        </div>
+                    </div>
+                </div>
+                <div data-pencil-name="nm"
+                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[1px] text-left [white-space:nowrap]">
+                    CARD · 20
+                </div>
+                <div data-pencil-name="us"
+                    class="text-[11.5px]/[normal] box-border text-[#A29F99] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    20px en tarjetas de listado
+                </div>
+            </div>
+            <div data-pencil-name="Recipe SECTION · 32"
+                class="box-border w-[300px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-start bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[22px]">
+                <div data-pencil-name="inner"
+                    class="box-border w-[236px] h-[110px] shrink-0 flex flex-row gap-0 p-[32px] justify-start items-start bg-[#F6F5F1] rounded-[14px]">
+                    <div data-pencil-name="blk"
+                        class="box-border [flex:1_1_0] h-fit flex flex-row gap-[8px] p-[4px] justify-start items-start bg-[#FFFFFF] rounded-[10px]">
+                        <div data-pencil-name="bar"
+                            class="box-border w-[34px] shrink-0 h-[34px] bg-[#131211] rounded-[10px]"></div>
+                        <div data-pencil-name="ln"
+                            class="box-border w-[70px] shrink-0 h-[10px] flex flex-row gap-0 justify-start items-start bg-[#6E6C66] rounded-[5px]">
+                        </div>
+                    </div>
+                </div>
+                <div data-pencil-name="nm"
+                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[1px] text-left [white-space:nowrap]">
+                    SECTION · 32
+                </div>
+                <div data-pencil-name="us"
+                    class="text-[11.5px]/[normal] box-border text-[#A29F99] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    32px en paneles y bloques
+                </div>
+            </div>
+        </div>
+        <div data-pencil-name="Radius Group"
+            class="box-border w-full h-fit shrink-0 flex flex-col gap-[12px] justify-start items-start">
+            <div data-pencil-name="K"
+                class="box-border w-full h-fit shrink-0 flex flex-row gap-[10px] justify-start items-center">
+                <div data-pencil-name="bar" class="box-border w-[34px] shrink-0 h-[6px] bg-[#FF5A1F] rounded-[3px]">
+                </div>
+                <div data-pencil-name="lbl"
+                    class="text-[12px]/[normal] box-border text-[#131211] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[1px] text-left [white-space:nowrap]">
+                    CORNER RADIUS — DE XS A PILL
+                </div>
+            </div>
+            <div data-pencil-name="Radius Card"
+                class="box-border w-full h-fit shrink-0 flex flex-row gap-[40px] p-[20px] justify-start items-end bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[24px]">
+                <div data-pencil-name="RD XS · 6px"
+                    class="box-border w-fit shrink-0 h-fit flex flex-col gap-[14px] justify-start items-center">
+                    <div data-pencil-name="sq"
+                        class="box-border w-[84px] h-[84px] shrink-0 bg-[#FFFFFF] [border:2px_solid_#131211] rounded-[6px]">
+                    </div>
+                    <div data-pencil-name="n"
+                        class="text-[10px]/[normal] box-border text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        XS · 6px
+                    </div>
+                </div>
+                <div data-pencil-name="RD SM · 10px"
+                    class="box-border w-fit shrink-0 h-fit flex flex-col gap-[14px] justify-start items-center">
+                    <div data-pencil-name="sq"
+                        class="box-border w-[84px] h-[84px] shrink-0 bg-[#FFFFFF] [border:2px_solid_#131211] rounded-[10px]">
+                    </div>
+                    <div data-pencil-name="n"
+                        class="text-[10px]/[normal] box-border text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        SM · 10px
+                    </div>
+                </div>
+                <div data-pencil-name="RD MD · 14px"
+                    class="box-border w-fit shrink-0 h-fit flex flex-col gap-[14px] justify-start items-center">
+                    <div data-pencil-name="sq"
+                        class="box-border w-[84px] h-[84px] shrink-0 bg-[#FFFFFF] [border:2px_solid_#131211] rounded-[14px]">
+                    </div>
+                    <div data-pencil-name="n"
+                        class="text-[10px]/[normal] box-border text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        MD · 14px
+                    </div>
+                </div>
+                <div data-pencil-name="RD LG · 20px"
+                    class="box-border w-fit shrink-0 h-fit flex flex-col gap-[14px] justify-start items-center">
+                    <div data-pencil-name="sq"
+                        class="box-border w-[84px] h-[84px] shrink-0 bg-[#FFFFFF] [border:2px_solid_#131211] rounded-[20px]">
+                    </div>
+                    <div data-pencil-name="n"
+                        class="text-[10px]/[normal] box-border text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        LG · 20px
+                    </div>
+                </div>
+                <div data-pencil-name="RD XL · 28px"
+                    class="box-border w-fit shrink-0 h-fit flex flex-col gap-[14px] justify-start items-center">
+                    <div data-pencil-name="sq"
+                        class="box-border w-[84px] h-[84px] shrink-0 bg-[#FFFFFF] [border:2px_solid_#131211] rounded-[28px]">
+                    </div>
+                    <div data-pencil-name="n"
+                        class="text-[10px]/[normal] box-border text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        XL · 28px
+                    </div>
+                </div>
+                <div data-pencil-name="RD 2XL · 40px"
+                    class="box-border w-fit shrink-0 h-fit flex flex-col gap-[14px] justify-start items-center">
+                    <div data-pencil-name="sq"
+                        class="box-border w-[84px] h-[84px] shrink-0 bg-[#FFFFFF] [border:2px_solid_#131211] rounded-[40px]">
+                    </div>
+                    <div data-pencil-name="n"
+                        class="text-[10px]/[normal] box-border text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        2XL · 40px
+                    </div>
+                </div>
+                <div data-pencil-name="RD PILL"
+                    class="box-border w-fit shrink-0 h-fit flex flex-col gap-[14px] justify-start items-center">
+                    <div data-pencil-name="p"
+                        class="box-border w-[170px] h-[58px] shrink-0 flex flex-row gap-0 justify-center items-start bg-[#131211] rounded-[999px]">
+                        <div data-pencil-name="t"
+                            class="text-[14px]/[normal] box-border text-[#FFFFFF] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                            Pill · 999
+                        </div>
+                    </div>
+                    <div data-pencil-name="n"
+                        class="text-[10px]/[normal] box-border text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        FULL / PILL
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div data-pencil-name="Radius Demo"
+            class="box-border w-full h-fit shrink-0 [box-shadow:0px_3px_18px_#13121110] flex flex-row gap-[40px] p-[20px] justify-start items-center bg-[#FFFFFF] rounded-[28px]">
+            <div data-pencil-name="demo card"
+                class="box-border w-[300px] shrink-0 h-fit flex flex-col gap-[12px] p-[20px] justify-start items-start bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[24px]">
+                <div data-pencil-name="r1"
+                    class="box-border w-full h-fit shrink-0 flex flex-row gap-[8px] justify-start items-center">
+                    <div data-pencil-name="d" class="box-border w-[10px] shrink-0 h-[10px] bg-[#12B886] rounded-full">
+                    </div>
+                    <div data-pencil-name="t"
+                        class="text-[15px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                        Audi A3 · 2023
+                    </div>
+                </div>
+                <div data-pencil-name="ln1"
+                    class="box-border w-[260px] h-[10px] shrink-0 flex flex-row gap-0 justify-start items-start bg-[#E5E4DF] rounded-[5px]">
+                </div>
+                <div data-pencil-name="ln2"
+                    class="box-border w-[200px] h-[10px] shrink-0 flex flex-row gap-0 justify-start items-start bg-[#E5E4DF] rounded-[5px]">
+                </div>
+                <div data-pencil-name="p"
+                    class="box-border w-fit h-[40px] shrink-0 flex flex-row gap-0 p-[14px] justify-center items-start bg-[#131211] rounded-[999px]">
+                    <div data-pencil-name="t"
+                        class="text-[13px]/[normal] box-border text-[#FFFFFF] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                        Reservar
+                    </div>
+                </div>
+            </div>
+            <div data-pencil-name="note"
+                class="text-[14px]/[22px] box-border w-[430px] shrink-0 text-[#6E6C66] font-[Inter,system-ui,sans-serif] font-normal text-left">
+                La combinación ganadora: tarjetas 20–24px, inputs 16px, botones pill y badges pill. Todo
+                el sistema comparte un mismo feeling táctil.
+            </div>
+        </div>
+        <div data-pencil-name="rad cap"
+            class="text-[11px]/[normal] box-border w-full text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left">
+            Nunca radios menores a 6px. Los contenedores grandes (cards, paneles, hojas) usan 20–28px.
+        </div>
+    </div>
+</body>
+
+</html>
