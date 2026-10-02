@@ -10,5 +10,7 @@
     "paths": {
       "@/*": ["src/*"]
     }
-  }
+  },
+  "include": ["src/**/*", "src/env.d.ts", ".astro/types.d.ts"],
+  "files": ["src/env.d.ts"]
 }
