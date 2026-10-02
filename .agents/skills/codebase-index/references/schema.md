@@ -1,68 +1,68 @@
-# Especificación y Esquema del Manifiesto `INDEX.md`
+# `INDEX.md` Canonical Schema Specification
 
-Este documento define el contrato formal que debe cumplir cada archivo `INDEX.md` generado en el repositorio.
+This document defines the formal schema and structural contract required for all `INDEX.md` files managed by `codebase-index`.
 
 ---
 
-## 1. Estructura Canónica
+## 1. Canonical Markdown Template
 
-Cada `INDEX.md` debe respetar estrictamente las siguientes secciones:
+Every directory index must adhere strictly to the following sections:
 
 ```markdown
-# Índice: `<ruta-relativa>`
+# Index: `<relative-path>`
 
-**Responsabilidad**: <1-2 oraciones explicando el propósito del directorio y su frontera de dominio>
-**Capa Arquitectónica**: <Capa técnica según Clean Architecture o DDD>
+**Responsibility**: <1-2 sentences stating the core domain purpose and architectural boundaries>
+**Architectural Layer**: <Domain | Application | Infrastructure | Presentation | Shared>
 
-## Subdirectorios y Módulos Hijos
+## Subdirectories & Child Modules
 
-| Subdirectorio | Responsabilidad | Índice |
+| Subdirectory | Responsibility | Index |
 | :--- | :--- | :--- |
-| [`nombre/`](./nombre/) | Propósito del submódulo | [INDEX.md](./nombre/INDEX.md) |
+| [`child/`](./child/) | Purpose of child sub-module | [INDEX.md](./child/INDEX.md) |
 
-## Manifiesto de Archivos
+## File Manifest
 
-| Archivo | Rol / Patrón | Exports Públicos / API | Dependencias Clave |
+| File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
-| [`archivo.ts`](./archivo.ts) | <Rol funcional/patrón> | <Funciones, tipos o clases principales> | <Librerías o módulos externos> |
+| [`service.ts`](./service.ts) | <Architectural pattern> | <Public functions, types, classes> | <Couplings/libraries> |
 
-## Invariantes y Reglas del Directorio
+## Invariants & Directory Rules
 
-- <Regla de frontera o convención arquitectónica>
-- <Restricción de dependencias o estado>
+- <Architectural constraint or boundary restriction>
+- <Security, state, or framework invariant>
 
 <!-- Reconciled by codebase-index -->
 ```
 
 ---
 
-## 2. Definición de Campos y Columnas
+## 2. Field Definitions
 
-### Encabezado
-- **Ruta Relativa**: Ruta desde la raíz del proyecto (e.g. `src/actions/` o `/` para la raíz).
-- **Responsabilidad**: No una descripción genérica como "contiene archivos ts", sino el propósito del dominio (e.g. *"Gestión de la capa de orquestación de casos de uso y mutaciones del lado del servidor"*).
-- **Capa Arquitectónica**: 
-  - `Domain` (Entidades de negocio puras, reglas centrales)
-  - `Application` (Casos de uso, Server Actions, orquestación)
-  - `Infrastructure` (Base de datos Drizzle/D1, clientes externos, servicios Cloudflare)
-  - `Presentation` (Páginas Astro, componentes visuales, layouts)
-  - `Shared / Cross-Cutting` (Utilidades comunes, tipos transversales)
+### Header
+- **Relative Path**: Path from project root (e.g., `src/services/` or `/` for root).
+- **Responsibility**: Semantic purpose within the system, not a generic file listing (e.g., *"Handles user authentication, JWT session verification, and OAuth providers"*).
+- **Architectural Layer**:
+  - `Domain` (Core business entities, pure business rules)
+  - `Application` (Use cases, server actions, orchestrators)
+  - `Infrastructure` (Database schemas, external API clients, workers)
+  - `Presentation` (UI components, pages, design layouts)
+  - `Shared` (Cross-cutting pure utilities, shared types)
 
-### Manifiesto de Archivos
-1. **Archivo**: Nombre del archivo con enlace relativo Markdown (`[`nombre.ts`](./nombre.ts)`).
-2. **Rol / Patrón**: Patrón arquitectónico o funcional (e.g., `Server Action`, `Drizzle Relational Schema`, `Factory / DB Client`, `Astro Island`, `Pure Utility`, `Type Definition`).
-3. **Exports Públicos / API**: Lista concisa de símbolos exportados que otros módulos consumen (`getVehicles()`, `VehicleSchema`, `useAuth()`). No duplicar código ni tipos internos.
-4. **Dependencias Clave**: Módulos externos o acoplamientos importantes (`drizzle-orm`, `zod`, `cloudflare:workers`).
+### File Manifest
+- **File**: Relative markdown link to the file (`[`filename.ts`](./filename.ts)`).
+- **Role / Pattern**: Pattern identifier (e.g., `Server Action`, `Drizzle Schema`, `Factory`, `React Island`, `Pure Utility`).
+- **Public Exports / API**: Concise list of externally consumed symbols (`createUser()`, `SessionToken`, `authMiddleware`). Never dump private internal functions or implementation code.
+- **Key Dependencies**: Crucial third-party libraries or internal module couplings (`drizzle-orm`, `zod`, `@cloudflare/workers`).
 
-### Invariantes y Reglas
-Obligaciones técnicas del directorio. Ejemplos:
-- *"Prohibido importar `@cloudflare/workers` en componentes de presentación del cliente."*
-- *"Todas las funciones deben retornar tipos `Result<T, E>` validados con Zod."*
+### Invariants & Rules
+Enforceable architectural boundaries. Examples:
+- *"Client components must never directly import database clients."*
+- *"All mutations must be validated with Zod schemas."*
 
 ---
 
-## 3. Principio de Brevedad y Alta Densidad Informativa
+## 3. High Information Density & Brevity Rules
 
-- Los índices deben tener una longitud óptima (típicamente entre 20 y 80 líneas).
-- Nunca pegar código fuente dentro del `INDEX.md`.
-- El objetivo del índice es permitir a un agente o desarrollador saber **qué hace cada archivo y cuál es su contrato público sin tener que abrir el archivo**.
+- Indices must remain compact (typically 20 to 70 lines).
+- Never paste source code or function bodies into an `INDEX.md`.
+- The sole purpose of the index is to allow an AI agent or engineer to immediately understand **what each file does and what its contract is without opening the file**.

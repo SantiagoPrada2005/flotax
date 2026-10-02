@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-index_manager.py - Deterministic Codebase Index Manager & Auditor.
+index_manager.py - Universal Codebase Index Manager & Auditor.
 
-Manages, audits, and scaffolds INDEX.md files across repository directories
+Automates, audits, and scaffolds INDEX.md files across repository directories
 to guarantee token-efficient, hallucination-free LLM navigation and zero-drift maintenance.
 """
 
@@ -29,6 +29,11 @@ IGNORED_DIRS = {
     "build",
     "coverage",
     ".turbo",
+    ".venv",
+    "venv",
+    "target",
+    "bin",
+    "obj",
     "design-assets",
     "exports"
 }
@@ -40,8 +45,12 @@ IGNORED_FILES = {
     "pnpm-lock.yaml",
     "package-lock.json",
     "yarn.lock",
+    "poetry.lock",
+    "Cargo.lock",
     ".gitignore",
-    ".env"
+    ".env",
+    ".env.local",
+    ".env.example"
 }
 
 # Recognized code/asset extensions
@@ -53,15 +62,17 @@ RECOGNIZED_EXTENSIONS = {
     ".md", ".mdx",
     ".sql", ".graphql", ".gql",
     ".py", ".sh", ".bash",
+    ".go", ".rs", ".java", ".kt", ".rb", ".php",
     ".pen"
 }
 
 INDEX_FILENAME = "INDEX.md"
 
-def is_ignored_dir(path: Path, root: Path) -> bool:
+def is_ignored_dir(path: Path, root: Path, custom_ignored: Set[str] = None) -> bool:
+    ignored = IGNORED_DIRS if custom_ignored is None else (IGNORED_DIRS | custom_ignored)
     rel = path.relative_to(root)
     for part in rel.parts:
-        if part in IGNORED_DIRS or (part.startswith(".") and part != "."):
+        if part in ignored or (part.startswith(".") and part != "."):
             return True
     return False
 
@@ -84,15 +95,12 @@ def get_dir_files_and_subs(dir_path: Path) -> Tuple[List[Path], List[Path]]:
 
 def extract_filename_from_cell(cell: str) -> Optional[str]:
     """Extracts clean filename from markdown link or backticked text."""
-    # Pattern 1: [`file.ts`](...) or [file.ts](...)
     m = re.search(r"\[`?([^`\]\(\)]+)`?\](?:\([^\)]+\))?", cell)
     if m:
         return m.group(1).strip()
-    # Pattern 2: `file.ts`
     m = re.search(r"`([^`]+)`", cell)
     if m:
         return m.group(1).strip()
-    # Pattern 3: raw filename
     cleaned = cell.strip()
     if cleaned and not cleaned.startswith("-") and not cleaned.startswith("*"):
         return cleaned
@@ -120,17 +128,14 @@ def parse_index_file(index_path: Path) -> Dict[str, Dict[str, str]]:
             continue
         
         if in_manifest and line_clean.startswith("|"):
-            # skip table dividers
             if "---" in line_clean:
                 continue
             cells = [c.strip() for c in line_clean.split("|")]
-            # Format: '' | col1 | col2 | col3 | col4 | ''
             if len(cells) >= 5:
                 col1 = cells[1]
                 fname = extract_filename_from_cell(col1)
                 if not fname:
                     continue
-                # filter out table header
                 if fname.lower() in ("archivo", "file", "nombre"):
                     continue
                 entries[fname] = {
@@ -143,7 +148,7 @@ def parse_index_file(index_path: Path) -> Dict[str, Dict[str, str]]:
 def extract_metadata(index_path: Path) -> Dict[str, str]:
     """Extracts Responsibility and Layer from INDEX.md header if present."""
     res = {
-        "responsibility": "TODO: Definir la responsabilidad arquitectónica principal de este directorio.",
+        "responsibility": "TODO: Define core domain responsibility of this directory.",
         "layer": "TODO: (e.g. Domain | Application | Infrastructure | Presentation | Shared)"
     }
     if not index_path.exists():
@@ -156,9 +161,7 @@ def extract_metadata(index_path: Path) -> Dict[str, str]:
     if resp_match:
         res["responsibility"] = resp_match.group(1).strip()
         
-    layer_match = re.search(r"\*\*Capa(?: Arquitectónica)?\*\*:\s*([^\n]+)", content, re.IGNORECASE)
-    if not layer_match:
-        layer_match = re.search(r"\*\*Layer\*\*:\s*([^\n]+)", content, re.IGNORECASE)
+    layer_match = re.search(r"\*\*(?:Capa(?: Arquitectónica)?|(?:Architectural )?Layer)\*\*:\s*([^\n]+)", content, re.IGNORECASE)
     if layer_match:
         res["layer"] = layer_match.group(1).strip()
         
@@ -169,41 +172,48 @@ def infer_file_hints(file_path: Path) -> Dict[str, str]:
     name = file_path.name
     ext = file_path.suffix
     
-    role = "Módulo de soporte"
+    role = "Module / Utility"
     exports = "-"
     deps = "-"
     
     if ext == ".astro":
         if "layout" in str(file_path).lower():
-            role = "Layout estructural Astro"
+            role = "Astro Structural Layout"
         elif "pages" in str(file_path).lower():
-            role = "Página / Ruta de navegación"
+            role = "Page / Navigation Route"
         else:
-            role = "Componente UI Astro"
-        exports = "Template Astro"
-    elif ext in (".ts", ".js"):
+            role = "Astro UI Component"
+        exports = "Astro Template"
+    elif ext in (".ts", ".js", ".mjs"):
         if "action" in name.lower():
-            role = "Server Action / Caso de Uso"
+            role = "Server Action / Use Case"
             exports = name.split(".")[0]
         elif "schema" in name.lower():
-            role = "Definición de Esquema / Drizzle"
-            exports = "Tablas, Tipos Drizzle"
+            role = "Database Schema / Models"
+            exports = "Schema, Types"
         elif "client" in name.lower() or "db" in name.lower():
-            role = "Cliente de base de datos / Factory"
+            role = "Client Factory / Database Provider"
         elif "util" in name.lower() or "helper" in name.lower():
-            role = "Utilidades puras"
+            role = "Pure Utilities"
         elif "test" in name.lower() or "spec" in name.lower():
-            role = "Suite de pruebas"
+            role = "Test Suite"
         else:
-            role = "Módulo TypeScript"
+            role = "TypeScript / JavaScript Module"
+    elif ext == ".py":
+        if "test" in name.lower():
+            role = "Pytest Suite"
+        elif name == "__init__.py":
+            role = "Package Root / Exports"
+        else:
+            role = "Python Module"
     elif ext == ".sql":
-        role = "Migración / Script SQL"
-    elif ext == ".css":
-        role = "Estilos y diseño visual"
-    elif ext in (".json", ".jsonc"):
-        role = "Configuración declarativa"
+        role = "SQL Migration / Script"
+    elif ext in (".css", ".scss", ".sass"):
+        role = "Styles & Visual Tokens"
+    elif ext in (".json", ".jsonc", ".yaml", ".yml"):
+        role = "Configuration File"
     elif ext in (".md", ".mdx"):
-        role = "Documentación"
+        role = "Documentation"
 
     return {"role": role, "exports": exports, "deps": deps}
 
@@ -218,30 +228,28 @@ def scaffold_index(dir_path: Path, root: Path, force_overwrite: bool = False) ->
     display_title = str(rel_dir) if str(rel_dir) != "." else "/"
 
     lines = []
-    lines.append(f"# Índice: `{display_title}`\n")
-    lines.append(f"**Responsabilidad**: {existing_meta['responsibility']}")
-    lines.append(f"**Capa Arquitectónica**: {existing_meta['layer']}\n")
+    lines.append(f"# Index: `{display_title}`\n")
+    lines.append(f"**Responsibility**: {existing_meta['responsibility']}")
+    lines.append(f"**Architectural Layer**: {existing_meta['layer']}\n")
 
-    # Subdirectories section
     if subdirs:
-        lines.append("## Subdirectorios y Módulos Hijos\n")
-        lines.append("| Subdirectorio | Responsabilidad | Índice |")
+        lines.append("## Subdirectories & Child Modules\n")
+        lines.append("| Subdirectory | Responsibility | Index |")
         lines.append("| :--- | :--- | :--- |")
         for s in subdirs:
             s_index = s / INDEX_FILENAME
-            idx_link = f"[INDEX.md](./{s.name}/INDEX.md)" if s_index.exists() else "*(Sin índice)*"
+            idx_link = f"[INDEX.md](./{s.name}/INDEX.md)" if s_index.exists() else "*(No index)*"
             sub_meta = extract_metadata(s_index)
-            sub_resp = sub_meta["responsibility"] if s_index.exists() else f"Directorio `{s.name}`"
+            sub_resp = sub_meta["responsibility"] if s_index.exists() else f"Directory `{s.name}`"
             lines.append(f"| [`{s.name}/`](./{s.name}/) | {sub_resp} | {idx_link} |")
         lines.append("")
 
-    # Files section
-    lines.append("## Manifiesto de Archivos\n")
-    lines.append("| Archivo | Rol / Patrón | Exports Públicos / API | Dependencias Clave |")
+    lines.append("## File Manifest\n")
+    lines.append("| File | Role / Pattern | Public Exports / API | Key Dependencies |")
     lines.append("| :--- | :--- | :--- | :--- |")
 
     if not files:
-        lines.append("| *(Ninguno)* | - | - | - |")
+        lines.append("| *(None)* | - | - | - |")
     else:
         for f in files:
             fname = f.name
@@ -252,9 +260,9 @@ def scaffold_index(dir_path: Path, root: Path, force_overwrite: bool = False) ->
                 hints = infer_file_hints(f)
                 lines.append(f"| [`{fname}`](./{fname}) | {hints['role']} | {hints['exports']} | {hints['deps']} |")
     
-    lines.append("\n## Invariantes y Reglas del Directorio\n")
-    lines.append("- Todas las modificaciones a archivos de esta carpeta deben reflejarse en este índice.")
-    lines.append("- Mantener exports estrictamente tipados y respetar los límites de la capa arquitectónica.\n")
+    lines.append("\n## Invariants & Directory Rules\n")
+    lines.append("- All additions, deletions, or public API modifications must be reflected in this index.")
+    lines.append("- Maintain strict boundary encapsulation and domain layer separation.\n")
     lines.append("<!-- Reconciled by codebase-index -->")
 
     content = "\n".join(lines) + "\n"
@@ -270,42 +278,37 @@ def audit_project(root: Path, target_dirs: Optional[List[str]] = None) -> Tuple[
     """
     issues = []
     
-    # Priority directories that MUST have an INDEX.md if they exist
-    mandatory_roots = ["src", "src/actions", "src/db", "src/lib", "src/pages", "src/layouts", "docs", "design"]
+    # Priority directory names commonly representing architectural domains
+    candidate_roots = ["src", "app", "lib", "core", "pkg", "docs", "design", "api"]
 
-    # Gather all directories to check
     checked_dirs: Set[Path] = set()
 
-    for m in mandatory_roots:
-        p = root / m
+    for c in candidate_roots:
+        p = root / c
         if p.exists() and p.is_dir():
             checked_dirs.add(p)
 
-    # Walk repository
     for dirpath, dirnames, filenames in os.walk(root):
         dpath = Path(dirpath)
         if is_ignored_dir(dpath, root):
             dirnames.clear()
             continue
 
-        # Filter out ignored dirs in-place to prevent traversal
         dirnames[:] = [d for d in dirnames if d not in IGNORED_DIRS and not d.startswith(".")]
 
         files, subdirs = get_dir_files_and_subs(dpath)
         
-        # Rule: Any dir with >= 3 code/doc files or subdirs warrants an index
         if len(files) >= 3 or dpath == root:
             checked_dirs.add(dpath)
         elif (dpath / INDEX_FILENAME).exists():
             checked_dirs.add(dpath)
 
-    # Now verify each checked directory
     for dpath in sorted(checked_dirs):
         rel = dpath.relative_to(root)
         index_file = dpath / INDEX_FILENAME
 
         if not index_file.exists():
-            issues.append(f"[FALTA ÍNDICE] Directorio `{rel}/` no tiene `{INDEX_FILENAME}`.")
+            issues.append(f"[MISSING INDEX] Directory `{rel}/` has no `{INDEX_FILENAME}`.")
             continue
 
         existing_entries = parse_index_file(index_file)
@@ -313,15 +316,13 @@ def audit_project(root: Path, target_dirs: Optional[List[str]] = None) -> Tuple[
         disk_file_names = {f.name for f in disk_files}
         indexed_file_names = set(existing_entries.keys())
 
-        # Check for unindexed files on disk
         unindexed = disk_file_names - indexed_file_names
         for u in sorted(unindexed):
-            issues.append(f"[DESINCRONIZADO] Archivo `{rel}/{u}` no está registrado en `{rel}/{INDEX_FILENAME}`.")
+            issues.append(f"[DESYNCHRONIZED] File `{rel}/{u}` is not registered in `{rel}/{INDEX_FILENAME}`.")
 
-        # Check for orphan files in index
         orphans = indexed_file_names - disk_file_names
         for o in sorted(orphans):
-            issues.append(f"[ARCHIVO HUÉRFANO] Entrada `{o}` en `{rel}/{INDEX_FILENAME}` ya no existe en disco.")
+            issues.append(f"[ORPHAN ENTRY] Entry `{o}` in `{rel}/{INDEX_FILENAME}` does not exist on disk.")
 
     success = len(issues) == 0
     return success, issues
@@ -343,25 +344,21 @@ def list_indices(root: Path) -> List[Tuple[Path, str, str]]:
     return sorted(results, key=lambda x: str(x[0]))
 
 def main():
-    parser = argparse.ArgumentParser(description="Gestor y Auditor de Índices INDEX.md")
+    parser = argparse.ArgumentParser(description="Universal Codebase Index Manager & Auditor")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    # Audit command
-    audit_parser = subparsers.add_parser("audit", help="Auditar consistencia de índices en el proyecto")
-    audit_parser.add_argument("--root", default=".", help="Ruta raíz del proyecto")
+    audit_parser = subparsers.add_parser("audit", help="Audit index parity and completeness across repository")
+    audit_parser.add_argument("--root", default=".", help="Root repository directory")
 
-    # Scaffold command
-    scaffold_parser = subparsers.add_parser("scaffold", help="Crear o actualizar INDEX.md en una carpeta")
-    scaffold_parser.add_argument("path", help="Ruta del directorio a indexar")
-    scaffold_parser.add_argument("--root", default=".", help="Ruta raíz del proyecto")
+    scaffold_parser = subparsers.add_parser("scaffold", help="Generate or reconcile INDEX.md in a directory")
+    scaffold_parser.add_argument("path", help="Directory path to index")
+    scaffold_parser.add_argument("--root", default=".", help="Root repository directory")
 
-    # Sync-all command
-    sync_parser = subparsers.add_parser("sync-all", help="Sincronizar todos los INDEX.md existentes sin perder descripciones")
-    sync_parser.add_argument("--root", default=".", help="Ruta raíz del proyecto")
+    sync_parser = subparsers.add_parser("sync-all", help="Re-sync all existing INDEX.md files in repository")
+    sync_parser.add_argument("--root", default=".", help="Root repository directory")
 
-    # Tree command
-    tree_parser = subparsers.add_parser("tree", help="Mostrar mapa arquitectónico de índices")
-    tree_parser.add_argument("--root", default=".", help="Ruta raíz del proyecto")
+    tree_parser = subparsers.add_parser("tree", help="Display architectural sitemap of all indexed modules")
+    tree_parser.add_argument("--root", default=".", help="Root repository directory")
 
     args = parser.parse_args()
     root = Path(args.root).resolve()
@@ -369,41 +366,41 @@ def main():
     if args.command == "audit":
         success, issues = audit_project(root)
         if success:
-            print("✅ Auditoría exitosa: Todos los directorios requeridos tienen INDEX.md y están 100% sincronizados.")
+            print("✅ Audit successful: All required directories have INDEX.md and are 100% in sync.")
             sys.exit(0)
         else:
-            print(f"❌ Se encontraron {len(issues)} discrepancia(s) en los índices:")
+            print(f"❌ Found {len(issues)} index discrepanc{'ies' if len(issues) > 1 else 'y'}:")
             for issue in issues:
                 print(f"  - {issue}")
-            print("\nAcción requerida: Ejecuta `python .agents/skills/codebase-index/scripts/index_manager.py scaffold <dir>` para corregir.")
+            print("\nAction required: Run `python scripts/index_manager.py scaffold <dir>` to reconcile.")
             sys.exit(1)
 
     elif args.command == "scaffold":
         target = Path(args.path).resolve()
         if not target.exists() or not target.is_dir():
-            print(f"Error: La ruta `{args.path}` no es un directorio válido.")
+            print(f"Error: Path `{args.path}` is not a valid directory.")
             sys.exit(1)
         scaffold_index(target, root)
         rel = target.relative_to(root)
-        print(f"✅ INDEX.md generado/actualizado exitosamente en `{rel}/INDEX.md`.")
+        print(f"✅ INDEX.md created/updated successfully at `{rel}/INDEX.md`.")
 
     elif args.command == "sync-all":
         indices = list_indices(root)
-        print(f"Sincronizando {len(indices)} índices...")
+        print(f"Syncing {len(indices)} index files...")
         for rel_path, _, _ in indices:
             d = root / rel_path
             scaffold_index(d, root)
-            print(f"  - Sincronizado `{rel_path}/INDEX.md`")
-        print("✅ Sincronización completa.")
+            print(f"  - Synced `{rel_path}/INDEX.md`")
+        print("✅ Sync complete.")
 
     elif args.command == "tree":
         indices = list_indices(root)
-        print("🗺️  Mapa Arquitectónico de Índices:\n")
+        print("🗺️  Architectural Index Map:\n")
         for rel_path, resp, layer in indices:
             display = "/" if str(rel_path) == "." else f"/{rel_path}"
             print(f"📁 {display}")
-            print(f"   ├─ Capa: {layer}")
-            print(f"   └─ Propósito: {resp}\n")
+            print(f"   ├─ Layer: {layer}")
+            print(f"   └─ Purpose: {resp}\n")
 
 if __name__ == "__main__":
     main()

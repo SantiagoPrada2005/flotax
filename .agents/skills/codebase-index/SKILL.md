@@ -1,21 +1,44 @@
 ---
 name: codebase-index
-description: Enforces structured directory indexing via INDEX.md, hierarchical navigation, and deterministic index maintenance across the codebase. ALWAYS activate and follow this skill when exploring the project, searching for existing features or symbols, planning architectural changes, adding, modifying, moving, or deleting files, or auditing project organization. Guarantees token-efficient navigation and zero-drift documentation.
+description: Enforces structured directory indexing via INDEX.md, hierarchical navigation, and deterministic index maintenance across the codebase. Use when exploring codebases, locating functions or symbols without reading raw files, planning changes, adding, modifying, moving, or deleting files, auditing repository organization, or preventing token exhaustion during long agent sessions. Triggers on 'explore codebase', 'where is', 'find function', 'locate file', 'codebase map', 'save tokens', 'audit index', 'add file', 'remove file', 'codebase structure'.
 license: MIT
 metadata:
-  version: "1.0.0"
-  author: "Movix Architecture Team"
+  version: "1.1.0"
+  author: "Santiago Prada"
 ---
 
 # Codebase Index & Hierarchical Navigation Guide
 
-This skill establishes a strict **Index-First Architecture** for navigating, documenting, and maintaining the codebase. By decoupling discovery from raw file reading, agents locate functionality in seconds while consuming up to **90% fewer tokens** and eliminating hallucinated imports.
+This skill establishes an **Index-First Architecture** for navigating, documenting, and maintaining codebases. By decoupling discovery from raw file reading, AI agents locate functionality in seconds while consuming up to **85%–90% fewer tokens** and eliminating hallucinated imports.
+
+---
+
+## 🎯 When to Use This Skill
+
+Activate and follow this skill whenever you encounter any of the following scenarios:
+
+| Scenario / Intent | What the Agent Must Do |
+| :--- | :--- |
+| **Exploration & Discovery** *(“Where is the auth logic?”, “How are bookings handled?”)* | Consult the nearest `INDEX.md` to pinpoint target files before opening raw code. Never run full-repo greps blindly. |
+| **Adding New Files or Modules** *(“Create a payment service”, “Add a new route”)* | Scaffold or add the new file to the folder's `INDEX.md` manifest with its role, public exports, and dependencies. |
+| **Deleting or Moving Files** *(“Remove legacy auth”, “Move utils to lib”)* | Immediately update or remove the file's entry in the corresponding `INDEX.md` to prevent ghost references. |
+| **Modifying Public Contracts / APIs** *(“Add a parameter to login()”, “Export new helper”)* | Reconcile the `Public Exports / API` column in `INDEX.md` in the exact same task. |
+| **Pre-Flight / Task Completion** *(“I'm done with the refactor”)* | Run `python3 scripts/index_manager.py audit` before concluding to verify zero drift. |
+| **Preventing Token Exhaustion** *(Long agent sessions, rate-limit constraints)* | Use indices as high-density semantic caches instead of dumping thousands of source lines into context. |
+
+---
+
+## 🚫 When NOT to Use This Skill
+
+- **Direct In-File Edits**: When the exact file and lines to modify are already identified and open in context.
+- **Throwaway Scratch Scripts**: One-off scripts in temporary directories (`/tmp`, scratchpads) that are not part of the committed architecture.
+- **Single-File Micro-Projects**: Trivial repositories with fewer than 5 total files where folder hierarchy does not exist.
 
 ---
 
 ## 1. Core Principles & Why This Matters
 
-1. **Information Density over File Traversal**:
+1. **Information Density over Blind Traversal**:
    Reading five 300-line source files costs ~6,000 tokens. Reading one well-maintained 40-line `INDEX.md` costs ~150 tokens and provides exact exports, patterns, and architectural responsibilities upfront.
 2. **Deterministic Parity (Zero-Drift)**:
    An index that does not match disk reality is worse than no index. Any file addition, deletion, or public contract change **must be reconciled in the same task**.
@@ -26,7 +49,7 @@ This skill establishes a strict **Index-First Architecture** for navigating, doc
 
 ## 2. The Index-First Navigation Protocol
 
-Whenever you are asked to implement a feature, fix a bug, or understand how something works:
+Whenever an agent or developer is tasked with implementing a feature, fixing a bug, or understanding the architecture:
 
 ```
 [Start Task]
@@ -59,47 +82,42 @@ Read ONLY that file     Traverse to Child        Proceed to create file
 Use the bundled Python tool to automatically inspect the directory, identify files, and preserve existing documentation:
 
 ```bash
-python3 .agents/skills/codebase-index/scripts/index_manager.py scaffold <path-to-directory>
+python3 scripts/index_manager.py scaffold <path-to-directory>
 ```
 
 ### Canonical Schema
-Every `INDEX.md` must follow this structure (see [schema.md](./references/schema.md) for full details):
+Every `INDEX.md` must follow this structure (see [references/schema.md](./references/schema.md) for full details):
 
 ```markdown
-# Índice: `<directorio>`
+# Index: `<directory>`
 
-**Responsabilidad**: <Propósito del directorio y frontera de dominio>
-**Capa Arquitectónica**: <Domain | Application | Infrastructure | Presentation | Shared>
+**Responsibility**: <Directory purpose and domain boundary>
+**Architectural Layer**: <Domain | Application | Infrastructure | Presentation | Shared>
 
-## Subdirectorios y Módulos Hijos
+## Subdirectories & Child Modules
 
-| Subdirectorio | Responsabilidad | Índice |
+| Subdirectory | Responsibility | Index |
 | :--- | :--- | :--- |
-| [`submodulo/`](./submodulo/) | Propósito del submódulo | [INDEX.md](./submodulo/INDEX.md) |
+| [`submodule/`](./submodule/) | Purpose of sub-module | [INDEX.md](./submodule/INDEX.md) |
 
-## Manifiesto de Archivos
+## File Manifest
 
-| Archivo | Rol / Patrón | Exports Públicos / API | Dependencias Clave |
+| File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
-| [`servicio.ts`](./servicio.ts) | Caso de uso / Orquestador | `crearReserva()`, `cancelarReserva()` | `drizzle-orm`, `zod` |
+| [`service.ts`](./service.ts) | Use Case / Orchestrator | `createOrder()`, `cancelOrder()` | `drizzle-orm`, `zod` |
 
-## Invariantes y Reglas del Directorio
+## Invariants & Directory Rules
 
-- <Reglas de acoplamiento, límites de capa o convenciones obligatorias>
+- <Coupling rules, layer constraints, or security obligations>
 
 <!-- Reconciled by codebase-index -->
 ```
-
-### Documentation Standards:
-- **Rol / Patrón**: Must state the architectural pattern (e.g., `Server Action`, `Drizzle Schema`, `Astro Layout`, `Pure Function`, `Factory`).
-- **Exports Públicos**: Explicitly name functions, classes, or types consumed by other modules. Do not detail private helpers.
-- **Dependencias Clave**: Significant third-party packages or internal layer couplings.
 
 ---
 
 ## 4. Maintenance & Definition of Done
 
-Maintenance is not optional. Every agent modifying the repository must follow this reconciliation cycle:
+Maintenance is mandatory. Every agent modifying the repository must follow this reconciliation cycle:
 
 ### Trigger Conditions:
 1. **File Created**:
@@ -108,15 +126,15 @@ Maintenance is not optional. Every agent modifying the repository must follow th
 2. **File Deleted or Moved**:
    - Remove or update the corresponding entry in `INDEX.md`.
 3. **Public API Modified**:
-   - Update the `Exports Públicos / API` column in `INDEX.md`.
+   - Update the `Public Exports / API` column in `INDEX.md`.
 4. **New Subdirectory Added**:
-   - Add row in `Subdirectorios y Módulos Hijos` linking to its `INDEX.md`.
+   - Add a row in `Subdirectories & Child Modules` linking to its `INDEX.md`.
 
 ### Verification Step (Pre-Flight):
 Before concluding your task, execute the audit command:
 
 ```bash
-python3 .agents/skills/codebase-index/scripts/index_manager.py audit
+python3 scripts/index_manager.py audit
 ```
 
 - If exit code is `0` (✅), the repository is consistent.
@@ -126,11 +144,9 @@ python3 .agents/skills/codebase-index/scripts/index_manager.py audit
 
 ## 5. Tooling Reference: `index_manager.py`
 
-The script located at `.agents/skills/codebase-index/scripts/index_manager.py` provides:
-
 | Command | Usage | Description |
 | :--- | :--- | :--- |
-| `audit` | `python3 .../index_manager.py audit` | Audits the repo for missing indices, unindexed files, or orphan entries. |
-| `scaffold <dir>` | `python3 .../index_manager.py scaffold src/db` | Scaffolds or updates `INDEX.md` in `<dir>` preserving existing docs. |
-| `sync-all` | `python3 .../index_manager.py sync-all` | Re-syncs file manifests across all existing indices in the repo. |
-| `tree` | `python3 .../index_manager.py tree` | Displays the architectural index map of the project. |
+| `audit` | `python3 scripts/index_manager.py audit` | Audits the repo for missing indices, unindexed files, or orphan entries. |
+| `scaffold <dir>` | `python3 scripts/index_manager.py scaffold src/services` | Scaffolds or updates `INDEX.md` in `<dir>` preserving existing docs. |
+| `sync-all` | `python3 scripts/index_manager.py sync-all` | Re-syncs file manifests across all existing indices in the repo. |
+| `tree` | `python3 scripts/index_manager.py tree` | Displays the architectural index map of the project. |

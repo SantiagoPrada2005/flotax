@@ -1,0 +1,25 @@
+name: Codebase Index Audit
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  audit-indexes:
+    name: Verify Index Parity & Zero-Drift
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Run Codebase Index Audit
+        run: |
+          python3 scripts/index_manager.py audit

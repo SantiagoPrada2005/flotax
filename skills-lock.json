@@ -19,6 +19,12 @@
       "skillPath": "skills/cloudflare/SKILL.md",
       "computedHash": "6f0a70840cad114f020e5950874f255b22e669f07036cf4f81d8f733ae0233a0"
     },
+    "codebase-index": {
+      "source": "SantiagoPrada2005/codebase-index",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "daf73d57e55410d8b6c56bdabff3a0c7b0f6f8b5677dfb2bf5398f5c741ca330"
+    },
     "design-taste-frontend": {
       "source": "leonxlnx/taste-skill",
       "sourceType": "github",
