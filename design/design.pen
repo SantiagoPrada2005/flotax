@@ -40278,545 +40278,8 @@
             },
             {
               "type": "frame",
-              "id": "u3QE5z",
-              "name": "Claves móviles",
-              "width": "fill_container",
-              "gap": 20,
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "U5cMrx",
-                  "name": "Tile 44 px",
-                  "width": "fill_container",
-                  "height": 150,
-                  "cornerRadius": 20,
-                  "stroke": "$border",
-                  "strokeWidth": 1,
-                  "layout": "vertical",
-                  "gap": 6,
-                  "padding": 20,
-                  "justifyContent": "center",
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "N7dGi",
-                      "name": "k",
-                      "fill": "$ink",
-                      "content": "44 px",
-                      "fontFamily": "$font-numeric",
-                      "fontSize": 26,
-                      "fontWeight": "600"
-                    },
-                    {
-                      "type": "text",
-                      "id": "jiyUH",
-                      "name": "t",
-                      "fill": "$ink",
-                      "content": "Touch targets",
-                      "fontFamily": "$font-body",
-                      "fontSize": 13,
-                      "fontWeight": "600"
-                    },
-                    {
-                      "type": "text",
-                      "id": "xoj9o",
-                      "name": "d",
-                      "fill": "$text-secondary",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "Área táctil mínima en toda la interfaz.",
-                      "lineHeight": 1.4,
-                      "fontFamily": "$font-body",
-                      "fontSize": 11,
-                      "fontWeight": "normal"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "Mshm4",
-                  "name": "Tile 64 px",
-                  "width": "fill_container",
-                  "height": 150,
-                  "cornerRadius": 20,
-                  "stroke": "$border",
-                  "strokeWidth": 1,
-                  "layout": "vertical",
-                  "gap": 6,
-                  "padding": 20,
-                  "justifyContent": "center",
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "VhLoo",
-                      "name": "k",
-                      "fill": "$ink",
-                      "content": "64 px",
-                      "fontFamily": "$font-numeric",
-                      "fontSize": 26,
-                      "fontWeight": "600"
-                    },
-                    {
-                      "type": "text",
-                      "id": "RnHbR",
-                      "name": "t",
-                      "fill": "$ink",
-                      "content": "Bottom nav",
-                      "fontFamily": "$font-body",
-                      "fontSize": 13,
-                      "fontWeight": "600"
-                    },
-                    {
-                      "type": "text",
-                      "id": "bbVZg",
-                      "name": "d",
-                      "fill": "$text-secondary",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "Barra inferior cómoda con FAB de 56 px.",
-                      "lineHeight": 1.4,
-                      "fontFamily": "$font-body",
-                      "fontSize": 11,
-                      "fontWeight": "normal"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "iVsFc",
-                  "name": "Tile 56 px",
-                  "width": "fill_container",
-                  "height": 150,
-                  "cornerRadius": 20,
-                  "stroke": "$border",
-                  "strokeWidth": 1,
-                  "layout": "vertical",
-                  "gap": 6,
-                  "padding": 20,
-                  "justifyContent": "center",
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "mwcH1",
-                      "name": "k",
-                      "fill": "$ink",
-                      "content": "56 px",
-                      "fontFamily": "$font-numeric",
-                      "fontSize": 26,
-                      "fontWeight": "600"
-                    },
-                    {
-                      "type": "text",
-                      "id": "QwhVq",
-                      "name": "t",
-                      "fill": "$ink",
-                      "content": "FAB principal",
-                      "fontFamily": "$font-body",
-                      "fontSize": 13,
-                      "fontWeight": "600"
-                    },
-                    {
-                      "type": "text",
-                      "id": "QIZgZ",
-                      "name": "d",
-                      "fill": "$text-secondary",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "Acción dominante: nueva reserva.",
-                      "lineHeight": 1.4,
-                      "fontFamily": "$font-body",
-                      "fontSize": 11,
-                      "fontWeight": "normal"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "zhIcp",
-                  "name": "Tile 8–12 px",
-                  "width": "fill_container",
-                  "height": 150,
-                  "cornerRadius": 20,
-                  "stroke": "$border",
-                  "strokeWidth": 1,
-                  "layout": "vertical",
-                  "gap": 6,
-                  "padding": 20,
-                  "justifyContent": "center",
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "JAqFZ",
-                      "name": "k",
-                      "fill": "$ink",
-                      "content": "8–12 px",
-                      "fontFamily": "$font-numeric",
-                      "fontSize": 26,
-                      "fontWeight": "600"
-                    },
-                    {
-                      "type": "text",
-                      "id": "v1YnSR",
-                      "name": "t",
-                      "fill": "$ink",
-                      "content": "Gaps móviles",
-                      "fontFamily": "$font-body",
-                      "fontSize": 13,
-                      "fontWeight": "600"
-                    },
-                    {
-                      "type": "text",
-                      "id": "VLcec",
-                      "name": "d",
-                      "fill": "$text-secondary",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "Espaciado compacto entre bloques.",
-                      "lineHeight": 1.4,
-                      "fontFamily": "$font-body",
-                      "fontSize": 11,
-                      "fontWeight": "normal"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "oG8GQ",
-              "name": "Flujo de reserva",
-              "width": "fill_container",
-              "layout": "vertical",
-              "gap": 16,
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "JAgzG",
-                  "name": "head",
-                  "width": "fill_container",
-                  "justifyContent": "space_between",
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "tTXmB",
-                      "name": "t",
-                      "fill": "$ink",
-                      "content": "Flujo de reserva · 4 pasos",
-                      "fontFamily": "$font-display",
-                      "fontSize": 18,
-                      "fontWeight": "600"
-                    },
-                    {
-                      "type": "text",
-                      "id": "lRxuQ",
-                      "name": "m",
-                      "fill": "$text-tertiary",
-                      "content": "MOVO · MÓDULO CATÁLOGO",
-                      "fontFamily": "$font-mono",
-                      "fontSize": 10,
-                      "fontWeight": "normal",
-                      "letterSpacing": 1
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "rPWx6",
-                  "name": "steps",
-                  "width": "fill_container",
-                  "gap": 16,
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "ePZCf",
-                      "name": "Step Buscar",
-                      "width": "fill_container",
-                      "height": 168,
-                      "fill": "#FFFFFF",
-                      "cornerRadius": 20,
-                      "stroke": "#E5E4DF",
-                      "strokeWidth": 1,
-                      "layout": "vertical",
-                      "gap": 12,
-                      "padding": 20,
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "rCCka",
-                          "name": "num",
-                          "width": 36,
-                          "height": 36,
-                          "fill": "$ink",
-                          "cornerRadius": 100,
-                          "justifyContent": "center",
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "Y9xHq",
-                              "name": "n",
-                              "fill": "$on-primary",
-                              "content": "1",
-                              "fontFamily": "$font-numeric",
-                              "fontSize": 12,
-                              "fontWeight": "600"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "text",
-                          "id": "UGNHL",
-                          "name": "t",
-                          "fill": "$ink",
-                          "content": "Buscar",
-                          "fontFamily": "$font-body",
-                          "fontSize": 14,
-                          "fontWeight": "600"
-                        },
-                        {
-                          "type": "text",
-                          "id": "yr49n",
-                          "name": "d",
-                          "fill": "$text-secondary",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "Filtros por fecha, tipo y estado.",
-                          "lineHeight": 1.4,
-                          "fontFamily": "$font-body",
-                          "fontSize": 11,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "X29Grm",
-                      "name": "Step Seleccionar",
-                      "width": "fill_container",
-                      "height": 168,
-                      "fill": "#FFFFFF",
-                      "cornerRadius": 20,
-                      "stroke": "#E5E4DF",
-                      "strokeWidth": 1,
-                      "layout": "vertical",
-                      "gap": 12,
-                      "padding": 20,
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "eRa5r",
-                          "name": "num",
-                          "width": 36,
-                          "height": 36,
-                          "fill": "$ink",
-                          "cornerRadius": 100,
-                          "justifyContent": "center",
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "z55Vm",
-                              "name": "n",
-                              "fill": "$on-primary",
-                              "content": "2",
-                              "fontFamily": "$font-numeric",
-                              "fontSize": 12,
-                              "fontWeight": "600"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "text",
-                          "id": "t3NK7",
-                          "name": "t",
-                          "fill": "$ink",
-                          "content": "Seleccionar",
-                          "fontFamily": "$font-body",
-                          "fontSize": 14,
-                          "fontWeight": "600"
-                        },
-                        {
-                          "type": "text",
-                          "id": "p4j18d",
-                          "name": "d",
-                          "fill": "$text-secondary",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "Detalle del vehículo y extras.",
-                          "lineHeight": 1.4,
-                          "fontFamily": "$font-body",
-                          "fontSize": 11,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "HWkjy",
-                      "name": "Step Confirmar",
-                      "width": "fill_container",
-                      "height": 168,
-                      "fill": "#FFFFFF",
-                      "cornerRadius": 20,
-                      "stroke": "#E5E4DF",
-                      "strokeWidth": 1,
-                      "layout": "vertical",
-                      "gap": 12,
-                      "padding": 20,
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "T8dpR",
-                          "name": "num",
-                          "width": 36,
-                          "height": 36,
-                          "fill": "$ink",
-                          "cornerRadius": 100,
-                          "justifyContent": "center",
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "sca4o",
-                              "name": "n",
-                              "fill": "$on-primary",
-                              "content": "3",
-                              "fontFamily": "$font-numeric",
-                              "fontSize": 12,
-                              "fontWeight": "600"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "text",
-                          "id": "E3ddrL",
-                          "name": "t",
-                          "fill": "$ink",
-                          "content": "Confirmar",
-                          "fontFamily": "$font-body",
-                          "fontSize": 14,
-                          "fontWeight": "600"
-                        },
-                        {
-                          "type": "text",
-                          "id": "pa338",
-                          "name": "d",
-                          "fill": "$text-secondary",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "Pago y fianza en 3 pasos.",
-                          "lineHeight": 1.4,
-                          "fontFamily": "$font-body",
-                          "fontSize": 11,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "iGdsq",
-                      "name": "Step Listo",
-                      "width": "fill_container",
-                      "height": 168,
-                      "fill": "#FFFFFF",
-                      "cornerRadius": 20,
-                      "stroke": "#E5E4DF",
-                      "strokeWidth": 1,
-                      "layout": "vertical",
-                      "gap": 12,
-                      "padding": 20,
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "F8LWOM",
-                          "name": "num",
-                          "width": 36,
-                          "height": 36,
-                          "fill": "$accent",
-                          "cornerRadius": 100,
-                          "justifyContent": "center",
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "C6KOV",
-                              "name": "n",
-                              "fill": "$on-primary",
-                              "content": "4",
-                              "fontFamily": "$font-numeric",
-                              "fontSize": 12,
-                              "fontWeight": "600"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "text",
-                          "id": "o1k9t",
-                          "name": "t",
-                          "fill": "$ink",
-                          "content": "Listo",
-                          "fontFamily": "$font-body",
-                          "fontSize": 14,
-                          "fontWeight": "600"
-                        },
-                        {
-                          "type": "text",
-                          "id": "W8frt8",
-                          "name": "d",
-                          "fill": "$text-secondary",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "QR de recogida en la app.",
-                          "lineHeight": 1.4,
-                          "fontFamily": "$font-body",
-                          "fontSize": 11,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "lfLrT",
-              "name": "Footer",
-              "width": "fill_container",
-              "padding": [
-                20,
-                0
-              ],
-              "justifyContent": "space_between",
-              "alignItems": "center",
-              "children": [
-                {
-                  "type": "text",
-                  "id": "ake2m",
-                  "name": "l",
-                  "fill": "$text-tertiary",
-                  "content": "Movo Flota · Módulo de catálogo y gestión de vehículos — experiencia móvil touch-first",
-                  "fontFamily": "Inter",
-                  "fontSize": 12,
-                  "fontWeight": "normal"
-                },
-                {
-                  "type": "text",
-                  "id": "F477Vs",
-                  "name": "r",
-                  "fill": "$text-tertiary",
-                  "content": "04 · EXPERIENCIA MÓVIL — MOVO DESIGN SYSTEM",
-                  "fontFamily": "$font-mono",
-                  "fontSize": 11,
-                  "fontWeight": "normal"
-                }
-              ]
-            },
-            {
-              "type": "frame",
               "id": "mCxDa",
-              "name": "05 Filtros Section",
+              "name": "05 Filtros · bottom sheet",
               "width": "fill_container",
               "layout": "vertical",
               "gap": 8,
@@ -41626,10 +41089,548 @@
                       "fill": "$text-tertiary",
                       "content": "05 Filtros  —  bottom sheet con rango de precio",
                       "fontFamily": "$font-mono",
-                      "fontSize": 11.5,
+                      "fontSize": 10,
+                      "fontWeight": "normal",
+                      "letterSpacing": 0.5
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "u3QE5z",
+              "name": "Claves móviles",
+              "width": "fill_container",
+              "gap": 20,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "U5cMrx",
+                  "name": "Tile 44 px",
+                  "width": "fill_container",
+                  "height": 150,
+                  "cornerRadius": 20,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 20,
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "N7dGi",
+                      "name": "k",
+                      "fill": "$ink",
+                      "content": "44 px",
+                      "fontFamily": "$font-numeric",
+                      "fontSize": 26,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "jiyUH",
+                      "name": "t",
+                      "fill": "$ink",
+                      "content": "Touch targets",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "xoj9o",
+                      "name": "d",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Área táctil mínima en toda la interfaz.",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$font-body",
+                      "fontSize": 11,
                       "fontWeight": "normal"
                     }
                   ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Mshm4",
+                  "name": "Tile 64 px",
+                  "width": "fill_container",
+                  "height": 150,
+                  "cornerRadius": 20,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 20,
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "VhLoo",
+                      "name": "k",
+                      "fill": "$ink",
+                      "content": "64 px",
+                      "fontFamily": "$font-numeric",
+                      "fontSize": 26,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "RnHbR",
+                      "name": "t",
+                      "fill": "$ink",
+                      "content": "Bottom nav",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "bbVZg",
+                      "name": "d",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Barra inferior cómoda con FAB de 56 px.",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$font-body",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "iVsFc",
+                  "name": "Tile 56 px",
+                  "width": "fill_container",
+                  "height": 150,
+                  "cornerRadius": 20,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 20,
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "mwcH1",
+                      "name": "k",
+                      "fill": "$ink",
+                      "content": "56 px",
+                      "fontFamily": "$font-numeric",
+                      "fontSize": 26,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "QwhVq",
+                      "name": "t",
+                      "fill": "$ink",
+                      "content": "FAB principal",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "QIZgZ",
+                      "name": "d",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Acción dominante: nueva reserva.",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$font-body",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "zhIcp",
+                  "name": "Tile 8–12 px",
+                  "width": "fill_container",
+                  "height": 150,
+                  "cornerRadius": 20,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 20,
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "JAqFZ",
+                      "name": "k",
+                      "fill": "$ink",
+                      "content": "8–12 px",
+                      "fontFamily": "$font-numeric",
+                      "fontSize": 26,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "v1YnSR",
+                      "name": "t",
+                      "fill": "$ink",
+                      "content": "Gaps móviles",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "VLcec",
+                      "name": "d",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Espaciado compacto entre bloques.",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$font-body",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "oG8GQ",
+              "name": "Flujo de reserva",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "JAgzG",
+                  "name": "head",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "tTXmB",
+                      "name": "t",
+                      "fill": "$ink",
+                      "content": "Flujo de reserva · 4 pasos",
+                      "fontFamily": "$font-display",
+                      "fontSize": 18,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "lRxuQ",
+                      "name": "m",
+                      "fill": "$text-tertiary",
+                      "content": "MOVO · MÓDULO CATÁLOGO",
+                      "fontFamily": "$font-mono",
+                      "fontSize": 10,
+                      "fontWeight": "normal",
+                      "letterSpacing": 1
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "rPWx6",
+                  "name": "steps",
+                  "width": "fill_container",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ePZCf",
+                      "name": "Step Buscar",
+                      "width": "fill_container",
+                      "height": 168,
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 20,
+                      "stroke": "#E5E4DF",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 12,
+                      "padding": 20,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "rCCka",
+                          "name": "num",
+                          "width": 36,
+                          "height": 36,
+                          "fill": "$ink",
+                          "cornerRadius": 100,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Y9xHq",
+                              "name": "n",
+                              "fill": "$on-primary",
+                              "content": "1",
+                              "fontFamily": "$font-numeric",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "UGNHL",
+                          "name": "t",
+                          "fill": "$ink",
+                          "content": "Buscar",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "yr49n",
+                          "name": "d",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Filtros por fecha, tipo y estado.",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "X29Grm",
+                      "name": "Step Seleccionar",
+                      "width": "fill_container",
+                      "height": 168,
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 20,
+                      "stroke": "#E5E4DF",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 12,
+                      "padding": 20,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "eRa5r",
+                          "name": "num",
+                          "width": 36,
+                          "height": 36,
+                          "fill": "$ink",
+                          "cornerRadius": 100,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "z55Vm",
+                              "name": "n",
+                              "fill": "$on-primary",
+                              "content": "2",
+                              "fontFamily": "$font-numeric",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "t3NK7",
+                          "name": "t",
+                          "fill": "$ink",
+                          "content": "Seleccionar",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "p4j18d",
+                          "name": "d",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Detalle del vehículo y extras.",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "HWkjy",
+                      "name": "Step Confirmar",
+                      "width": "fill_container",
+                      "height": 168,
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 20,
+                      "stroke": "#E5E4DF",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 12,
+                      "padding": 20,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "T8dpR",
+                          "name": "num",
+                          "width": 36,
+                          "height": 36,
+                          "fill": "$ink",
+                          "cornerRadius": 100,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "sca4o",
+                              "name": "n",
+                              "fill": "$on-primary",
+                              "content": "3",
+                              "fontFamily": "$font-numeric",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "E3ddrL",
+                          "name": "t",
+                          "fill": "$ink",
+                          "content": "Confirmar",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "pa338",
+                          "name": "d",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Pago y fianza en 3 pasos.",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "iGdsq",
+                      "name": "Step Listo",
+                      "width": "fill_container",
+                      "height": 168,
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 20,
+                      "stroke": "#E5E4DF",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 12,
+                      "padding": 20,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "F8LWOM",
+                          "name": "num",
+                          "width": 36,
+                          "height": 36,
+                          "fill": "$accent",
+                          "cornerRadius": 100,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "C6KOV",
+                              "name": "n",
+                              "fill": "$on-primary",
+                              "content": "4",
+                              "fontFamily": "$font-numeric",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "o1k9t",
+                          "name": "t",
+                          "fill": "$ink",
+                          "content": "Listo",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "W8frt8",
+                          "name": "d",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "QR de recogida en la app.",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "lfLrT",
+              "name": "Footer",
+              "width": "fill_container",
+              "padding": [
+                20,
+                0
+              ],
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "ake2m",
+                  "name": "l",
+                  "fill": "$text-tertiary",
+                  "content": "Movo Flota · Módulo de catálogo y gestión de vehículos — experiencia móvil touch-first",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "F477Vs",
+                  "name": "r",
+                  "fill": "$text-tertiary",
+                  "content": "04 · EXPERIENCIA MÓVIL — MOVO DESIGN SYSTEM",
+                  "fontFamily": "$font-mono",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
                 }
               ]
             }
@@ -119028,7 +119029,8 @@
                                       "fill": "$text-secondary",
                                       "content": "Flota",
                                       "fontFamily": "Inter",
-                                      "fontSize": 11.5
+                                      "fontSize": 11.5,
+                                      "fontWeight": "normal"
                                     },
                                     {
                                       "type": "icon",
@@ -119047,7 +119049,8 @@
                                       "fill": "$text-secondary",
                                       "content": "Madrid",
                                       "fontFamily": "Inter",
-                                      "fontSize": 11.5
+                                      "fontSize": 11.5,
+                                      "fontWeight": "normal"
                                     },
                                     {
                                       "type": "icon",
