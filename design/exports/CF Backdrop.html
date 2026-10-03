@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+        tailwind = { config: { corePlugins: { preflight: false } } };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Geist+Mono%3Awght%40100..900&family=Inter%3Awght%40100..900&family=JetBrains+Mono%3Awght%40100..800&display=swap"
+        rel="stylesheet" />
+    <style>
+        *,
+        ::before,
+        ::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+        }
+    </style>
+
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body style="background-color: #FFFFFF">
+    <div data-pencil-name="CF Backdrop"
+        class="box-border w-[1380px] h-[860px] bg-[#FFFFFF] [outline:1px_solid_#E5E4DF] [outline-offset:-0.5px] rounded-[20px] relative">
+        <div data-pencil-name="CF Title"
+            class="text-[18px]/[normal] box-border absolute left-0 top-0 text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap] [z-index:0]">
+            Conflicto detectado
+        </div>
+        <div data-pencil-name="CF Chip"
+            class="box-border w-[86px] h-[26px] absolute left-[172px] top-0 flex flex-row gap-[6px] justify-center items-center bg-[#FCE9EA] rounded-[100px] [z-index:1]">
+        </div>
+        <svg data-pencil-name="CF Ic" data-icon-name="warning" data-icon-set="Material Symbols Outlined"
+            viewBox="0 0 14.000015258789062 14" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"
+            class="box-border w-[14px] h-[14px] absolute left-[258px] top-0 [z-index:2]">
+            <path
+                d="M1.59277 11.66553l5.40723-9.33106 5.40723 9.33106-10.81446 0z m1.00147-0.58106l8.81152 0-4.40576-7.58447-4.40576 7.58447z m4.40576-0.81006q0.15381 0 0.25635-0.10254 0.10254-0.10254 0.10254-0.25634 0-0.15039-0.10254-0.25293-0.10254-0.10596-0.25635-0.10596-0.15381 0-0.25635 0.10596-0.10254 0.10254-0.10254 0.25293 0 0.15381 0.10254 0.25634 0.10254 0.10254 0.25635 0.10254z m-0.29053-1.29882l0.58106 0 0-2.91895-0.58106 0 0 2.91895z"
+                fill="#E5484D"></path>
+        </svg>
+        <div data-pencil-name="CF Ct"
+            class="text-[10px]/[normal] box-border absolute left-[272px] top-0 text-[#E5484D] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap] [z-index:3]">
+            CRÍTICO
+        </div>
+        <div data-pencil-name="CF Sub"
+            class="text-[13px]/[normal] box-border absolute left-[30px] top-[52px] text-[#6E6C66] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap] [z-index:4]">
+            El alquiler de Laura Giménez se solapa con la nueva reserva de Pablo Serrano en el VW
+            T-Cross MVO-194-K.
+        </div>
+        <div data-pencil-name="CF Veh"
+            class="box-border w-[280px] h-[340px] absolute left-[30px] top-[88px] flex flex-col gap-[10px] p-[20px] justify-start items-start bg-[#F4F3EF] rounded-[16px] [z-index:5]">
+            <div data-pencil-name="CF Vi"
+                class="box-border w-[56px] h-[56px] shrink-0 flex flex-row gap-0 justify-center items-center bg-[#E9EDFB] rounded-[16px]">
+                <svg data-pencil-name="CF IV" data-icon-name="car_rental" data-icon-set="Material Symbols Outlined"
+                    viewBox="0 0 14.000015258789062 14" preserveAspectRatio="xMidYMid meet"
+                    xmlns="http://www.w3.org/2000/svg" class="box-border w-[26px] shrink-0 h-[26px]">
+                    <path
+                        d="M4.89111 4.01611q-0.6084 0-1.03564-0.42382-0.42383-0.42725-0.42383-1.03223 0-0.6084 0.42383-1.03223 0.42725-0.42725 1.03564-0.42724 0.51953 0 0.90918 0.33496 0.39307 0.33154 0.52979 0.83056l4.23828 0 0 0.58448-0.58447 0 0 1.16552-0.58448 0 0-1.16552-3.06933 0q-0.13672 0.49902-0.52979 0.83398-0.38965 0.33154-0.90918 0.33154z m0-0.58447q0.35889 0 0.61524-0.25635 0.25977-0.25635 0.25976-0.61865 0-0.35889-0.25976-0.61523-0.25635-0.25977-0.61524-0.25977-0.35889 0-0.61865 0.25977-0.25635 0.25635-0.25635 0.61523 0 0.3623 0.25635 0.61865 0.25977 0.25635 0.61865 0.25635z m0.1333 6.43945q0.18115 0 0.31446-0.1333 0.13672-0.1333 0.13672-0.31445 0-0.18115-0.13672-0.31445-0.1333-0.1333-0.31446-0.1333-0.17773 0-0.31445 0.1333-0.1333 0.1333-0.1333 0.31445 0 0.18115 0.1333 0.31445 0.13672 0.1333 0.31445 0.1333z m3.95118 0q0.17773 0 0.31103-0.1333 0.13672-0.1333 0.13672-0.31445 0-0.18115-0.13672-0.31445-0.1333-0.1333-0.31103-0.1333-0.18115 0-0.31788 0.1333-0.1333 0.1333-0.1333 0.31445 0 0.18115 0.1333 0.31445 0.13672 0.1333 0.31788 0.1333z m-5.47559-1.4663l0.87158-2.50879q0.04102-0.12646 0.14014-0.19483 0.10254-0.06836 0.22558-0.06836l4.5254 0q0.12305 0 0.22216 0.06836 0.10254 0.06836 0.14356 0.19483l0.87158 2.50879 0 3.37695q0 0.11621-0.0752 0.19141-0.0752 0.07519-0.18798 0.07519l-0.05469 0q-0.11621 0-0.19141-0.07519-0.0752-0.0752-0.07519-0.19141l0-0.89893-5.83106 0 0 0.89893q0 0.11621-0.07519 0.19141-0.0752 0.07519-0.19141 0.07519l-0.05469 0q-0.11279 0-0.18798-0.07519-0.0752-0.0752-0.0752-0.19141l0-3.37695z m0.76221-0.44092l5.47558 0-0.6084-1.75-4.25878 0-0.6084 1.75z m-0.17774 0.58447l0 1.75 0-1.75z m0 1.75l5.83106 0 0-1.75-5.83106 0 0 1.75z"
+                        fill="#2A4FE0"></path>
+                </svg>
+            </div>
+            <div data-pencil-name="CF VT"
+                class="text-[16px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                VW T-Cross
+            </div>
+            <div data-pencil-name="CF VP"
+                class="box-border w-fit h-[24px] shrink-0 flex flex-row gap-[6px] p-[8px] justify-center items-center bg-[#FFFFFF] rounded-[100px]">
+                <div data-pencil-name="CF Vt"
+                    class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    MVO-194-K
+                </div>
+            </div>
+            <div data-pencil-name="CF Vb"
+                class="box-border w-fit h-[26px] shrink-0 flex flex-row gap-[6px] p-[8px] justify-center items-center bg-[#E9EDFB] rounded-[100px]">
+                <div data-pencil-name="CF Vbt"
+                    class="text-[10px]/[normal] box-border text-[#2A4FE0] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    ALQUILADO
+                </div>
+            </div>
+            <div data-pencil-name="CF Vd"
+                class="box-border w-full h-[1px] shrink-0 flex flex-row gap-0 justify-start items-start bg-[#E5E4DF]">
+            </div>
+            <div data-pencil-name="CF Vl1"
+                class="text-[12px]/[normal] box-border text-[#6E6C66] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                Alquiler activo
+            </div>
+            <div data-pencil-name="CF Vl2"
+                class="text-[14px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                Laura Giménez
+            </div>
+            <div data-pencil-name="CF Vl3"
+                class="text-[12px]/[normal] box-border text-[#6E6C66] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                30 sep – 6 oct · 7 días
+            </div>
+        </div>
+        <div data-pencil-name="CF TL"
+            class="box-border w-[1020px] h-[320px] absolute left-[330px] top-[88px] flex flex-col gap-0 justify-start items-start bg-[#FFFFFF] [outline:1px_solid_#E5E4DF] [outline-offset:-0.5px] rounded-[16px] [z-index:6]">
+            <div data-pencil-name="CF DH"
+                class="box-border w-full h-[52px] shrink-0 flex flex-row gap-0 justify-start items-start bg-[#F4F3EF] relative [z-index:0]">
+                <div data-pencil-name="CF Dh0"
+                    class="[box-sizing:content-box] [flex:1_1_0] h-[52px] flex flex-row gap-0 justify-center items-center bg-[#F4F3EF] [border-width:0px_1px_0px_0px] [border-style:solid] [border-color:#E5E4DF] [margin:0px_-0.5px_0px_0px] w-[145.214px]">
+                    <div data-pencil-name="CF Dt0"
+                        class="text-[10px]/[normal] box-border text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        MIÉ 30
+                    </div>
+                </div>
+                <div data-pencil-name="CF Dh1"
+                    class="[box-sizing:content-box] [flex:1_1_0] h-[52px] flex flex-row gap-0 justify-center items-center bg-[#F4F3EF] [border-width:0px_1px_0px_0px] [border-style:solid] [border-color:#E5E4DF] [margin:0px_-0.5px_0px_0px] w-[145.214px]">
+                    <div data-pencil-name="CF Dt1"
+                        class="text-[10px]/[normal] box-border text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        JUE 01
+                    </div>
+                </div>
+                <div data-pencil-name="CF Dh2"
+                    class="[box-sizing:content-box] [flex:1_1_0] h-[52px] flex flex-row gap-0 justify-center items-center bg-[#F4F3EF] [border-width:0px_1px_0px_0px] [border-style:solid] [border-color:#E5E4DF] [margin:0px_-0.5px_0px_0px] w-[145.214px]">
+                    <div data-pencil-name="CF Dt2"
+                        class="text-[10px]/[normal] box-border text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        VIE 02
+                    </div>
+                </div>
+                <div data-pencil-name="CF Dh3"
+                    class="[box-sizing:content-box] [flex:1_1_0] h-[52px] flex flex-row gap-0 justify-center items-center bg-[#F2F1EC] [border-width:0px_1px_0px_0px] [border-style:solid] [border-color:#E5E4DF] [margin:0px_-0.5px_0px_0px] w-[145.214px]">
+                    <div data-pencil-name="CF Dt3"
+                        class="text-[10px]/[normal] box-border text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        SÁB 03
+                    </div>
+                </div>
+                <div data-pencil-name="CF Dh4"
+                    class="[box-sizing:content-box] [flex:1_1_0] h-[52px] flex flex-row gap-0 justify-center items-center bg-[#F2F1EC] [border-width:0px_1px_0px_0px] [border-style:solid] [border-color:#E5E4DF] [margin:0px_-0.5px_0px_0px] w-[145.214px]">
+                    <div data-pencil-name="CF Dt4"
+                        class="text-[10px]/[normal] box-border text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        DOM 04
+                    </div>
+                </div>
+                <div data-pencil-name="CF Dh5"
+                    class="[box-sizing:content-box] [flex:1_1_0] h-[52px] flex flex-row gap-0 justify-center items-center bg-[#F4F3EF] [border-width:0px_1px_0px_0px] [border-style:solid] [border-color:#E5E4DF] [margin:0px_-0.5px_0px_0px] w-[145.214px]">
+                    <div data-pencil-name="CF Dt5"
+                        class="text-[10px]/[normal] box-border text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        LUN 05
+                    </div>
+                </div>
+                <div data-pencil-name="CF Dh6"
+                    class="[box-sizing:content-box] [flex:1_1_0] h-[52px] flex flex-row gap-0 justify-center items-center bg-[#F4F3EF] [border-width:0px_1px_0px_0px] [border-style:solid] [border-color:#E5E4DF] [margin:0px_-0.5px_0px_0px] w-[145.214px]">
+                    <div data-pencil-name="CF Dt6"
+                        class="text-[10px]/[normal] box-border text-[#6E6C66] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        MAR 06
+                    </div>
+                </div>
+            </div>
+            <div data-pencil-name="CF L1"
+                class="box-border w-full h-[92px] shrink-0 flex flex-row gap-0 justify-start items-start relative [z-index:1]">
+                <div data-pencil-name="CF L1c0"
+                    class="[box-sizing:content-box] [flex:1_1_0] h-[92px] flex flex-row gap-0 justify-center items-center bg-[#2A4FE0] [border-width:0px_1px_0px_0px] [border-style:solid] [border-color:#E5E4DF] [margin:0px_-0.5px_0px_0px] w-[145.214px] rounded-[8px_0px_0px_8px]">
+                    <div data-pencil-name="CF L1t"
+                        class="text-[10px]/[normal] box-border text-[#FFFFFF] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[0.5px] text-left [white-space:nowrap]">
+                        ALQUILER · LAURA GIMÉNEZ · 30 SEP – 6 OCT
+                    </div>
+                </div>
+                <div data-pencil-name="CF L1c1"
+                    class="[box-sizing:content-box] [flex:1_1_0] h-[92px] flex flex-row gap-0 justify-center items-center bg-[#2A4FE0] [border-width:0px_1px_0px_0px] [border-style:solid] [border-color:#E5E4DF] [margin:0px_-0.5px_0px_0px] w-[145.214px]">
+                </div>
+                <div data-pencil-name="CF L1c2"
+                    class="[box-sizing:content-box] [flex:1_1_0] h-[92px] flex flex-row gap-0 justify-center items-center bg-[#2A4FE0] [border-width:0px_1px_0px_0px] [border-style:solid] [border-color:#E5E4DF] [margin:0px_-0.5px_0px_0px] w-[145.214px]">
+                </div>
+                <div data-pencil-name="CF L1c3"
+                    class="[box-sizing:content-box] [flex:1_1_0] h-[92px] flex flex-row gap-0 justify-center items-center bg-[#2A4FE0] [border-width:0px_1px_0px_0px] [border-style:solid] [border-color:#E5E4DF] [margin:0px_-0.5px_0px_0px] w-[145.214px]">
+                </div>
+                <div data-pencil-name="CF L1c4"
+                    class="[box-sizing:content-box] [flex:1_1_0] h-[92px] flex flex-row gap-0 justify-center items-center bg-[#2A4FE0] [border-width:0px_1px_0px_0px] [border-style:solid] [border-color:#E5E4DF] [margin:0px_-0.5px_0px_0px] w-[145.214px]">
+                </div>
+                <div data-pencil-name="CF L1c5"
+                    class="[box-sizing:content-box] [flex:1_1_0] h-[92px] flex flex-row gap-0 justify-center items-center bg-[#2A4FE0] [border-width:0px_1px_0px_0px] [border-style:solid] [border-color:#E5E4DF] [margin:0px_-0.5px_0px_0px] w-[145.214px]">
+                </div>
+                <div data-pencil-name="CF L1c6"
+                    class="[box-sizing:content-box] [flex:1_1_0] h-[92px] flex flex-row gap-0 justify-center items-center bg-[#2A4FE0] [border-width:0px_1px_0px_0px] [border-style:solid] [border-color:#E5E4DF] [margin:0px_-0.5px_0px_0px] w-[145.214px] rounded-[0px_8px_8px_0px]">
+                </div>
+            </div>
+            <div data-pencil-name="CF L2"
+                class="box-border w-full h-[92px] shrink-0 flex flex-row gap-0 justify-start items-start relative [z-index:2]">
+                <div data-pencil-name="CF L2c0"
+                    class="[box-sizing:content-box] [flex:1_1_0] h-[92px] flex flex-row gap-0 justify-center items-center bg-[#FAFAF7] [border-width:0px_1px_0px_0px] [border-style:solid] [border-color:#E5E4DF] [margin:0px_-0.5px_0px_0px] w-[145.214px]">
+                </div>
+                <div data-pencil-name="CF L2c1"
+                    class="[box-sizing:content-box] [flex:1_1_0] h-[92px] flex flex-row gap-0 justify-center items-center bg-[#FAFAF7] [border-width:0px_1px_0px_0px] [border-style:solid] [border-color:#E5E4DF] [margin:0px_-0.5px_0px_0px] w-[145.214px]">
+                </div>
+                <div data-pencil-name="CF L2c2"
+                    class="[box-sizing:content-box] [flex:1_1_0] h-[92px] flex flex-row gap-0 justify-center items-center bg-[#F2A100] [border-width:0px_1px_0px_0px] [border-style:solid] [border-color:#E5E4DF] [margin:0px_-0.5px_0px_0px] w-[145.214px] rounded-[8px_0px_0px_8px]">
+                    <div data-pencil-name="CF L2t"
+                        class="text-[10px]/[normal] box-border text-[#FFFFFF] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[0.5px] text-left [white-space:nowrap]">
+                        RESERVA · PABLO SERRANO · 2 – 7 OCT
+                    </div>
+                </div>
+                <div data-pencil-name="CF L2c3"
+                    class="[box-sizing:content-box] [flex:1_1_0] h-[92px] flex flex-row gap-0 justify-center items-center bg-[#F2A100] [border-width:0px_1px_0px_0px] [border-style:solid] [border-color:#E5E4DF] [margin:0px_-0.5px_0px_0px] w-[145.214px]">
+                </div>
+                <div data-pencil-name="CF L2c4"
+                    class="[box-sizing:content-box] [flex:1_1_0] h-[92px] flex flex-row gap-0 justify-center items-center bg-[#F2A100] [border-width:0px_1px_0px_0px] [border-style:solid] [border-color:#E5E4DF] [margin:0px_-0.5px_0px_0px] w-[145.214px]">
+                </div>
+                <div data-pencil-name="CF L2c5"
+                    class="[box-sizing:content-box] [flex:1_1_0] h-[92px] flex flex-row gap-0 justify-center items-center bg-[#F2A100] [border-width:0px_1px_0px_0px] [border-style:solid] [border-color:#E5E4DF] [margin:0px_-0.5px_0px_0px] w-[145.214px]">
+                </div>
+                <div data-pencil-name="CF L2c6"
+                    class="[box-sizing:content-box] [flex:1_1_0] h-[92px] flex flex-row gap-0 justify-center items-center bg-[#F2A100] [border-width:0px_1px_0px_0px] [border-style:solid] [border-color:#E5E4DF] [margin:0px_-0.5px_0px_0px] w-[145.214px] rounded-[0px_8px_8px_0px]">
+                </div>
+            </div>
+            <div data-pencil-name="CF Ov"
+                class="box-border w-[729px] h-[184px] absolute left-[291px] top-[52px] flex flex-row gap-0 justify-start items-start bg-[#E5484D14] [outline:1px_solid_#E5484D] [outline-offset:-0.5px] rounded-[10px] [z-index:3]">
+                <div data-pencil-name="CF Ovlb"
+                    class="box-border w-[190px] h-[24px] absolute left-[270px] top-[10px] flex flex-row gap-[6px] justify-center items-center bg-[#E5484D] rounded-[100px] [z-index:0]">
+                    <svg data-pencil-name="CF Ovi" data-icon-name="warning" data-icon-set="Material Symbols Outlined"
+                        viewBox="0 0 14.000015258789062 14" preserveAspectRatio="xMidYMid meet"
+                        xmlns="http://www.w3.org/2000/svg" class="box-border w-[12px] shrink-0 h-[12px]">
+                        <path
+                            d="M1.59277 11.66553l5.40723-9.33106 5.40723 9.33106-10.81446 0z m1.00147-0.58106l8.81152 0-4.40576-7.58447-4.40576 7.58447z m4.40576-0.81006q0.15381 0 0.25635-0.10254 0.10254-0.10254 0.10254-0.25634 0-0.15039-0.10254-0.25293-0.10254-0.10596-0.25635-0.10596-0.15381 0-0.25635 0.10596-0.10254 0.10254-0.10254 0.25293 0 0.15381 0.10254 0.25634 0.10254 0.10254 0.25635 0.10254z m-0.29053-1.29882l0.58106 0 0-2.91895-0.58106 0 0 2.91895z"
+                            fill="#FFFFFF"></path>
+                    </svg>
+                    <div data-pencil-name="CF Ovt"
+                        class="text-[9px]/[normal] box-border text-[#FFFFFF] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        CONFLICTO · 2-6 OCT
+                    </div>
+                </div>
+            </div>
+            <div data-pencil-name="CF Lg"
+                class="box-border w-full h-[44px] shrink-0 flex flex-row gap-[20px] p-[14px] justify-start items-center relative [z-index:4]">
+                <div data-pencil-name="CF Lgc ALQUILER ACTIVO"
+                    class="box-border w-fit shrink-0 h-full flex flex-row gap-[8px] justify-start items-center">
+                    <div data-pencil-name="CF Lgd ALQUILER ACTIVO"
+                        class="box-border w-[10px] shrink-0 h-[10px] flex flex-row gap-0 justify-start items-start bg-[#2A4FE0] rounded-[3px]">
+                    </div>
+                    <div data-pencil-name="CF Lgt ALQUILER ACTIVO"
+                        class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        ALQUILER ACTIVO
+                    </div>
+                </div>
+                <div data-pencil-name="CF Lgc NUEVA RESERVA"
+                    class="box-border w-fit shrink-0 h-full flex flex-row gap-[8px] justify-start items-center">
+                    <div data-pencil-name="CF Lgd NUEVA RESERVA"
+                        class="box-border w-[10px] shrink-0 h-[10px] flex flex-row gap-0 justify-start items-start bg-[#F2A100] rounded-[3px]">
+                    </div>
+                    <div data-pencil-name="CF Lgt NUEVA RESERVA"
+                        class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        NUEVA RESERVA
+                    </div>
+                </div>
+                <div data-pencil-name="CF Lgc SOLAPAMIENTO"
+                    class="box-border w-fit shrink-0 h-full flex flex-row gap-[8px] justify-start items-center">
+                    <div data-pencil-name="CF Lgd SOLAPAMIENTO"
+                        class="box-border w-[10px] shrink-0 h-[10px] flex flex-row gap-0 justify-start items-start bg-[#E5484D] rounded-[3px]">
+                    </div>
+                    <div data-pencil-name="CF Lgt SOLAPAMIENTO"
+                        class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        SOLAPAMIENTO
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div data-pencil-name="CF Dlg"
+            class="box-border w-[1020px] h-[400px] absolute left-[330px] top-[428px] bg-[#131211] rounded-[16px] [z-index:7]">
+            <div data-pencil-name="CF Dt1"
+                class="text-[17px]/[normal] box-border absolute left-[28px] top-[24px] text-[#FFFFFF] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap] [z-index:0]">
+                Conflicto de fechas
+            </div>
+            <div data-pencil-name="CF Ds"
+                class="text-[13px]/[18px] box-border w-[700px] absolute left-[28px] top-[52px] text-[#B9B6AE] font-[Inter,system-ui,sans-serif] font-normal text-left [z-index:1]">
+                La reserva nueva de Pablo Serrano (2 – 7 oct) se solapa 5 días con el alquiler activo de
+                Laura Giménez (30 sep – 6 oct) en el VW T-Cross MVO-194-K.
+            </div>
+            <div data-pencil-name="CF O Modificar fechas"
+                class="box-border w-[560px] h-[52px] absolute left-[28px] top-[104px] flex flex-row gap-[12px] p-[12px] justify-start items-center bg-[#FFFFFF0F] [outline:2px_solid_#E5484D] [outline-offset:-1px] rounded-[10px] [z-index:2]">
+                <svg data-pencil-name="CF Oi Modificar fechas" data-icon-name="edit_calendar"
+                    data-icon-set="Material Symbols Outlined" viewBox="0 0 14.000015258789062 14"
+                    preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"
+                    class="box-border w-[20px] shrink-0 h-[20px]">
+                    <path
+                        d="M3.27441 12.25q-0.3999 0-0.66992-0.27002-0.27002-0.27002-0.27002-0.67334l0-7.44775q0-0.40332 0.27002-0.67334 0.27002-0.27002 0.66992-0.27002l1.03223 0 0-1.29883 0.62891 0 0 1.29883 4.17334 0 0-1.29883 0.58447 0 0 1.29883 1.03223 0q0.3999 0 0.66992 0.27002 0.27002 0.27002 0.27002 0.67334l0 2.91552-0.58106 0 0-0.58105-8.16894 0 0 5.11328q0 0.13672 0.11279 0.24951 0.11279 0.10938 0.24609 0.10938l3.63672 0 0 0.58447-3.63672 0z m-0.35888-6.64111l8.16894 0 0-1.75q0-0.1333-0.11279-0.2461-0.11279-0.11279-0.24609-0.11279l-7.45118 0q-0.1333 0-0.24609 0.11279-0.11279 0.11279-0.11279 0.2461l0 1.75z m0 0l0-1.75q0-0.15723 0-0.25635 0-0.10254 0-0.10254 0 0 0 0.10254 0 0.09912 0 0.25635l0 1.75z m5.38672 6.64111l0-1.28857 3.11035-3.09668q0.08545-0.08545 0.17773-0.11621 0.0957-0.03076 0.18799-0.03077 0.0957 0 0.19482 0.0376 0.09912 0.0376 0.17432 0.11279l0.54004 0.5503q0.07178 0.08545 0.10937 0.18115 0.0376 0.09229 0.0376 0.18457 0 0.09229-0.0376 0.18799-0.03418 0.0957-0.10937 0.18115l-3.09668 3.09668-1.28857 0z m4.01611-3.46582l-0.54004-0.55029 0.54004 0.55029z m-3.5 2.94971l0.55371 0 2.02344-2.02686-0.27686-0.27685-0.26318-0.2837-2.03711 2.0337 0 0.55371z m2.30029-2.30371l-0.26318-0.2837 0.54004 0.56055-0.27686-0.27685z"
+                        fill="#E5484D"></path>
+                </svg>
+                <div data-pencil-name="CF Ot Modificar fechas"
+                    class="text-[13px]/[normal] box-border text-[#FFFFFF] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                    Modificar fechas
+                </div>
+                <div data-pencil-name="CF Os Modificar fechas"
+                    class="text-[11px]/[normal] box-border text-[#A8A6A0] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    Sugerir 5 – 10 oct, sin solapamiento
+                </div>
+                <div data-pencil-name="CF Osp Modificar fechas"
+                    class="box-border [flex:1_1_0] h-0 flex flex-row gap-0 justify-start items-start"></div>
+                <svg data-pencil-name="CF Och Modificar fechas" data-icon-name="chevron_right"
+                    data-icon-set="Material Symbols Outlined" viewBox="0 0 14.000015258789062 14"
+                    preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"
+                    class="box-border w-[16px] shrink-0 h-[16px]">
+                    <path
+                        d="M7.75537 7l-2.68652-2.68311 0.41357-0.41357 3.09668 3.09668-3.09668 3.09668-0.41357-0.41357 2.68652-2.68311z"
+                        fill="#8F8C85"></path>
+                </svg>
+            </div>
+            <div data-pencil-name="CF O Elegir otro vehículo"
+                class="box-border w-[560px] h-[52px] absolute left-[28px] top-[164px] flex flex-row gap-[12px] p-[12px] justify-start items-center bg-[#FFFFFF0F] [outline:1px_solid_#FFFFFF1F] [outline-offset:-0.5px] rounded-[10px] [z-index:3]">
+                <svg data-pencil-name="CF Oi Elegir otro vehículo" data-icon-name="directions_car"
+                    data-icon-set="Material Symbols Outlined" viewBox="0 0 14.000015258789062 14"
+                    preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"
+                    class="box-border w-[20px] shrink-0 h-[20px]">
+                    <path
+                        d="M3.05225 10.5l0 0.875q0 0.12305-0.08545 0.2085-0.08203 0.08203-0.2085 0.08203l-0.1333 0q-0.12305 0-0.2085-0.08203-0.08203-0.08545-0.08203-0.2085l0-4.28613 1.15528-3.29834q0.04443-0.13672 0.16406-0.21192 0.12305-0.07861 0.27344-0.07861l6.18994 0q0.1333 0 0.23926 0.08203 0.10938 0.07861 0.1538 0.2085l1.15528 3.29834 0 4.28613q0 0.12305-0.08545 0.2085-0.08203 0.08203-0.20508 0.08203l-0.1333 0q-0.12647 0-0.21191-0.08203-0.08203-0.08545-0.08204-0.2085l0-0.875-7.8955 0z m0.10595-3.99219l7.6836 0-0.86133-2.42334-5.96094 0-0.86133 2.42334z m-0.24267 0.58106l0 2.82666 0-2.82666z m1.41845 2.06445q0.27002 0 0.45801-0.18799 0.18799-0.19141 0.18799-0.46484 0-0.27344-0.19141-0.46143-0.18799-0.18799-0.46142-0.18799-0.27344 0-0.46143 0.19141-0.18457 0.19141-0.18457 0.46484 0 0.27002 0.18799 0.45801 0.19141 0.18799 0.46484 0.18799z m5.33887 0q0.27344 0 0.45801-0.18799 0.18799-0.19141 0.18799-0.46484 0-0.27344-0.19141-0.46143-0.18799-0.18799-0.46142-0.18799-0.27002 0-0.45801 0.19141-0.18799 0.19141-0.18799 0.46484 0 0.27002 0.18799 0.45801 0.19141 0.18799 0.46484 0.18799z m-6.75732 0.76221l8.16894 0 0-2.82666-8.16894 0 0 2.82666z"
+                        fill="#D8D5CE"></path>
+                </svg>
+                <div data-pencil-name="CF Ot Elegir otro vehículo"
+                    class="text-[13px]/[normal] box-border text-[#FFFFFF] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                    Elegir otro vehículo
+                </div>
+                <div data-pencil-name="CF Os Elegir otro vehículo"
+                    class="text-[11px]/[normal] box-border text-[#A8A6A0] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    Seat Ateca disponible para 2 – 7 oct
+                </div>
+                <div data-pencil-name="CF Osp Elegir otro vehículo"
+                    class="box-border [flex:1_1_0] h-0 flex flex-row gap-0 justify-start items-start"></div>
+                <svg data-pencil-name="CF Och Elegir otro vehículo" data-icon-name="chevron_right"
+                    data-icon-set="Material Symbols Outlined" viewBox="0 0 14.000015258789062 14"
+                    preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"
+                    class="box-border w-[16px] shrink-0 h-[16px]">
+                    <path
+                        d="M7.75537 7l-2.68652-2.68311 0.41357-0.41357 3.09668 3.09668-3.09668 3.09668-0.41357-0.41357 2.68652-2.68311z"
+                        fill="#8F8C85"></path>
+                </svg>
+            </div>
+            <div data-pencil-name="CF O Reservar igualmente"
+                class="box-border w-[560px] h-[52px] absolute left-[28px] top-[224px] flex flex-row gap-[12px] p-[12px] justify-start items-center bg-[#FFFFFF0F] [outline:1px_solid_#FFFFFF1F] [outline-offset:-0.5px] rounded-[10px] [z-index:4]">
+                <svg data-pencil-name="CF Oi Reservar igualmente" data-icon-name="warning"
+                    data-icon-set="Material Symbols Outlined" viewBox="0 0 14.000015258789062 14"
+                    preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"
+                    class="box-border w-[20px] shrink-0 h-[20px]">
+                    <path
+                        d="M1.59277 11.66553l5.40723-9.33106 5.40723 9.33106-10.81446 0z m1.00147-0.58106l8.81152 0-4.40576-7.58447-4.40576 7.58447z m4.40576-0.81006q0.15381 0 0.25635-0.10254 0.10254-0.10254 0.10254-0.25634 0-0.15039-0.10254-0.25293-0.10254-0.10596-0.25635-0.10596-0.15381 0-0.25635 0.10596-0.10254 0.10254-0.10254 0.25293 0 0.15381 0.10254 0.25634 0.10254 0.10254 0.25635 0.10254z m-0.29053-1.29882l0.58106 0 0-2.91895-0.58106 0 0 2.91895z"
+                        fill="#D8D5CE"></path>
+                </svg>
+                <div data-pencil-name="CF Ot Reservar igualmente"
+                    class="text-[13px]/[normal] box-border text-[#FFFFFF] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                    Reservar igualmente
+                </div>
+                <div data-pencil-name="CF Os Reservar igualmente"
+                    class="text-[11px]/[normal] box-border text-[#A8A6A0] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    Asumir el conflicto con el alquiler activo
+                </div>
+                <div data-pencil-name="CF Osp Reservar igualmente"
+                    class="box-border [flex:1_1_0] h-0 flex flex-row gap-0 justify-start items-start"></div>
+                <svg data-pencil-name="CF Och Reservar igualmente" data-icon-name="chevron_right"
+                    data-icon-set="Material Symbols Outlined" viewBox="0 0 14.000015258789062 14"
+                    preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"
+                    class="box-border w-[16px] shrink-0 h-[16px]">
+                    <path
+                        d="M7.75537 7l-2.68652-2.68311 0.41357-0.41357 3.09668 3.09668-3.09668 3.09668-0.41357-0.41357 2.68652-2.68311z"
+                        fill="#8F8C85"></path>
+                </svg>
+            </div>
+            <div data-pencil-name="CF Dn"
+                class="text-[9px]/[normal] box-border absolute left-[28px] top-[310px] text-[#8F8C85] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[0.5px] text-left [white-space:nowrap] [z-index:5]">
+                RECOMENDADO · AMPLIAR LA RESERVA A 5-10 OCT PARA EVITAR EL SOLAPAMIENTO
+            </div>
+            <div data-pencil-name="CF Btn Ca"
+                class="box-border w-[112px] h-[44px] absolute left-[28px] top-[340px] flex flex-row gap-[8px] justify-center items-center bg-[#FFFFFF0D] [outline:1px_solid_#FFFFFF33] [outline-offset:-0.5px] rounded-[12px] [z-index:6]">
+                <div data-pencil-name="CF Btn Cat"
+                    class="text-[13px]/[normal] box-border text-[#D8D5CE] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                    Cancelar
+                </div>
+            </div>
+            <div data-pencil-name="CF Btn Pr"
+                class="box-border w-[220px] h-[44px] absolute left-[152px] top-[340px] flex flex-row gap-[8px] justify-center items-center bg-[#FF5A1F] rounded-[12px] [z-index:7]">
+                <div data-pencil-name="CF Btn Prt"
+                    class="text-[13px]/[normal] box-border text-[#FFFFFF] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                    Elegir otro vehículo
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

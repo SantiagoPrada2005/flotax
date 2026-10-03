@@ -1,0 +1,936 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+        tailwind = { config: { corePlugins: { preflight: false } } };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Geist+Mono%3Awght%40100..900&family=Inter%3Awght%40100..900&family=JetBrains+Mono%3Awght%40100..800&family=Space+Grotesk%3Awght%40300..700&display=swap"
+        rel="stylesheet" />
+    <style>
+        *,
+        ::before,
+        ::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+        }
+    </style>
+
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body style="background-color: #FFFFFF">
+    <div data-pencil-name="Range Picker Panel"
+        class="box-border w-[1380px] h-[640px] [box-shadow:0px_10px_40px_#1312111A] bg-[#FFFFFF] [outline:1px_solid_#E5E4DF] [outline-offset:-0.5px] rounded-[24px] relative">
+        <div data-pencil-name="Panel Title"
+            class="text-[24px]/[normal] box-border absolute left-[28px] top-[26px] text-[#131211] font-['Space_Grotesk',system-ui,sans-serif] font-normal text-left [white-space:nowrap] [z-index:0]">
+            ¿Cuándo recoge el cliente?
+        </div>
+        <div data-pencil-name="Panel Sub"
+            class="text-[13px]/[normal] box-border absolute left-[28px] top-[62px] text-[#6E6C66] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap] [z-index:1]">
+            Selecciona un rango de fechas y valida la disponibilidad de la flota
+        </div>
+        <div data-pencil-name="Optimal Chip"
+            class="box-border w-[150px] h-[36px] absolute left-[1200px] top-[30px] flex flex-row gap-[8px] justify-center items-center bg-[#E7F6EC] rounded-[100px] [z-index:2]">
+        </div>
+        <div data-pencil-name="Optimal Dot"
+            class="box-border w-[10px] h-[10px] absolute left-0 top-0 bg-[#0FA968] rounded-full [z-index:3]"></div>
+        <div data-pencil-name="Optimal Label"
+            class="text-[11px]/[normal] box-border absolute left-0 top-0 text-[#0FA968] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[1px] text-left [white-space:nowrap] [z-index:4]">
+            RANGO OPTIMO
+        </div>
+        <div data-pencil-name="Septiembre 2026"
+            class="box-border w-[332px] h-[320px] absolute left-[28px] top-[112px] [z-index:5]">
+            <div data-pencil-name="Septiembre 2026 Header"
+                class="box-border w-[332px] h-fit absolute left-0 top-0 flex flex-row gap-[8px] justify-start items-center [z-index:0]">
+                <div data-pencil-name="Septiembre 2026 Month"
+                    class="text-[15px]/[normal] box-border text-[#131211] font-['Space_Grotesk',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    Septiembre 2026
+                </div>
+                <div data-pencil-name="Septiembre 2026 Sp"
+                    class="box-border [flex:1_1_0] h-[20px] flex flex-row gap-0 justify-start items-start"></div>
+                <div data-pencil-name="Septiembre 2026 left"
+                    class="box-border w-[28px] shrink-0 h-[28px] flex flex-row gap-0 justify-center items-center bg-[#F4F3EF] rounded-[8px]">
+                    <svg data-pencil-name="Septiembre 2026 left i" data-icon-name="chevron_left"
+                        data-icon-set="Material Symbols Outlined" viewBox="0 0 14.000015258789062 14"
+                        preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"
+                        class="box-border w-[16px] shrink-0 h-[16px]">
+                        <path
+                            d="M8.16553 10.09668l-3.09668-3.09668 3.09668-3.09668 0.41357 0.41357-2.6831 2.68311 2.6831 2.68311-0.41357 0.41357z"
+                            fill="#131211"></path>
+                    </svg>
+                </div>
+                <div data-pencil-name="Septiembre 2026 right"
+                    class="box-border w-[28px] shrink-0 h-[28px] flex flex-row gap-0 justify-center items-center bg-[#F4F3EF] rounded-[8px]">
+                    <svg data-pencil-name="Septiembre 2026 right i" data-icon-name="chevron_right"
+                        data-icon-set="Material Symbols Outlined" viewBox="0 0 14.000015258789062 14"
+                        preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"
+                        class="box-border w-[16px] shrink-0 h-[16px]">
+                        <path
+                            d="M7.75537 7l-2.68652-2.68311 0.41357-0.41357 3.09668 3.09668-3.09668 3.09668-0.41357-0.41357 2.68652-2.68311z"
+                            fill="#131211"></path>
+                    </svg>
+                </div>
+            </div>
+            <div data-pencil-name="Septiembre 2026 Wd"
+                class="box-border w-[332px] h-fit absolute left-0 top-[40px] flex flex-row gap-[4px] justify-start items-start [z-index:1]">
+                <div data-pencil-name="Septiembre 2026 wdL"
+                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-center [white-space:nowrap]">
+                    L
+                </div>
+                <div data-pencil-name="Septiembre 2026 wdM"
+                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-center [white-space:nowrap]">
+                    M
+                </div>
+                <div data-pencil-name="Septiembre 2026 wdX"
+                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-center [white-space:nowrap]">
+                    X
+                </div>
+                <div data-pencil-name="Septiembre 2026 wdJ"
+                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-center [white-space:nowrap]">
+                    J
+                </div>
+                <div data-pencil-name="Septiembre 2026 wdV"
+                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-center [white-space:nowrap]">
+                    V
+                </div>
+                <div data-pencil-name="Septiembre 2026 wdS"
+                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-center [white-space:nowrap]">
+                    S
+                </div>
+                <div data-pencil-name="Septiembre 2026 wdD"
+                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-center [white-space:nowrap]">
+                    D
+                </div>
+            </div>
+            <div data-pencil-name="Sept Grid"
+                class="box-border w-[332px] h-fit absolute left-0 top-[66px] flex flex-col gap-[4px] justify-start items-start [z-index:2]">
+                <div data-pencil-name="Sept Row0"
+                    class="box-border w-[332px] h-[34px] shrink-0 flex flex-row gap-[4px] justify-start items-start">
+                    <div data-pencil-name="Sept b0"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-start items-start">
+                    </div>
+                    <div data-pencil-name="Sept d1"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n1"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            1
+                        </div>
+                    </div>
+                    <div data-pencil-name="Sept d2"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n2"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            2
+                        </div>
+                    </div>
+                    <div data-pencil-name="Sept d3"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n3"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            3
+                        </div>
+                    </div>
+                    <div data-pencil-name="Sept d4"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n4"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            4
+                        </div>
+                    </div>
+                    <div data-pencil-name="Sept d5"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n5"
+                            class="text-[12px]/[normal] box-border text-[#A29F99] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            5
+                        </div>
+                    </div>
+                    <div data-pencil-name="Sept d6"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n6"
+                            class="text-[12px]/[normal] box-border text-[#A29F99] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            6
+                        </div>
+                    </div>
+                </div>
+                <div data-pencil-name="Sept Row1"
+                    class="box-border w-[332px] h-[34px] shrink-0 flex flex-row gap-[4px] justify-start items-start">
+                    <div data-pencil-name="Sept d7"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n7"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            7
+                        </div>
+                    </div>
+                    <div data-pencil-name="Sept d8"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n8"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            8
+                        </div>
+                    </div>
+                    <div data-pencil-name="Sept d9"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n9"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            9
+                        </div>
+                    </div>
+                    <div data-pencil-name="Sept d10"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n10"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            10
+                        </div>
+                    </div>
+                    <div data-pencil-name="Sept d11"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n11"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            11
+                        </div>
+                    </div>
+                    <div data-pencil-name="Sept d12"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n12"
+                            class="text-[12px]/[normal] box-border text-[#A29F99] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            12
+                        </div>
+                    </div>
+                    <div data-pencil-name="Sept d13"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n13"
+                            class="text-[12px]/[normal] box-border text-[#A29F99] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            13
+                        </div>
+                    </div>
+                </div>
+                <div data-pencil-name="Sept Row2"
+                    class="box-border w-[332px] h-[34px] shrink-0 flex flex-row gap-[4px] justify-start items-start">
+                    <div data-pencil-name="Sept d14"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n14"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            14
+                        </div>
+                    </div>
+                    <div data-pencil-name="Sept d15"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n15"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            15
+                        </div>
+                    </div>
+                    <div data-pencil-name="Sept d16"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n16"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            16
+                        </div>
+                    </div>
+                    <div data-pencil-name="Sept d17"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n17"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            17
+                        </div>
+                    </div>
+                    <div data-pencil-name="Sept d18"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n18"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            18
+                        </div>
+                    </div>
+                    <div data-pencil-name="Sept d19"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n19"
+                            class="text-[12px]/[normal] box-border text-[#A29F99] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            19
+                        </div>
+                    </div>
+                    <div data-pencil-name="Sept d20"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n20"
+                            class="text-[12px]/[normal] box-border text-[#A29F99] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            20
+                        </div>
+                    </div>
+                </div>
+                <div data-pencil-name="Sept Row3"
+                    class="box-border w-[332px] h-[34px] shrink-0 flex flex-row gap-[4px] justify-start items-start">
+                    <div data-pencil-name="Sept d21"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n21"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            21
+                        </div>
+                    </div>
+                    <div data-pencil-name="Sept d22"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n22"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            22
+                        </div>
+                    </div>
+                    <div data-pencil-name="Sept d23"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n23"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            23
+                        </div>
+                    </div>
+                    <div data-pencil-name="Sept d24"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n24"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            24
+                        </div>
+                    </div>
+                    <div data-pencil-name="Sept d25"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n25"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            25
+                        </div>
+                    </div>
+                    <div data-pencil-name="Sept d26"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n26"
+                            class="text-[12px]/[normal] box-border text-[#A29F99] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            26
+                        </div>
+                    </div>
+                    <div data-pencil-name="Sept d27"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n27"
+                            class="text-[12px]/[normal] box-border text-[#A29F99] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            27
+                        </div>
+                    </div>
+                </div>
+                <div data-pencil-name="Sept Row4"
+                    class="box-border w-[332px] h-[34px] shrink-0 flex flex-row gap-[4px] justify-start items-start">
+                    <div data-pencil-name="Sept d28"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n28"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            28
+                        </div>
+                    </div>
+                    <div data-pencil-name="Sept d29"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n29"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            29
+                        </div>
+                    </div>
+                    <div data-pencil-name="Sept d30"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#131211] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Sept n30"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            30
+                        </div>
+                    </div>
+                    <div data-pencil-name="Sept b31"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-start items-start">
+                    </div>
+                    <div data-pencil-name="Sept b32"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-start items-start">
+                    </div>
+                    <div data-pencil-name="Sept b33"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-start items-start">
+                    </div>
+                    <div data-pencil-name="Sept b34"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-start items-start">
+                    </div>
+                </div>
+                <div data-pencil-name="Sept Row5"
+                    class="box-border w-[332px] h-[34px] shrink-0 flex flex-row gap-[4px] justify-start items-start">
+                    <div data-pencil-name="Sept b35"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-start items-start">
+                    </div>
+                    <div data-pencil-name="Sept b36"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-start items-start">
+                    </div>
+                    <div data-pencil-name="Sept b37"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-start items-start">
+                    </div>
+                    <div data-pencil-name="Sept b38"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-start items-start">
+                    </div>
+                    <div data-pencil-name="Sept b39"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-start items-start">
+                    </div>
+                    <div data-pencil-name="Sept b40"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-start items-start">
+                    </div>
+                    <div data-pencil-name="Sept b41"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-start items-start">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div data-pencil-name="Octubre 2026"
+            class="box-border w-[332px] h-[320px] absolute left-[384px] top-[112px] [z-index:6]">
+            <div data-pencil-name="Octubre 2026 Header"
+                class="box-border w-[332px] h-fit absolute left-0 top-0 flex flex-row gap-[8px] justify-start items-center [z-index:0]">
+                <div data-pencil-name="Octubre 2026 Month"
+                    class="text-[15px]/[normal] box-border text-[#131211] font-['Space_Grotesk',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    Octubre 2026
+                </div>
+                <div data-pencil-name="Octubre 2026 Sp"
+                    class="box-border [flex:1_1_0] h-[20px] flex flex-row gap-0 justify-start items-start"></div>
+                <div data-pencil-name="Octubre 2026 left"
+                    class="box-border w-[28px] shrink-0 h-[28px] flex flex-row gap-0 justify-center items-center bg-[#F4F3EF] rounded-[8px]">
+                    <svg data-pencil-name="Octubre 2026 left i" data-icon-name="chevron_left"
+                        data-icon-set="Material Symbols Outlined" viewBox="0 0 14.000015258789062 14"
+                        preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"
+                        class="box-border w-[16px] shrink-0 h-[16px]">
+                        <path
+                            d="M8.16553 10.09668l-3.09668-3.09668 3.09668-3.09668 0.41357 0.41357-2.6831 2.68311 2.6831 2.68311-0.41357 0.41357z"
+                            fill="#131211"></path>
+                    </svg>
+                </div>
+                <div data-pencil-name="Octubre 2026 right"
+                    class="box-border w-[28px] shrink-0 h-[28px] flex flex-row gap-0 justify-center items-center bg-[#F4F3EF] rounded-[8px]">
+                    <svg data-pencil-name="Octubre 2026 right i" data-icon-name="chevron_right"
+                        data-icon-set="Material Symbols Outlined" viewBox="0 0 14.000015258789062 14"
+                        preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"
+                        class="box-border w-[16px] shrink-0 h-[16px]">
+                        <path
+                            d="M7.75537 7l-2.68652-2.68311 0.41357-0.41357 3.09668 3.09668-3.09668 3.09668-0.41357-0.41357 2.68652-2.68311z"
+                            fill="#131211"></path>
+                    </svg>
+                </div>
+            </div>
+            <div data-pencil-name="Octubre 2026 Wd"
+                class="box-border w-[332px] h-fit absolute left-0 top-[40px] flex flex-row gap-[4px] justify-start items-start [z-index:1]">
+                <div data-pencil-name="Octubre 2026 wdL"
+                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-center [white-space:nowrap]">
+                    L
+                </div>
+                <div data-pencil-name="Octubre 2026 wdM"
+                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-center [white-space:nowrap]">
+                    M
+                </div>
+                <div data-pencil-name="Octubre 2026 wdX"
+                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-center [white-space:nowrap]">
+                    X
+                </div>
+                <div data-pencil-name="Octubre 2026 wdJ"
+                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-center [white-space:nowrap]">
+                    J
+                </div>
+                <div data-pencil-name="Octubre 2026 wdV"
+                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-center [white-space:nowrap]">
+                    V
+                </div>
+                <div data-pencil-name="Octubre 2026 wdS"
+                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-center [white-space:nowrap]">
+                    S
+                </div>
+                <div data-pencil-name="Octubre 2026 wdD"
+                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-center [white-space:nowrap]">
+                    D
+                </div>
+            </div>
+            <div data-pencil-name="Oct Grid"
+                class="box-border w-[332px] h-fit absolute left-0 top-[66px] flex flex-col gap-[4px] justify-start items-start [z-index:2]">
+                <div data-pencil-name="Oct Row0"
+                    class="box-border w-[332px] h-[34px] shrink-0 flex flex-row gap-[4px] justify-start items-start">
+                    <div data-pencil-name="Oct b-3"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-start items-start">
+                    </div>
+                    <div data-pencil-name="Oct b-2"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-start items-start">
+                    </div>
+                    <div data-pencil-name="Oct b-1"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-start items-start">
+                    </div>
+                    <div data-pencil-name="Oct b0"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-start items-start">
+                    </div>
+                    <div data-pencil-name="Oct d1"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#ECEBE8] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n1"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            1
+                        </div>
+                    </div>
+                    <div data-pencil-name="Oct d2"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#ECEBE8] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n2"
+                            class="text-[12px]/[normal] box-border text-[#A29F99] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            2
+                        </div>
+                    </div>
+                    <div data-pencil-name="Oct d3"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#ECEBE8] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n3"
+                            class="text-[12px]/[normal] box-border text-[#A29F99] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            3
+                        </div>
+                    </div>
+                </div>
+                <div data-pencil-name="Oct Row1"
+                    class="box-border w-[332px] h-[34px] shrink-0 flex flex-row gap-[4px] justify-start items-start">
+                    <div data-pencil-name="Oct d4"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#ECEBE8] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n4"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            4
+                        </div>
+                    </div>
+                    <div data-pencil-name="Oct d5"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#ECEBE8] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n5"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            5
+                        </div>
+                    </div>
+                    <div data-pencil-name="Oct d6"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#131211] [outline:1.5px_solid_#131211] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n6"
+                            class="text-[12px]/[normal] box-border text-[#FFFFFF] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            6
+                        </div>
+                    </div>
+                    <div data-pencil-name="Oct d7"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n7"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            7
+                        </div>
+                    </div>
+                    <div data-pencil-name="Oct d8"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n8"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            8
+                        </div>
+                    </div>
+                    <div data-pencil-name="Oct d9"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n9"
+                            class="text-[12px]/[normal] box-border text-[#A29F99] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            9
+                        </div>
+                    </div>
+                    <div data-pencil-name="Oct d10"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n10"
+                            class="text-[12px]/[normal] box-border text-[#A29F99] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            10
+                        </div>
+                    </div>
+                </div>
+                <div data-pencil-name="Oct Row2"
+                    class="box-border w-[332px] h-[34px] shrink-0 flex flex-row gap-[4px] justify-start items-start">
+                    <div data-pencil-name="Oct d11"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n11"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            11
+                        </div>
+                    </div>
+                    <div data-pencil-name="Oct d12"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n12"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            12
+                        </div>
+                    </div>
+                    <div data-pencil-name="Oct d13"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n13"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            13
+                        </div>
+                    </div>
+                    <div data-pencil-name="Oct d14"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n14"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            14
+                        </div>
+                    </div>
+                    <div data-pencil-name="Oct d15"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n15"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            15
+                        </div>
+                    </div>
+                    <div data-pencil-name="Oct d16"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n16"
+                            class="text-[12px]/[normal] box-border text-[#A29F99] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            16
+                        </div>
+                    </div>
+                    <div data-pencil-name="Oct d17"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n17"
+                            class="text-[12px]/[normal] box-border text-[#A29F99] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            17
+                        </div>
+                    </div>
+                </div>
+                <div data-pencil-name="Oct Row3"
+                    class="box-border w-[332px] h-[34px] shrink-0 flex flex-row gap-[4px] justify-start items-start">
+                    <div data-pencil-name="Oct d18"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n18"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            18
+                        </div>
+                    </div>
+                    <div data-pencil-name="Oct d19"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n19"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            19
+                        </div>
+                    </div>
+                    <div data-pencil-name="Oct d20"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n20"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            20
+                        </div>
+                    </div>
+                    <div data-pencil-name="Oct d21"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n21"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            21
+                        </div>
+                    </div>
+                    <div data-pencil-name="Oct d22"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n22"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            22
+                        </div>
+                    </div>
+                    <div data-pencil-name="Oct d23"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n23"
+                            class="text-[12px]/[normal] box-border text-[#A29F99] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            23
+                        </div>
+                    </div>
+                    <div data-pencil-name="Oct d24"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n24"
+                            class="text-[12px]/[normal] box-border text-[#A29F99] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            24
+                        </div>
+                    </div>
+                </div>
+                <div data-pencil-name="Oct Row4"
+                    class="box-border w-[332px] h-[34px] shrink-0 flex flex-row gap-[4px] justify-start items-start">
+                    <div data-pencil-name="Oct d25"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n25"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            25
+                        </div>
+                    </div>
+                    <div data-pencil-name="Oct d26"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n26"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            26
+                        </div>
+                    </div>
+                    <div data-pencil-name="Oct d27"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n27"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            27
+                        </div>
+                    </div>
+                    <div data-pencil-name="Oct d28"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n28"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            28
+                        </div>
+                    </div>
+                    <div data-pencil-name="Oct d29"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n29"
+                            class="text-[12px]/[normal] box-border text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            29
+                        </div>
+                    </div>
+                    <div data-pencil-name="Oct d30"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n30"
+                            class="text-[12px]/[normal] box-border text-[#A29F99] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            30
+                        </div>
+                    </div>
+                    <div data-pencil-name="Oct d31"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1.5px_solid_#00000000] [outline-offset:-0.75px] rounded-[9px]">
+                        <div data-pencil-name="Oct n31"
+                            class="text-[12px]/[normal] box-border text-[#A29F99] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            31
+                        </div>
+                    </div>
+                </div>
+                <div data-pencil-name="Oct Row5"
+                    class="box-border w-[332px] h-[34px] shrink-0 flex flex-row gap-[4px] justify-start items-start">
+                    <div data-pencil-name="Oct b32"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-start items-start">
+                    </div>
+                    <div data-pencil-name="Oct b33"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-start items-start">
+                    </div>
+                    <div data-pencil-name="Oct b34"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-start items-start">
+                    </div>
+                    <div data-pencil-name="Oct b35"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-start items-start">
+                    </div>
+                    <div data-pencil-name="Oct b36"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-start items-start">
+                    </div>
+                    <div data-pencil-name="Oct b37"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-start items-start">
+                    </div>
+                    <div data-pencil-name="Oct b38"
+                        class="box-border w-[44px] shrink-0 h-[34px] flex flex-row gap-0 justify-start items-start">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div data-pencil-name="Pk DV"
+            class="box-border w-[600px] h-[1px] absolute left-[752px] top-[240px] flex flex-row gap-0 justify-start items-start bg-[#E5E4DF] [z-index:7]">
+        </div>
+        <div data-pencil-name="Pk AL"
+            class="text-[11px]/[normal] box-border absolute left-[752px] top-[256px] text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[1px] text-left [white-space:nowrap] [z-index:8]">
+            DISPONIBILIDAD CALCULADA · FLOTA 22 VEH.
+        </div>
+        <div data-pencil-name="Pk BS"
+            class="box-border w-[208px] h-[74px] absolute left-[752px] top-[280px] flex flex-row gap-[8px] justify-start items-end [z-index:9]">
+            <div data-pencil-name="Pk BR0"
+                class="box-border w-[22px] shrink-0 h-[64px] flex flex-row gap-0 justify-start items-start bg-[#0FA968] rounded-[6px]">
+            </div>
+            <div data-pencil-name="Pk BL0"
+                class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                30
+            </div>
+            <div data-pencil-name="Pk BR1"
+                class="box-border w-[22px] shrink-0 h-[56px] flex flex-row gap-0 justify-start items-start bg-[#0FA968] rounded-[6px]">
+            </div>
+            <div data-pencil-name="Pk BL1"
+                class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                02
+            </div>
+            <div data-pencil-name="Pk BR2"
+                class="box-border w-[22px] shrink-0 h-[48px] flex flex-row gap-0 justify-start items-start bg-[#0FA968] rounded-[6px]">
+            </div>
+            <div data-pencil-name="Pk BL2"
+                class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                03
+            </div>
+            <div data-pencil-name="Pk BR3"
+                class="box-border w-[22px] shrink-0 h-[24px] flex flex-row gap-0 justify-start items-start bg-[#FFC52E] rounded-[6px]">
+            </div>
+            <div data-pencil-name="Pk BL3"
+                class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                04
+            </div>
+            <div data-pencil-name="Pk BR4"
+                class="box-border w-[22px] shrink-0 h-[40px] flex flex-row gap-0 justify-start items-start bg-[#FFC52E] rounded-[6px]">
+            </div>
+            <div data-pencil-name="Pk BL4"
+                class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                05
+            </div>
+            <div data-pencil-name="Pk BR5"
+                class="box-border w-[22px] shrink-0 h-[48px] flex flex-row gap-0 justify-start items-start bg-[#0FA968] rounded-[6px]">
+            </div>
+            <div data-pencil-name="Pk BL5"
+                class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                06
+            </div>
+            <div data-pencil-name="Pk BR6"
+                class="box-border w-[22px] shrink-0 h-[56px] flex flex-row gap-0 justify-start items-start bg-[#0FA968] rounded-[6px]">
+            </div>
+            <div data-pencil-name="Pk BL6"
+                class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                07
+            </div>
+        </div>
+        <div data-pencil-name="Pk AN"
+            class="text-[18px]/[normal] box-border absolute left-[982px] top-[282px] text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap] [z-index:10]">
+            16 de 22 disponibles
+        </div>
+        <div data-pencil-name="Pk AS"
+            class="text-[12px]/[normal] box-border absolute left-[982px] top-[310px] text-[#6E6C66] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap] [z-index:11]">
+            83 % del rango óptimo - el 3 oct la ocupación es máxima
+        </div>
+        <div data-pencil-name="Pk AH"
+            class="text-[10px]/[normal] box-border absolute left-[982px] top-[330px] text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap] [z-index:12]">
+            35 reservas - 4 mantenimientos en el rango
+        </div>
+        <div data-pencil-name="Pk CW"
+            class="box-border w-[600px] h-[58px] absolute left-[752px] top-[366px] flex flex-row gap-[10px] p-[14px] justify-start items-center bg-[#FDF3E0] rounded-[20px] [z-index:13]">
+            <svg data-pencil-name="Pk CI" data-icon-name="warning" data-icon-set="Material Symbols Outlined"
+                viewBox="0 0 14.000015258789062 14" preserveAspectRatio="xMidYMid meet"
+                xmlns="http://www.w3.org/2000/svg" class="box-border w-[20px] shrink-0 h-[20px]">
+                <path
+                    d="M1.59277 11.66553l5.40723-9.33106 5.40723 9.33106-10.81446 0z m1.00147-0.58106l8.81152 0-4.40576-7.58447-4.40576 7.58447z m4.40576-0.81006q0.15381 0 0.25635-0.10254 0.10254-0.10254 0.10254-0.25634 0-0.15039-0.10254-0.25293-0.10254-0.10596-0.25635-0.10596-0.15381 0-0.25635 0.10596-0.10254 0.10254-0.10254 0.25293 0 0.15381 0.10254 0.25634 0.10254 0.10254 0.25635 0.10254z m-0.29053-1.29882l0.58106 0 0-2.91895-0.58106 0 0 2.91895z"
+                    fill="#FFC52E"></path>
+            </svg>
+            <div data-pencil-name="Pk CT"
+                class="text-[13px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                3 vehículos con conflicto en estas fechas
+            </div>
+            <div data-pencil-name="Pk CS"
+                class="box-border [flex:1_1_0] h-[2px] flex flex-row gap-0 justify-start items-start"></div>
+            <div data-pencil-name="Pk CL"
+                class="text-[11px]/[normal] box-border text-[#131211] font-['JetBrains_Mono',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                VER
+            </div>
+        </div>
+        <div data-pencil-name="Pk CTA"
+            class="box-border w-[294px] h-[52px] absolute left-[752px] top-[448px] flex flex-row gap-[10px] justify-center items-center bg-[#131211] rounded-[12px] [z-index:14]">
+        </div>
+        <div data-pencil-name="Pk CTA T"
+            class="text-[14px]/[normal] box-border absolute left-0 top-0 text-[#FFFFFF] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap] [z-index:15]">
+            Continuar - 16 disponibles
+        </div>
+        <svg data-pencil-name="Pk CTA I" data-icon-name="arrow_forward" data-icon-set="Material Symbols Outlined"
+            viewBox="0 0 14.000015258789062 14" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"
+            class="box-border w-[18px] h-[18px] absolute left-0 top-0 [z-index:16]">
+            <path
+                d="M9.96338 7.29053l-7.04785 0 0-0.58106 7.04785 0-3.38037-3.38037 0.41699-0.41357 4.08447 4.08447-4.08447 4.08447-0.41699-0.41357 3.38037-3.38037z"
+                fill="#FFFFFF"></path>
+        </svg>
+        <div data-pencil-name="Pk GH"
+            class="box-border w-[290px] h-[52px] absolute left-[1062px] top-[448px] flex flex-row gap-[10px] justify-center items-center bg-[#FFFFFF] [outline:1px_solid_#C9D1DE] [outline-offset:-0.5px] rounded-[12px] [z-index:17]">
+        </div>
+        <div data-pencil-name="Pk GT"
+            class="text-[14px]/[normal] box-border absolute left-0 top-0 text-[#6E6C66] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap] [z-index:18]">
+            Limpiar selección
+        </div>
+        <div data-pencil-name="Pk NT"
+            class="text-[11px]/[normal] box-border absolute left-[752px] top-[520px] text-[#A29F99] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap] [z-index:19]">
+            Las fechas se validan contra reservas y mantenimientos en tiempo real
+        </div>
+        <div data-pencil-name="Pk A"
+            class="text-[11px]/[normal] box-border absolute left-[752px] top-[26px] text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[1px] text-left [white-space:nowrap] [z-index:20]">
+            RANGO SELECCIONADO
+        </div>
+        <div data-pencil-name="Pk Lb I"
+            class="text-[12px]/[normal] box-border absolute left-[752px] top-[44px] text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap] [z-index:21]">
+            Fecha inicial
+        </div>
+        <div data-pencil-name="Pk Lb F"
+            class="text-[12px]/[normal] box-border absolute left-[1062px] top-[44px] text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap] [z-index:22]">
+            Fecha final
+        </div>
+        <div data-pencil-name="Pk Fd I"
+            class="box-border w-[290px] h-[52px] absolute left-[752px] top-[64px] flex flex-row gap-[10px] p-[14px] justify-start items-center bg-[#F4F3EF] rounded-[10px] [z-index:23]">
+            <svg data-pencil-name="Pk Ic I" data-icon-name="calendar_month" data-icon-set="Material Symbols Outlined"
+                viewBox="0 0 14.000015258789062 14" preserveAspectRatio="xMidYMid meet"
+                xmlns="http://www.w3.org/2000/svg" class="box-border w-[18px] shrink-0 h-[18px]">
+                <path
+                    d="M3.27441 12.25q-0.3999 0-0.66992-0.27002-0.27002-0.27002-0.27002-0.67334l0-7.44775q0-0.40332 0.27002-0.67334 0.27002-0.27002 0.66992-0.27002l1.03223 0 0-1.29883 0.62891 0 0 1.29883 4.17334 0 0-1.29883 0.58447 0 0 1.29883 1.03223 0q0.3999 0 0.66992 0.27002 0.27002 0.27002 0.27002 0.67334l0 7.44775q0 0.40332-0.27002 0.67334-0.27002 0.27002-0.66992 0.27002l-7.45118 0z m0-0.58447l7.45118 0q0.1333 0 0.24609-0.10938 0.11279-0.11279 0.11279-0.24951l0-5.11328-8.16894 0 0 5.11328q0 0.13672 0.11279 0.24951 0.11279 0.10938 0.24609 0.10938z m-0.35888-6.05664l8.16894 0 0-1.75q0-0.1333-0.11279-0.2461-0.11279-0.11279-0.24609-0.11279l-7.45118 0q-0.1333 0-0.24609 0.11279-0.11279 0.11279-0.11279 0.2461l0 1.75z m0 0l0-1.75q0-0.1333 0-0.2461 0-0.11279 0-0.11279 0 0 0 0.11279 0 0.11279 0 0.2461l0 1.75z m4.08447 2.64892q-0.18115 0-0.31445-0.1333-0.1333-0.13672-0.1333-0.31787 0-0.18115 0.1333-0.31445 0.1333-0.1333 0.31445-0.1333 0.18115 0 0.31445 0.1333 0.1333 0.1333 0.1333 0.31445 0 0.18115-0.1333 0.31787-0.1333 0.1333-0.31445 0.1333z m-2.33447 0q-0.18115 0-0.31446-0.1333-0.1333-0.13672-0.1333-0.31787 0-0.18115 0.1333-0.31445 0.1333-0.1333 0.31446-0.1333 0.18115 0 0.31445 0.1333 0.13672 0.1333 0.13672 0.31445 0 0.18115-0.13672 0.31787-0.1333 0.1333-0.31445 0.1333z m4.66894 0q-0.18115 0-0.31787-0.1333-0.1333-0.13672-0.1333-0.31787 0-0.18115 0.1333-0.31445 0.13672-0.1333 0.31787-0.1333 0.18115 0 0.31446 0.1333 0.1333 0.1333 0.1333 0.31445 0 0.18115-0.1333 0.31787-0.1333 0.1333-0.31446 0.1333z m-2.33447 2.24219q-0.18115 0-0.31445-0.1333-0.1333-0.1333-0.1333-0.31445 0-0.18115 0.1333-0.31446 0.1333-0.13672 0.31445-0.13672 0.18115 0 0.31445 0.13672 0.1333 0.1333 0.1333 0.31446 0 0.18115-0.1333 0.31445-0.1333 0.1333-0.31445 0.1333z m-2.33447 0q-0.18115 0-0.31446-0.1333-0.1333-0.1333-0.1333-0.31445 0-0.18115 0.1333-0.31446 0.1333-0.13672 0.31446-0.13672 0.18115 0 0.31445 0.13672 0.13672 0.1333 0.13672 0.31446 0 0.18115-0.13672 0.31445-0.1333 0.1333-0.31445 0.1333z m4.66894 0q-0.18115 0-0.31787-0.1333-0.1333-0.1333-0.1333-0.31445 0-0.18115 0.1333-0.31446 0.13672-0.13672 0.31787-0.13672 0.18115 0 0.31446 0.13672 0.1333 0.1333 0.1333 0.31446 0 0.18115-0.1333 0.31445-0.1333 0.1333-0.31446 0.1333z"
+                    fill="#6E6C66"></path>
+            </svg>
+            <div data-pencil-name="Pk Vl I"
+                class="text-[13px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                Mié 30 sep 2026
+            </div>
+            <div data-pencil-name="Pk Sp I"
+                class="box-border [flex:1_1_0] h-0 flex flex-row gap-0 justify-start items-start"></div>
+            <svg data-pencil-name="Pk Ch I" data-icon-name="chevron_right" data-icon-set="Material Symbols Outlined"
+                viewBox="0 0 14.000015258789062 14" preserveAspectRatio="xMidYMid meet"
+                xmlns="http://www.w3.org/2000/svg" class="box-border w-[18px] shrink-0 h-[18px]">
+                <path
+                    d="M7.75537 7l-2.68652-2.68311 0.41357-0.41357 3.09668 3.09668-3.09668 3.09668-0.41357-0.41357 2.68652-2.68311z"
+                    fill="#A29F99"></path>
+            </svg>
+        </div>
+        <div data-pencil-name="Pk Fd F"
+            class="box-border w-[290px] h-[52px] absolute left-[1062px] top-[64px] flex flex-row gap-[10px] p-[14px] justify-start items-center bg-[#F4F3EF] rounded-[10px] [z-index:24]">
+            <svg data-pencil-name="Pk Ic F" data-icon-name="calendar_month" data-icon-set="Material Symbols Outlined"
+                viewBox="0 0 14.000015258789062 14" preserveAspectRatio="xMidYMid meet"
+                xmlns="http://www.w3.org/2000/svg" class="box-border w-[18px] shrink-0 h-[18px]">
+                <path
+                    d="M3.27441 12.25q-0.3999 0-0.66992-0.27002-0.27002-0.27002-0.27002-0.67334l0-7.44775q0-0.40332 0.27002-0.67334 0.27002-0.27002 0.66992-0.27002l1.03223 0 0-1.29883 0.62891 0 0 1.29883 4.17334 0 0-1.29883 0.58447 0 0 1.29883 1.03223 0q0.3999 0 0.66992 0.27002 0.27002 0.27002 0.27002 0.67334l0 7.44775q0 0.40332-0.27002 0.67334-0.27002 0.27002-0.66992 0.27002l-7.45118 0z m0-0.58447l7.45118 0q0.1333 0 0.24609-0.10938 0.11279-0.11279 0.11279-0.24951l0-5.11328-8.16894 0 0 5.11328q0 0.13672 0.11279 0.24951 0.11279 0.10938 0.24609 0.10938z m-0.35888-6.05664l8.16894 0 0-1.75q0-0.1333-0.11279-0.2461-0.11279-0.11279-0.24609-0.11279l-7.45118 0q-0.1333 0-0.24609 0.11279-0.11279 0.11279-0.11279 0.2461l0 1.75z m0 0l0-1.75q0-0.1333 0-0.2461 0-0.11279 0-0.11279 0 0 0 0.11279 0 0.11279 0 0.2461l0 1.75z m4.08447 2.64892q-0.18115 0-0.31445-0.1333-0.1333-0.13672-0.1333-0.31787 0-0.18115 0.1333-0.31445 0.1333-0.1333 0.31445-0.1333 0.18115 0 0.31445 0.1333 0.1333 0.1333 0.1333 0.31445 0 0.18115-0.1333 0.31787-0.1333 0.1333-0.31445 0.1333z m-2.33447 0q-0.18115 0-0.31446-0.1333-0.1333-0.13672-0.1333-0.31787 0-0.18115 0.1333-0.31445 0.1333-0.1333 0.31446-0.1333 0.18115 0 0.31445 0.1333 0.13672 0.1333 0.13672 0.31445 0 0.18115-0.13672 0.31787-0.1333 0.1333-0.31445 0.1333z m4.66894 0q-0.18115 0-0.31787-0.1333-0.1333-0.13672-0.1333-0.31787 0-0.18115 0.1333-0.31445 0.13672-0.1333 0.31787-0.1333 0.18115 0 0.31446 0.1333 0.1333 0.1333 0.1333 0.31445 0 0.18115-0.1333 0.31787-0.1333 0.1333-0.31446 0.1333z m-2.33447 2.24219q-0.18115 0-0.31445-0.1333-0.1333-0.1333-0.1333-0.31445 0-0.18115 0.1333-0.31446 0.1333-0.13672 0.31445-0.13672 0.18115 0 0.31445 0.13672 0.1333 0.1333 0.1333 0.31446 0 0.18115-0.1333 0.31445-0.1333 0.1333-0.31445 0.1333z m-2.33447 0q-0.18115 0-0.31446-0.1333-0.1333-0.1333-0.1333-0.31445 0-0.18115 0.1333-0.31446 0.1333-0.13672 0.31446-0.13672 0.18115 0 0.31445 0.13672 0.13672 0.1333 0.13672 0.31446 0 0.18115-0.13672 0.31445-0.1333 0.1333-0.31445 0.1333z m4.66894 0q-0.18115 0-0.31787-0.1333-0.1333-0.1333-0.1333-0.31445 0-0.18115 0.1333-0.31446 0.13672-0.13672 0.31787-0.13672 0.18115 0 0.31446 0.13672 0.1333 0.1333 0.1333 0.31446 0 0.18115-0.1333 0.31445-0.1333 0.1333-0.31446 0.1333z"
+                    fill="#6E6C66"></path>
+            </svg>
+            <div data-pencil-name="Pk Vl F"
+                class="text-[13px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                Mar 6 oct 2026
+            </div>
+            <div data-pencil-name="Pk Sp F"
+                class="box-border [flex:1_1_0] h-0 flex flex-row gap-0 justify-start items-start"></div>
+            <svg data-pencil-name="Pk Ch F" data-icon-name="chevron_right" data-icon-set="Material Symbols Outlined"
+                viewBox="0 0 14.000015258789062 14" preserveAspectRatio="xMidYMid meet"
+                xmlns="http://www.w3.org/2000/svg" class="box-border w-[18px] shrink-0 h-[18px]">
+                <path
+                    d="M7.75537 7l-2.68652-2.68311 0.41357-0.41357 3.09668 3.09668-3.09668 3.09668-0.41357-0.41357 2.68652-2.68311z"
+                    fill="#A29F99"></path>
+            </svg>
+        </div>
+        <div data-pencil-name="Pk DL"
+            class="text-[11px]/[normal] box-border absolute left-[752px] top-[150px] text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[1px] text-left [white-space:nowrap] [z-index:25]">
+            DURACIÓN
+        </div>
+        <div data-pencil-name="Pk DB"
+            class="text-[44px]/[normal] box-border absolute left-[752px] top-[162px] text-[#131211] font-['Geist_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap] [z-index:26]">
+            7
+        </div>
+        <div data-pencil-name="Pk DU"
+            class="text-[14px]/[normal] box-border absolute left-[816px] top-[186px] text-[#6E6C66] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap] [z-index:27]">
+            días · 6 noches
+        </div>
+        <div data-pencil-name="Pk HC"
+            class="text-[10px]/[normal] box-border absolute left-[28px] top-[454px] text-[#131211] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap] [z-index:28]">
+            HOY
+        </div>
+        <div data-pencil-name="Pk HS"
+            class="box-border w-[22px] h-[22px] absolute left-[66px] top-[444px] flex flex-row gap-0 justify-start items-start bg-[#FFFFFF] [outline:1.5px_solid_#131211] [outline-offset:-0.75px] rounded-[6px] [z-index:29]">
+        </div>
+        <div data-pencil-name="Pk RC"
+            class="text-[10px]/[normal] box-border absolute left-[104px] top-[454px] text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap] [z-index:30]">
+            EN RANGO
+        </div>
+        <div data-pencil-name="Pk RS"
+            class="box-border w-[22px] h-[22px] absolute left-[184px] top-[444px] flex flex-row gap-0 justify-start items-start bg-[#ECEBE8] rounded-[6px] [z-index:31]">
+        </div>
+        <div data-pencil-name="Pk R2"
+            class="text-[10px]/[normal] box-border absolute left-[222px] top-[454px] text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap] [z-index:32]">
+            INICIO / FIN
+        </div>
+        <div data-pencil-name="Pk R3"
+            class="box-border w-[22px] h-[22px] absolute left-[312px] top-[444px] flex flex-row gap-0 justify-start items-start bg-[#131211] rounded-[6px] [z-index:33]">
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+        tailwind = { config: { corePlugins: { preflight: false } } };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Geist+Mono%3Awght%40100..900&family=Inter%3Awght%40100..900&family=JetBrains+Mono%3Awght%40100..800&family=Space+Grotesk%3Awght%40300..700&display=swap"
+        rel="stylesheet" />
+    <style>
+        *,
+        ::before,
+        ::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+        }
+    </style>
+
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div data-pencil-name="Flujo de reserva"
+        class="box-border w-[1632px] h-fit flex flex-col gap-[16px] justify-start items-start">
+        <div data-pencil-name="head"
+            class="box-border w-full h-fit shrink-0 flex flex-row gap-0 justify-between items-center">
+            <div data-pencil-name="t"
+                class="text-[18px]/[normal] box-border text-[#131211] font-['Space_Grotesk',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                Flujo de reserva · 4 pasos
+            </div>
+            <div data-pencil-name="m"
+                class="text-[10px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[1px] text-left [white-space:nowrap]">
+                MOVO · MÓDULO CATÁLOGO
+            </div>
+        </div>
+        <div data-pencil-name="steps"
+            class="box-border w-full h-fit shrink-0 flex flex-row gap-[16px] justify-start items-start">
+            <div data-pencil-name="Step Buscar"
+                class="box-border [flex:1_1_0] h-[168px] flex flex-col gap-[12px] p-[20px] justify-start items-start bg-[#FFFFFF] [outline:1px_solid_#E5E4DF] [outline-offset:-0.5px] rounded-[20px]">
+                <div data-pencil-name="num"
+                    class="box-border w-[36px] h-[36px] shrink-0 flex flex-row gap-0 justify-center items-center bg-[#131211] rounded-[100px]">
+                    <div data-pencil-name="n"
+                        class="text-[12px]/[normal] box-border text-[#FFFFFF] font-['Geist_Mono',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                        1
+                    </div>
+                </div>
+                <div data-pencil-name="t"
+                    class="text-[14px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                    Buscar
+                </div>
+                <div data-pencil-name="d"
+                    class="text-[11px]/[15px] box-border w-full text-[#6E6C66] font-[Inter,system-ui,sans-serif] font-normal text-left">
+                    Filtros por fecha, tipo y estado.
+                </div>
+            </div>
+            <div data-pencil-name="Step Seleccionar"
+                class="box-border [flex:1_1_0] h-[168px] flex flex-col gap-[12px] p-[20px] justify-start items-start bg-[#FFFFFF] [outline:1px_solid_#E5E4DF] [outline-offset:-0.5px] rounded-[20px]">
+                <div data-pencil-name="num"
+                    class="box-border w-[36px] h-[36px] shrink-0 flex flex-row gap-0 justify-center items-center bg-[#131211] rounded-[100px]">
+                    <div data-pencil-name="n"
+                        class="text-[12px]/[normal] box-border text-[#FFFFFF] font-['Geist_Mono',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                        2
+                    </div>
+                </div>
+                <div data-pencil-name="t"
+                    class="text-[14px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                    Seleccionar
+                </div>
+                <div data-pencil-name="d"
+                    class="text-[11px]/[15px] box-border w-full text-[#6E6C66] font-[Inter,system-ui,sans-serif] font-normal text-left">
+                    Detalle del vehículo y extras.
+                </div>
+            </div>
+            <div data-pencil-name="Step Confirmar"
+                class="box-border [flex:1_1_0] h-[168px] flex flex-col gap-[12px] p-[20px] justify-start items-start bg-[#FFFFFF] [outline:1px_solid_#E5E4DF] [outline-offset:-0.5px] rounded-[20px]">
+                <div data-pencil-name="num"
+                    class="box-border w-[36px] h-[36px] shrink-0 flex flex-row gap-0 justify-center items-center bg-[#131211] rounded-[100px]">
+                    <div data-pencil-name="n"
+                        class="text-[12px]/[normal] box-border text-[#FFFFFF] font-['Geist_Mono',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                        3
+                    </div>
+                </div>
+                <div data-pencil-name="t"
+                    class="text-[14px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                    Confirmar
+                </div>
+                <div data-pencil-name="d"
+                    class="text-[11px]/[15px] box-border w-full text-[#6E6C66] font-[Inter,system-ui,sans-serif] font-normal text-left">
+                    Pago y fianza en 3 pasos.
+                </div>
+            </div>
+            <div data-pencil-name="Step Listo"
+                class="box-border [flex:1_1_0] h-[168px] flex flex-col gap-[12px] p-[20px] justify-start items-start bg-[#FFFFFF] [outline:1px_solid_#E5E4DF] [outline-offset:-0.5px] rounded-[20px]">
+                <div data-pencil-name="num"
+                    class="box-border w-[36px] h-[36px] shrink-0 flex flex-row gap-0 justify-center items-center bg-[#FF5A1F] rounded-[100px]">
+                    <div data-pencil-name="n"
+                        class="text-[12px]/[normal] box-border text-[#FFFFFF] font-['Geist_Mono',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                        4
+                    </div>
+                </div>
+                <div data-pencil-name="t"
+                    class="text-[14px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                    Listo
+                </div>
+                <div data-pencil-name="d"
+                    class="text-[11px]/[15px] box-border w-full text-[#6E6C66] font-[Inter,system-ui,sans-serif] font-normal text-left">
+                    QR de recogida en la app.
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

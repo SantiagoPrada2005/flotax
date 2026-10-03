@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+        tailwind = { config: { corePlugins: { preflight: false } } };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter%3Awght%40100..900&family=JetBrains+Mono%3Awght%40100..800&family=Space+Grotesk%3Awght%40300..700&display=swap"
+        rel="stylesheet" />
+    <style>
+        *,
+        ::before,
+        ::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+        }
+    </style>
+
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div data-pencil-name="Right column"
+        class="box-border w-[484px] h-fit flex flex-col gap-[20px] justify-start items-start">
+        <div data-pencil-name="Finanzas"
+            class="box-border w-full h-fit shrink-0 flex flex-col gap-[18px] p-[22px] justify-start items-start bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[24px]">
+            <div data-pencil-name="Header"
+                class="box-border w-full h-fit shrink-0 flex flex-row gap-0 justify-between items-center">
+                <div data-pencil-name="l"
+                    class="text-[11px]/[normal] box-border text-[#131211] font-['JetBrains_Mono',system-ui,sans-serif] font-semibold tracking-[1px] text-left [white-space:nowrap]">
+                    FINANZAS DEL VEHÍCULO
+                </div>
+                <div data-pencil-name="chip"
+                    class="box-border w-fit shrink-0 h-[24px] flex flex-row gap-0 p-[0px_10px] justify-center items-center bg-[#F4F3EF] rounded-[999px]">
+                    <div data-pencil-name="t"
+                        class="text-[9px]/[normal] box-border text-[#34332F] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[0.6px] text-left [white-space:nowrap]">
+                        YTD 2024
+                    </div>
+                </div>
+            </div>
+            <div data-pencil-name="KPI grid"
+                class="box-border w-full h-fit shrink-0 flex flex-col gap-[12px] justify-start items-start">
+                <div data-pencil-name="kpi row 1"
+                    class="box-border w-full h-fit shrink-0 flex flex-row gap-[12px] justify-start items-start">
+                    <div data-pencil-name="Ingresos"
+                        class="box-border [flex:1_1_0] h-fit flex flex-col gap-[6px] p-[14px] justify-start items-start bg-[#F4F3EF] rounded-[16px]">
+                        <div data-pencil-name="l"
+                            class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[0.8px] text-left [white-space:nowrap]">
+                            INGRESOS
+                        </div>
+                        <div data-pencil-name="v"
+                            class="text-[27px]/[normal] box-border text-[#131211] font-['Space_Grotesk',system-ui,sans-serif] font-bold text-left [white-space:nowrap]">
+                            $ 18.240
+                        </div>
+                        <div data-pencil-name="d"
+                            class="text-[10.5px]/[normal] box-border text-[#12B886] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                            ▲ 12,3 % vs ago
+                        </div>
+                    </div>
+                    <div data-pencil-name="Gastos"
+                        class="box-border [flex:1_1_0] h-fit flex flex-col gap-[6px] p-[14px] justify-start items-start bg-[#F4F3EF] rounded-[16px]">
+                        <div data-pencil-name="l"
+                            class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[0.8px] text-left [white-space:nowrap]">
+                            GASTOS
+                        </div>
+                        <div data-pencil-name="v"
+                            class="text-[27px]/[normal] box-border text-[#131211] font-['Space_Grotesk',system-ui,sans-serif] font-bold text-left [white-space:nowrap]">
+                            − $ 3.410
+                        </div>
+                        <div data-pencil-name="d"
+                            class="text-[10.5px]/[normal] box-border text-[#12B886] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                            ▼ 4,1 % controlado
+                        </div>
+                    </div>
+                </div>
+                <div data-pencil-name="kpi row 2"
+                    class="box-border w-full h-fit shrink-0 flex flex-row gap-[12px] justify-start items-start">
+                    <div data-pencil-name="Comisión"
+                        class="box-border [flex:1_1_0] h-fit flex flex-col gap-[6px] p-[14px] justify-start items-start bg-[#F4F3EF] rounded-[16px]">
+                        <div data-pencil-name="l"
+                            class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[0.8px] text-left [white-space:nowrap]">
+                            COMISIÓN MOVO
+                        </div>
+                        <div data-pencil-name="v"
+                            class="text-[27px]/[normal] box-border text-[#131211] font-['Space_Grotesk',system-ui,sans-serif] font-bold text-left [white-space:nowrap]">
+                            − $ 2.190
+                        </div>
+                        <div data-pencil-name="d"
+                            class="text-[10.5px]/[normal] box-border text-[#FF5A1F] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                            12 % sobre tarifa
+                        </div>
+                    </div>
+                    <div data-pencil-name="Rentabilidad"
+                        class="box-border [flex:1_1_0] h-fit flex flex-col gap-[6px] p-[14px] justify-start items-start bg-[#F4F3EF] rounded-[16px]">
+                        <div data-pencil-name="l"
+                            class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[0.8px] text-left [white-space:nowrap]">
+                            RENTABILIDAD
+                        </div>
+                        <div data-pencil-name="v"
+                            class="text-[27px]/[normal] box-border text-[#131211] font-['Space_Grotesk',system-ui,sans-serif] font-bold text-left [white-space:nowrap]">
+                            78,4 %
+                        </div>
+                        <div data-pencil-name="d"
+                            class="text-[10.5px]/[normal] box-border text-[#12B886] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                            ▲ 2,1 pts en 30 d
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div data-pencil-name="Bars block"
+                class="box-border w-full h-fit shrink-0 flex flex-col gap-[10px] justify-start items-start">
+                <div data-pencil-name="h"
+                    class="box-border w-full h-fit shrink-0 flex flex-row gap-0 justify-between items-center">
+                    <div data-pencil-name="l"
+                        class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[0.6px] text-left [white-space:nowrap]">
+                        INGRESOS · ÚLTIMOS 6 MESES
+                    </div>
+                    <div data-pencil-name="r"
+                        class="text-[9.5px]/[normal] box-border text-[#131211] font-['JetBrains_Mono',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                        ∑ $ 76,4 K
+                    </div>
+                </div>
+                <div data-pencil-name="bars"
+                    class="box-border w-full h-[104px] shrink-0 flex flex-row gap-[14px] justify-start items-end">
+                    <div data-pencil-name="bar 0"
+                        class="box-border w-[26px] shrink-0 h-[58px] bg-[#131211] rounded-[6px]"></div>
+                    <div data-pencil-name="bar 1"
+                        class="box-border w-[26px] shrink-0 h-[44px] bg-[#131211] rounded-[6px]"></div>
+                    <div data-pencil-name="bar 2"
+                        class="box-border w-[26px] shrink-0 h-[66px] bg-[#131211] rounded-[6px]"></div>
+                    <div data-pencil-name="bar 3"
+                        class="box-border w-[26px] shrink-0 h-[71px] bg-[#131211] rounded-[6px]"></div>
+                    <div data-pencil-name="bar 4"
+                        class="box-border w-[26px] shrink-0 h-[84px] bg-[#131211] rounded-[6px]"></div>
+                    <div data-pencil-name="bar 5"
+                        class="box-border w-[26px] shrink-0 h-[92px] bg-[#FF5A1F] rounded-[6px]"></div>
+                </div>
+                <div data-pencil-name="labels"
+                    class="box-border w-full h-fit shrink-0 flex flex-row gap-[14px] justify-start items-start">
+                    <div data-pencil-name="MAR"
+                        class="text-[9px]/[normal] box-border w-[26px] shrink-0 text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-center">
+                        MAR
+                    </div>
+                    <div data-pencil-name="ABR"
+                        class="text-[9px]/[normal] box-border w-[26px] shrink-0 text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-center">
+                        ABR
+                    </div>
+                    <div data-pencil-name="MAY"
+                        class="text-[9px]/[normal] box-border w-[26px] shrink-0 text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-center">
+                        MAY
+                    </div>
+                    <div data-pencil-name="JUN"
+                        class="text-[9px]/[normal] box-border w-[26px] shrink-0 text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-center">
+                        JUN
+                    </div>
+                    <div data-pencil-name="JUL"
+                        class="text-[9px]/[normal] box-border w-[26px] shrink-0 text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-center">
+                        JUL
+                    </div>
+                    <div data-pencil-name="AGO"
+                        class="text-[9px]/[normal] box-border w-[26px] shrink-0 text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-center">
+                        AGO
+                    </div>
+                </div>
+                <div data-pencil-name="cap"
+                    class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    coral = mes actual · sin ejes ni rejillas
+                </div>
+            </div>
+        </div>
+        <div data-pencil-name="Disponibilidad"
+            class="box-border w-full h-fit shrink-0 flex flex-col gap-[16px] p-[22px] justify-start items-start bg-[#F4F3EF] rounded-[24px]">
+            <div data-pencil-name="Header"
+                class="box-border w-full h-fit shrink-0 flex flex-row gap-0 justify-between items-center">
+                <div data-pencil-name="l"
+                    class="text-[11px]/[normal] box-border text-[#131211] font-['JetBrains_Mono',system-ui,sans-serif] font-semibold tracking-[1px] text-left [white-space:nowrap]">
+                    DISPONIBILIDAD
+                </div>
+                <div data-pencil-name="chip hoy"
+                    class="box-border w-fit shrink-0 h-[24px] flex flex-row gap-0 p-[0px_10px] justify-center items-center bg-[#131211] rounded-[999px]">
+                    <div data-pencil-name="t"
+                        class="text-[9px]/[normal] box-border text-[#FFFFFF] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[0.6px] text-left [white-space:nowrap]">
+                        HOY
+                    </div>
+                </div>
+            </div>
+            <div data-pencil-name="Body"
+                class="box-border w-full h-fit shrink-0 flex flex-row gap-[22px] justify-start items-center">
+                <div data-pencil-name="Donut" class="box-border w-[150px] shrink-0 h-[150px] relative">
+                    <div data-pencil-name="ring"
+                        class="box-border w-[150px] h-[150px] absolute left-0 top-0 bg-[#FF5A1F] [clip-path:path('M75_150_C116.421_150_150_116.421_150_75_C150_33.579_116.421_0_75_0_C33.579_0_0_33.579_0_75_C0_79.803_0.461_84.596_1.378_89.311_L20.52_85.59_C19.841_82.101_19.5_78.554_19.5_75_C19.5_44.348_44.348_19.5_75_19.5_C105.652_19.5_130.5_44.348_130.5_75_C130.5_105.652_105.652_130.5_75_130.5_L75_150_Z')] [z-index:0]">
+                    </div>
+                    <div data-pencil-name="rest"
+                        class="box-border w-[150px] h-[150px] absolute left-0 top-0 bg-[#E3E2DC] [clip-path:path('M1.378_89.311_C8.229_124.555_39.096_150_75_150_L75_130.5_C48.431_130.5_25.589_111.67_20.52_85.59_L1.378_89.311_Z')] [z-index:1]">
+                    </div>
+                    <div data-pencil-name="v"
+                        class="text-[29px]/[normal] box-border absolute left-[36px] top-[54px] text-[#131211] font-['Space_Grotesk',system-ui,sans-serif] font-bold text-left [white-space:nowrap] [z-index:2]">
+                        78 %
+                    </div>
+                </div>
+                <div data-pencil-name="Stats"
+                    class="box-border [flex:1_1_0] h-fit flex flex-col gap-[12px] justify-start items-start">
+                    <div data-pencil-name="DÍAS ALQUILADO / MES"
+                        class="box-border w-full h-fit shrink-0 flex flex-col gap-[3px] justify-start items-start">
+                        <div data-pencil-name="l"
+                            class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[0.7px] text-left [white-space:nowrap]">
+                            DÍAS ALQUILADO / MES
+                        </div>
+                        <div data-pencil-name="v"
+                            class="text-[13px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                            23 de 30
+                        </div>
+                    </div>
+                    <div data-pencil-name="PRÓXIMA RESERVA"
+                        class="box-border w-full h-fit shrink-0 flex flex-col gap-[3px] justify-start items-start">
+                        <div data-pencil-name="l"
+                            class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[0.7px] text-left [white-space:nowrap]">
+                            PRÓXIMA RESERVA
+                        </div>
+                        <div data-pencil-name="v"
+                            class="text-[13px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                            18 sep · Carla M.
+                        </div>
+                    </div>
+                    <div data-pencil-name="PRECIO PROMEDIO"
+                        class="box-border w-full h-fit shrink-0 flex flex-col gap-[3px] justify-start items-start">
+                        <div data-pencil-name="l"
+                            class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[0.7px] text-left [white-space:nowrap]">
+                            PRECIO PROMEDIO
+                        </div>
+                        <div data-pencil-name="v"
+                            class="text-[13px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                            $ 71 / día
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div data-pencil-name="cap"
+                class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                ocupación · últimos 30 días
+            </div>
+        </div>
+        <div data-pencil-name="Próximos hitos"
+            class="box-border w-full h-fit shrink-0 flex flex-col gap-[14px] p-[18px] justify-start items-start bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[20px]">
+            <div data-pencil-name="Header"
+                class="box-border w-full h-fit shrink-0 flex flex-row gap-[8px] justify-start items-center">
+                <div data-pencil-name="l"
+                    class="text-[10px]/[normal] box-border text-[#131211] font-['JetBrains_Mono',system-ui,sans-serif] font-semibold tracking-[0.8px] text-left [white-space:nowrap]">
+                    PRÓXIMOS HITOS
+                </div>
+                <div data-pencil-name="cnt"
+                    class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    3
+                </div>
+            </div>
+            <div data-pencil-name="h0"
+                class="box-border w-full h-fit shrink-0 flex flex-row gap-[10px] justify-start items-center">
+                <div data-pencil-name="d" class="box-border w-[7px] shrink-0 h-[7px] bg-[#FFC52E] rounded-full"></div>
+                <div data-pencil-name="t"
+                    class="text-[12.5px]/[normal] box-border [flex:1_1_0] text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left">
+                    Mantenimiento preventivo · 20.000 km
+                </div>
+                <div data-pencil-name="v"
+                    class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    EN 8 DÍAS
+                </div>
+            </div>
+            <div data-pencil-name="h1"
+                class="box-border w-full h-fit shrink-0 flex flex-row gap-[10px] justify-start items-center">
+                <div data-pencil-name="d" class="box-border w-[7px] shrink-0 h-[7px] bg-[#2D6BFF] rounded-full"></div>
+                <div data-pencil-name="t"
+                    class="text-[12.5px]/[normal] box-border [flex:1_1_0] text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left">
+                    Vencimiento del seguro
+                </div>
+                <div data-pencil-name="v"
+                    class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    12 NOV
+                </div>
+            </div>
+            <div data-pencil-name="h2"
+                class="box-border w-full h-fit shrink-0 flex flex-row gap-[10px] justify-start items-center">
+                <div data-pencil-name="d" class="box-border w-[7px] shrink-0 h-[7px] bg-[#12B886] rounded-full"></div>
+                <div data-pencil-name="t"
+                    class="text-[12.5px]/[normal] box-border [flex:1_1_0] text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left">
+                    Inspección técnica T-4
+                </div>
+                <div data-pencil-name="v"
+                    class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    15 DIC
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

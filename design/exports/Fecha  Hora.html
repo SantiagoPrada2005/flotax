@@ -1,0 +1,1054 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+        tailwind = { config: { corePlugins: { preflight: false } } };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter%3Awght%40100..900&family=JetBrains+Mono%3Awght%40100..800&display=swap"
+        rel="stylesheet" />
+    <style>
+        *,
+        ::before,
+        ::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+        }
+    </style>
+
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div data-pencil-name="SEC 03 · Fecha &amp; Hora"
+        class="box-border w-[788px] h-fit flex flex-col gap-[16px] justify-start items-start">
+        <div data-pencil-name="K 03"
+            class="box-border w-full h-fit shrink-0 flex flex-row gap-[10px] justify-start items-center">
+            <div data-pencil-name="bar" class="box-border w-[34px] shrink-0 h-[6px] bg-[#131211] rounded-[3px]"></div>
+            <div data-pencil-name="lbl"
+                class="text-[12px]/[normal] box-border text-[#131211] font-['JetBrains_Mono',system-ui,sans-serif] font-normal tracking-[1.2px] text-left [white-space:nowrap]">
+                03 · FECHA &amp; HORA
+            </div>
+        </div>
+        <div data-pencil-name="row · date picker"
+            class="box-border w-[813px] h-fit shrink-0 flex flex-row gap-[16px] justify-start items-start">
+            <div data-pencil-name="vb"
+                class="box-border w-[238px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-center">
+                <div data-pencil-name="sh"
+                    class="box-border w-[238px] h-[168px] shrink-0 flex flex-col gap-[10px] p-[16px] justify-start items-start bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[20px]">
+                    <div data-pencil-name="lr"
+                        class="box-border w-full h-fit shrink-0 flex flex-row gap-[8px] justify-start items-center">
+                        <div data-pencil-name="lb"
+                            class="box-border w-fit shrink-0 h-fit flex flex-row gap-[8px] justify-start items-center">
+                            <div data-pencil-name="dot"
+                                class="box-border w-[8px] shrink-0 h-[8px] bg-[#131211] rounded-[4px]"></div>
+                            <div data-pencil-name="t"
+                                class="text-[14px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                                FECHA
+                            </div>
+                        </div>
+                        <div data-pencil-name="h"
+                            class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            requerido
+                        </div>
+                    </div>
+                    <div data-pencil-name="in"
+                        class="box-border w-fit h-[52px] shrink-0 flex flex-row gap-[10px] p-[14px] justify-start items-center bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[16px]">
+                        <svg data-pencil-name="ic" data-icon-name="calendar" data-icon-set="lucide"
+                            viewBox="0 0 13.99993896484375 14" preserveAspectRatio="xMidYMid meet"
+                            xmlns="http://www.w3.org/2000/svg" class="box-border w-[20px] shrink-0 h-[20px]">
+                            <path
+                                d="M4.57666 0.60156q-0.12305 0.01367-0.24268 0.09912-0.11963 0.08203-0.1914 0.19483-0.04102 0.08545-0.05469 0.20508-0.01367 0.11621-0.01367 0.35546l0 0.29395-1.32959 0.01367q-0.14014 0.01367-0.23926 0.02735-0.50244 0.14014-0.85449 0.50586-0.34863 0.3623-0.44776 0.88183-0.02734 0.0957-0.02734 0.81006l0 7.99463 0.05469 0.15381q0.15723 0.51953 0.56055 0.86133 0.40674 0.3418 0.93994 0.3999 0.15381 0.02734 4.26904 0.02734 4.11523 0 4.26904-0.02734 0.30762-0.02734 0.58789-0.16748 0.32471-0.15381 0.56055-0.44092 0.23926-0.28711 0.35205-0.65283l0.05469-0.15381 0-7.99463q0-0.71436-0.02735-0.81006-0.09912-0.51953-0.45117-0.88183-0.34863-0.36572-0.85107-0.50586-0.09912-0.01367-0.23926-0.02735l-1.32959-0.01367 0-0.29395q0-0.32129-0.03418-0.45459-0.03418-0.1333-0.14697-0.24609-0.14014-0.14014-0.35889-0.16064-0.21533-0.02051-0.37597 0.09228-0.16064 0.10938-0.21875 0.29395-0.02734 0.05469-0.03418 0.1333-0.00684 0.0752-0.00684 0.30078l0 0.33496-3.5 0 0-0.34863q0-0.23926-0.00684-0.30762-0.00684-0.07178-0.03418-0.12646-0.08545-0.21191-0.25293-0.30762-0.16748-0.09912-0.37939-0.05811z m-0.50244 2.67285q0.01367 0.25293 0.02051 0.31788 0.00684 0.06152 0.03418 0.14697 0.05811 0.0957 0.14013 0.18115 0.21191 0.19482 0.50586 0.14697 0.29395-0.04785 0.42041-0.31445 0.02734-0.08545 0.03418-0.14014 0.00684-0.05811 0.02051-0.32129l0-0.36572 3.5 0 0 0.36572q0.01367 0.26318 0.02051 0.32129 0.00684 0.05469 0.03418 0.14014 0.12646 0.2666 0.42041 0.31445 0.29395 0.04785 0.50586-0.14697 0.08203-0.08545 0.14013-0.18115 0.02734-0.08545 0.03418-0.14697 0.00684-0.06494 0.02051-0.31788l0-0.34863 1.31592 0 0.08545 0.04102q0.08203 0.04443 0.15722 0.12304 0.07861 0.0752 0.11963 0.16065 0.04443 0.08203 0.05811 0.28027 0.01367 0.19482 0.01367 0.85108l0 0.86816-9.35156 0 0.01367-1.72266q0.01367-0.16748 0.02734-0.20849 0.09912-0.2666 0.35206-0.36572 0.05469-0.01367 0.16748-0.02735l1.18945 0 0 0.34863z m7.58789 5.82422q0 1.89014-0.00684 2.30371-0.00683 0.41357-0.0205 0.45459-0.09912 0.25293-0.35206 0.35205l-0.0957 0.04102-8.37402 0-0.0957-0.04102q-0.15381-0.0581-0.26661-0.19824l-0.02734-0.02734q-0.04443-0.05469-0.05811-0.15381-0.02734-0.14014-0.02734-0.60156l-0.01367-4.80225 9.35156 0-0.01367 2.67285z"
+                                fill="#6E6C66"></path>
+                        </svg>
+                        <div data-pencil-name="v"
+                            class="text-[14.5px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            12 jun · 09:00
+                        </div>
+                        <svg data-pencil-name="ch" data-icon-name="chevron-down" data-icon-set="lucide"
+                            viewBox="0 0 13.99993896484375 14" preserveAspectRatio="xMidYMid meet"
+                            xmlns="http://www.w3.org/2000/svg" class="box-border w-[20px] shrink-0 h-[20px]">
+                            <path
+                                d="M3.34619 4.68945q-0.25293 0.08545-0.37939 0.30762-0.04102 0.08545-0.04102 0.25293 0 0.16748 0.04785 0.25977 0.05127 0.08887 1.8628 1.9038 1.81494 1.81152 1.9038 1.8628 0.09229 0.04785 0.25977 0.04785 0.16748 0 0.25635-0.04785 0.09229-0.05127 1.90381-1.8628 1.81494-1.81494 1.86279-1.9038 0.05127-0.09229 0.05127-0.25977 0-0.16748-0.04102-0.25293-0.09912-0.16748-0.28027-0.2666-0.05811-0.02734-0.09912-0.04102-0.04102-0.01367-0.15381-0.01367-0.11279 0-0.15381 0.01367-0.04101 0.01367-0.11279 0.04102-0.09912 0.05811-1.66455 1.62695l-1.56885 1.56543-2.82666-2.81299q-0.31104-0.29395-0.42041-0.37939-0.08545-0.05469-0.19824-0.05469l-0.02735 0q-0.14014 0-0.18115 0.01367z"
+                                fill="#6E6C66"></path>
+                        </svg>
+                    </div>
+                    <div data-pencil-name="hm"
+                        class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        DATE · CAMPO CERRADO
+                    </div>
+                </div>
+                <div data-pencil-name="cap"
+                    class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    DATE · DEFAULT
+                </div>
+            </div>
+            <div data-pencil-name="vb"
+                class="box-border w-[238px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-center">
+                <div data-pencil-name="sh"
+                    class="box-border w-[238px] h-[344px] shrink-0 flex flex-col gap-[10px] p-[16px] justify-start items-start bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[20px]">
+                    <div data-pencil-name="lr"
+                        class="box-border w-full h-fit shrink-0 flex flex-row gap-[8px] justify-start items-center">
+                        <div data-pencil-name="lb"
+                            class="box-border w-fit shrink-0 h-fit flex flex-row gap-[8px] justify-start items-center">
+                            <div data-pencil-name="dot"
+                                class="box-border w-[8px] shrink-0 h-[8px] bg-[#131211] rounded-[4px]"></div>
+                            <div data-pencil-name="t"
+                                class="text-[14px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                                FECHA
+                            </div>
+                        </div>
+                        <div data-pencil-name="h"
+                            class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            requerido
+                        </div>
+                    </div>
+                    <div data-pencil-name="in"
+                        class="box-border w-fit h-[52px] shrink-0 flex flex-row gap-[10px] p-[14px] justify-start items-center bg-[#FFFFFF] [border:2px_solid_#FF5A1F] rounded-[16px]">
+                        <svg data-pencil-name="ic" data-icon-name="calendar" data-icon-set="lucide"
+                            viewBox="0 0 13.99993896484375 14" preserveAspectRatio="xMidYMid meet"
+                            xmlns="http://www.w3.org/2000/svg" class="box-border w-[20px] shrink-0 h-[20px]">
+                            <path
+                                d="M4.57666 0.60156q-0.12305 0.01367-0.24268 0.09912-0.11963 0.08203-0.1914 0.19483-0.04102 0.08545-0.05469 0.20508-0.01367 0.11621-0.01367 0.35546l0 0.29395-1.32959 0.01367q-0.14014 0.01367-0.23926 0.02735-0.50244 0.14014-0.85449 0.50586-0.34863 0.3623-0.44776 0.88183-0.02734 0.0957-0.02734 0.81006l0 7.99463 0.05469 0.15381q0.15723 0.51953 0.56055 0.86133 0.40674 0.3418 0.93994 0.3999 0.15381 0.02734 4.26904 0.02734 4.11523 0 4.26904-0.02734 0.30762-0.02734 0.58789-0.16748 0.32471-0.15381 0.56055-0.44092 0.23926-0.28711 0.35205-0.65283l0.05469-0.15381 0-7.99463q0-0.71436-0.02735-0.81006-0.09912-0.51953-0.45117-0.88183-0.34863-0.36572-0.85107-0.50586-0.09912-0.01367-0.23926-0.02735l-1.32959-0.01367 0-0.29395q0-0.32129-0.03418-0.45459-0.03418-0.1333-0.14697-0.24609-0.14014-0.14014-0.35889-0.16064-0.21533-0.02051-0.37597 0.09228-0.16064 0.10938-0.21875 0.29395-0.02734 0.05469-0.03418 0.1333-0.00684 0.0752-0.00684 0.30078l0 0.33496-3.5 0 0-0.34863q0-0.23926-0.00684-0.30762-0.00684-0.07178-0.03418-0.12646-0.08545-0.21191-0.25293-0.30762-0.16748-0.09912-0.37939-0.05811z m-0.50244 2.67285q0.01367 0.25293 0.02051 0.31788 0.00684 0.06152 0.03418 0.14697 0.05811 0.0957 0.14013 0.18115 0.21191 0.19482 0.50586 0.14697 0.29395-0.04785 0.42041-0.31445 0.02734-0.08545 0.03418-0.14014 0.00684-0.05811 0.02051-0.32129l0-0.36572 3.5 0 0 0.36572q0.01367 0.26318 0.02051 0.32129 0.00684 0.05469 0.03418 0.14014 0.12646 0.2666 0.42041 0.31445 0.29395 0.04785 0.50586-0.14697 0.08203-0.08545 0.14013-0.18115 0.02734-0.08545 0.03418-0.14697 0.00684-0.06494 0.02051-0.31788l0-0.34863 1.31592 0 0.08545 0.04102q0.08203 0.04443 0.15722 0.12304 0.07861 0.0752 0.11963 0.16065 0.04443 0.08203 0.05811 0.28027 0.01367 0.19482 0.01367 0.85108l0 0.86816-9.35156 0 0.01367-1.72266q0.01367-0.16748 0.02734-0.20849 0.09912-0.2666 0.35206-0.36572 0.05469-0.01367 0.16748-0.02735l1.18945 0 0 0.34863z m7.58789 5.82422q0 1.89014-0.00684 2.30371-0.00683 0.41357-0.0205 0.45459-0.09912 0.25293-0.35206 0.35205l-0.0957 0.04102-8.37402 0-0.0957-0.04102q-0.15381-0.0581-0.26661-0.19824l-0.02734-0.02734q-0.04443-0.05469-0.05811-0.15381-0.02734-0.14014-0.02734-0.60156l-0.01367-4.80225 9.35156 0-0.01367 2.67285z"
+                                fill="#6E6C66"></path>
+                        </svg>
+                        <div data-pencil-name="v"
+                            class="text-[14.5px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            12 jun · 09:00
+                        </div>
+                        <svg data-pencil-name="ch" data-icon-name="chevron-down" data-icon-set="lucide"
+                            viewBox="0 0 13.99993896484375 14" preserveAspectRatio="xMidYMid meet"
+                            xmlns="http://www.w3.org/2000/svg" class="box-border w-[20px] shrink-0 h-[20px]">
+                            <path
+                                d="M3.34619 4.68945q-0.25293 0.08545-0.37939 0.30762-0.04102 0.08545-0.04102 0.25293 0 0.16748 0.04785 0.25977 0.05127 0.08887 1.8628 1.9038 1.81494 1.81152 1.9038 1.8628 0.09229 0.04785 0.25977 0.04785 0.16748 0 0.25635-0.04785 0.09229-0.05127 1.90381-1.8628 1.81494-1.81494 1.86279-1.9038 0.05127-0.09229 0.05127-0.25977 0-0.16748-0.04102-0.25293-0.09912-0.16748-0.28027-0.2666-0.05811-0.02734-0.09912-0.04102-0.04102-0.01367-0.15381-0.01367-0.11279 0-0.15381 0.01367-0.04101 0.01367-0.11279 0.04102-0.09912 0.05811-1.66455 1.62695l-1.56885 1.56543-2.82666-2.81299q-0.31104-0.29395-0.42041-0.37939-0.08545-0.05469-0.19824-0.05469l-0.02735 0q-0.14014 0-0.18115 0.01367z"
+                                fill="#6E6C66"></path>
+                        </svg>
+                    </div>
+                    <div data-pencil-name="pop"
+                        class="box-border w-[204px] h-fit shrink-0 [box-shadow:0px_4px_14px_#13121126] flex flex-col gap-[6px] p-[12px] justify-start items-start bg-[#FFFFFF] rounded-[16px]">
+                        <div data-pencil-name="ph"
+                            class="box-border w-full h-fit shrink-0 flex flex-row gap-[8px] justify-between items-center">
+                            <div data-pencil-name="mt"
+                                class="text-[13px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                                SEPTIEMBRE
+                            </div>
+                            <div data-pencil-name="nav"
+                                class="box-border w-fit shrink-0 h-fit flex flex-row gap-[8px] justify-start items-center">
+                                <svg data-pencil-name="pl" data-icon-name="chevron-left" data-icon-set="lucide"
+                                    viewBox="0 0 13.99993896484375 14" preserveAspectRatio="xMidYMid meet"
+                                    xmlns="http://www.w3.org/2000/svg" class="box-border w-[14px] shrink-0 h-[14px]">
+                                    <path
+                                        d="M8.59619 2.93945q-0.08545 0.02734-0.19482 0.1128-0.14014 0.12646-0.53321 0.51611l-1.28857 1.2749q-1.81836 1.82178-1.86279 1.90723-0.04102 0.08203-0.04102 0.24951 0 0.16748 0.04785 0.25977 0.05127 0.08887 1.8628 1.9038 1.81494 1.81152 1.9038 1.8628 0.09229 0.04785 0.2461 0.04785 0.15381 0 0.23584-0.03418 0.08545-0.0376 0.18115-0.1333 0.09912-0.09912 0.1333-0.18115 0.0376-0.08545 0.0376-0.23926 0-0.15381-0.04443-0.23584-0.04102-0.08545-1.62012-1.66797l-1.58252-1.58252 1.58252-1.58252q1.5791-1.58252 1.62012-1.66455 0.04443-0.08545 0.04443-0.23926 0-0.15381-0.0376-0.23584-0.03418-0.08545-0.11621-0.18457-0.16748-0.15381-0.39307-0.16748-0.14014 0-0.18115 0.01367z"
+                                        fill="#6E6C66"></path>
+                                </svg>
+                                <svg data-pencil-name="pr" data-icon-name="chevron-right" data-icon-set="lucide"
+                                    viewBox="0 0 13.99993896484375 14" preserveAspectRatio="xMidYMid meet"
+                                    xmlns="http://www.w3.org/2000/svg" class="box-border w-[14px] shrink-0 h-[14px]">
+                                    <path
+                                        d="M5.09619 2.93945q-0.25293 0.08545-0.37939 0.30762-0.04102 0.08545-0.04102 0.25293 0 0.16748 0.04102 0.25293 0.04443 0.08203 1.62353 1.66455l1.58252 1.58252-1.58252 1.58252q-1.5791 1.58252-1.62353 1.66797-0.04102 0.08203-0.04102 0.23584 0 0.15381 0.03418 0.23926 0.0376 0.08203 0.1333 0.18115 0.09912 0.0957 0.18115 0.1333 0.08545 0.03418 0.23926 0.03418 0.15381 0 0.24268-0.04785 0.09229-0.05127 1.90381-1.8628 1.81494-1.81494 1.86279-1.9038 0.05127-0.09229 0.05127-0.25977 0-0.16748-0.04443-0.24951-0.04102-0.08545-1.85938-1.90723l-1.44238-1.42871q-0.33496-0.33496-0.46143-0.41699-0.09912-0.07178-0.19824-0.07178l-0.04102 0q-0.14014 0-0.18115 0.01367z"
+                                        fill="#6E6C66"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div data-pencil-name="wd"
+                            class="box-border w-full h-fit shrink-0 flex flex-row gap-[4px] justify-between items-start">
+                            <div data-pencil-name="d"
+                                class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                L
+                            </div>
+                            <div data-pencil-name="d"
+                                class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                M
+                            </div>
+                            <div data-pencil-name="d"
+                                class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                X
+                            </div>
+                            <div data-pencil-name="d"
+                                class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                J
+                            </div>
+                            <div data-pencil-name="d"
+                                class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                V
+                            </div>
+                            <div data-pencil-name="d"
+                                class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                S
+                            </div>
+                            <div data-pencil-name="d"
+                                class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                D
+                            </div>
+                        </div>
+                        <div data-pencil-name="gr"
+                            class="box-border w-full h-fit shrink-0 flex flex-row gap-[2px] justify-between items-start">
+                            <div data-pencil-name="e"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-start items-start">
+                            </div>
+                            <div data-pencil-name="d1"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    1
+                                </div>
+                            </div>
+                            <div data-pencil-name="d2"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    2
+                                </div>
+                            </div>
+                            <div data-pencil-name="d3"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    3
+                                </div>
+                            </div>
+                            <div data-pencil-name="d4"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    4
+                                </div>
+                            </div>
+                            <div data-pencil-name="d5"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    5
+                                </div>
+                            </div>
+                            <div data-pencil-name="d6"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    6
+                                </div>
+                            </div>
+                        </div>
+                        <div data-pencil-name="gr"
+                            class="box-border w-full h-fit shrink-0 flex flex-row gap-[2px] justify-between items-start">
+                            <div data-pencil-name="d7"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    7
+                                </div>
+                            </div>
+                            <div data-pencil-name="d8"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    8
+                                </div>
+                            </div>
+                            <div data-pencil-name="d9"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    9
+                                </div>
+                            </div>
+                            <div data-pencil-name="d10"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    10
+                                </div>
+                            </div>
+                            <div data-pencil-name="d11"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    11
+                                </div>
+                            </div>
+                            <div data-pencil-name="d12"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FF5A1F] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#131211] font-['JetBrains_Mono',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                                    12
+                                </div>
+                            </div>
+                            <div data-pencil-name="d13"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    13
+                                </div>
+                            </div>
+                        </div>
+                        <div data-pencil-name="gr"
+                            class="box-border w-full h-fit shrink-0 flex flex-row gap-[2px] justify-between items-start">
+                            <div data-pencil-name="d14"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    14
+                                </div>
+                            </div>
+                            <div data-pencil-name="d15"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    15
+                                </div>
+                            </div>
+                            <div data-pencil-name="d16"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    16
+                                </div>
+                            </div>
+                            <div data-pencil-name="d17"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    17
+                                </div>
+                            </div>
+                            <div data-pencil-name="d18"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1.5px_solid_#131211] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    18
+                                </div>
+                            </div>
+                            <div data-pencil-name="d19"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    19
+                                </div>
+                            </div>
+                            <div data-pencil-name="d20"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    20
+                                </div>
+                            </div>
+                        </div>
+                        <div data-pencil-name="gr"
+                            class="box-border w-full h-fit shrink-0 flex flex-row gap-[2px] justify-between items-start">
+                            <div data-pencil-name="d21"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    21
+                                </div>
+                            </div>
+                            <div data-pencil-name="d22"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    22
+                                </div>
+                            </div>
+                            <div data-pencil-name="d23"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    23
+                                </div>
+                            </div>
+                            <div data-pencil-name="d24"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    24
+                                </div>
+                            </div>
+                            <div data-pencil-name="d25"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    25
+                                </div>
+                            </div>
+                            <div data-pencil-name="d26"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    26
+                                </div>
+                            </div>
+                            <div data-pencil-name="d27"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    27
+                                </div>
+                            </div>
+                        </div>
+                        <div data-pencil-name="gr"
+                            class="box-border w-full h-fit shrink-0 flex flex-row gap-[2px] justify-between items-start">
+                            <div data-pencil-name="d28"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    28
+                                </div>
+                            </div>
+                            <div data-pencil-name="d29"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    29
+                                </div>
+                            </div>
+                            <div data-pencil-name="d30"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    30
+                                </div>
+                            </div>
+                            <div data-pencil-name="e"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-start items-start">
+                            </div>
+                            <div data-pencil-name="e"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-start items-start">
+                            </div>
+                            <div data-pencil-name="e"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-start items-start">
+                            </div>
+                            <div data-pencil-name="e"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-start items-start">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div data-pencil-name="cap"
+                    class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    DATE · POPOVER
+                </div>
+            </div>
+            <div data-pencil-name="vb"
+                class="box-border w-[238px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-center">
+                <div data-pencil-name="sh"
+                    class="box-border w-[238px] h-[168px] shrink-0 flex flex-col gap-[10px] p-[16px] justify-start items-start bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[20px]">
+                    <div data-pencil-name="lr"
+                        class="box-border w-full h-fit shrink-0 flex flex-row gap-[8px] justify-start items-center">
+                        <div data-pencil-name="lb"
+                            class="box-border w-fit shrink-0 h-fit flex flex-row gap-[8px] justify-start items-center">
+                            <div data-pencil-name="dot"
+                                class="box-border w-[8px] shrink-0 h-[8px] bg-[#131211] rounded-[4px]"></div>
+                            <div data-pencil-name="t"
+                                class="text-[14px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                                FECHA
+                            </div>
+                        </div>
+                        <div data-pencil-name="h"
+                            class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            requerido
+                        </div>
+                    </div>
+                    <div data-pencil-name="in"
+                        class="box-border w-fit h-[52px] shrink-0 flex flex-row gap-[10px] p-[14px] justify-start items-center bg-[#FFFFFF] [border:1.5px_solid_#F43F47] rounded-[16px]">
+                        <svg data-pencil-name="ic" data-icon-name="calendar" data-icon-set="lucide"
+                            viewBox="0 0 13.99993896484375 14" preserveAspectRatio="xMidYMid meet"
+                            xmlns="http://www.w3.org/2000/svg" class="box-border w-[20px] shrink-0 h-[20px]">
+                            <path
+                                d="M4.57666 0.60156q-0.12305 0.01367-0.24268 0.09912-0.11963 0.08203-0.1914 0.19483-0.04102 0.08545-0.05469 0.20508-0.01367 0.11621-0.01367 0.35546l0 0.29395-1.32959 0.01367q-0.14014 0.01367-0.23926 0.02735-0.50244 0.14014-0.85449 0.50586-0.34863 0.3623-0.44776 0.88183-0.02734 0.0957-0.02734 0.81006l0 7.99463 0.05469 0.15381q0.15723 0.51953 0.56055 0.86133 0.40674 0.3418 0.93994 0.3999 0.15381 0.02734 4.26904 0.02734 4.11523 0 4.26904-0.02734 0.30762-0.02734 0.58789-0.16748 0.32471-0.15381 0.56055-0.44092 0.23926-0.28711 0.35205-0.65283l0.05469-0.15381 0-7.99463q0-0.71436-0.02735-0.81006-0.09912-0.51953-0.45117-0.88183-0.34863-0.36572-0.85107-0.50586-0.09912-0.01367-0.23926-0.02735l-1.32959-0.01367 0-0.29395q0-0.32129-0.03418-0.45459-0.03418-0.1333-0.14697-0.24609-0.14014-0.14014-0.35889-0.16064-0.21533-0.02051-0.37597 0.09228-0.16064 0.10938-0.21875 0.29395-0.02734 0.05469-0.03418 0.1333-0.00684 0.0752-0.00684 0.30078l0 0.33496-3.5 0 0-0.34863q0-0.23926-0.00684-0.30762-0.00684-0.07178-0.03418-0.12646-0.08545-0.21191-0.25293-0.30762-0.16748-0.09912-0.37939-0.05811z m-0.50244 2.67285q0.01367 0.25293 0.02051 0.31788 0.00684 0.06152 0.03418 0.14697 0.05811 0.0957 0.14013 0.18115 0.21191 0.19482 0.50586 0.14697 0.29395-0.04785 0.42041-0.31445 0.02734-0.08545 0.03418-0.14014 0.00684-0.05811 0.02051-0.32129l0-0.36572 3.5 0 0 0.36572q0.01367 0.26318 0.02051 0.32129 0.00684 0.05469 0.03418 0.14014 0.12646 0.2666 0.42041 0.31445 0.29395 0.04785 0.50586-0.14697 0.08203-0.08545 0.14013-0.18115 0.02734-0.08545 0.03418-0.14697 0.00684-0.06494 0.02051-0.31788l0-0.34863 1.31592 0 0.08545 0.04102q0.08203 0.04443 0.15722 0.12304 0.07861 0.0752 0.11963 0.16065 0.04443 0.08203 0.05811 0.28027 0.01367 0.19482 0.01367 0.85108l0 0.86816-9.35156 0 0.01367-1.72266q0.01367-0.16748 0.02734-0.20849 0.09912-0.2666 0.35206-0.36572 0.05469-0.01367 0.16748-0.02735l1.18945 0 0 0.34863z m7.58789 5.82422q0 1.89014-0.00684 2.30371-0.00683 0.41357-0.0205 0.45459-0.09912 0.25293-0.35206 0.35205l-0.0957 0.04102-8.37402 0-0.0957-0.04102q-0.15381-0.0581-0.26661-0.19824l-0.02734-0.02734q-0.04443-0.05469-0.05811-0.15381-0.02734-0.14014-0.02734-0.60156l-0.01367-4.80225 9.35156 0-0.01367 2.67285z"
+                                fill="#6E6C66"></path>
+                        </svg>
+                        <div data-pencil-name="v"
+                            class="text-[14.5px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            12 jun · 09:00
+                        </div>
+                        <svg data-pencil-name="ch" data-icon-name="chevron-down" data-icon-set="lucide"
+                            viewBox="0 0 13.99993896484375 14" preserveAspectRatio="xMidYMid meet"
+                            xmlns="http://www.w3.org/2000/svg" class="box-border w-[20px] shrink-0 h-[20px]">
+                            <path
+                                d="M3.34619 4.68945q-0.25293 0.08545-0.37939 0.30762-0.04102 0.08545-0.04102 0.25293 0 0.16748 0.04785 0.25977 0.05127 0.08887 1.8628 1.9038 1.81494 1.81152 1.9038 1.8628 0.09229 0.04785 0.25977 0.04785 0.16748 0 0.25635-0.04785 0.09229-0.05127 1.90381-1.8628 1.81494-1.81494 1.86279-1.9038 0.05127-0.09229 0.05127-0.25977 0-0.16748-0.04102-0.25293-0.09912-0.16748-0.28027-0.2666-0.05811-0.02734-0.09912-0.04102-0.04102-0.01367-0.15381-0.01367-0.11279 0-0.15381 0.01367-0.04101 0.01367-0.11279 0.04102-0.09912 0.05811-1.66455 1.62695l-1.56885 1.56543-2.82666-2.81299q-0.31104-0.29395-0.42041-0.37939-0.08545-0.05469-0.19824-0.05469l-0.02735 0q-0.14014 0-0.18115 0.01367z"
+                                fill="#6E6C66"></path>
+                        </svg>
+                    </div>
+                    <div data-pencil-name="msg"
+                        class="box-border w-fit h-fit shrink-0 flex flex-row gap-[6px] justify-start items-center">
+                        <svg data-pencil-name="ic" data-icon-name="circle-alert" data-icon-set="lucide"
+                            viewBox="0 0 13.99993896484375 14" preserveAspectRatio="xMidYMid meet"
+                            xmlns="http://www.w3.org/2000/svg" class="box-border w-[14px] shrink-0 h-[14px]">
+                            <path
+                                d="M6.69238 0.60156q-1.16211 0.04102-2.22851 0.50586-1.06299 0.46143-1.90381 1.26807-0.8374 0.80322-1.34326 1.85254-0.48877 1.0083-0.60157 2.15674-0.02734 0.19482-0.02734 0.61523 0 0.42041 0.02734 0.61523 0.11279 1.14844 0.60157 2.15674 0.65967 1.40137 1.89697 2.33789 1.24072 0.93652 2.75146 1.20313 0.5332 0.09912 1.13477 0.09912 0.75537 0 1.43213-0.15381 0.68018-0.15381 1.35351-0.4751 1.26123-0.61865 2.16358-1.70215 0.90234-1.0835 1.25439-2.44384 0.29395-1.11768 0.18116-2.25244-0.11279-1.13477-0.60157-2.17041-0.58789-1.20313-1.62011-2.08497-1.02881-0.88184-2.31397-1.2749-1.0083-0.30762-2.15674-0.25293z m0.96729 1.18946q1.07666 0.14014 1.99267 0.68017 0.91602 0.54004 1.56201 1.4082 0.82715 1.104 1.00831 2.54639 0.01367 0.16748 0.01367 0.57422 0 0.40674-0.01367 0.57422-0.14014 1.16211-0.7212 2.12939-0.58105 0.96387-1.53466 1.62354-0.4751 0.33496-1.04932 0.56055-0.57422 0.22217-1.18945 0.30761-0.25293 0.04102-0.72803 0.04102-0.4751 0-0.72803-0.04102-1.07666-0.15381-1.95849-0.68701-0.88184-0.5332-1.52784-1.3877-0.82715-1.104-1.0083-2.54638-0.01367-0.16748-0.01367-0.57422 0-0.40674 0.01367-0.57422 0.14014-1.12109 0.66993-2.05078 0.5332-0.92969 1.43212-1.58936 0.54346-0.40674 1.20655-0.66992 0.6665-0.2666 1.32617-0.3247l0.25293-0.02735q0.0957-0.01367 0.4751 0 0.37939 0.01367 0.51953 0.02735z m-0.75879 2.31054q-0.0957 0.01367-0.17432 0.05127-0.0752 0.03418-0.15381 0.12647-0.0752 0.08887-0.11279 0.16748-0.03418 0.0752-0.03418 0.25635l0 2.46435 0.04102 0.08545q0.04443 0.06836 0.12646 0.15381 0.08545 0.08203 0.16065 0.12646 0.07861 0.04102 0.24609 0.04102 0.16748 0 0.24268-0.04102 0.07861-0.04443 0.16064-0.12646 0.08545-0.08545 0.12988-0.15381l0.04102-0.08545 0-2.33789q0-0.2666-0.02051-0.3418-0.02051-0.07861-0.07861-0.16064l-0.01367-0.01367q-0.09912-0.12646-0.2461-0.18116-0.14697-0.05811-0.31445-0.03076z m-0.05469 4.67578q-0.2085 0.05811-0.32129 0.22559-0.11279 0.16748-0.09912 0.37256 0.01367 0.20166 0.15381 0.35547 0.08545 0.08203 0.15381 0.12646 0.21191 0.0957 0.42041 0.03418 0.2085-0.06494 0.33496-0.24609 0.12646-0.18115 0.08545-0.40674-0.01367-0.10938-0.05127-0.17773-0.03418-0.07178-0.11963-0.14014-0.08203-0.07178-0.16064-0.11279-0.0752-0.04443-0.19483-0.05127-0.11621-0.00684-0.20166 0.0205z"
+                                fill="#F43F47"></path>
+                        </svg>
+                        <div data-pencil-name="mt"
+                            class="text-[12.5px]/[normal] box-border text-[#F43F47] font-[Inter,system-ui,sans-serif] font-medium text-left [white-space:nowrap]">
+                            Selecciona una fecha
+                        </div>
+                    </div>
+                </div>
+                <div data-pencil-name="cap"
+                    class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    DATE · ERROR
+                </div>
+            </div>
+        </div>
+        <div data-pencil-name="row · range picker"
+            class="box-border w-[528px] h-fit shrink-0 flex flex-row gap-[16px] justify-start items-start">
+            <div data-pencil-name="vb"
+                class="box-border w-[238px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-center">
+                <div data-pencil-name="sh"
+                    class="box-border w-[238px] h-[168px] shrink-0 flex flex-col gap-[10px] p-[16px] justify-start items-start bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[20px]">
+                    <div data-pencil-name="lr"
+                        class="box-border w-full h-fit shrink-0 flex flex-row gap-[8px] justify-start items-center">
+                        <div data-pencil-name="lb"
+                            class="box-border w-fit shrink-0 h-fit flex flex-row gap-[8px] justify-start items-center">
+                            <div data-pencil-name="dot"
+                                class="box-border w-[8px] shrink-0 h-[8px] bg-[#131211] rounded-[4px]"></div>
+                            <div data-pencil-name="t"
+                                class="text-[14px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                                PERÍODO
+                            </div>
+                        </div>
+                        <div data-pencil-name="h"
+                            class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            requerido
+                        </div>
+                    </div>
+                    <div data-pencil-name="in"
+                        class="box-border w-fit h-[52px] shrink-0 flex flex-row gap-[10px] p-[14px] justify-start items-center bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[16px]">
+                        <div data-pencil-name="v"
+                            class="text-[14.5px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            12 jun — 18 jun
+                        </div>
+                        <svg data-pencil-name="ch" data-icon-name="chevron-down" data-icon-set="lucide"
+                            viewBox="0 0 13.99993896484375 14" preserveAspectRatio="xMidYMid meet"
+                            xmlns="http://www.w3.org/2000/svg" class="box-border w-[20px] shrink-0 h-[20px]">
+                            <path
+                                d="M3.34619 4.68945q-0.25293 0.08545-0.37939 0.30762-0.04102 0.08545-0.04102 0.25293 0 0.16748 0.04785 0.25977 0.05127 0.08887 1.8628 1.9038 1.81494 1.81152 1.9038 1.8628 0.09229 0.04785 0.25977 0.04785 0.16748 0 0.25635-0.04785 0.09229-0.05127 1.90381-1.8628 1.81494-1.81494 1.86279-1.9038 0.05127-0.09229 0.05127-0.25977 0-0.16748-0.04102-0.25293-0.09912-0.16748-0.28027-0.2666-0.05811-0.02734-0.09912-0.04102-0.04102-0.01367-0.15381-0.01367-0.11279 0-0.15381 0.01367-0.04101 0.01367-0.11279 0.04102-0.09912 0.05811-1.66455 1.62695l-1.56885 1.56543-2.82666-2.81299q-0.31104-0.29395-0.42041-0.37939-0.08545-0.05469-0.19824-0.05469l-0.02735 0q-0.14014 0-0.18115 0.01367z"
+                                fill="#6E6C66"></path>
+                        </svg>
+                    </div>
+                    <div data-pencil-name="hm"
+                        class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        RANGE · DOS FECHAS EN UN CAMPO
+                    </div>
+                </div>
+                <div data-pencil-name="cap"
+                    class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    RANGE · DEFAULT
+                </div>
+            </div>
+            <div data-pencil-name="vb"
+                class="box-border w-[238px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-center">
+                <div data-pencil-name="sh"
+                    class="box-border w-[238px] h-[344px] shrink-0 flex flex-col gap-[10px] p-[16px] justify-start items-start bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[20px]">
+                    <div data-pencil-name="lr"
+                        class="box-border w-full h-fit shrink-0 flex flex-row gap-[8px] justify-start items-center">
+                        <div data-pencil-name="lb"
+                            class="box-border w-fit shrink-0 h-fit flex flex-row gap-[8px] justify-start items-center">
+                            <div data-pencil-name="dot"
+                                class="box-border w-[8px] shrink-0 h-[8px] bg-[#131211] rounded-[4px]"></div>
+                            <div data-pencil-name="t"
+                                class="text-[14px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                                PERÍODO
+                            </div>
+                        </div>
+                        <div data-pencil-name="h"
+                            class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            requerido
+                        </div>
+                    </div>
+                    <div data-pencil-name="in"
+                        class="box-border w-fit h-[52px] shrink-0 flex flex-row gap-[10px] p-[14px] justify-start items-center bg-[#FFFFFF] [border:2px_solid_#FF5A1F] rounded-[16px]">
+                        <svg data-pencil-name="ic" data-icon-name="calendar" data-icon-set="lucide"
+                            viewBox="0 0 13.99993896484375 14" preserveAspectRatio="xMidYMid meet"
+                            xmlns="http://www.w3.org/2000/svg" class="box-border w-[20px] shrink-0 h-[20px]">
+                            <path
+                                d="M4.57666 0.60156q-0.12305 0.01367-0.24268 0.09912-0.11963 0.08203-0.1914 0.19483-0.04102 0.08545-0.05469 0.20508-0.01367 0.11621-0.01367 0.35546l0 0.29395-1.32959 0.01367q-0.14014 0.01367-0.23926 0.02735-0.50244 0.14014-0.85449 0.50586-0.34863 0.3623-0.44776 0.88183-0.02734 0.0957-0.02734 0.81006l0 7.99463 0.05469 0.15381q0.15723 0.51953 0.56055 0.86133 0.40674 0.3418 0.93994 0.3999 0.15381 0.02734 4.26904 0.02734 4.11523 0 4.26904-0.02734 0.30762-0.02734 0.58789-0.16748 0.32471-0.15381 0.56055-0.44092 0.23926-0.28711 0.35205-0.65283l0.05469-0.15381 0-7.99463q0-0.71436-0.02735-0.81006-0.09912-0.51953-0.45117-0.88183-0.34863-0.36572-0.85107-0.50586-0.09912-0.01367-0.23926-0.02735l-1.32959-0.01367 0-0.29395q0-0.32129-0.03418-0.45459-0.03418-0.1333-0.14697-0.24609-0.14014-0.14014-0.35889-0.16064-0.21533-0.02051-0.37597 0.09228-0.16064 0.10938-0.21875 0.29395-0.02734 0.05469-0.03418 0.1333-0.00684 0.0752-0.00684 0.30078l0 0.33496-3.5 0 0-0.34863q0-0.23926-0.00684-0.30762-0.00684-0.07178-0.03418-0.12646-0.08545-0.21191-0.25293-0.30762-0.16748-0.09912-0.37939-0.05811z m-0.50244 2.67285q0.01367 0.25293 0.02051 0.31788 0.00684 0.06152 0.03418 0.14697 0.05811 0.0957 0.14013 0.18115 0.21191 0.19482 0.50586 0.14697 0.29395-0.04785 0.42041-0.31445 0.02734-0.08545 0.03418-0.14014 0.00684-0.05811 0.02051-0.32129l0-0.36572 3.5 0 0 0.36572q0.01367 0.26318 0.02051 0.32129 0.00684 0.05469 0.03418 0.14014 0.12646 0.2666 0.42041 0.31445 0.29395 0.04785 0.50586-0.14697 0.08203-0.08545 0.14013-0.18115 0.02734-0.08545 0.03418-0.14697 0.00684-0.06494 0.02051-0.31788l0-0.34863 1.31592 0 0.08545 0.04102q0.08203 0.04443 0.15722 0.12304 0.07861 0.0752 0.11963 0.16065 0.04443 0.08203 0.05811 0.28027 0.01367 0.19482 0.01367 0.85108l0 0.86816-9.35156 0 0.01367-1.72266q0.01367-0.16748 0.02734-0.20849 0.09912-0.2666 0.35206-0.36572 0.05469-0.01367 0.16748-0.02735l1.18945 0 0 0.34863z m7.58789 5.82422q0 1.89014-0.00684 2.30371-0.00683 0.41357-0.0205 0.45459-0.09912 0.25293-0.35206 0.35205l-0.0957 0.04102-8.37402 0-0.0957-0.04102q-0.15381-0.0581-0.26661-0.19824l-0.02734-0.02734q-0.04443-0.05469-0.05811-0.15381-0.02734-0.14014-0.02734-0.60156l-0.01367-4.80225 9.35156 0-0.01367 2.67285z"
+                                fill="#6E6C66"></path>
+                        </svg>
+                        <div data-pencil-name="v"
+                            class="text-[14.5px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            12 jun — 18 jun
+                        </div>
+                        <svg data-pencil-name="ch" data-icon-name="chevron-down" data-icon-set="lucide"
+                            viewBox="0 0 13.99993896484375 14" preserveAspectRatio="xMidYMid meet"
+                            xmlns="http://www.w3.org/2000/svg" class="box-border w-[20px] shrink-0 h-[20px]">
+                            <path
+                                d="M3.34619 4.68945q-0.25293 0.08545-0.37939 0.30762-0.04102 0.08545-0.04102 0.25293 0 0.16748 0.04785 0.25977 0.05127 0.08887 1.8628 1.9038 1.81494 1.81152 1.9038 1.8628 0.09229 0.04785 0.25977 0.04785 0.16748 0 0.25635-0.04785 0.09229-0.05127 1.90381-1.8628 1.81494-1.81494 1.86279-1.9038 0.05127-0.09229 0.05127-0.25977 0-0.16748-0.04102-0.25293-0.09912-0.16748-0.28027-0.2666-0.05811-0.02734-0.09912-0.04102-0.04102-0.01367-0.15381-0.01367-0.11279 0-0.15381 0.01367-0.04101 0.01367-0.11279 0.04102-0.09912 0.05811-1.66455 1.62695l-1.56885 1.56543-2.82666-2.81299q-0.31104-0.29395-0.42041-0.37939-0.08545-0.05469-0.19824-0.05469l-0.02735 0q-0.14014 0-0.18115 0.01367z"
+                                fill="#6E6C66"></path>
+                        </svg>
+                    </div>
+                    <div data-pencil-name="pop"
+                        class="box-border w-[204px] h-fit shrink-0 [box-shadow:0px_4px_14px_#13121126] flex flex-col gap-[6px] p-[12px] justify-start items-start bg-[#FFFFFF] rounded-[16px]">
+                        <div data-pencil-name="ph"
+                            class="box-border w-full h-fit shrink-0 flex flex-row gap-[8px] justify-between items-center">
+                            <div data-pencil-name="mt"
+                                class="text-[13px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                                SEPTIEMBRE
+                            </div>
+                            <div data-pencil-name="nav"
+                                class="box-border w-fit shrink-0 h-fit flex flex-row gap-[8px] justify-start items-center">
+                                <svg data-pencil-name="pl" data-icon-name="chevron-left" data-icon-set="lucide"
+                                    viewBox="0 0 13.99993896484375 14" preserveAspectRatio="xMidYMid meet"
+                                    xmlns="http://www.w3.org/2000/svg" class="box-border w-[14px] shrink-0 h-[14px]">
+                                    <path
+                                        d="M8.59619 2.93945q-0.08545 0.02734-0.19482 0.1128-0.14014 0.12646-0.53321 0.51611l-1.28857 1.2749q-1.81836 1.82178-1.86279 1.90723-0.04102 0.08203-0.04102 0.24951 0 0.16748 0.04785 0.25977 0.05127 0.08887 1.8628 1.9038 1.81494 1.81152 1.9038 1.8628 0.09229 0.04785 0.2461 0.04785 0.15381 0 0.23584-0.03418 0.08545-0.0376 0.18115-0.1333 0.09912-0.09912 0.1333-0.18115 0.0376-0.08545 0.0376-0.23926 0-0.15381-0.04443-0.23584-0.04102-0.08545-1.62012-1.66797l-1.58252-1.58252 1.58252-1.58252q1.5791-1.58252 1.62012-1.66455 0.04443-0.08545 0.04443-0.23926 0-0.15381-0.0376-0.23584-0.03418-0.08545-0.11621-0.18457-0.16748-0.15381-0.39307-0.16748-0.14014 0-0.18115 0.01367z"
+                                        fill="#6E6C66"></path>
+                                </svg>
+                                <svg data-pencil-name="pr" data-icon-name="chevron-right" data-icon-set="lucide"
+                                    viewBox="0 0 13.99993896484375 14" preserveAspectRatio="xMidYMid meet"
+                                    xmlns="http://www.w3.org/2000/svg" class="box-border w-[14px] shrink-0 h-[14px]">
+                                    <path
+                                        d="M5.09619 2.93945q-0.25293 0.08545-0.37939 0.30762-0.04102 0.08545-0.04102 0.25293 0 0.16748 0.04102 0.25293 0.04443 0.08203 1.62353 1.66455l1.58252 1.58252-1.58252 1.58252q-1.5791 1.58252-1.62353 1.66797-0.04102 0.08203-0.04102 0.23584 0 0.15381 0.03418 0.23926 0.0376 0.08203 0.1333 0.18115 0.09912 0.0957 0.18115 0.1333 0.08545 0.03418 0.23926 0.03418 0.15381 0 0.24268-0.04785 0.09229-0.05127 1.90381-1.8628 1.81494-1.81494 1.86279-1.9038 0.05127-0.09229 0.05127-0.25977 0-0.16748-0.04443-0.24951-0.04102-0.08545-1.85938-1.90723l-1.44238-1.42871q-0.33496-0.33496-0.46143-0.41699-0.09912-0.07178-0.19824-0.07178l-0.04102 0q-0.14014 0-0.18115 0.01367z"
+                                        fill="#6E6C66"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div data-pencil-name="wd"
+                            class="box-border w-full h-fit shrink-0 flex flex-row gap-[4px] justify-between items-start">
+                            <div data-pencil-name="d"
+                                class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                L
+                            </div>
+                            <div data-pencil-name="d"
+                                class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                M
+                            </div>
+                            <div data-pencil-name="d"
+                                class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                X
+                            </div>
+                            <div data-pencil-name="d"
+                                class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                J
+                            </div>
+                            <div data-pencil-name="d"
+                                class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                V
+                            </div>
+                            <div data-pencil-name="d"
+                                class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                S
+                            </div>
+                            <div data-pencil-name="d"
+                                class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                D
+                            </div>
+                        </div>
+                        <div data-pencil-name="gr"
+                            class="box-border w-full h-fit shrink-0 flex flex-row gap-[2px] justify-between items-start">
+                            <div data-pencil-name="e"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-start items-start">
+                            </div>
+                            <div data-pencil-name="d1"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    1
+                                </div>
+                            </div>
+                            <div data-pencil-name="d2"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    2
+                                </div>
+                            </div>
+                            <div data-pencil-name="d3"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    3
+                                </div>
+                            </div>
+                            <div data-pencil-name="d4"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    4
+                                </div>
+                            </div>
+                            <div data-pencil-name="d5"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    5
+                                </div>
+                            </div>
+                            <div data-pencil-name="d6"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    6
+                                </div>
+                            </div>
+                        </div>
+                        <div data-pencil-name="gr"
+                            class="box-border w-full h-fit shrink-0 flex flex-row gap-[2px] justify-between items-start">
+                            <div data-pencil-name="d7"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    7
+                                </div>
+                            </div>
+                            <div data-pencil-name="d8"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    8
+                                </div>
+                            </div>
+                            <div data-pencil-name="d9"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    9
+                                </div>
+                            </div>
+                            <div data-pencil-name="d10"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    10
+                                </div>
+                            </div>
+                            <div data-pencil-name="d11"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    11
+                                </div>
+                            </div>
+                            <div data-pencil-name="d12"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FF5A1F] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#131211] font-['JetBrains_Mono',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                                    12
+                                </div>
+                            </div>
+                            <div data-pencil-name="d13"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FF5A1F1F] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    13
+                                </div>
+                            </div>
+                        </div>
+                        <div data-pencil-name="gr"
+                            class="box-border w-full h-fit shrink-0 flex flex-row gap-[2px] justify-between items-start">
+                            <div data-pencil-name="d14"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FF5A1F1F] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    14
+                                </div>
+                            </div>
+                            <div data-pencil-name="d15"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FF5A1F1F] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    15
+                                </div>
+                            </div>
+                            <div data-pencil-name="d16"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FF5A1F1F] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    16
+                                </div>
+                            </div>
+                            <div data-pencil-name="d17"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FF5A1F1F] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    17
+                                </div>
+                            </div>
+                            <div data-pencil-name="d18"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FF5A1F] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#131211] font-['JetBrains_Mono',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                                    18
+                                </div>
+                            </div>
+                            <div data-pencil-name="d19"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    19
+                                </div>
+                            </div>
+                            <div data-pencil-name="d20"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    20
+                                </div>
+                            </div>
+                        </div>
+                        <div data-pencil-name="gr"
+                            class="box-border w-full h-fit shrink-0 flex flex-row gap-[2px] justify-between items-start">
+                            <div data-pencil-name="d21"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    21
+                                </div>
+                            </div>
+                            <div data-pencil-name="d22"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    22
+                                </div>
+                            </div>
+                            <div data-pencil-name="d23"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    23
+                                </div>
+                            </div>
+                            <div data-pencil-name="d24"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    24
+                                </div>
+                            </div>
+                            <div data-pencil-name="d25"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    25
+                                </div>
+                            </div>
+                            <div data-pencil-name="d26"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    26
+                                </div>
+                            </div>
+                            <div data-pencil-name="d27"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    27
+                                </div>
+                            </div>
+                        </div>
+                        <div data-pencil-name="gr"
+                            class="box-border w-full h-fit shrink-0 flex flex-row gap-[2px] justify-between items-start">
+                            <div data-pencil-name="d28"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    28
+                                </div>
+                            </div>
+                            <div data-pencil-name="d29"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    29
+                                </div>
+                            </div>
+                            <div data-pencil-name="d30"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-center items-center bg-[#FFFFFF00] [border:1px_solid_#FFFFFF00] rounded-[8px]">
+                                <div data-pencil-name="n"
+                                    class="text-[11px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                    30
+                                </div>
+                            </div>
+                            <div data-pencil-name="e"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-start items-start">
+                            </div>
+                            <div data-pencil-name="e"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-start items-start">
+                            </div>
+                            <div data-pencil-name="e"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-start items-start">
+                            </div>
+                            <div data-pencil-name="e"
+                                class="box-border w-[24px] shrink-0 h-[24px] flex flex-row gap-0 justify-start items-start">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div data-pencil-name="cap"
+                    class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    RANGE · POPOVER
+                </div>
+            </div>
+        </div>
+        <div data-pencil-name="row · time picker"
+            class="box-border w-[737px] h-fit shrink-0 flex flex-row gap-[16px] justify-start items-start">
+            <div data-pencil-name="vb"
+                class="box-border w-[238px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-center">
+                <div data-pencil-name="sh"
+                    class="box-border w-[238px] h-[168px] shrink-0 flex flex-col gap-[10px] p-[16px] justify-start items-start bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[20px]">
+                    <div data-pencil-name="lr"
+                        class="box-border w-full h-fit shrink-0 flex flex-row gap-[8px] justify-start items-center">
+                        <div data-pencil-name="lb"
+                            class="box-border w-fit shrink-0 h-fit flex flex-row gap-[8px] justify-start items-center">
+                            <div data-pencil-name="dot"
+                                class="box-border w-[8px] shrink-0 h-[8px] bg-[#131211] rounded-[4px]"></div>
+                            <div data-pencil-name="t"
+                                class="text-[14px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                                HORA
+                            </div>
+                        </div>
+                        <div data-pencil-name="h"
+                            class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            requerido
+                        </div>
+                    </div>
+                    <div data-pencil-name="in"
+                        class="box-border w-fit h-[52px] shrink-0 flex flex-row gap-[10px] p-[14px] justify-start items-center bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[16px]">
+                        <svg data-pencil-name="ic" data-icon-name="hourglass" data-icon-set="lucide"
+                            viewBox="0 0 13.99993896484375 14" preserveAspectRatio="xMidYMid meet"
+                            xmlns="http://www.w3.org/2000/svg" class="box-border w-[20px] shrink-0 h-[20px]">
+                            <path
+                                d="M2.82666 0.58789q-0.23584 0.04102-0.38281 0.24609-0.14697 0.20166-0.09229 0.44092 0.01367 0.0957 0.04785 0.16748 0.0376 0.06836 0.1128 0.14014 0.07861 0.06836 0.15381 0.10596 0.07861 0.03418 0.14013 0.04101 0.06494 0.00684 0.33155 0.02051l0.3623 0 0 0.99463q0 0.99463 0.02734 1.14844 0.04102 0.2666 0.15381 0.48877 0.09912 0.18115 0.28711 0.39306 0.19141 0.2085 1.05615 1.07666l1.14844 1.14844-1.14844 1.14844q-0.86475 0.86816-1.05615 1.08008-0.18799 0.2085-0.28711 0.38964-0.11279 0.22217-0.15381 0.48877-0.02734 0.15381-0.02734 1.14844l0 0.99463-0.3623 0q-0.2666 0.01367-0.33155 0.02051-0.06152 0.00684-0.1333 0.03418-0.28027 0.12646-0.32812 0.42041-0.04785 0.29395 0.16064 0.51953 0.12646 0.12646 0.30762 0.15381 0.09912 0.02734 4.18701 0.02734 4.08789 0 4.18701-0.02734 0.23584-0.04102 0.36914-0.23584 0.1333-0.19824 0.09229-0.4375-0.01367-0.0957-0.05127-0.16406-0.03418-0.07178-0.11279-0.14014-0.0752-0.07178-0.15381-0.10596-0.07519-0.0376-0.14014-0.04443-0.06152-0.00684-0.32813-0.02051l-0.3623 0 0-0.99463q0-0.99463-0.02734-1.14844-0.04101-0.2666-0.15381-0.47509-0.09912-0.19482-0.29053-0.40332-0.18799-0.21191-1.05273-1.08008l-1.13477-1.14844 1.13477-1.14844q0.86475-0.86816 1.05273-1.07666 0.19141-0.21191 0.29053-0.40674 0.11279-0.2085 0.15381-0.47509 0.02734-0.15381 0.02734-1.14844l0-0.99463 0.3623 0q0.2666-0.01367 0.32813-0.02051 0.06494-0.00684 0.14014-0.04101 0.07861-0.0376 0.15381-0.10596 0.07861-0.07178 0.11279-0.14014 0.0376-0.07178 0.05127-0.18115 0.04101-0.19824-0.05127-0.36572-0.08887-0.16748-0.28369-0.2666l-0.09913-0.04102-4.15966 0q-4.14258 0-4.22803 0z m6.49756 2.14307q0 0.71436 0 0.86133 0 0.14697-0.02735 0.21875-0.02734 0.06836-0.19824 0.24951-0.16748 0.18115-0.96386 0.98095l-1.13477 1.13135-1.12109-1.13135q-0.81006-0.7998-0.98096-0.98095-0.16748-0.18115-0.19483-0.24951-0.02734-0.07178-0.02734-0.22559l0-1.83545 4.64844 0 0 0.98096z m-1.18945 6.22754q0.79639 0.81348 0.96386 0.98779 0.1709 0.17432 0.19824 0.24609 0.02734 0.06836 0.02735 0.22217l0 1.83545-4.64844 0 0-1.83545q0-0.15381 0.02734-0.22217 0.02734-0.07178 0.19483-0.24609 0.1709-0.17432 0.96728-0.98779 1.12109-1.11768 1.13477-1.11768 0.01367 0 1.13477 1.11768z"
+                                fill="#6E6C66"></path>
+                        </svg>
+                        <div data-pencil-name="v"
+                            class="text-[14px]/[normal] box-border text-[#131211] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            14:30
+                        </div>
+                        <svg data-pencil-name="ch" data-icon-name="chevron-down" data-icon-set="lucide"
+                            viewBox="0 0 13.99993896484375 14" preserveAspectRatio="xMidYMid meet"
+                            xmlns="http://www.w3.org/2000/svg" class="box-border w-[20px] shrink-0 h-[20px]">
+                            <path
+                                d="M3.34619 4.68945q-0.25293 0.08545-0.37939 0.30762-0.04102 0.08545-0.04102 0.25293 0 0.16748 0.04785 0.25977 0.05127 0.08887 1.8628 1.9038 1.81494 1.81152 1.9038 1.8628 0.09229 0.04785 0.25977 0.04785 0.16748 0 0.25635-0.04785 0.09229-0.05127 1.90381-1.8628 1.81494-1.81494 1.86279-1.9038 0.05127-0.09229 0.05127-0.25977 0-0.16748-0.04102-0.25293-0.09912-0.16748-0.28027-0.2666-0.05811-0.02734-0.09912-0.04102-0.04102-0.01367-0.15381-0.01367-0.11279 0-0.15381 0.01367-0.04101 0.01367-0.11279 0.04102-0.09912 0.05811-1.66455 1.62695l-1.56885 1.56543-2.82666-2.81299q-0.31104-0.29395-0.42041-0.37939-0.08545-0.05469-0.19824-0.05469l-0.02735 0q-0.14014 0-0.18115 0.01367z"
+                                fill="#6E6C66"></path>
+                        </svg>
+                    </div>
+                    <div data-pencil-name="hm"
+                        class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                        TIME · MONO · 24 H
+                    </div>
+                </div>
+                <div data-pencil-name="cap"
+                    class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    TIME · DEFAULT
+                </div>
+            </div>
+            <div data-pencil-name="vb"
+                class="box-border w-[238px] shrink-0 h-fit flex flex-col gap-[10px] justify-start items-center">
+                <div data-pencil-name="sh"
+                    class="box-border w-[238px] h-[328px] shrink-0 flex flex-col gap-[10px] p-[16px] justify-start items-start bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[20px]">
+                    <div data-pencil-name="lr"
+                        class="box-border w-full h-fit shrink-0 flex flex-row gap-[8px] justify-start items-center">
+                        <div data-pencil-name="lb"
+                            class="box-border w-fit shrink-0 h-fit flex flex-row gap-[8px] justify-start items-center">
+                            <div data-pencil-name="dot"
+                                class="box-border w-[8px] shrink-0 h-[8px] bg-[#131211] rounded-[4px]"></div>
+                            <div data-pencil-name="t"
+                                class="text-[14px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                                HORA
+                            </div>
+                        </div>
+                        <div data-pencil-name="h"
+                            class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            requerido
+                        </div>
+                    </div>
+                    <div data-pencil-name="in"
+                        class="box-border w-fit h-[52px] shrink-0 flex flex-row gap-[10px] p-[14px] justify-start items-center bg-[#FFFFFF] [border:2px_solid_#FF5A1F] rounded-[16px]">
+                        <svg data-pencil-name="ic" data-icon-name="hourglass" data-icon-set="lucide"
+                            viewBox="0 0 13.99993896484375 14" preserveAspectRatio="xMidYMid meet"
+                            xmlns="http://www.w3.org/2000/svg" class="box-border w-[20px] shrink-0 h-[20px]">
+                            <path
+                                d="M2.82666 0.58789q-0.23584 0.04102-0.38281 0.24609-0.14697 0.20166-0.09229 0.44092 0.01367 0.0957 0.04785 0.16748 0.0376 0.06836 0.1128 0.14014 0.07861 0.06836 0.15381 0.10596 0.07861 0.03418 0.14013 0.04101 0.06494 0.00684 0.33155 0.02051l0.3623 0 0 0.99463q0 0.99463 0.02734 1.14844 0.04102 0.2666 0.15381 0.48877 0.09912 0.18115 0.28711 0.39306 0.19141 0.2085 1.05615 1.07666l1.14844 1.14844-1.14844 1.14844q-0.86475 0.86816-1.05615 1.08008-0.18799 0.2085-0.28711 0.38964-0.11279 0.22217-0.15381 0.48877-0.02734 0.15381-0.02734 1.14844l0 0.99463-0.3623 0q-0.2666 0.01367-0.33155 0.02051-0.06152 0.00684-0.1333 0.03418-0.28027 0.12646-0.32812 0.42041-0.04785 0.29395 0.16064 0.51953 0.12646 0.12646 0.30762 0.15381 0.09912 0.02734 4.18701 0.02734 4.08789 0 4.18701-0.02734 0.23584-0.04102 0.36914-0.23584 0.1333-0.19824 0.09229-0.4375-0.01367-0.0957-0.05127-0.16406-0.03418-0.07178-0.11279-0.14014-0.0752-0.07178-0.15381-0.10596-0.07519-0.0376-0.14014-0.04443-0.06152-0.00684-0.32813-0.02051l-0.3623 0 0-0.99463q0-0.99463-0.02734-1.14844-0.04101-0.2666-0.15381-0.47509-0.09912-0.19482-0.29053-0.40332-0.18799-0.21191-1.05273-1.08008l-1.13477-1.14844 1.13477-1.14844q0.86475-0.86816 1.05273-1.07666 0.19141-0.21191 0.29053-0.40674 0.11279-0.2085 0.15381-0.47509 0.02734-0.15381 0.02734-1.14844l0-0.99463 0.3623 0q0.2666-0.01367 0.32813-0.02051 0.06494-0.00684 0.14014-0.04101 0.07861-0.0376 0.15381-0.10596 0.07861-0.07178 0.11279-0.14014 0.0376-0.07178 0.05127-0.18115 0.04101-0.19824-0.05127-0.36572-0.08887-0.16748-0.28369-0.2666l-0.09913-0.04102-4.15966 0q-4.14258 0-4.22803 0z m6.49756 2.14307q0 0.71436 0 0.86133 0 0.14697-0.02735 0.21875-0.02734 0.06836-0.19824 0.24951-0.16748 0.18115-0.96386 0.98095l-1.13477 1.13135-1.12109-1.13135q-0.81006-0.7998-0.98096-0.98095-0.16748-0.18115-0.19483-0.24951-0.02734-0.07178-0.02734-0.22559l0-1.83545 4.64844 0 0 0.98096z m-1.18945 6.22754q0.79639 0.81348 0.96386 0.98779 0.1709 0.17432 0.19824 0.24609 0.02734 0.06836 0.02735 0.22217l0 1.83545-4.64844 0 0-1.83545q0-0.15381 0.02734-0.22217 0.02734-0.07178 0.19483-0.24609 0.1709-0.17432 0.96728-0.98779 1.12109-1.11768 1.13477-1.11768 0.01367 0 1.13477 1.11768z"
+                                fill="#6E6C66"></path>
+                        </svg>
+                        <div data-pencil-name="v"
+                            class="text-[14px]/[normal] box-border text-[#131211] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                            14:30
+                        </div>
+                        <svg data-pencil-name="ch" data-icon-name="chevron-down" data-icon-set="lucide"
+                            viewBox="0 0 13.99993896484375 14" preserveAspectRatio="xMidYMid meet"
+                            xmlns="http://www.w3.org/2000/svg" class="box-border w-[20px] shrink-0 h-[20px]">
+                            <path
+                                d="M3.34619 4.68945q-0.25293 0.08545-0.37939 0.30762-0.04102 0.08545-0.04102 0.25293 0 0.16748 0.04785 0.25977 0.05127 0.08887 1.8628 1.9038 1.81494 1.81152 1.9038 1.8628 0.09229 0.04785 0.25977 0.04785 0.16748 0 0.25635-0.04785 0.09229-0.05127 1.90381-1.8628 1.81494-1.81494 1.86279-1.9038 0.05127-0.09229 0.05127-0.25977 0-0.16748-0.04102-0.25293-0.09912-0.16748-0.28027-0.2666-0.05811-0.02734-0.09912-0.04102-0.04102-0.01367-0.15381-0.01367-0.11279 0-0.15381 0.01367-0.04101 0.01367-0.11279 0.04102-0.09912 0.05811-1.66455 1.62695l-1.56885 1.56543-2.82666-2.81299q-0.31104-0.29395-0.42041-0.37939-0.08545-0.05469-0.19824-0.05469l-0.02735 0q-0.14014 0-0.18115 0.01367z"
+                                fill="#6E6C66"></path>
+                        </svg>
+                    </div>
+                    <div data-pencil-name="pop"
+                        class="box-border w-[204px] h-fit shrink-0 [box-shadow:0px_4px_14px_#13121126] flex flex-col gap-[6px] p-[12px] justify-start items-start bg-[#FFFFFF] rounded-[16px]">
+                        <div data-pencil-name="ph"
+                            class="box-border w-full h-fit shrink-0 flex flex-row gap-[8px] justify-between items-center">
+                            <div data-pencil-name="mt"
+                                class="text-[13px]/[normal] box-border text-[#131211] font-[Inter,system-ui,sans-serif] font-semibold text-left [white-space:nowrap]">
+                                HORAS DISPONIBLES
+                            </div>
+                            <div data-pencil-name="st"
+                                class="text-[9px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                MAÑANA
+                            </div>
+                        </div>
+                        <div data-pencil-name="ch"
+                            class="box-border w-full h-[36px] shrink-0 flex flex-row gap-[6px] p-[10px] justify-between items-center bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[10px]">
+                            <div data-pencil-name="t"
+                                class="text-[11.5px]/[normal] box-border text-[#131211] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                09:00
+                            </div>
+                        </div>
+                        <div data-pencil-name="ch"
+                            class="box-border w-full h-[36px] shrink-0 flex flex-row gap-[6px] p-[10px] justify-between items-center bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[10px]">
+                            <div data-pencil-name="t"
+                                class="text-[11.5px]/[normal] box-border text-[#131211] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                09:30
+                            </div>
+                        </div>
+                        <div data-pencil-name="ch"
+                            class="box-border w-full h-[36px] shrink-0 flex flex-row gap-[6px] p-[10px] justify-between items-center bg-[#FF5A1F1F] [border:1.5px_solid_#FF5A1F] rounded-[10px]">
+                            <div data-pencil-name="t"
+                                class="text-[11.5px]/[normal] box-border text-[#131211] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                10:00
+                            </div>
+                            <svg data-pencil-name="ck" data-icon-name="check" data-icon-set="lucide"
+                                viewBox="0 0 13.99993896484375 14" preserveAspectRatio="xMidYMid meet"
+                                xmlns="http://www.w3.org/2000/svg" class="box-border w-[14px] shrink-0 h-[14px]">
+                                <path
+                                    d="M11.48096 2.95313q-0.07178 0.01367-0.12989 0.0581-0.05469 0.04102-3.07617 3.06592l-3.0249 3.00781-1.28857-1.28857q-1.28857-1.28516-1.38086-1.32618-0.08887-0.04443-0.22217-0.04443-0.1333 0-0.23242 0.0376-0.0957 0.03418-0.18799 0.11279-0.08887 0.0752-0.1333 0.1709-0.02734 0.07178-0.03418 0.11279-0.00684 0.04102-0.00684 0.14014l0 0.04102q-0.01367 0.11279 0.04102 0.19824 0.07178 0.10938 0.36572 0.40332 0.19482 0.21191 0.96729 0.98096l1.49707 1.48339q0.28027 0.2666 0.38964 0.33838 0.07178 0.05469 0.18457 0.04102l0.09571 0.01367q0.07178 0 0.14013-0.02734 0.08545-0.07178 0.32129-0.28711 0.23926-0.21875 0.79981-0.76221l2.2832-2.2832q2.08496-2.09863 2.7002-2.71387 0.61524-0.61865 0.64599-0.68701 0.04102-0.08545 0.04102-0.23926 0-0.09912-0.00684-0.14014-0.00684-0.04102-0.03418-0.11279-0.04443-0.08203-0.13672-0.16406-0.08887-0.08545-0.18115-0.11963-0.08887-0.0376-0.20849-0.0376-0.11963 0-0.18799 0.02734z"
+                                    fill="#FF5A1F"></path>
+                            </svg>
+                        </div>
+                        <div data-pencil-name="ch"
+                            class="box-border w-full h-[36px] shrink-0 flex flex-row gap-[6px] p-[10px] justify-between items-center bg-[#FFFFFF] [border:1px_solid_#E5E4DF] rounded-[10px]">
+                            <div data-pencil-name="t"
+                                class="text-[11.5px]/[normal] box-border text-[#131211] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                                10:30
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div data-pencil-name="cap"
+                    class="text-[9.5px]/[normal] box-border text-[#A29F99] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]">
+                    TIME · POPOVER
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
