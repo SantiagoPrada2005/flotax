@@ -1,57 +1,67 @@
-# Rule: Pen.dev Design Fidelity & Visual Signature Governance
+# Rule: Pen Design Fidelity & Visual Signature Governance (FlotaX / Movo)
 
-## 1. Mandatory Pen.dev Pre-Implementation Inspection
-Before writing or modifying any UI component, screen, card, modal, or layout in Phoenix, you **MUST inspect `design/design.pen`** (and `design/exports/sistema.html`).
-
-1. **Locate the Canonical Frame**: Search `design/design.pen` for the corresponding screen or widget (e.g., `1. Rayos & Foco`, `2. Órbitas & Partículas`, `App Shell · Foco`, `Hero · Foco A-1`, `Card · Trazo propio`).
-2. **Extract Exact Geometry**: Do NOT guess or approximate SVG paths or visual effects. Use the exact vector paths (`BurstA`, `BurstB`, `DashRing sIG1j`, `Espiral G19WW`, `Aros 144..560`, `Rayo lMlPI`, `Partícula T1sIy`).
-3. **Zero Generic Fallback Policy**: Replacing signature Pen geometry with flat CSS boxes, generic circular spinners, or standard off-the-shelf icon sets is strictly prohibited. Components MUST embody the visual signature and tactile warmth of FocalPoint OS.
+**Código:** RUL-FLX-002  
+**Directorio Fuente de Verdad:** [`design/exports/`](file:///Users/santiago/proyectos/movix/design/exports) (HTML Exports canónicos de Pencil) y [`design/design.pen`](file:///Users/santiago/proyectos/movix/design/design.pen)  
+**Ámbito:** Todas las pantallas (`src/pages/**`), componentes agnósticos (`src/components/ui/**`), islas interactivas (`src/components/react/**`) y estilos (`src/styles/tokens.css`).  
 
 ---
 
-## 2. Core Visual Signature Component Contracts
+## 1. Mandato Estricto de Inspección en `design/exports/`
 
-### A. Frame `1. Rayos & Foco` (`MgaYA`)
-- **Timer & Solar Radiation**:
-  - Main hero timer cards MUST compose `TimerCard.astro` and `SolarRayBurst.astro`.
-  - Solar bursts must feature all three angular radiating layers: `BurstA` (`#FF5F1FA6`), `BurstB` (`#FFA25E7A`), and `BurstC` (`#FFC531AE`), anchored with the dashed elliptical orbit (55×26), satellites, and concentric luminous core.
-- **Acoustic Resonance in Focus Mode**:
-  - Full-screen immersion views (such as `tunnel.astro`) MUST compose `FocusRings.astro`.
-  - Must include the concentric acoustic resonance aros (144px, 216px, 296px, 360px, 440px, 560px), ambient amber/gold glow, and the 4 asymmetrically rotated corner rays (`NE: 24°`, `SE: -18°`, `SW: 32°`, `NW: -15°`).
-- **A-1 Priority Frog Anchors**:
-  - Must feature the watermark geometry and signature floating corner rays (`Rayo ts`, `Rayo td`, `Rayo bi`) and ring (`Anillo bd`) from `Hero · Foco A-1`.
+Antes de escribir, maquetar o modificar cualquier componente, pantalla, tarjeta, modal o layout en FlotaX, **el agente o desarrollador DEBE consultar estrictamente los archivos exportados de Pencil ubicados en [`design/exports/`](file:///Users/santiago/proyectos/movix/design/exports/)**.
 
-### B. Frame `2. Órbitas & Partículas` (`K6Wtw`)
-- **Canonical Orbit System**:
-  - When rendering orbits, satellites, or constellations, use `OrbitSystem.astro` mapped to the 8 canonical Muestras:
-    1. `halo`: Concentric diffuse rings with thermal gradient and satellites.
-    2. `concentric`: Concentric calibration circles with axis tick marks.
-    3. `satellite`: Tilted elliptical orbit with segmented `DashRing` (`sIG1j`) and orbiting satellites.
-    4. `dual`: Crossed dual elliptical orbits with ±28° angular offset.
-    5. `constellation`: Geometric nodal star network with connecting vector links.
-    6. `corona`: Particle corona with perimetral `DashRing` (`K1y1G`) and 12+ star satellites.
-    7. `spiral`: Continuous logarithmic spiral (`G19WW`) with orbital particles along the curve.
-    8. `dotgrid`: Luminescent particle matrix with quarter focal arc.
-- **Spatial Depth Layering (`Demo · Tras una card` & `Demo · Arcos tras timer`)**:
-  - Cards and dominant blocks MUST project spatial depth by placing `CardBackdropOrbit.astro` behind surfaces, allowing concentric rings and satellite dots to peek out with subtle thermal warmth.
+1. **Localizar el Export Canónico:**
+   - La fidelidad visual ya no se infiere ni se adivina: se extrae directamente del archivo HTML exportado correspondiente en `design/exports/*.html`.
+   - Ejemplos de mapeo canónico:
+     - **Botones y Acciones:** [`design/exports/Button System.html`](file:///Users/santiago/proyectos/movix/design/exports/Button%20System.html) y [`design/exports/Botones.html`](file:///Users/santiago/proyectos/movix/design/exports/Botones.html).
+     - **Entradas y Formularios:** [`design/exports/input-system.html`](file:///Users/santiago/proyectos/movix/design/exports/input-system.html), [`design/exports/Selects.html`](file:///Users/santiago/proyectos/movix/design/exports/Selects.html), [`design/exports/Check · Radio · Switch.html`](file:///Users/santiago/proyectos/movix/design/exports/Check%20·%20Radio%20·%20Switch.html).
+     - **Tarjetas de Vehículo y Flota:** [`design/exports/Group TARJETA DE VEHÍCULO.html`](file:///Users/santiago/proyectos/movix/design/exports/Group%20TARJETA%20DE%20VEH%C3%8DCULO.html), [`design/exports/Group TARJETA COMPACTA.html`](file:///Users/santiago/proyectos/movix/design/exports/Group%20TARJETA%20COMPACTA.html), [`design/exports/Group LISTA DE VEHÍCULOS.html`](file:///Users/santiago/proyectos/movix/design/exports/Group%20LISTA%20DE%20VEH%C3%8DCULOS.html).
+     - **Flujos de Reserva y Pagos:** [`design/exports/Flujo de reserva.html`](file:///Users/santiago/proyectos/movix/design/exports/Flujo%20de%20reserva.html), [`design/exports/C06 Reservas  Alquileres.html`](file:///Users/santiago/proyectos/movix/design/exports/C06%20Reservas%20%20Alquileres.html), [`design/exports/Group MÉTODOS DE PAGO — 02.html`](file:///Users/santiago/proyectos/movix/design/exports/Group%20M%C3%89TODOS%20DE%20PAGO%20%E2%80%94%2002.html).
+     - **Calendarios y Fechas:** [`design/exports/Fecha  Hora.html`](file:///Users/santiago/proyectos/movix/design/exports/Fecha%20%20Hora.html), [`design/exports/E Range Picker  States.html`](file:///Users/santiago/proyectos/movix/design/exports/E%20Range%20Picker%20%20States.html), [`design/exports/Vista Semanal — Calendario.html`](file:///Users/santiago/proyectos/movix/design/exports/Vista%20Semanal%20%E2%80%94%20Calendario.html).
+     - **Badges y Estados:** [`design/exports/Badges Status.html`](file:///Users/santiago/proyectos/movix/design/exports/Badges%20Status.html), [`design/exports/Row type badges.html`](file:///Users/santiago/proyectos/movix/design/exports/Row%20type%20badges.html).
+     - **Filtros y Navegación:** [`design/exports/Barra de filtros.html`](file:///Users/santiago/proyectos/movix/design/exports/Barra%20de%20filtros.html), [`design/exports/Navegación.html`](file:///Users/santiago/proyectos/movix/design/exports/Navegaci%C3%B3n.html), [`design/exports/App Bar.html`](file:///Users/santiago/proyectos/movix/design/exports/App%20Bar.html).
+     - **Vistas Móviles y Ergonomía:** [`design/exports/Mobile.html`](file:///Users/santiago/proyectos/movix/design/exports/Mobile.html), [`design/exports/Mobile-First.html`](file:///Users/santiago/proyectos/movix/design/exports/Mobile-First.html), [`design/exports/Claves móviles.html`](file:///Users/santiago/proyectos/movix/design/exports/Claves%20m%C3%B3viles.html).
 
-### C. Global Ambient Atmosphere (`SpTrT` & `jM1ZT`)
-- Every page rendered inside `AppShell.astro` MUST inherit `AmbientBackground.astro`:
-  - Peach (`$peach`) and yellow (`$yellow`) blurred thermal atmospheres.
-  - Large background structural orbits: 780px, 440px, 380px on desktop; 360px, 280px on mobile.
-  - Floating corner rays rotated at authentic Pen angles (-24°, 18°, 32°, -15°).
-  - Floating signature particles (`T1sIy`) and color-accent microdots.
+2. **Extracción Fiel de Estructura y Microcopy:**
+   - Extraer las proporciones, jerarquía tipográfica, radios de curvatura (`rounded-[20px]`, `rounded-[16px]`, `rounded-[12px]`, `rounded-full`), espaciados internos y etiquetas exactas desde el HTML exportado.
 
-### D. Custom SVG Glyphs (`Card · Trazo propio` · `mSCIX`)
-- For brand moments, status pills, and signature buttons, prefer the 12 bespoke hand-drawn glyphs in `Icon.astro`:
-  - `ray`, `orbit`, `particle`, `wave`, `trajectory`, `focus`, `ring`, `brand-mark`, `close-glyph`, `plus-glyph`, `menu-glyph`, `arrow-glyph`.
+3. **Traducción Obligatoria a Tokens Semánticos de Tailwind v4:**
+   - **Regla de oro:** No copiar ciegamente colores hex crudos (como `#131211`, `#2563EB`, `#FFFFFF`, `#F1F0EC`) ni estilos inline en los componentes Astro/React.
+   - Todo valor visual extraído del export debe mapearse al token semántico de `tokens.css` y las reglas de [`.agents/rules/tailwind-v4-styling-governance.md`](file:///Users/santiago/proyectos/movix/.agents/rules/tailwind-v4-styling-governance.md):
+     - Fondo canvas `#F1F0EC` / `#FBFBF9` → `bg-surface-canvas` / `bg-surface-elevated`
+     - Fondo tarjetas `#FFFFFF` → `bg-surface-card`
+     - Texto oscuro `#131211` → `text-brand-primary`
+     - Bordes `#E5E4DF` / `#E5E5E0` → `border-border-subtle`
+     - Accento `#2563EB` → `text-brand-accent` / `bg-brand-accent`
+     - Tipografías: `font-display` (Space Grotesk), `font-body` (Inter), `font-mono` (JetBrains Mono / Geist Mono).
 
 ---
 
-## 3. Review & Verification Checklist
-Before completing any UI task:
-1. [ ] **Pen Verification**: Does the component reflect the corresponding frame in `design/design.pen`?
-2. [ ] **Spatial Presence**: Does the screen feature the ambient background orbits, rays, and particles?
-3. [ ] **Motion & Polish**: Are animations aligned with the motion system (subtle, continuous, reduced-motion compliant)?
-4. [ ] **Motion Audit Page**: Can the component be audited visually in `/motion`?
-5. [ ] **Build Check**: Does `pnpm build` pass with zero errors?
+## 2. Política de Cero Invención Visual (Zero Generic Fallback)
+
+Queda estrictamente prohibido:
+- **Inventar componentes desde cero** o usar patrones visuales genéricos predeterminados cuando existe un archivo correspondiente en `design/exports/`.
+- **Alterar el lenguaje visual de tarjetas**: Las tarjetas de vehículo, resúmenes y estados deben respetar las proporciones, la disposición de chips de estado, métricas y botones observados en `design/exports/Group TARJETA DE VEHÍCULO.html` y exports afines.
+- **Modificar radios de curvatura arbitrariamente**: FlotaX utiliza una identidad táctil específica (chips circulares de 100px, badges de 20px, tarjetas de 16-20px e inputs de 12px).
+
+---
+
+## 3. Protocolo de Inspección Pre-Implementación (Paso a Paso)
+
+Antes de crear o modificar una vista o componente:
+1. **Paso 1:** Identificar el elemento a implementar (ej. Selector de rango de fechas para alquiler).
+2. **Paso 2:** Buscar en `design/exports/` el export relevante (ej. `E Range Picker  States.html` o `Fecha  Hora.html`).
+3. **Paso 3:** Leer el HTML exportado utilizando `view_file` para inspeccionar la jerarquía DOM, clases Tailwind utilizadas por el diseñador y estados interactivos (hover, active, disabled, selected).
+4. **Paso 4:** Implementar el componente en Astro o React 19 usando clases utilitarias de Tailwind v4 enlazadas a los tokens del proyecto.
+5. **Paso 5:** Verificar que la apariencia sea idéntica a la maqueta exportada, cumpliendo al mismo tiempo con la accesibilidad táctil móvil (mínimo 44x44px).
+
+---
+
+## 4. Checklist de Aprobación de Fidelidad Visual
+
+Antes de dar por completado cualquier cambio visual:
+- [ ] ¿Se inspeccionó el archivo correspondiente en `design/exports/*.html` antes de programar?
+- [ ] ¿Se respetaron los textos, etiquetas y microcopy presentes en el export?
+- [ ] ¿Se mapearon todos los colores y radios a tokens semánticos de Tailwind v4 en lugar de usar valores hex quemados?
+- [ ] ¿Los botones, inputs y selectores respetan los estados mostrados en `design/exports/Button System.html` e `input-system.html`?
+- [ ] ¿Pasa la verificación técnica con `pnpm check` (0 errores, 0 warnings)?

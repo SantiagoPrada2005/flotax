@@ -1,23 +1,24 @@
-# Índice: `src/lib`
+# Index: `src/lib`
 
-**Responsabilidad**: Módulos de soporte técnico transversal, factories de infraestructura (Base de Datos D1, Autenticación Better Auth) y utilidades.
-**Capa Arquitectónica**: Infrastructure / Shared Layer
+**Responsibility**: Módulos de soporte técnico transversal, factories de infraestructura (Base de Datos D1, Autenticación Better Auth) y utilidades.
+**Architectural Layer**: Infrastructure / Shared Layer
 
-## Subdirectorios y Módulos Hijos
+## Subdirectories & Child Modules
 
-| Subdirectorio | Responsabilidad | Índice |
+| Subdirectory | Responsibility | Index |
 | :--- | :--- | :--- |
-| [`auth/`](./auth/) | Autenticación, RBAC multi-tenant, sesiones y guards | [INDEX.md](./auth/INDEX.md) |
-| [`time/`](./time/) | Utilidades de formato y sincronización horaria del cliente | [INDEX.md](./time/INDEX.md) |
+| [`auth/`](./auth/) | Sistema central de autenticación y autorización (Better Auth, RBAC multi-tenant, sesiones y guards). | [INDEX.md](./auth/INDEX.md) |
+| [`time/`](./time/) | Funciones y utilidades de cliente para manipulación y visualización de fechas y zonas horarias. | [INDEX.md](./time/INDEX.md) |
 
-## Manifiesto de Archivos
+## File Manifest
 
-| Archivo | Rol / Patrón | Exports Públicos / API | Dependencias Clave |
+| File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
 | [`db.ts`](./db.ts) | Factory / Client DB | `getDb(d1Binding)` | `drizzle-orm/d1`, `@cloudflare/workers-types` |
 
-## Invariantes y Reglas del Directorio
+## Invariants & Directory Rules
 
-- `getDb` debe recibir el binding D1 directamente desde el ciclo de vida de la petición de Cloudflare/Astro.
+- All additions, deletions, or public API modifications must be reflected in this index.
+- Maintain strict boundary encapsulation and domain layer separation.
 
 <!-- Reconciled by codebase-index -->

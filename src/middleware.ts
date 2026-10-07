@@ -1,30 +1,29 @@
 import { defineMiddleware } from 'astro:middleware';
-import { createAuth, type AuthEnv } from '@/lib/auth';
+import { createAuth } from '@/lib/auth';
 import { getDb } from '@/lib/db';
 import { miembrosLocal, localesAlquiler } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
-import type { D1Database } from '@cloudflare/workers-types';
 import type { UsuarioSesion, LocalActivoSesion } from '@/lib/auth/session';
 import type { RolSistema } from '@/lib/auth/rbac';
+import { env } from 'cloudflare:workers';
 
 export const onRequest = defineMiddleware(async (context, next) => {
-  const runtime = (context.locals as unknown as { runtime?: { env?: { DB?: D1Database } & AuthEnv } })?.runtime;
-  const d1 = runtime?.env?.DB;
+  const d1 = env.DB;
 
   // Si no hay binding de base de datos D1 en runtime, continuar como anónimo
   if (!d1) {
-    (context.locals as { usuario: UsuarioSesion | null }).usuario = null;
+    context.locals.usuario = null;
     return await next();
   }
 
   try {
-    const auth = createAuth(d1, runtime?.env);
+    const auth = createAuth(d1, env);
     const sessionData = await auth.api.getSession({
       headers: context.request.headers,
     });
 
     if (!sessionData?.user) {
-      (context.locals as { usuario: UsuarioSesion | null }).usuario = null;
+      context.locals.usuario = null;
       return await next();
     }
 
@@ -41,7 +40,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     };
 
     if (rawUser.activo === false) {
-      (context.locals as { usuario: UsuarioSesion | null }).usuario = null;
+      context.locals.usuario = null;
       return await next();
     }
 
@@ -162,10 +161,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
       localActivo,
     };
 
-    (context.locals as { usuario: UsuarioSesion | null }).usuario = usuarioSesion;
+    context.locals.usuario = usuarioSesion;
   } catch (error) {
     console.error('[Middleware Auth Error]:', error);
-    (context.locals as { usuario: UsuarioSesion | null }).usuario = null;
+    context.locals.usuario = null;
   }
 
   return await next();

@@ -1,29 +1,29 @@
-# Índice: `src`
+# Index: `src`
 
-**Responsabilidad**: Raíz del código fuente de la aplicación Astro / Cloudflare Workers (Lógica de negocio, base de datos, Server Actions y UI).
-**Capa Arquitectónica**: Application Core
+**Responsibility**: Raíz del código fuente de la aplicación Astro / Cloudflare Workers (Lógica de negocio, base de datos, Server Actions y UI).
+**Architectural Layer**: Application Core
 
-## Subdirectorios y Módulos Hijos
+## Subdirectories & Child Modules
 
-| Subdirectorio | Responsabilidad | Índice |
+| Subdirectory | Responsibility | Index |
 | :--- | :--- | :--- |
-| [`actions/`](./actions/) | Casos de uso y Server Actions de Astro con validación Zod | [INDEX.md](./actions/INDEX.md) |
-| [`db/`](./db/) | Capa de datos y esquemas Drizzle ORM | [INDEX.md](./db/INDEX.md) |
-| [`layouts/`](./layouts/) | Layouts estructurales de página | [INDEX.md](./layouts/INDEX.md) |
-| [`lib/`](./lib/) | Módulos transversales (Autenticación Better Auth, DB Client, Time) | [INDEX.md](./lib/INDEX.md) |
-| [`pages/`](./pages/) | Enrutamiento de páginas y endpoints API | [INDEX.md](./pages/INDEX.md) |
-| [`styles/`](./styles/) | Estilos globales Tailwind CSS v4 y tokens de diseño | *(CSS Global)* |
+| [`actions/`](./actions/) | Capa de aplicación y casos de uso del servidor (Astro Server Actions) con validación estricta de esquemas Zod y control RBAC multi-tenant. | [INDEX.md](./actions/INDEX.md) |
+| [`db/`](./db/) | Capa de persistencia relacional, esquemas de tablas Drizzle ORM y configuración de base de datos para SQLite / Cloudflare D1. | [INDEX.md](./db/INDEX.md) |
+| [`layouts/`](./layouts/) | Layouts estructurales compartidos para la interfaz de usuario en Astro. | [INDEX.md](./layouts/INDEX.md) |
+| [`lib/`](./lib/) | Módulos de soporte técnico transversal, factories de infraestructura (Base de Datos D1, Autenticación Better Auth) y utilidades. | [INDEX.md](./lib/INDEX.md) |
+| [`pages/`](./pages/) | Enrutamiento basado en archivos de Astro para páginas visuales y endpoints API REST. | [INDEX.md](./pages/INDEX.md) |
+| [`styles/`](./styles/) | Directory `styles` | *(No index)* |
 
-## Manifiesto de Archivos
+## File Manifest
 
-| Archivo | Rol / Patrón | Exports Públicos / API | Dependencias Clave |
+| File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
-| [`middleware.ts`](./middleware.ts) | Middleware de Astro | `onRequest` (Inyección de sesión, RBAC y contexto de local) | `astro:middleware`, `@/lib/auth` |
 | [`env.d.ts`](./env.d.ts) | Tipado Global | Declaraciones de tipos para variables de entorno y Cloudflare D1 | `astro/client` |
+| [`middleware.ts`](./middleware.ts) | Middleware de Astro | `onRequest` (Inyección de sesión, RBAC y contexto de local) | `astro:middleware`, `@/lib/auth` |
 
-## Invariantes y Reglas del Directorio
+## Invariants & Directory Rules
 
-- Todo el código del servidor se ejecuta sobre el runtime de Cloudflare Workers (compatible con Web Standards / Edge).
-- No importar APIs exclusivas de Node.js incompatibles con Workers.
+- All additions, deletions, or public API modifications must be reflected in this index.
+- Maintain strict boundary encapsulation and domain layer separation.
 
 <!-- Reconciled by codebase-index -->

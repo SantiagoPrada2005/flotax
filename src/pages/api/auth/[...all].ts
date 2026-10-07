@@ -1,10 +1,9 @@
 import type { APIRoute } from 'astro';
-import { createAuth, type AuthEnv } from '@/lib/auth';
-import type { D1Database } from '@cloudflare/workers-types';
+import { createAuth } from '@/lib/auth';
+import { env } from 'cloudflare:workers';
 
 export const ALL: APIRoute = async (context) => {
-  const runtime = (context.locals as unknown as { runtime?: { env?: { DB?: D1Database } & AuthEnv } })?.runtime;
-  const d1 = runtime?.env?.DB;
+  const d1 = env.DB;
 
   if (!d1) {
     return new Response(
@@ -13,6 +12,6 @@ export const ALL: APIRoute = async (context) => {
     );
   }
 
-  const auth = createAuth(d1, runtime?.env);
+  const auth = createAuth(d1, env);
   return auth.handler(context.request);
 };

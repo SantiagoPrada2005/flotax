@@ -1,23 +1,23 @@
-# Índice: `src/db`
+# Index: `src/db`
 
-**Responsabilidad**: Capa de persistencia relacional, esquemas de tablas Drizzle ORM y configuración de base de datos para SQLite / Cloudflare D1.
-**Capa Arquitectónica**: Infrastructure / Data Layer
+**Responsibility**: Capa de persistencia relacional, esquemas de tablas Drizzle ORM y configuración de base de datos para SQLite / Cloudflare D1.
+**Architectural Layer**: Infrastructure / Data Layer
 
-## Subdirectorios y Módulos Hijos
+## Subdirectories & Child Modules
 
-| Subdirectorio | Responsabilidad | Índice |
+| Subdirectory | Responsibility | Index |
 | :--- | :--- | :--- |
-| [`schema/`](./schema/) | Definición de esquemas de tablas Drizzle ORM (Better Auth, Locales, Miembros, etc.) | [INDEX.md](./schema/INDEX.md) |
+| [`schema/`](./schema/) | Definición canónica de tablas, relaciones y tipos del ORM Drizzle para SQLite/Cloudflare D1 (Multi-tenant y Better Auth). | [INDEX.md](./schema/INDEX.md) |
 
-## Manifiesto de Archivos
+## File Manifest
 
-| Archivo | Rol / Patrón | Exports Públicos / API | Dependencias Clave |
+| File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
-| *(Ninguno)* | - | - | - |
+| *(None)* | - | - | - |
 
-## Invariantes y Reglas del Directorio
+## Invariants & Directory Rules
 
-- Todas las modificaciones de esquema deben ejecutarse mediante migraciones versionadas de Drizzle.
-- Los módulos externos deben consumir la base de datos a través de los clientes instanciados en `src/lib/` o Server Actions en `src/actions/`.
+- All additions, deletions, or public API modifications must be reflected in this index.
+- Maintain strict boundary encapsulation and domain layer separation.
 
 <!-- Reconciled by codebase-index -->

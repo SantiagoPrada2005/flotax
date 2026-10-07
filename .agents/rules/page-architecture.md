@@ -50,8 +50,9 @@ This expands `.agents/rules/design-system.md` to define the complete component l
 ## 4. Decomposition Checklist Before Approving Any Page
 
 Before creating or editing any page in `src/pages/`:
-1. [ ] Does the page template only invoke Tier 2/3 components without declaring raw sections or inline markup?
-2. [ ] Is the page under 150 lines total?
-3. [ ] Are all scripts extracted into encapsulated component scripts or TS utilities?
-4. [ ] Are all domain-specific styles living inside their respective `src/modules/{module}/ui/*.astro` files?
-5. [ ] Can each section of the page be tested or rendered in isolation?
+1. [ ] **User Flow Verification**: Does this page conform to [`docs/user-flows.md`](../../docs/user-flows.md) and pass the criteria in [`.agents/rules/user-flows.md`](./user-flows.md)?
+2. [ ] Does the page template only invoke Tier 2/3 components without declaring raw sections or inline markup?
+3. [ ] Is the page under 150 lines total?
+4. [ ] Are all scripts extracted into encapsulated component scripts or TS utilities?
+5. [ ] Are all domain-specific styles living inside their respective `src/modules/{module}/ui/*.astro` files?
+6. [ ] Can each section of the page be tested or rendered in isolation?

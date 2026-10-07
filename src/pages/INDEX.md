@@ -1,23 +1,23 @@
-# Índice: `src/pages`
+# Index: `src/pages`
 
-**Responsabilidad**: Enrutamiento basado en archivos de Astro para páginas visuales y endpoints API REST.
-**Capa Arquitectónica**: Presentation / API Routing Layer
+**Responsibility**: Enrutamiento basado en archivos de Astro para páginas visuales y endpoints API REST.
+**Architectural Layer**: Presentation / API Routing Layer
 
-## Subdirectorios y Módulos Hijos
+## Subdirectories & Child Modules
 
-| Subdirectorio | Responsabilidad | Índice |
+| Subdirectory | Responsibility | Index |
 | :--- | :--- | :--- |
-| [`api/`](./api/) | Endpoints de API REST (e.g. Better Auth handler en `api/auth/[...all].ts`) | *(Submódulo API)* |
+| [`api/`](./api/) | Directory `api` | *(No index)* |
 
-## Manifiesto de Archivos
+## File Manifest
 
-| Archivo | Rol / Patrón | Exports Públicos / API | Dependencias Clave |
+| File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
 | [`index.astro`](./index.astro) | Página / Ruta raíz `/` | Vista de inicio y dashboard | `@/layouts/LayoutAdmin.astro` |
 
-## Invariantes y Reglas del Directorio
+## Invariants & Directory Rules
 
-- Las rutas bajo `pages/` definen el árbol de navegación público del servidor.
-- `api/auth/[...all].ts` despacha todas las peticiones de autenticación Better Auth mediante el método `auth.handler(request)`.
+- All additions, deletions, or public API modifications must be reflected in this index.
+- Maintain strict boundary encapsulation and domain layer separation.
 
 <!-- Reconciled by codebase-index -->

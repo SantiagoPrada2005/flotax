@@ -1,16 +1,17 @@
-# Índice: `src/layouts`
+# Index: `src/layouts`
 
-**Responsabilidad**: Layouts estructurales compartidos para la interfaz de usuario en Astro.
-**Capa Arquitectónica**: Presentation Layer
+**Responsibility**: Layouts estructurales compartidos para la interfaz de usuario en Astro.
+**Architectural Layer**: Presentation Layer
 
-## Manifiesto de Archivos
+## File Manifest
 
-| Archivo | Rol / Patrón | Exports Públicos / API | Dependencias Clave |
+| File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
 | [`LayoutAdmin.astro`](./LayoutAdmin.astro) | Layout Astro Principal | Componente `<LayoutAdmin title="...">` | `@/styles/app.css` |
 
-## Invariantes y Reglas del Directorio
+## Invariants & Directory Rules
 
-- Los layouts deben proveer la estructura semántica HTML básica (`<!DOCTYPE html>`, `<head>`, `<body>`) y slots tipados.
+- All additions, deletions, or public API modifications must be reflected in this index.
+- Maintain strict boundary encapsulation and domain layer separation.
 
 <!-- Reconciled by codebase-index -->

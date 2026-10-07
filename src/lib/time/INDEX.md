@@ -1,16 +1,17 @@
-# Índice: `src/lib/time`
+# Index: `src/lib/time`
 
-**Responsabilidad**: Funciones y utilidades de cliente para manipulación y visualización de fechas y zonas horarias.
-**Capa Arquitectónica**: Presentation / Shared Helpers
+**Responsibility**: Funciones y utilidades de cliente para manipulación y visualización de fechas y zonas horarias.
+**Architectural Layer**: Presentation / Shared Helpers
 
-## Manifiesto de Archivos
+## File Manifest
 
-| Archivo | Rol / Patrón | Exports Públicos / API | Dependencias Clave |
+| File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
 | [`client-time.ts`](./client-time.ts) | Utilidad pura | `formatDate`, `formatRelativeTime` | - |
 
-## Invariantes y Reglas del Directorio
+## Invariants & Directory Rules
 
-- Utilidades puras que no deben mutar estado ni acceder a base de datos.
+- All additions, deletions, or public API modifications must be reflected in this index.
+- Maintain strict boundary encapsulation and domain layer separation.
 
 <!-- Reconciled by codebase-index -->
