@@ -1,6 +1,6 @@
 # Rule: Zero-Tolerance AstroCheck Quality Contract
 
-This rule is mandatory and active across all iterations, features, refactors, and component implementations in the Phoenix codebase.
+This rule is mandatory and active across all iterations, features, refactors, and component implementations in the FlotaX codebase.
 
 ## 1. Mandatory Per-Step Verification Gate
 

@@ -2,7 +2,7 @@
 
 ## 1. Context & Purpose
 
-In Phoenix, server-side rendering, routing, middleware, and database access are owned by **Astro** (`@astrojs/cloudflare`). However, complex client-side interactivity—such as AI streaming, countdown timers, audio recording, and dynamic optimistic forms—must NEVER be implemented using imperative DOM scripts.
+In FlotaX, server-side rendering, routing, middleware, and database access are owned by **Astro** (`@astrojs/cloudflare`). However, complex client-side interactivity—such as camera capture for vehicle inspections, interactive booking calendars, date pickers, and dynamic optimistic forms—must NEVER be implemented using imperative DOM scripts.
 
 This rule forbids manual DOM manipulation and establishes **React Islands (`.tsx`)** as the standard for stateful client experiences.
 
@@ -52,7 +52,7 @@ src/modules/{module}/ui/
 ### Mandatory Island Rules:
 1. **Always Handle Cleanup**: Every `useEffect` that opens a stream, worker, interval, or listener MUST return a cleanup function.
 2. **AbortController First-Class**: Streaming network requests (`fetch`) MUST accept an `AbortSignal` so navigation unmounts abort in-flight requests cleanly.
-3. **Use Phoenix CSS Tokens**: React components must style with class names consuming CSS variables from `src/styles/tokens.css` (e.g. `var(--surface)`, `var(--radius-large)`).
+3. **Use FlotaX CSS Tokens**: React components must style with class names consuming CSS variables from `src/styles/tokens.css` (e.g. `var(--color-surface-canvas)`, `var(--radius-card)`).
 4. **Hydration Directive Discipline**:
    - `client:load`: Only for critical above-the-fold interactive features (e.g. Active Tunnel Timer).
    - `client:idle`: For secondary interactive modules (e.g. Chat Advisor widget, Reflection drawer).

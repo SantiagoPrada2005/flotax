@@ -129640,6 +129640,2898 @@
           ]
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "DG1hl",
+      "x": 4269,
+      "y": 11742,
+      "name": "Authentication — Login & Sign Up",
+      "width": 1180,
+      "fill": "$auth-bg",
+      "layout": "vertical",
+      "gap": 34,
+      "padding": 40,
+      "children": [
+        {
+          "type": "text",
+          "id": "DjL6Z",
+          "name": "Section title",
+          "fill": "$auth-text",
+          "textGrowth": "fixed-width",
+          "width": 700,
+          "content": "Authentication — Login & Sign Up",
+          "lineHeight": 1.25,
+          "fontFamily": "$auth-display",
+          "fontSize": 34,
+          "fontWeight": "800"
+        },
+        {
+          "type": "text",
+          "id": "Ovwtn",
+          "name": "Section subtitle",
+          "rotation": -0.36031571043486066,
+          "fill": "$auth-muted",
+          "textGrowth": "fixed-width",
+          "width": 900,
+          "content": "Three coherent directions for Login and Sign Up — same tokens, components, and interaction language.",
+          "lineHeight": 1.25,
+          "fontFamily": "$auth-font",
+          "fontSize": 15,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "frame",
+          "id": "N3VYmp",
+          "name": "Concept 01 — Classic",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 18,
+          "children": [
+            {
+              "type": "text",
+              "id": "L4IEBM",
+              "name": "Concept 01 — Classic title",
+              "fill": "$auth-text",
+              "content": "Concept 01 — Classic",
+              "lineHeight": 1.25,
+              "fontFamily": "$auth-display",
+              "fontSize": 22,
+              "fontWeight": "800"
+            },
+            {
+              "type": "frame",
+              "id": "szS6Q",
+              "name": "Concept 01 — Classic screens",
+              "width": "fill_container",
+              "gap": 32,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Szl6b",
+                  "name": "Classic Login",
+                  "clip": true,
+                  "width": 520,
+                  "height": 720,
+                  "fill": "$auth-surface",
+                  "cornerRadius": 24,
+                  "stroke": "$auth-border",
+                  "strokeWidth": 1,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "$auth-text",
+                    "offset": {
+                      "x": 0,
+                      "y": 4
+                    },
+                    "blur": 16
+                  },
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "AP8R1",
+                      "name": "Centered card",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": "$auth-muted-surface",
+                      "layout": "vertical",
+                      "gap": 22,
+                      "padding": 40,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "WxYNZ",
+                          "name": "Classic panel",
+                          "width": 360,
+                          "fill": "$auth-surface",
+                          "cornerRadius": 20,
+                          "stroke": "$auth-border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "gap": 22,
+                          "padding": 28,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Y14v4",
+                              "name": "Brand mark",
+                              "width": 94,
+                              "gap": 10,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "nNUAo",
+                                  "name": "Logo symbol",
+                                  "width": 34,
+                                  "height": 34,
+                                  "fill": "$auth-action",
+                                  "cornerRadius": 10,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "GHffz",
+                                      "name": "Movo initial",
+                                      "fill": "$auth-surface",
+                                      "content": "F",
+                                      "fontFamily": "$auth-display",
+                                      "fontSize": 16,
+                                      "fontWeight": "800"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "lLkA6",
+                                      "name": "Frame 1",
+                                      "clip": true,
+                                      "width": 3,
+                                      "height": 1,
+                                      "fill": "#FFFFFF",
+                                      "layout": "none"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "YlPvo",
+                                  "name": "Project name",
+                                  "fill": "$auth-text",
+                                  "content": "FlotaX",
+                                  "lineHeight": 1.25,
+                                  "fontFamily": "$auth-font",
+                                  "fontSize": 18,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "kMfdc",
+                              "name": "Header copy",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "VEvnS",
+                                  "name": "Login title",
+                                  "fill": "$auth-text",
+                                  "textGrowth": "fixed-width",
+                                  "width": 300,
+                                  "content": "Bienvenido de nuevo",
+                                  "lineHeight": 1.25,
+                                  "fontFamily": "$auth-display",
+                                  "fontSize": 28,
+                                  "fontWeight": "800"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "eoePy",
+                                  "name": "Login subtitle",
+                                  "fill": "$auth-muted",
+                                  "textGrowth": "fixed-width",
+                                  "width": 300,
+                                  "content": "Accede a tu espacio de trabajo con tu correo y contraseña.",
+                                  "lineHeight": 1.25,
+                                  "fontFamily": "$auth-font",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "v7nuo2",
+                              "name": "Login form",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 16,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "xq4Fr",
+                                  "name": "Email field",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "Xysa7",
+                                      "name": "Email label",
+                                      "fill": "$auth-text",
+                                      "content": "Email",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "mqw02",
+                                      "name": "Email input",
+                                      "width": "fill_container",
+                                      "height": 48,
+                                      "fill": "$auth-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$auth-border",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "xZSRv",
+                                          "name": "Email placeholder",
+                                          "fill": "$auth-muted",
+                                          "content": "you@example.com",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$auth-font",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "M63AZG",
+                                  "name": "Password field",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "dwYSK",
+                                      "name": "Password label",
+                                      "fill": "$auth-text",
+                                      "content": "Password",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "L0Mrp",
+                                      "name": "Password input",
+                                      "width": "fill_container",
+                                      "height": 48,
+                                      "fill": "$auth-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$auth-border",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "cHgzG",
+                                          "name": "Password placeholder",
+                                          "fill": "$auth-muted",
+                                          "content": "••••••••",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$auth-font",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "BBAro",
+                                  "name": "Login options",
+                                  "width": "fill_container",
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "oiY8Q",
+                                      "name": "Remember me",
+                                      "gap": 8,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "rectangle",
+                                          "cornerRadius": 4,
+                                          "id": "Alw15",
+                                          "name": "Checkbox",
+                                          "fill": "$auth-surface",
+                                          "width": 16,
+                                          "height": 16,
+                                          "stroke": "$auth-border",
+                                          "strokeWidth": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "v8d3l",
+                                          "name": "Remember label",
+                                          "fill": "$auth-muted",
+                                          "content": "Recordarme",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$auth-font",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "AKxCO",
+                                      "name": "Forgot password",
+                                      "fill": "$auth-action",
+                                      "content": "¿Olvidaste tu contraseña?",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "DFoOd",
+                                  "name": "Iniciar sesión button",
+                                  "width": "fill_container",
+                                  "height": 48,
+                                  "fill": "$auth-action",
+                                  "cornerRadius": 12,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "L7mbNv",
+                                      "name": "Iniciar sesión label",
+                                      "fill": "#FFFFFF",
+                                      "content": "Iniciar sesión",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 15,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "D2HBN",
+                                  "name": "Google sign-in button",
+                                  "width": "fill_container",
+                                  "height": 48,
+                                  "fill": "$auth-surface",
+                                  "cornerRadius": 12,
+                                  "stroke": "$auth-border",
+                                  "strokeWidth": 1,
+                                  "gap": 10,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "l2uJKK",
+                                      "name": "Google mark",
+                                      "fill": "#4285F4",
+                                      "content": "G",
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 18,
+                                      "fontWeight": "700"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "S7QRWw",
+                                      "name": "Google button label",
+                                      "fill": "$auth-text",
+                                      "content": "Continuar con Google",
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "cEQWp",
+                                  "name": "Login alternative",
+                                  "width": "fill_container",
+                                  "gap": 5,
+                                  "justifyContent": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "kibpV",
+                                      "name": "Alternative text",
+                                      "fill": "$auth-muted",
+                                      "content": "¿No tienes cuenta?",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "HSxm4",
+                                      "name": "Alternative link",
+                                      "fill": "$auth-action",
+                                      "content": "Regístrate",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "GxOoC",
+                  "name": "Classic Sign Up",
+                  "clip": true,
+                  "width": 520,
+                  "height": 720,
+                  "fill": "$auth-surface",
+                  "cornerRadius": 24,
+                  "stroke": "$auth-border",
+                  "strokeWidth": 1,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "$auth-text",
+                    "offset": {
+                      "x": 0,
+                      "y": 4
+                    },
+                    "blur": 16
+                  },
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "O2aJy",
+                      "name": "Centered card",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": "$auth-muted-surface",
+                      "layout": "vertical",
+                      "gap": 22,
+                      "padding": 40,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "gdTRA",
+                          "name": "Classic panel",
+                          "width": 360,
+                          "fill": "$auth-surface",
+                          "cornerRadius": 20,
+                          "stroke": "$auth-border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "gap": 22,
+                          "padding": 28,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "oiuSO",
+                              "name": "Brand mark",
+                              "gap": 10,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "GNYqS",
+                                  "name": "Brand mark",
+                                  "width": 94,
+                                  "gap": 10,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "b6b9xT",
+                                      "name": "Logo symbol",
+                                      "width": 34,
+                                      "height": 34,
+                                      "fill": "$auth-action",
+                                      "cornerRadius": 10,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "G7dOt0",
+                                          "name": "Movo initial",
+                                          "fill": "$auth-surface",
+                                          "content": "F",
+                                          "fontFamily": "$auth-display",
+                                          "fontSize": 16,
+                                          "fontWeight": "800"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "THMUo",
+                                          "name": "Frame 1",
+                                          "clip": true,
+                                          "width": 3,
+                                          "height": 1,
+                                          "fill": "#FFFFFF",
+                                          "layout": "none"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "XLKwk",
+                                      "name": "Project name",
+                                      "fill": "$auth-text",
+                                      "content": "FlotaX",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 18,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "NTiMA",
+                              "name": "Header copy",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "sFAnm",
+                                  "name": "Sign Up title",
+                                  "fill": "$auth-text",
+                                  "textGrowth": "fixed-width",
+                                  "width": 300,
+                                  "content": "Crea tu cuenta",
+                                  "lineHeight": 1.25,
+                                  "fontFamily": "$auth-display",
+                                  "fontSize": 28,
+                                  "fontWeight": "800"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "el8Z3",
+                                  "name": "Sign Up subtitle",
+                                  "fill": "$auth-muted",
+                                  "textGrowth": "fixed-width",
+                                  "width": 300,
+                                  "content": "Empieza configurando tus datos básicos de acceso.",
+                                  "lineHeight": 1.25,
+                                  "fontFamily": "$auth-font",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ZoUsM",
+                              "name": "Sign Up form",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 16,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "U27eXb",
+                                  "name": "Name field",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "jjSBv",
+                                      "name": "Name label",
+                                      "fill": "$auth-text",
+                                      "content": "Name",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "J51Wi",
+                                      "name": "Name input",
+                                      "width": "fill_container",
+                                      "height": 48,
+                                      "fill": "$auth-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$auth-border",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "LnjmU",
+                                          "name": "Name placeholder",
+                                          "fill": "$auth-muted",
+                                          "content": "Alex Morgan",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$auth-font",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "KUxoR",
+                                  "name": "Email field",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "k9QNr",
+                                      "name": "Email label",
+                                      "fill": "$auth-text",
+                                      "content": "Email",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "gIsEv",
+                                      "name": "Email input",
+                                      "width": "fill_container",
+                                      "height": 48,
+                                      "fill": "$auth-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$auth-border",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "wbS1P",
+                                          "name": "Email placeholder",
+                                          "fill": "$auth-muted",
+                                          "content": "you@example.com",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$auth-font",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "rzTn1",
+                                  "name": "Password field",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "nVvpk",
+                                      "name": "Password label",
+                                      "fill": "$auth-text",
+                                      "content": "Password",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "xPgxD",
+                                      "name": "Password input",
+                                      "width": "fill_container",
+                                      "height": 48,
+                                      "fill": "$auth-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$auth-border",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "GU7ET",
+                                          "name": "Password placeholder",
+                                          "fill": "$auth-muted",
+                                          "content": "••••••••",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$auth-font",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "gcJKX",
+                                  "name": "Confirm password field",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "Z2wz8e",
+                                      "name": "Confirm password label",
+                                      "fill": "$auth-text",
+                                      "content": "Confirm password",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "sjw9J",
+                                      "name": "Confirm password input",
+                                      "width": "fill_container",
+                                      "height": 48,
+                                      "fill": "$auth-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$auth-border",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "c8Cqq",
+                                          "name": "Confirm password placeholder",
+                                          "fill": "$auth-muted",
+                                          "content": "••••••••",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$auth-font",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "fzzTd",
+                                  "name": "Crear cuenta button",
+                                  "width": "fill_container",
+                                  "height": 48,
+                                  "fill": "$auth-action",
+                                  "cornerRadius": 12,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "AJU66",
+                                      "name": "Crear cuenta label",
+                                      "fill": "#FFFFFF",
+                                      "content": "Crear cuenta",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 15,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "ZWLKK",
+                                  "name": "Google sign-in button",
+                                  "width": "fill_container",
+                                  "height": 48,
+                                  "fill": "$auth-surface",
+                                  "cornerRadius": 12,
+                                  "stroke": "$auth-border",
+                                  "strokeWidth": 1,
+                                  "gap": 10,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "Eou3b",
+                                      "name": "Google mark",
+                                      "fill": "#4285F4",
+                                      "content": "G",
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 18,
+                                      "fontWeight": "700"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "xYTtI",
+                                      "name": "Google button label",
+                                      "fill": "$auth-text",
+                                      "content": "Registrarme con Google",
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "DPlHc",
+                                  "name": "Sign Up alternative",
+                                  "width": "fill_container",
+                                  "gap": 5,
+                                  "justifyContent": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "lC8S7",
+                                      "name": "Alternative text",
+                                      "fill": "$auth-muted",
+                                      "content": "¿Ya tienes cuenta?",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "pzP4T",
+                                      "name": "Alternative link",
+                                      "fill": "$auth-action",
+                                      "content": "Inicia sesión",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "GCvXs",
+          "name": "Concept 02 — Split",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 18,
+          "children": [
+            {
+              "type": "text",
+              "id": "obTwY",
+              "name": "Concept 02 — Split title",
+              "fill": "$auth-text",
+              "content": "Concept 02 — Split",
+              "lineHeight": 1.25,
+              "fontFamily": "$auth-display",
+              "fontSize": 22,
+              "fontWeight": "800"
+            },
+            {
+              "type": "frame",
+              "id": "AJCxM",
+              "name": "Concept 02 — Split screens",
+              "width": "fill_container",
+              "gap": 32,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Yh5Tb",
+                  "name": "Split Login",
+                  "clip": true,
+                  "width": 520,
+                  "height": 720,
+                  "fill": "$auth-surface",
+                  "cornerRadius": 24,
+                  "stroke": "$auth-border",
+                  "strokeWidth": 1,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "$auth-text",
+                    "offset": {
+                      "x": 0,
+                      "y": 4
+                    },
+                    "blur": 16
+                  },
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "QK4bV",
+                      "name": "Split layout",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "Bs4tq",
+                          "name": "Brand side",
+                          "width": 220,
+                          "height": "fill_container",
+                          "fill": "$auth-action",
+                          "layout": "vertical",
+                          "gap": 22,
+                          "padding": 34,
+                          "justifyContent": "space_between",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "gj8xT",
+                              "name": "Brand mark",
+                              "gap": 10,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "fQn3h",
+                                  "name": "Logo symbol",
+                                  "width": 34,
+                                  "height": 34,
+                                  "fill": "$auth-surface",
+                                  "cornerRadius": 10,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "XmGfE",
+                                      "name": "Movo initial",
+                                      "fill": "$auth-action",
+                                      "content": "F",
+                                      "fontFamily": "$auth-display",
+                                      "fontSize": 16,
+                                      "fontWeight": "800"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "RX6nc",
+                                  "name": "Project name",
+                                  "fill": "$auth-surface",
+                                  "content": "FlotaX",
+                                  "lineHeight": 1.25,
+                                  "fontFamily": "$auth-font",
+                                  "fontSize": 18,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "GJizn",
+                              "name": "Brand message",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 14,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "c3dAnk",
+                                  "name": "Brand headline",
+                                  "fill": "#FFFFFF",
+                                  "textGrowth": "fixed-width",
+                                  "width": 150,
+                                  "content": "Gestiona tu flujo con claridad.",
+                                  "lineHeight": 1.25,
+                                  "fontFamily": "$auth-display",
+                                  "fontSize": 26,
+                                  "fontWeight": "800"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "XWIDF",
+                                  "name": "Brand body",
+                                  "fill": "$auth-surface",
+                                  "textGrowth": "fixed-width",
+                                  "width": 150,
+                                  "content": "Una experiencia simple, segura y consistente para entrar al producto.",
+                                  "lineHeight": 1.25,
+                                  "fontFamily": "$auth-font",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "KoHp1",
+                              "name": "Trust chips",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 10,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "FFEKI",
+                                  "name": "Seguro chip",
+                                  "opacity": 0.12,
+                                  "fill": "$auth-text",
+                                  "cornerRadius": 999,
+                                  "padding": [
+                                    8,
+                                    12
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "enMVo",
+                                      "name": "Seguro chip label",
+                                      "fill": "#FFFFFF",
+                                      "content": "Seguro",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 12,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "qqIb9",
+                                  "name": "Rápido chip",
+                                  "opacity": 0.12,
+                                  "fill": "$auth-text",
+                                  "cornerRadius": 999,
+                                  "padding": [
+                                    8,
+                                    12
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "qRurL",
+                                      "name": "Rápido chip label",
+                                      "fill": "#FFFFFF",
+                                      "content": "Rápido",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 12,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "F8va8G",
+                                  "name": "Moderno chip",
+                                  "opacity": 0.12,
+                                  "fill": "$auth-text",
+                                  "cornerRadius": 999,
+                                  "padding": [
+                                    8,
+                                    12
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "cGDGa",
+                                      "name": "Moderno chip label",
+                                      "fill": "#FFFFFF",
+                                      "content": "Moderno",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 12,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "FrZeA",
+                              "layoutPosition": "absolute",
+                              "x": 54,
+                              "y": 240.34058706288488,
+                              "name": "Brand monogram",
+                              "opacity": 0.16,
+                              "fill": "$auth-surface",
+                              "content": "F",
+                              "fontFamily": "$auth-display",
+                              "fontSize": 150,
+                              "fontWeight": "800"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "YwHSC",
+                          "name": "Form side",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "fill": "$auth-surface",
+                          "layout": "vertical",
+                          "gap": 22,
+                          "padding": 36,
+                          "justifyContent": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "FKxlq",
+                              "name": "Login split title",
+                              "fill": "$auth-text",
+                              "textGrowth": "fixed-width",
+                              "width": 230,
+                              "content": "Inicia sesión",
+                              "lineHeight": 1.25,
+                              "fontFamily": "$auth-display",
+                              "fontSize": 30,
+                              "fontWeight": "800"
+                            },
+                            {
+                              "type": "text",
+                              "id": "ZGklc",
+                              "name": "Login split subtitle",
+                              "fill": "$auth-muted",
+                              "textGrowth": "fixed-width",
+                              "width": 230,
+                              "content": "Continúa desde donde lo dejaste.",
+                              "lineHeight": 1.25,
+                              "fontFamily": "$auth-font",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "fyETk",
+                              "name": "Login form",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 14,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "c1cXC",
+                                  "name": "Email field",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "d3hPnU",
+                                      "name": "Email label",
+                                      "fill": "$auth-text",
+                                      "content": "Email",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "CdAje",
+                                      "name": "Email input",
+                                      "width": "fill_container",
+                                      "height": 48,
+                                      "fill": "$auth-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$auth-border",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "C41FZP",
+                                          "name": "Email placeholder",
+                                          "fill": "$auth-muted",
+                                          "content": "you@example.com",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$auth-font",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "jTXhJ",
+                                  "name": "Password field",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "NC5YV",
+                                      "name": "Password label",
+                                      "fill": "$auth-text",
+                                      "content": "Password",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "XKy5w",
+                                      "name": "Password input",
+                                      "width": "fill_container",
+                                      "height": 48,
+                                      "fill": "$auth-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$auth-border",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "VceJf",
+                                          "name": "Password placeholder",
+                                          "fill": "$auth-muted",
+                                          "content": "••••••••",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$auth-font",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "W60uz",
+                                  "name": "Login options",
+                                  "width": "fill_container",
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "cjoJ2",
+                                      "name": "Remember me",
+                                      "gap": 8,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "rectangle",
+                                          "cornerRadius": 4,
+                                          "id": "QrYrE",
+                                          "name": "Checkbox",
+                                          "fill": "$auth-surface",
+                                          "width": 16,
+                                          "height": 16,
+                                          "stroke": "$auth-border",
+                                          "strokeWidth": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "yv8JC",
+                                          "name": "Remember label",
+                                          "fill": "$auth-muted",
+                                          "content": "Recordarme",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$auth-font",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "aysIm",
+                                  "name": "Iniciar sesión button",
+                                  "width": "fill_container",
+                                  "height": 48,
+                                  "fill": "$auth-action",
+                                  "cornerRadius": 12,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "Tiz5q",
+                                      "name": "Iniciar sesión label",
+                                      "fill": "#FFFFFF",
+                                      "content": "Iniciar sesión",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 15,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "R4PfC",
+                                  "name": "Google sign-in button",
+                                  "width": "fill_container",
+                                  "height": 48,
+                                  "fill": "$auth-surface",
+                                  "cornerRadius": 12,
+                                  "stroke": "$auth-border",
+                                  "strokeWidth": 1,
+                                  "gap": 10,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "vpBv9",
+                                      "name": "Google mark",
+                                      "fill": "#4285F4",
+                                      "content": "G",
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 18,
+                                      "fontWeight": "700"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "urw2x",
+                                      "name": "Google button label",
+                                      "fill": "$auth-text",
+                                      "content": "Continuar con Google",
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "H3yIgA",
+                                  "name": "Login alternative",
+                                  "width": "fill_container",
+                                  "gap": 5,
+                                  "justifyContent": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "Nk0Yl",
+                                      "name": "Alternative text",
+                                      "fill": "$auth-muted",
+                                      "content": "¿No tienes cuenta?",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "e2KmXF",
+                                      "name": "Alternative link",
+                                      "fill": "$auth-action",
+                                      "content": "Regístrate",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "DYrre",
+                              "name": "Forgot password",
+                              "fill": "$auth-action",
+                              "content": "¿Olvidaste tu contraseña?",
+                              "lineHeight": 1.25,
+                              "fontFamily": "$auth-font",
+                              "fontSize": 13,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "z7D10v",
+                  "name": "Split Sign Up",
+                  "clip": true,
+                  "width": 520,
+                  "height": 720,
+                  "fill": "$auth-surface",
+                  "cornerRadius": 24,
+                  "stroke": "$auth-border",
+                  "strokeWidth": 1,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "$auth-text",
+                    "offset": {
+                      "x": 0,
+                      "y": 4
+                    },
+                    "blur": 16
+                  },
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "I5RudB",
+                      "name": "Split layout",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "T2ac7v",
+                          "name": "Brand side",
+                          "width": 220,
+                          "height": "fill_container",
+                          "fill": "$auth-action",
+                          "layout": "vertical",
+                          "gap": 22,
+                          "padding": 34,
+                          "justifyContent": "space_between",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "KOv1i",
+                              "name": "Brand mark",
+                              "gap": 10,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "EDiQp",
+                                  "name": "Logo symbol",
+                                  "width": 34,
+                                  "height": 34,
+                                  "fill": "$auth-surface",
+                                  "cornerRadius": 10,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "mqNNs",
+                                      "name": "Movo initial",
+                                      "fill": "$auth-action",
+                                      "content": "F",
+                                      "fontFamily": "$auth-display",
+                                      "fontSize": 16,
+                                      "fontWeight": "800"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "JI3vF",
+                                  "name": "Project name",
+                                  "fill": "$auth-surface",
+                                  "content": "FlotaX",
+                                  "lineHeight": 1.25,
+                                  "fontFamily": "$auth-font",
+                                  "fontSize": 18,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "EzZwV",
+                              "name": "Brand message",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 14,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "xspVT",
+                                  "name": "Brand headline",
+                                  "fill": "#FFFFFF",
+                                  "textGrowth": "fixed-width",
+                                  "width": 150,
+                                  "content": "Gestiona tu flujo con claridad.",
+                                  "lineHeight": 1.25,
+                                  "fontFamily": "$auth-display",
+                                  "fontSize": 26,
+                                  "fontWeight": "800"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "wGwNW",
+                                  "name": "Brand body",
+                                  "fill": "$auth-surface",
+                                  "textGrowth": "fixed-width",
+                                  "width": 150,
+                                  "content": "Una experiencia simple, segura y consistente para entrar al producto.",
+                                  "lineHeight": 1.25,
+                                  "fontFamily": "$auth-font",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "asStI",
+                              "name": "Trust chips",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 10,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "XxEJL",
+                                  "name": "Seguro chip",
+                                  "opacity": 0.12,
+                                  "fill": "$auth-text",
+                                  "cornerRadius": 999,
+                                  "padding": [
+                                    8,
+                                    12
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "QZGKD",
+                                      "name": "Seguro chip label",
+                                      "fill": "#FFFFFF",
+                                      "content": "Seguro",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 12,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "T4NZ2E",
+                                  "name": "Rápido chip",
+                                  "opacity": 0.12,
+                                  "fill": "$auth-text",
+                                  "cornerRadius": 999,
+                                  "padding": [
+                                    8,
+                                    12
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "WgnWp",
+                                      "name": "Rápido chip label",
+                                      "fill": "#FFFFFF",
+                                      "content": "Rápido",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 12,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "zd5mM",
+                                  "name": "Moderno chip",
+                                  "opacity": 0.12,
+                                  "fill": "$auth-text",
+                                  "cornerRadius": 999,
+                                  "padding": [
+                                    8,
+                                    12
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "qtjGP",
+                                      "name": "Moderno chip label",
+                                      "fill": "#FFFFFF",
+                                      "content": "Moderno",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 12,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "G3bvpE",
+                              "layoutPosition": "absolute",
+                              "x": 55,
+                              "y": 240.34058706288488,
+                              "name": "Brand monogram",
+                              "opacity": 0.16,
+                              "fill": "$auth-surface",
+                              "textGrowth": "fixed-width",
+                              "width": 90,
+                              "content": "F",
+                              "fontFamily": "$auth-display",
+                              "fontSize": 150,
+                              "fontWeight": "800"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "nVbv1",
+                          "name": "Form side",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "fill": "$auth-surface",
+                          "layout": "vertical",
+                          "gap": 22,
+                          "padding": 36,
+                          "justifyContent": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "gXVNl",
+                              "name": "Sign Up split title",
+                              "fill": "$auth-text",
+                              "textGrowth": "fixed-width",
+                              "width": 230,
+                              "content": "Crea una cuenta",
+                              "lineHeight": 1.25,
+                              "fontFamily": "$auth-display",
+                              "fontSize": 30,
+                              "fontWeight": "800"
+                            },
+                            {
+                              "type": "text",
+                              "id": "xguaO",
+                              "name": "Sign Up split subtitle",
+                              "fill": "$auth-muted",
+                              "textGrowth": "fixed-width",
+                              "width": 230,
+                              "content": "Completa los datos para comenzar.",
+                              "lineHeight": 1.25,
+                              "fontFamily": "$auth-font",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "y8SVOQ",
+                              "name": "Sign Up form",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 14,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "MQGoK",
+                                  "name": "Name field",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "n2jfPM",
+                                      "name": "Name label",
+                                      "fill": "$auth-text",
+                                      "content": "Name",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "pJQ0Y",
+                                      "name": "Name input",
+                                      "width": "fill_container",
+                                      "height": 48,
+                                      "fill": "$auth-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$auth-border",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Z2p3v",
+                                          "name": "Name placeholder",
+                                          "fill": "$auth-muted",
+                                          "content": "Alex Morgan",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$auth-font",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "L44bW1",
+                                  "name": "Email field",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "I20Xa",
+                                      "name": "Email label",
+                                      "fill": "$auth-text",
+                                      "content": "Email",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "sSuOU",
+                                      "name": "Email input",
+                                      "width": "fill_container",
+                                      "height": 48,
+                                      "fill": "$auth-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$auth-border",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "acM9S",
+                                          "name": "Email placeholder",
+                                          "fill": "$auth-muted",
+                                          "content": "you@example.com",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$auth-font",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "nSFSR",
+                                  "name": "Password field",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "uaANV",
+                                      "name": "Password label",
+                                      "fill": "$auth-text",
+                                      "content": "Password",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "Y0AN2",
+                                      "name": "Password input",
+                                      "width": "fill_container",
+                                      "height": 48,
+                                      "fill": "$auth-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$auth-border",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "ZMyhi",
+                                          "name": "Password placeholder",
+                                          "fill": "$auth-muted",
+                                          "content": "••••••••",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$auth-font",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "a6RFMj",
+                                  "name": "Confirm password field",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "i7k7bF",
+                                      "name": "Confirm password label",
+                                      "fill": "$auth-text",
+                                      "content": "Confirm password",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "chqqA",
+                                      "name": "Confirm password input",
+                                      "width": "fill_container",
+                                      "height": 48,
+                                      "fill": "$auth-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$auth-border",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "vPcYo",
+                                          "name": "Confirm password placeholder",
+                                          "fill": "$auth-muted",
+                                          "content": "••••••••",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$auth-font",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "gFMFJ",
+                                  "name": "Crear cuenta button",
+                                  "width": "fill_container",
+                                  "height": 48,
+                                  "fill": "$auth-action",
+                                  "cornerRadius": 12,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "QixZX",
+                                      "name": "Crear cuenta label",
+                                      "fill": "#FFFFFF",
+                                      "content": "Crear cuenta",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 15,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "RTRDS",
+                                  "name": "Google sign-in button",
+                                  "width": "fill_container",
+                                  "height": 48,
+                                  "fill": "$auth-surface",
+                                  "cornerRadius": 12,
+                                  "stroke": "$auth-border",
+                                  "strokeWidth": 1,
+                                  "gap": 10,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "R69gsP",
+                                      "name": "Google mark",
+                                      "fill": "#4285F4",
+                                      "content": "G",
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 18,
+                                      "fontWeight": "700"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "sg9ho",
+                                      "name": "Google button label",
+                                      "fill": "$auth-text",
+                                      "content": "Registrarme con Google",
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "UPFve",
+                                  "name": "Sign Up alternative",
+                                  "width": "fill_container",
+                                  "gap": 5,
+                                  "justifyContent": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "D1ZIj9",
+                                      "name": "Alternative text",
+                                      "fill": "$auth-muted",
+                                      "content": "¿Ya tienes cuenta?",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "frcnV",
+                                      "name": "Alternative link",
+                                      "fill": "$auth-action",
+                                      "content": "Inicia sesión",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Mbxaj",
+          "name": "Concept 03 — Minimal",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 18,
+          "children": [
+            {
+              "type": "text",
+              "id": "mzYW5",
+              "name": "Concept 03 — Minimal title",
+              "fill": "$auth-text",
+              "content": "Concept 03 — Minimal",
+              "lineHeight": 1.25,
+              "fontFamily": "$auth-display",
+              "fontSize": 22,
+              "fontWeight": "800"
+            },
+            {
+              "type": "frame",
+              "id": "vXt2o",
+              "name": "Concept 03 — Minimal screens",
+              "width": "fill_container",
+              "gap": 32,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "MLjON",
+                  "name": "Minimal Login",
+                  "clip": true,
+                  "width": 520,
+                  "height": 720,
+                  "fill": "$auth-surface",
+                  "cornerRadius": 24,
+                  "stroke": "$auth-border",
+                  "strokeWidth": 1,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "$auth-text",
+                    "offset": {
+                      "x": 0,
+                      "y": 4
+                    },
+                    "blur": 16
+                  },
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "otfj0",
+                      "name": "Minimal canvas",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": "$auth-surface",
+                      "layout": "vertical",
+                      "gap": 28,
+                      "padding": 56,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "L9pMV",
+                          "name": "Brand mark",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "orNSr",
+                              "name": "Logo symbol",
+                              "width": 34,
+                              "height": 34,
+                              "fill": "$auth-action",
+                              "cornerRadius": 10,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "eBvef",
+                                  "name": "Movo initial",
+                                  "fill": "$auth-surface",
+                                  "content": "F",
+                                  "fontFamily": "$auth-display",
+                                  "fontSize": 16,
+                                  "fontWeight": "800"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "ZXUIv",
+                              "name": "Project name",
+                              "fill": "$auth-text",
+                              "content": "FlotaX",
+                              "lineHeight": 1.25,
+                              "fontFamily": "$auth-font",
+                              "fontSize": 18,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "zTorS",
+                          "name": "Minimal intro",
+                          "width": 320,
+                          "layout": "vertical",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "W2ddID",
+                              "name": "Login minimal title",
+                              "fill": "$auth-text",
+                              "textGrowth": "fixed-width",
+                              "width": 320,
+                              "content": "Acceso",
+                              "lineHeight": 1.25,
+                              "fontFamily": "$auth-display",
+                              "fontSize": 36,
+                              "fontWeight": "800"
+                            },
+                            {
+                              "type": "text",
+                              "id": "DpdQO",
+                              "name": "Login minimal subtitle",
+                              "fill": "$auth-muted",
+                              "textGrowth": "fixed-width",
+                              "width": 320,
+                              "content": "Entra con tus credenciales para continuar.",
+                              "lineHeight": 1.25,
+                              "fontFamily": "$auth-font",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "h7fKrT",
+                          "name": "Minimal form wrapper",
+                          "width": 320,
+                          "layout": "vertical",
+                          "gap": 14,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Wp0va",
+                              "name": "Login form",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 14,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "LLbJY",
+                                  "name": "Email field",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "gW0tl",
+                                      "name": "Email label",
+                                      "fill": "$auth-text",
+                                      "content": "Email",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "A8ugtD",
+                                      "name": "Email input",
+                                      "width": "fill_container",
+                                      "height": 48,
+                                      "fill": "$auth-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$auth-border",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "j9l4n",
+                                          "name": "Email placeholder",
+                                          "fill": "$auth-muted",
+                                          "content": "you@example.com",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$auth-font",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "KtXLU",
+                                  "name": "Password field",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "N8905",
+                                      "name": "Password label",
+                                      "fill": "$auth-text",
+                                      "content": "Password",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "sQ9TY",
+                                      "name": "Password input",
+                                      "width": "fill_container",
+                                      "height": 48,
+                                      "fill": "$auth-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$auth-border",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "WmznW",
+                                          "name": "Password placeholder",
+                                          "fill": "$auth-muted",
+                                          "content": "••••••••",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$auth-font",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "z65EI1",
+                                  "name": "Login options",
+                                  "width": "fill_container",
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "Pn438",
+                                      "name": "Remember me",
+                                      "gap": 8,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "rectangle",
+                                          "cornerRadius": 4,
+                                          "id": "I3IDlt",
+                                          "name": "Checkbox",
+                                          "fill": "$auth-surface",
+                                          "width": 16,
+                                          "height": 16,
+                                          "stroke": "$auth-border",
+                                          "strokeWidth": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "n07Kq",
+                                          "name": "Remember label",
+                                          "fill": "$auth-muted",
+                                          "content": "Recordarme",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$auth-font",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "dDqw4",
+                                      "name": "Forgot password",
+                                      "fill": "$auth-action",
+                                      "content": "¿Olvidaste tu contraseña?",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "M0JEFG",
+                                  "name": "Iniciar sesión button",
+                                  "width": "fill_container",
+                                  "height": 48,
+                                  "fill": "$auth-action",
+                                  "cornerRadius": 12,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "Qu0QY",
+                                      "name": "Iniciar sesión label",
+                                      "fill": "#FFFFFF",
+                                      "content": "Iniciar sesión",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 15,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "XwUAB",
+                                  "name": "Google sign-in button",
+                                  "width": "fill_container",
+                                  "height": 48,
+                                  "fill": "$auth-surface",
+                                  "cornerRadius": 12,
+                                  "stroke": "$auth-border",
+                                  "strokeWidth": 1,
+                                  "gap": 10,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "YMdZa",
+                                      "name": "Google mark",
+                                      "fill": "#4285F4",
+                                      "content": "G",
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 18,
+                                      "fontWeight": "700"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "B05TvE",
+                                      "name": "Google button label",
+                                      "fill": "$auth-text",
+                                      "content": "Continuar con Google",
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "HPa0X",
+                                  "name": "Login alternative",
+                                  "width": "fill_container",
+                                  "gap": 5,
+                                  "justifyContent": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "L9ZJx",
+                                      "name": "Alternative text",
+                                      "fill": "$auth-muted",
+                                      "content": "¿No tienes cuenta?",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "ZncZe",
+                                      "name": "Alternative link",
+                                      "fill": "$auth-action",
+                                      "content": "Regístrate",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "lbr9v",
+                  "name": "Minimal Sign Up",
+                  "clip": true,
+                  "width": 520,
+                  "height": 720,
+                  "fill": "$auth-surface",
+                  "cornerRadius": 24,
+                  "stroke": "$auth-border",
+                  "strokeWidth": 1,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "$auth-text",
+                    "offset": {
+                      "x": 0,
+                      "y": 4
+                    },
+                    "blur": 16
+                  },
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Y11kJK",
+                      "name": "Minimal canvas",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": "$auth-surface",
+                      "layout": "vertical",
+                      "gap": 28,
+                      "padding": 56,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "ECTor",
+                          "name": "Brand mark",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "L4LaB5",
+                              "name": "Logo symbol",
+                              "width": 34,
+                              "height": 34,
+                              "fill": "$auth-action",
+                              "cornerRadius": 10,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "RmOGX",
+                                  "name": "Movo initial",
+                                  "fill": "$auth-surface",
+                                  "content": "F",
+                                  "fontFamily": "$auth-display",
+                                  "fontSize": 16,
+                                  "fontWeight": "800"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "f8zua",
+                              "name": "Project name",
+                              "fill": "$auth-text",
+                              "content": "FlotaX",
+                              "lineHeight": 1.25,
+                              "fontFamily": "$auth-font",
+                              "fontSize": 18,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "EJan0",
+                          "name": "Minimal intro",
+                          "width": 320,
+                          "layout": "vertical",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "qNS9g",
+                              "name": "Sign Up minimal title",
+                              "fill": "$auth-text",
+                              "textGrowth": "fixed-width",
+                              "width": 320,
+                              "content": "Registro",
+                              "lineHeight": 1.25,
+                              "fontFamily": "$auth-display",
+                              "fontSize": 36,
+                              "fontWeight": "800"
+                            },
+                            {
+                              "type": "text",
+                              "id": "g6kkF",
+                              "name": "Sign Up minimal subtitle",
+                              "fill": "$auth-muted",
+                              "textGrowth": "fixed-width",
+                              "width": 320,
+                              "content": "Crea una cuenta nueva en pocos pasos.",
+                              "lineHeight": 1.25,
+                              "fontFamily": "$auth-font",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "MQk8p",
+                          "name": "Minimal form wrapper",
+                          "width": 320,
+                          "layout": "vertical",
+                          "gap": 14,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "t4oayM",
+                              "name": "Sign Up form",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 14,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "n48mL",
+                                  "name": "Name field",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "JohQu",
+                                      "name": "Name label",
+                                      "fill": "$auth-text",
+                                      "content": "Name",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "kFYDf",
+                                      "name": "Name input",
+                                      "width": "fill_container",
+                                      "height": 48,
+                                      "fill": "$auth-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$auth-border",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Sfyjs",
+                                          "name": "Name placeholder",
+                                          "fill": "$auth-muted",
+                                          "content": "Alex Morgan",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$auth-font",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "a8VBx",
+                                  "name": "Email field",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "agObF",
+                                      "name": "Email label",
+                                      "fill": "$auth-text",
+                                      "content": "Email",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "ibCvF",
+                                      "name": "Email input",
+                                      "width": "fill_container",
+                                      "height": 48,
+                                      "fill": "$auth-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$auth-border",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "W4ZgIb",
+                                          "name": "Email placeholder",
+                                          "fill": "$auth-muted",
+                                          "content": "you@example.com",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$auth-font",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "vaVMc",
+                                  "name": "Password field",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "M6yyA",
+                                      "name": "Password label",
+                                      "fill": "$auth-text",
+                                      "content": "Password",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "N5VZHe",
+                                      "name": "Password input",
+                                      "width": "fill_container",
+                                      "height": 48,
+                                      "fill": "$auth-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$auth-border",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "cuC3e",
+                                          "name": "Password placeholder",
+                                          "fill": "$auth-muted",
+                                          "content": "••••••••",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$auth-font",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "cynb5",
+                                  "name": "Confirm password field",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "Ev9sl",
+                                      "name": "Confirm password label",
+                                      "fill": "$auth-text",
+                                      "content": "Confirm password",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "pfdGh",
+                                      "name": "Confirm password input",
+                                      "width": "fill_container",
+                                      "height": 48,
+                                      "fill": "$auth-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$auth-border",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "X7ZE20",
+                                          "name": "Confirm password placeholder",
+                                          "fill": "$auth-muted",
+                                          "content": "••••••••",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$auth-font",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "r5I8D",
+                                  "name": "Crear cuenta button",
+                                  "width": "fill_container",
+                                  "height": 48,
+                                  "fill": "$auth-action",
+                                  "cornerRadius": 12,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "nR6hG",
+                                      "name": "Crear cuenta label",
+                                      "fill": "#FFFFFF",
+                                      "content": "Crear cuenta",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 15,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "qsF1Z",
+                                  "name": "Google sign-in button",
+                                  "width": "fill_container",
+                                  "height": 48,
+                                  "fill": "$auth-surface",
+                                  "cornerRadius": 12,
+                                  "stroke": "$auth-border",
+                                  "strokeWidth": 1,
+                                  "gap": 10,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "d65tz1",
+                                      "name": "Google mark",
+                                      "fill": "#4285F4",
+                                      "content": "G",
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 18,
+                                      "fontWeight": "700"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "h1fNmG",
+                                      "name": "Google button label",
+                                      "fill": "$auth-text",
+                                      "content": "Registrarme con Google",
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "BTdMw",
+                                  "name": "Sign Up alternative",
+                                  "width": "fill_container",
+                                  "gap": 5,
+                                  "justifyContent": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "LK1T1",
+                                      "name": "Alternative text",
+                                      "fill": "$auth-muted",
+                                      "content": "¿Ya tienes cuenta?",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "gqKJt",
+                                      "name": "Alternative link",
+                                      "fill": "$auth-action",
+                                      "content": "Inicia sesión",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$auth-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "variables": {
@@ -129922,6 +132814,42 @@
     "radius-2xl": {
       "type": "number",
       "value": 40
+    },
+    "auth-bg": {
+      "type": "color",
+      "value": "#EDEDED"
+    },
+    "auth-text": {
+      "type": "color",
+      "value": "#111827"
+    },
+    "auth-display": {
+      "type": "string",
+      "value": "Space Grotesk"
+    },
+    "auth-muted": {
+      "type": "color",
+      "value": "#4B5563"
+    },
+    "auth-font": {
+      "type": "string",
+      "value": "Inter"
+    },
+    "auth-surface": {
+      "type": "color",
+      "value": "#EDEDED"
+    },
+    "auth-border": {
+      "type": "color",
+      "value": "#9CA3AF"
+    },
+    "auth-muted-surface": {
+      "type": "color",
+      "value": "#9CA3AF"
+    },
+    "auth-action": {
+      "type": "color",
+      "value": "#1F2937"
     }
   },
   "fileToken": "21e8d718-7264-48e5-ada7-adca2ef58405"

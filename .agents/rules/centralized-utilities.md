@@ -2,7 +2,7 @@
 
 ## 1. Context & Purpose
 
-In Phoenix, auxiliary functions (such as date/time formatters, duration calculators, string sanitizers, math algorithms, and array transformations) are frequently needed across multiple components, hooks, and services.
+In FlotaX, auxiliary functions (such as date/time formatters, duration calculators, currency/rate formatters, string sanitizers, math algorithms, and array transformations) are frequently needed across multiple components, hooks, and services.
 
 Defining these functions as ad-hoc, private helpers inside React hooks, Astro frontmatters, or UI components creates **code drift**, **duplicated logic**, **bundle bloat**, and **untestable code**.
 

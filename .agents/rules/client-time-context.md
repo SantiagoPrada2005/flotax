@@ -14,7 +14,7 @@
     const timeCtx = resolveClientTimeContext(context.request);
     const date = body.date ?? timeCtx.dateString;
     ```
-  - `resolveClientTimeContext` reads Cloudflare request context (`cf.timezone`), client headers (`x-timezone`), and cookies (`phoenix_tz`), with fallback to `America/Bogota`.
+  - `resolveClientTimeContext` reads Cloudflare request context (`cf.timezone`), client headers (`x-timezone`), and cookies (`movix_tz`), with fallback to `America/Bogota`.
 
 - **Explicit Date Propagation in UI Clients**:
   - Interactive UI components (e.g., `<TasksMatrixBoard />`) MUST receive the resolved local date as a prop from the SSR page (e.g., `currentDate={today}`) and embed it into the container's data attributes (`data-current-date={currentDate}`).

@@ -1,0 +1,144 @@
+---
+/**
+ * @component LoginForm
+ * @source design/design-export.html -> "Authentication — Login & Sign Up / Classic Login"
+ * @description Componente de autenticación mobile-first con soporte para envío de código OTP sin contraseña y acceso social.
+ * @palette #EDEDED (canvas/inputs) | #9CA3AF (borders) | #4B5563 (muted text) | #1F2937 (primary interactive) | #111827 (brand/headings)
+ */
+---
+
+<div class="w-full max-w-[420px] mx-auto flex flex-col gap-5 p-6 sm:p-8 bg-[#EDEDED] border border-[#9CA3AF] rounded-[24px] shadow-sm">
+  <!-- Brand Mark -->
+  <div class="flex items-center gap-2.5">
+    <div class="flex h-[36px] w-[36px] items-center justify-center rounded-[10px] bg-[#1F2937] text-[#EDEDED] shadow-xs">
+      <span class="font-display text-base font-extrabold leading-none">F</span>
+    </div>
+    <span class="font-body text-[19px] font-bold tracking-tight text-[#111827]">
+      FlotaX
+    </span>
+  </div>
+
+  <!-- Header Copy -->
+  <div class="flex flex-col gap-1.5">
+    <h1 class="font-display text-[26px] sm:text-[28px] font-extrabold leading-tight text-[#111827]">
+      Bienvenido de nuevo
+    </h1>
+    <p class="font-body text-[14px] leading-relaxed text-[#4B5563]">
+      Accede a tu espacio de trabajo para gestionar la flota y alquileres.
+    </p>
+  </div>
+
+  <!-- Formulario de Acceso -->
+  <form id="login-form" class="flex flex-col gap-4 mt-1">
+    <!-- Email Field -->
+    <div class="flex flex-col gap-2">
+      <label for="email" class="font-body text-[13px] font-semibold text-[#111827]">
+        Correo Electrónico
+      </label>
+      <div class="relative flex items-center">
+        <input
+          id="email"
+          name="email"
+          type="email"
+          required
+          inputmode="email"
+          autocomplete="email"
+          placeholder="operador@movix.com"
+          class="w-full h-[48px] px-3.5 bg-[#EDEDED] border border-[#9CA3AF] rounded-[12px] text-[#111827] placeholder-[#4B5563] text-base transition focus:outline-none focus:ring-2 focus:ring-[#1F2937] focus:border-transparent"
+        />
+      </div>
+    </div>
+
+    <!-- Password / OTP Field -->
+    <div class="flex flex-col gap-2">
+      <div class="flex items-center justify-between">
+        <label for="auth-code" class="font-body text-[13px] font-semibold text-[#111827]">
+          Código de Verificación o Contraseña
+        </label>
+      </div>
+      <div class="relative flex items-center">
+        <input
+          id="auth-code"
+          name="password"
+          type="password"
+          required
+          autocomplete="current-password"
+          placeholder="••••••••"
+          class="w-full h-[48px] px-3.5 bg-[#EDEDED] border border-[#9CA3AF] rounded-[12px] text-[#111827] placeholder-[#4B5563] text-base transition focus:outline-none focus:ring-2 focus:ring-[#1F2937] focus:border-transparent"
+        />
+      </div>
+    </div>
+
+    <!-- Options: Remember & Forgot -->
+    <div class="flex items-center justify-between text-[13px] pt-1">
+      <label class="flex items-center gap-2 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          name="remember"
+          class="h-4 w-4 rounded border-[#9CA3AF] text-[#1F2937] bg-[#EDEDED] focus:ring-[#1F2937]"
+        />
+        <span class="font-body font-medium text-[#4B5563]">Recordarme</span>
+      </label>
+      <a
+        href="#"
+        class="font-body font-semibold text-[#1F2937] hover:underline focus:outline-none"
+      >
+        ¿Olvidaste tu contraseña?
+      </a>
+    </div>
+
+    <!-- Action Button: Iniciar Sesión -->
+    <button
+      type="submit"
+      id="submit-login-btn"
+      class="w-full min-h-[48px] flex items-center justify-center rounded-[12px] bg-[#1F2937] px-4 py-3 font-body text-[15px] font-bold text-white shadow-xs transition hover:bg-[#111827] active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F2937]"
+    >
+      <span>Iniciar sesión</span>
+    </button>
+
+    <!-- Social Divider -->
+    <div class="relative my-1 flex items-center justify-center">
+      <div class="absolute inset-0 flex items-center">
+        <div class="w-full border-t border-[#9CA3AF]/60"></div>
+      </div>
+      <span class="relative bg-[#EDEDED] px-3 font-body text-[12px] font-medium text-[#4B5563]">
+        o continúa con
+      </span>
+    </div>
+
+    <!-- Google Sign-In Button -->
+    <button
+      type="button"
+      id="google-signin-btn"
+      class="w-full min-h-[48px] flex items-center justify-center gap-2.5 rounded-[12px] bg-[#EDEDED] border border-[#9CA3AF] px-4 py-2.5 font-body text-[14px] font-semibold text-[#111827] transition hover:bg-[#FFFFFF] active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F2937]"
+    >
+      <svg class="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+          fill="#4285F4"
+        />
+        <path
+          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+          fill="#34A853"
+        />
+        <path
+          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+          fill="#FBBC05"
+        />
+        <path
+          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+          fill="#EA4335"
+        />
+      </svg>
+      <span>Continuar con Google</span>
+    </button>
+
+    <!-- Alternative Sign Up Link -->
+    <div class="mt-2 flex items-center justify-center gap-1.5 text-center font-body text-[13px]">
+      <span class="text-[#4B5563]">¿No tienes cuenta?</span>
+      <a href="/registro" class="font-bold text-[#1F2937] hover:underline focus:outline-none">
+        Regístrate
+      </a>
+    </div>
+  </form>
+</div>

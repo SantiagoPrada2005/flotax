@@ -2,11 +2,11 @@
 
 ## 1. The Role of a Page (`src/pages/*.astro`): Lean Orchestrators
 
-In Phoenix, pages in `src/pages/` are **pure route orchestrators (Containers)**. They are NOT component dumps or widget builders.
+In FlotaX, pages in `src/pages/` are **pure route orchestrators (Containers)**. They are NOT component dumps or widget builders.
 
 ```
 Page Role:
-[ Layout (AppShell / CircadianLayout) ]
+[ Layout (LayoutApp / LayoutAdmin / LayoutAuth) ]
    └── [ Page Container / Orchestrator (<150 LOC) ]
          ├── [ Domain Module UI: Tier 2 Component ]
          ├── [ Domain Module UI: Tier 2 Component ]

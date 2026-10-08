@@ -1,18 +1,31 @@
 @import "tailwindcss";
 
 @theme {
-  /* Brand & Status Colors */
-  --color-brand-primary: #131211;
-  --color-brand-accent: #2563eb;
+  /* Canonical Palette: #EDEDED | #9CA3AF | #4B5563 | #1F2937 | #111827 */
+  --color-palette-100: #ededed;
+  --color-palette-300: #9ca3af;
+  --color-palette-500: #4b5563;
+  --color-palette-700: #1f2937;
+  --color-palette-900: #111827;
+
+  /* Brand & Semantic Hierarchy */
+  --color-brand-primary: #111827;
+  --color-brand-secondary: #1f2937;
+  --color-brand-accent: #1f2937;
+  --color-brand-coral: #1f2937;
+  --color-brand-blue: #1f2937;
   --color-status-success: #16a34a;
   --color-status-warning: #f59e0b;
   --color-status-danger: #dc2626;
 
   /* Surfaces & Neutral Hierarchy */
-  --color-surface-canvas: #f1f0ec;
+  --color-surface-canvas: #ededed;
   --color-surface-card: #ffffff;
-  --color-surface-elevated: #fbfbf9;
-  --color-border-subtle: #e5e5e0;
+  --color-surface-elevated: #ededed;
+  --color-surface-sidebar: #ededed;
+  --color-border-subtle: #9ca3af;
+  --color-text-muted: #4b5563;
+  --color-text-subtle: #9ca3af;
 
   /* Typography Scales */
   --font-display: "Space Grotesk", system-ui, sans-serif;
@@ -27,6 +40,7 @@
 
 /* Universal Mobile Ergonomics Shielding (iOS WebKit Anti-Zoom) */
 @media screen and (max-width: 768px) {
+
   input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
   textarea,
   select {
@@ -40,4 +54,18 @@ textarea,
 select {
   scroll-margin-top: 80px;
   scroll-margin-bottom: 80px;
+}
+
+/* Safe area utilities */
+.safe-bottom {
+  padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
+}
+
+.safe-top {
+  padding-top: max(12px, env(safe-area-inset-top, 12px));
+}
+
+/* FAB Shadow Elevation E3 */
+.shadow-fab {
+  box-shadow: 0 10px 25px -4px rgba(31, 41, 55, 0.4), 0 6px 12px -2px rgba(17, 24, 39, 0.16);
 }

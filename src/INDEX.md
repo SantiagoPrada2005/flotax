@@ -8,6 +8,7 @@
 | Subdirectory | Responsibility | Index |
 | :--- | :--- | :--- |
 | [`actions/`](./actions/) | Capa de aplicación y casos de uso del servidor (Astro Server Actions) con validación estricta de esquemas Zod y control RBAC multi-tenant. | [INDEX.md](./actions/INDEX.md) |
+| [`components/`](./components/) | Componentes UI y de navegación reutilizables. | [INDEX.md](./components/INDEX.md) |
 | [`db/`](./db/) | Capa de persistencia relacional, esquemas de tablas Drizzle ORM y configuración de base de datos para SQLite / Cloudflare D1. | [INDEX.md](./db/INDEX.md) |
 | [`layouts/`](./layouts/) | Layouts estructurales compartidos para la interfaz de usuario en Astro. | [INDEX.md](./layouts/INDEX.md) |
 | [`lib/`](./lib/) | Módulos de soporte técnico transversal, factories de infraestructura (Base de Datos D1, Autenticación Better Auth) y utilidades. | [INDEX.md](./lib/INDEX.md) |

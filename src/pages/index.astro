@@ -6,8 +6,8 @@ const timeContext = resolveClientTimeContext(Astro.request);
 ---
 
 <LayoutAdmin title="FlotaX — Panel de Control">
-  <main class="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:px-8">
-    <div class="rounded-card border border-border-subtle bg-surface-card p-6 shadow-sm sm:p-10">
+  <section class="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+    <div class="rounded-card border border-border-subtle bg-surface-card p-6 shadow-xs sm:p-10">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <span class="inline-flex items-center gap-1.5 rounded-full bg-surface-canvas px-3 py-1 font-mono text-xs font-semibold uppercase tracking-wider text-brand-accent">
@@ -57,5 +57,5 @@ const timeContext = resolveClientTimeContext(Astro.request);
         </span>
       </div>
     </div>
-  </main>
+  </section>
 </LayoutAdmin>

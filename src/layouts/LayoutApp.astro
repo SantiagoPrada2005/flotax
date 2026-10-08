@@ -1,0 +1,65 @@
+---
+import '../styles/tokens.css';
+import TopBar from '../components/navigation/TopBar.astro';
+import Sidebar from '../components/navigation/Sidebar.astro';
+import BottomNav from '../components/navigation/BottomNav.astro';
+
+interface Props {
+  title?: string | undefined;
+  activeTab?: 'home' | 'search' | 'fleet' | 'wallet' | 'profile' | undefined;
+  showBack?: boolean | undefined;
+  backHref?: string | undefined;
+  hideNav?: boolean | undefined;
+}
+
+const {
+  title = 'FlotaX — Gestión de Flota y Alquiler',
+  activeTab,
+  showBack = false,
+  backHref = '/',
+  hideNav = false,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="es" class="h-full bg-surface-canvas text-brand-primary antialiased">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content, viewport-fit=cover"
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <title>{title}</title>
+  </head>
+  <body class="flex min-h-full flex-col font-body selection:bg-brand-secondary/20 selection:text-brand-primary">
+    <div class="flex min-h-screen w-full flex-row">
+      <!-- Desktop Navigation Sidebar -->
+      {!hideNav && <Sidebar activeTab={activeTab} />}
+
+      <!-- Main Layout Body -->
+      <div class="flex flex-1 flex-col overflow-x-hidden">
+        <!-- Top App Bar -->
+        {!hideNav && <TopBar title={title} showBack={showBack} backHref={backHref} />}
+
+        <!-- Content Area: padded for bottom nav on mobile (pb-28) and standard on desktop (pb-8) -->
+        <main class:list={[
+          "flex-1 w-full",
+          !hideNav ? "pb-28 md:pb-8" : ""
+        ]}>
+          <slot />
+        </main>
+      </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation (64px + FAB 56px) -->
+    {!hideNav && <BottomNav activeTab={activeTab} />}
+  </body>
+</html>

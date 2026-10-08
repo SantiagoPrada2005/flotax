@@ -17,4 +17,4 @@
 - **Type Safety**:
   - Always derive TypeScript models using `$inferSelect` and `$inferInsert`.
 - **Documentation Synchronization**:
-  - Whenever modifying schema files in `src/lib/db/schema/`, you MUST update [`docs/database.md`](file:///Users/santiago/proyectos/phoenix/docs/database.md) (refer to [`.agents/rules/database-documentation.md`](file:///Users/santiago/proyectos/phoenix/.agents/rules/database-documentation.md)).
+  - Whenever modifying schema files in `src/db/schema/`, you MUST update [`docs/database.md`](file:///Users/santiago/proyectos/movix/docs/database.md) (refer to [`.agents/rules/database-documentation.md`](file:///Users/santiago/proyectos/movix/.agents/rules/database-documentation.md)).

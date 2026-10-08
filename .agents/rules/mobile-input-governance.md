@@ -18,7 +18,7 @@ En navegadores basados en WebKit (iOS Safari, y cualquier navegador webview en i
 
 ---
 
-## 3. Los 6 Mandamientos Arquitectónicos de Inputs en Phoenix
+## 3. Los 6 Mandamientos Arquitectónicos de Inputs en FlotaX
 
 ### 1. El Umbral de 16px en Mobile (`max-width: 768px`)
 Todo campo interactivo de texto debe garantizar un piso mínimo de `16px` (`1rem`) en dispositivos móviles:
@@ -36,9 +36,9 @@ Todo campo interactivo de texto debe garantizar un piso mínimo de `16px` (`1rem
 En pantallas de escritorio (`sm:` / `>768px`), el componente puede reducirse fluidamente a `0.875rem` (14px) o `0.9375rem` (15px) para preservar la densidad ejecutiva del diseño.
 
 ### 2. Viewport con `interactive-widget=resizes-content`
-El layout maestro (`src/layouts/CircadianLayout.astro`) debe contener:
+El layout maestro (`src/layouts/LayoutApp.astro`) debe contener:
 ```html
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content, viewport-fit=cover" />
 ```
 Esto sincroniza la apertura y cierre del teclado virtual con el espacio utilizable real del layout viewport en iOS 15.4+ y Android Chrome.
 

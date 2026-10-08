@@ -2,14 +2,14 @@
 
 ## 1. Core Principle: The Database Schema is the Canonical Domain Type
 
-In Phoenix, data models are defined using **Drizzle ORM** in `src/lib/db/schema/*.ts`.
+In FlotaX, data models are defined using **Drizzle ORM** in `src/db/schema/*.ts`.
 All agents, developers, and code generators MUST treat Drizzle schemas as the **Single Source of Truth** for domain entities across the entire application stack.
 
 ```
 Canonical Source of Truth:
-[ Drizzle Schema (`src/lib/db/schema/*.ts`) ]
+[ Drizzle Schema (`src/db/schema/*.ts`) ]
          │
-         ├───> Exported Select & Insert Types (`TaskSelect`, `MorningGoalSelect`, etc.)
+         ├───> Exported Select & Insert Types (`VehiculoSelect`, `ReservaSelect`, etc.)
          │
          ├───> Repositories & Domain Services
          │
