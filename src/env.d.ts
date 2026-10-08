@@ -12,6 +12,9 @@ declare module 'cloudflare:workers' {
   interface Env {
     DB: import('@cloudflare/workers-types').D1Database;
     BUCKET_MULTIMEDIA: import('@cloudflare/workers-types').R2Bucket;
+    EMAIL?: import('@cloudflare/workers-types').SendEmail;
+    EMAIL_DEFAULT_FROM?: string;
+    EMAIL_AUTH_FROM?: string;
     BETTER_AUTH_URL?: string;
     BETTER_AUTH_SECRET?: string;
     GOOGLE_CLIENT_ID?: string;

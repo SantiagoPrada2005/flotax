@@ -3,13 +3,17 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { emailOTP } from 'better-auth/plugins/email-otp';
 import { getDb } from '@/lib/db';
 import * as authSchema from '@/db/schema/auth';
-import type { D1Database } from '@cloudflare/workers-types';
+import type { D1Database, SendEmail } from '@cloudflare/workers-types';
+import { getEmailService } from '@/lib/email';
 
 export interface AuthEnv {
   BETTER_AUTH_URL?: string;
   BETTER_AUTH_SECRET?: string;
   GOOGLE_CLIENT_ID?: string;
   GOOGLE_CLIENT_SECRET?: string;
+  EMAIL?: SendEmail;
+  EMAIL_DEFAULT_FROM?: string;
+  EMAIL_AUTH_FROM?: string;
   [key: string]: unknown;
 }
 
@@ -44,8 +48,27 @@ export function createAuth(d1: D1Database, env?: AuthEnv) {
     plugins: [
       emailOTP({
         async sendVerificationOTP({ email, otp, type }) {
-          // Log estructurado en Cloudflare Workers (integrable con MailChannels/Resend/SendGrid)
-          console.info(`[Auth OTP] Código generado para ${email} (tipo: ${type}): ${otp}`);
+          console.info(`[Auth OTP Dispatch] Generando envío a ${email} (tipo: ${type})`);
+          try {
+            const emailService = getEmailService(env);
+            const result = await emailService.sendOtp({
+              to: email,
+              code: otp,
+              type,
+            });
+
+            if (!result.success) {
+              console.error(
+                `[Auth OTP Error] Falló el despacho de correo a ${email}: [${result.code}] ${result.error}`
+              );
+            } else {
+              console.info(
+                `[Auth OTP Success] Correo despachado exitosamente a ${email} (MessageId: ${result.messageId})`
+              );
+            }
+          } catch (error) {
+            console.error('[Auth OTP Exception]:', error);
+          }
         },
       }),
     ],

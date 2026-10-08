@@ -14,6 +14,8 @@
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
 | [`index.astro`](./index.astro) | Página / Ruta raíz `/` | Vista de inicio y dashboard | `@/layouts/LayoutAdmin.astro` |
+| [`login.astro`](./login.astro) | Página `/login` | Flujo de acceso OTP / Google | `@/components/auth/LoginFlow` |
+| [`registro.astro`](./registro.astro) | Página `/registro` | Registro de nuevos usuarios | `@/components/auth/LoginFlow` |
 
 ## Invariants & Directory Rules
 

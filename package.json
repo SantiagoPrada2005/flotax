@@ -10,7 +10,9 @@
     "preview": "astro preview",
     "check": "astro check",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "wrangler d1 migrations apply flotax-db",
+    "db:migrate:remote": "wrangler d1 migrations apply flotax-db --remote",
+    "db:migrate:local": "wrangler d1 migrations apply flotax-db --local",
+    "db:studio": "drizzle-kit studio",
     "index:audit": "python3 .agents/skills/codebase-index/scripts/index_manager.py audit",
     "index:tree": "python3 .agents/skills/codebase-index/scripts/index_manager.py tree",
     "index:sync": "python3 .agents/skills/codebase-index/scripts/index_manager.py sync-all"
@@ -32,6 +34,8 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@cloudflare/workers-types": "^5.20260930.2",
+    "@libsql/client": "^0.18.0",
+    "@types/node": "^26.6.4",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "drizzle-kit": "^0.30.6",

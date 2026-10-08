@@ -8,6 +8,7 @@
 | Subdirectory | Responsibility | Index |
 | :--- | :--- | :--- |
 | [`auth/`](./auth/) | Sistema central de autenticación y autorización (Better Auth, RBAC multi-tenant, sesiones y guards). | [INDEX.md](./auth/INDEX.md) |
+| [`email/`](./email/) | Módulo transaccional de correos con Cloudflare Workers API y dominio flotax.innovaweb.pro. | [INDEX.md](./email/INDEX.md) |
 | [`time/`](./time/) | Funciones y utilidades de cliente para manipulación y visualización de fechas y zonas horarias. | [INDEX.md](./time/INDEX.md) |
 
 ## File Manifest

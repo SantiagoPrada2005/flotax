@@ -9,13 +9,24 @@
     {
       "binding": "DB",
       "database_name": "flotax-db",
-      "database_id": "local-db-placeholder"
+      "database_id": "local-db-placeholder",
+      "migrations_dir": "drizzle/migrations"
     }
   ],
   "r2_buckets": [
     {
       "binding": "BUCKET_MULTIMEDIA",
       "bucket_name": "flotax-multimedia"
+    }
+  ],
+  "send_email": [
+    {
+      "name": "EMAIL",
+      "allowed_sender_addresses": [
+        "auth@flotax.innovaweb.pro",
+        "notificaciones@flotax.innovaweb.pro",
+        "soporte@flotax.innovaweb.pro"
+      ]
     }
   ]
 }

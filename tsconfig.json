@@ -6,11 +6,12 @@
     "noUncheckedIndexedAccess": true,
     "jsx": "react-jsx",
     "jsxImportSource": "react",
+    "types": ["node"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
     }
   },
-  "include": ["src/**/*", "src/env.d.ts", ".astro/types.d.ts"],
+  "include": ["src/**/*", "src/env.d.ts", ".astro/types.d.ts", "drizzle.config.ts"],
   "files": ["src/env.d.ts"]
 }

@@ -1,0 +1,12 @@
+---
+import LayoutApp from '../layouts/LayoutApp.astro';
+import LoginForm from '../components/auth/LoginForm.astro';
+---
+
+<LayoutApp title="Crear Cuenta — FlotaX" hideNav={true}>
+  <div class="min-h-[100dvh] w-full flex flex-col justify-center items-center px-4 py-8 sm:px-6 bg-[#EDEDED]">
+    <div class="w-full flex justify-center items-center">
+      <LoginForm initialMode="signup" />
+    </div>
+  </div>
+</LayoutApp>
