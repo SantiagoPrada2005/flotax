@@ -8,10 +8,10 @@
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
 | [`guard.ts`](./guard.ts) | Guard / Middleware Helpers | `requireLocalAuth()`, `requireAuth()`, validaciones de ruta | `astro` context |
-| [`index.ts`](./index.ts) | Factory & Barrel Export | `createAuth()`, `Auth`, `AuthEnv`, re-exporta auth modules | `better-auth`, `drizzle-orm` |
+| [`index.ts`](./index.ts) | Factory & Barrel Export | `createAuth()`, `Auth`, `CreateAuthOptions`, `BetterAuthSession`, `BetterAuthUser`, `BetterAuthSessionData` | `better-auth`, `drizzle-orm` |
 | [`permisos.ts`](./permisos.ts) | Catálogo de Permisos | `PERMISOS` (constante tipada de permisos granulares) | - |
 | [`rbac.ts`](./rbac.ts) | Lógica RBAC | `tienePermiso()`, `obtenerRolEnLocal()`, tipos de roles | - |
-| [`session.ts`](./session.ts) | Manejador de Sesión | Funciones de resolución de sesión y cookies de local activo | `better-auth` |
+| [`session.ts`](./session.ts) | Manejador de Sesión | `resolveLocalActivo()`, `assertUsuarioAutenticado()`, `assertLocalActivo()`, tipos de sesión | `drizzle-orm` |
 
 ## Invariants & Directory Rules
 

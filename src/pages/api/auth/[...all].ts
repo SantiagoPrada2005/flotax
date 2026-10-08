@@ -12,6 +12,16 @@ export const ALL: APIRoute = async (context) => {
     );
   }
 
-  const auth = createAuth(d1, env);
+  const originHeader = context.request.headers.get('origin');
+  const refererHeader = context.request.headers.get('referer');
+  const requestOrigin =
+    originHeader ||
+    (refererHeader ? new URL(refererHeader).origin : undefined) ||
+    context.url.origin;
+
+  const auth = createAuth(d1, env, {
+    baseURL: requestOrigin,
+    trustedOrigins: requestOrigin ? [requestOrigin] : [],
+  });
   return auth.handler(context.request);
 };

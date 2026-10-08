@@ -7,6 +7,7 @@ export * from './miembros';
 export * from './clientes_local';
 export * from './invitaciones';
 export * from './transferencias';
+export * from './incidentes';
 
 // Backwards compatibility legacy exports
 export { usuarioAdmin, rolesValidos } from './usuarios_admin';

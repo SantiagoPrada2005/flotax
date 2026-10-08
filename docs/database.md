@@ -145,6 +145,29 @@ Auditoría inmutable cuando el dueño transfiere la propiedad del local a otro u
 
 ---
 
+### 3. Módulo de Gobernanza, Logging e Incidentes del Sistema
+
+#### `incidentes_sistema`
+Persistencia y deduplicación global de errores entre isolates de Cloudflare Workers. Controla ventanas de enfriamiento, alertas tempranas y previene la saturación de correos a desarrolladores, habilitando monitoreo operativo futuro.
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|---------------|-------------|
+| `id` | TEXT | PRIMARY KEY | Identificador único del incidente. |
+| `fingerprint` | TEXT | NOT NULL, UNIQUE | Huella digital determinista calculada del error. |
+| `nivel` | TEXT | NOT NULL | Severidad ('WARN', 'ERROR', 'FATAL'). |
+| `mensaje` | TEXT | NOT NULL | Mensaje principal normalizado del error. |
+| `modulo` | TEXT | NULLABLE | Módulo o subsistema de origen. |
+| `ocurrencias` | INTEGER | NOT NULL, DEFAULT 1 | Total acumulado de veces que ha ocurrido. |
+| `primera_vez` | TIMESTAMP | NOT NULL | Fecha/hora de la primera detección. |
+| `ultima_vez` | TIMESTAMP | NOT NULL | Fecha/hora del evento más reciente. |
+| `ultimo_correo_en` | TIMESTAMP | NULLABLE | Fecha/hora de la última alerta enviada por correo. |
+| `estado` | TEXT | NOT NULL, DEFAULT 'ABIERTO' | Estado operativo ('ABIERTO', 'MITIGADO', 'RESUELTO'). |
+| `metadata` | TEXT | NULLABLE | JSON sanitizado con contexto de petición y stack trace. |
+| `creado_en` | TIMESTAMP | NOT NULL | Creación del registro. |
+| `actualizado_en` | TIMESTAMP | NOT NULL | Última actualización. |
+
+---
+
 ## Diagrama Entidad-Relación
 
 ```mermaid
@@ -262,4 +285,21 @@ erDiagram
         string motivo
         timestamp creado_en
     }
+
+    incidentes_sistema {
+        string id PK
+        string fingerprint UK
+        string nivel
+        string mensaje
+        string modulo
+        integer ocurrencias
+        timestamp primera_vez
+        timestamp ultima_vez
+        timestamp ultimo_correo_en
+        string estado
+        string metadata
+        timestamp creado_en
+        timestamp actualizado_en
+    }
 ```
+

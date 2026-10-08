@@ -7,7 +7,7 @@ interface Props {
 const { activeTab, class: className = '' } = Astro.props;
 const currentPath = Astro.url.pathname;
 
-const isHome = activeTab ? activeTab === 'home' : (currentPath === '/' || currentPath === '/dashboard');
+const isHome = activeTab ? activeTab === 'home' : (currentPath === '/home' || currentPath === '/dashboard');
 const isSearch = activeTab ? activeTab === 'search' : currentPath.startsWith('/reservas') || currentPath.startsWith('/buscar');
 const isFleet = activeTab ? activeTab === 'fleet' : currentPath.startsWith('/vehiculos') || currentPath.startsWith('/flota');
 const isWallet = activeTab ? activeTab === 'wallet' : currentPath.startsWith('/pagos') || currentPath.startsWith('/finanzas');
@@ -25,7 +25,7 @@ const isWallet = activeTab ? activeTab === 'wallet' : currentPath.startsWith('/p
   <div class="relative mx-auto flex h-[64px] max-w-md items-center justify-between px-6">
     <!-- Tab: Home -->
     <a
-      href="/"
+      href="/home"
       aria-label="Inicio"
       aria-current={isHome ? "page" : undefined}
       class:list={[

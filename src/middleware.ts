@@ -1,171 +1,164 @@
 import { defineMiddleware } from 'astro:middleware';
 import { createAuth } from '@/lib/auth';
 import { getDb } from '@/lib/db';
-import { miembrosLocal, localesAlquiler } from '@/db/schema';
-import { eq, and } from 'drizzle-orm';
-import type { UsuarioSesion, LocalActivoSesion } from '@/lib/auth/session';
-import type { RolSistema } from '@/lib/auth/rbac';
+import { resolveLocalActivo } from '@/lib/auth/session';
+import { getLogger } from '@/lib/logger';
 import { env } from 'cloudflare:workers';
 
-export const onRequest = defineMiddleware(async (context, next) => {
-  const d1 = env.DB;
+const PROTECTED_PREFIXES = [
+  '/home',
+  '/admin',
+  '/flota',
+  '/vehiculos',
+  '/reservas',
+  '/inspecciones',
+  '/caja',
+  '/pagos',
+  '/finanzas',
+  '/perfil',
+];
 
-  // Si no hay binding de base de datos D1 en runtime, continuar como anónimo
+const AUTH_PAGES = ['/login', '/registro'];
+
+function isProtectedRoute(pathname: string): boolean {
+  return PROTECTED_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+}
+
+function isAuthPage(pathname: string): boolean {
+  return AUTH_PAGES.some(
+    (page) => pathname === page || pathname.startsWith(`${page}/`)
+  );
+}
+
+export const onRequest = defineMiddleware(async (context, next) => {
+  // 1. Inicializar logger contextual y estados de sesión en locals como seguros y tipados
+  const requestId = context.request.headers.get('cf-ray') || crypto.randomUUID();
+  const cfData = (context.request as unknown as { cf?: { colo?: string } }).cf;
+
+  const baseLogger = getLogger(env, {
+    requestId,
+    path: context.url.pathname,
+    method: context.request.method,
+    colocation: cfData?.colo,
+  });
+
+  context.locals.logger = baseLogger;
+  context.locals.user = null;
+  context.locals.session = null;
+  context.locals.usuario = null;
+
+  // 2. Omitir peticiones de assets internos de Astro o favicons
+  if (
+    context.url.pathname.startsWith('/_astro') ||
+    context.url.pathname.startsWith('/favicon')
+  ) {
+    return await next();
+  }
+
+  // 3. Si la petición está dirigida a las rutas internas de Better Auth (/api/auth/*),
+  // delegar directamente a su handler para procesar sign-in, OTP, callbacks, etc.
+  if (context.url.pathname.startsWith('/api/auth')) {
+    return await next();
+  }
+
+  // 4. Si no hay binding de base de datos D1 en runtime, evaluar protección y continuar
+  const d1 = env.DB;
   if (!d1) {
-    context.locals.usuario = null;
+    if (isProtectedRoute(context.url.pathname)) {
+      return context.redirect('/login');
+    }
     return await next();
   }
 
   try {
-    const auth = createAuth(d1, env);
+    const originHeader = context.request.headers.get('origin');
+    const refererHeader = context.request.headers.get('referer');
+    const requestOrigin =
+      originHeader ||
+      (refererHeader ? new URL(refererHeader).origin : undefined) ||
+      context.url.origin;
+
+    const auth = createAuth(d1, env, {
+      baseURL: requestOrigin,
+      trustedOrigins: requestOrigin ? [requestOrigin] : [],
+    });
     const sessionData = await auth.api.getSession({
       headers: context.request.headers,
     });
 
-    if (!sessionData?.user) {
-      context.locals.usuario = null;
-      return await next();
-    }
+    if (sessionData?.user && sessionData?.session) {
+      const rawUser = sessionData.user;
 
-    const rawUser = sessionData.user as unknown as {
-      id: string;
-      name: string;
-      email: string;
-      telefono?: string | null;
-      tipoDocumento?: string | null;
-      numeroDocumento?: string | null;
-      esSuperAdmin?: boolean;
-      activo?: boolean;
-      localOrigenId?: string | null;
-    };
+      // Solo hidratar sesión activa si el usuario no se encuentra suspendido
+      if (rawUser.activo !== false) {
+        context.locals.user = rawUser;
+        context.locals.session = sessionData.session;
 
-    if (rawUser.activo === false) {
-      context.locals.usuario = null;
-      return await next();
-    }
+        // 5. Resolver contexto de negocio perimetral (local activo y roles RBAC)
+        const db = getDb(d1);
+        const localIdSolicitado =
+          context.cookies.get('movix_local_activo')?.value ||
+          context.request.headers.get('x-local-id');
 
-    const db = getDb(d1);
-    let localActivo: LocalActivoSesion | null = null;
+        const localActivo = await resolveLocalActivo(
+          db,
+          rawUser.id,
+          rawUser.localOrigenId,
+          localIdSolicitado
+        );
 
-    // Verificar si viene una preferencia de local en cookie o header
-    const localIdSolicitado =
-      context.cookies.get('movix_local_activo')?.value ||
-      context.request.headers.get('x-local-id');
-
-    // 1. Buscar si el usuario es miembro (empleado o dueño) en locales
-    if (localIdSolicitado) {
-      const miembroEncontrado = await db
-        .select({
-          miembroId: miembrosLocal.id,
-          rol: miembrosLocal.rol,
-          localId: localesAlquiler.id,
-          nombreLocal: localesAlquiler.nombre,
-          slugLocal: localesAlquiler.slug,
-          duenoId: localesAlquiler.duenoId,
-          localActivo: localesAlquiler.activo,
-        })
-        .from(miembrosLocal)
-        .innerJoin(localesAlquiler, eq(miembrosLocal.localId, localesAlquiler.id))
-        .where(
-          and(
-            eq(miembrosLocal.usuarioId, rawUser.id),
-            eq(miembrosLocal.localId, localIdSolicitado),
-            eq(miembrosLocal.activo, true)
-          )
-        )
-        .limit(1);
-
-      const item = miembroEncontrado[0];
-      if (item && item.localActivo) {
-        localActivo = {
-          id: item.localId,
-          nombre: item.nombreLocal,
-          slug: item.slugLocal,
-          rol: item.rol as RolSistema,
-          esDueno: item.duenoId === rawUser.id,
+        // 6. Hidratar modelo de dominio FlotaX en locals
+        context.locals.usuario = {
+          id: rawUser.id,
+          nombre: rawUser.name,
+          correo: rawUser.email,
+          telefono: rawUser.telefono ?? null,
+          tipoDocumento: rawUser.tipoDocumento ?? null,
+          numeroDocumento: rawUser.numeroDocumento ?? null,
+          esSuperAdmin: Boolean(rawUser.esSuperAdmin),
+          activo: rawUser.activo !== undefined ? Boolean(rawUser.activo) : true,
+          localOrigenId: rawUser.localOrigenId ?? null,
+          localActivo,
         };
+
+        // 7. Enriquecer el logger de locals con el contexto del usuario autenticado
+        context.locals.logger = baseLogger.withContext({
+          userId: rawUser.id,
+          localId: localActivo?.id,
+        });
       }
     }
-
-    // 2. Si no tiene local solicitado o no es miembro del solicitado, asignar el primer local donde trabaja/es dueño
-    if (!localActivo) {
-      const primerLocalMiembro = await db
-        .select({
-          rol: miembrosLocal.rol,
-          localId: localesAlquiler.id,
-          nombreLocal: localesAlquiler.nombre,
-          slugLocal: localesAlquiler.slug,
-          duenoId: localesAlquiler.duenoId,
-          localActivo: localesAlquiler.activo,
-        })
-        .from(miembrosLocal)
-        .innerJoin(localesAlquiler, eq(miembrosLocal.localId, localesAlquiler.id))
-        .where(
-          and(
-            eq(miembrosLocal.usuarioId, rawUser.id),
-            eq(miembrosLocal.activo, true)
-          )
-        )
-        .limit(1);
-
-      const item = primerLocalMiembro[0];
-      if (item && item.localActivo) {
-        localActivo = {
-          id: item.localId,
-          nombre: item.nombreLocal,
-          slug: item.slugLocal,
-          rol: item.rol as RolSistema,
-          esDueno: item.duenoId === rawUser.id,
-        };
-      }
-    }
-
-    // 3. Si no es trabajador ni dueño (es un cliente/USUARIO):
-    // Si tiene un local de origen asociado, asociarlo como cliente de dicho local
-    if (!localActivo && rawUser.localOrigenId) {
-      const localOrigen = await db
-        .select({
-          id: localesAlquiler.id,
-          nombre: localesAlquiler.nombre,
-          slug: localesAlquiler.slug,
-          duenoId: localesAlquiler.duenoId,
-          activo: localesAlquiler.activo,
-        })
-        .from(localesAlquiler)
-        .where(eq(localesAlquiler.id, rawUser.localOrigenId))
-        .limit(1);
-
-      const item = localOrigen[0];
-      if (item && item.activo) {
-        localActivo = {
-          id: item.id,
-          nombre: item.nombre,
-          slug: item.slug,
-          rol: 'USUARIO',
-          esDueno: false,
-        };
-      }
-    }
-
-    // 4. Hidratar usuario en locals
-    const usuarioSesion: UsuarioSesion = {
-      id: rawUser.id,
-      nombre: rawUser.name,
-      correo: rawUser.email,
-      telefono: rawUser.telefono ?? null,
-      tipoDocumento: rawUser.tipoDocumento ?? null,
-      numeroDocumento: rawUser.numeroDocumento ?? null,
-      esSuperAdmin: Boolean(rawUser.esSuperAdmin),
-      activo: rawUser.activo !== undefined ? Boolean(rawUser.activo) : true,
-      localOrigenId: rawUser.localOrigenId ?? null,
-      localActivo,
-    };
-
-    context.locals.usuario = usuarioSesion;
   } catch (error) {
-    console.error('[Middleware Auth Error]:', error);
+    await baseLogger.error('Error al resolver sesión o roles en middleware', error, {
+      module: 'middleware-auth',
+    });
+    context.locals.user = null;
+    context.locals.session = null;
     context.locals.usuario = null;
   }
 
-  return await next();
+  // 8. Control de acceso perimetral y redirección de rutas
+  const pathname = context.url.pathname;
+
+  if (isProtectedRoute(pathname) && !context.locals.user) {
+    const returnTo = encodeURIComponent(pathname + context.url.search);
+    return context.redirect(`/login?redirect=${returnTo}`);
+  }
+
+  if (isAuthPage(pathname) && context.locals.user) {
+    return context.redirect('/home');
+  }
+
+  try {
+    return await next();
+  } catch (pipelineError) {
+    await context.locals.logger.fatal(
+      'Falla no controlada en el pipeline de ejecución de la petición',
+      pipelineError,
+      { module: 'pipeline-unhandled' }
+    );
+    throw pipelineError;
+  }
 });

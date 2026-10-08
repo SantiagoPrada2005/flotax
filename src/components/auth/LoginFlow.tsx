@@ -23,13 +23,20 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
     setInfoMessage(null);
   };
 
+  const getDestinationUrl = () => {
+    if (typeof window === 'undefined') return '/home';
+    const params = new URLSearchParams(window.location.search);
+    const redirectParam = params.get('redirect');
+    return redirectParam ? decodeURIComponent(redirectParam) : '/home';
+  };
+
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true);
       setError(null);
       await authClient.signIn.social({
         provider: 'google',
-        callbackURL: '/',
+        callbackURL: getDestinationUrl(),
       });
     } catch (err: unknown) {
       console.error('Error al iniciar sesión con Google:', err);
@@ -92,7 +99,7 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
       if (res?.error) {
         setError(res.error.message || 'El código ingresado es incorrecto o ha expirado.');
       } else {
-        window.location.href = '/';
+        window.location.href = getDestinationUrl();
       }
     } catch (err: unknown) {
       console.error('Error verificando OTP:', err);

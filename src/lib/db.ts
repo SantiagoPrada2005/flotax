@@ -8,3 +8,5 @@ import type { D1Database } from '@cloudflare/workers-types';
 export function getDb(d1Binding: D1Database) {
   return drizzle(d1Binding);
 }
+
+export type AppDb = ReturnType<typeof getDb>;

@@ -16,6 +16,7 @@
 
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
+| [`AGENTS.md`](./AGENTS.md) | Manual Operativo y Gobernanza de IA | Directrices arquitectónicas, stack canónico, runbooks y reglas de calidad | FlotaX Guidelines |
 | [`astro.config.mjs`](./astro.config.mjs) | Configuración de Framework | Configuración de Astro con adaptador `@astrojs/cloudflare` | `@astrojs/cloudflare` |
 | [`drizzle.config.ts`](./drizzle.config.ts) | Configuración de ORM | Configuración del CLI de Drizzle para SQLite/D1 | `drizzle-kit` |
 | [`package.json`](./package.json) | Manifiesto de Paquetes | Scripts (`dev`, `build`, `check`), dependencias del proyecto | pnpm |
