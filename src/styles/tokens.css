@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 @import "tailwindcss";
 
 @theme {
@@ -31,6 +30,7 @@
   /* Typography Scales */
   --font-display: "Space Grotesk", system-ui, sans-serif;
   --font-body: "Inter", system-ui, sans-serif;
+  --font-manrope: "Manrope", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
 
   /* Radii & Ergonomics */
@@ -41,7 +41,6 @@
 
 /* Universal Mobile Ergonomics Shielding (iOS WebKit Anti-Zoom) */
 @media screen and (max-width: 768px) {
-
   input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
   textarea,
   select {
@@ -144,87 +143,6 @@ select {
   mix-blend-mode: normal !important;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .ios-press-bounce,
-  .ios-search-morph {
-    transition: none !important;
-    transform: none !important;
-  }
-}
-=======
-@import "tailwindcss";
-
-@theme {
-  /* Canonical Palette: #EDEDED | #9CA3AF | #4B5563 | #1F2937 | #111827 */
-  --color-palette-100: #ededed;
-  --color-palette-300: #9ca3af;
-  --color-palette-500: #4b5563;
-  --color-palette-700: #1f2937;
-  --color-palette-900: #111827;
-
-  /* Brand & Semantic Hierarchy */
-  --color-brand-primary: #111827;
-  --color-brand-secondary: #1f2937;
-  --color-brand-accent: #1f2937;
-  --color-brand-coral: #1f2937;
-  --color-brand-blue: #1f2937;
-  --color-status-success: #16a34a;
-  --color-status-warning: #f59e0b;
-  --color-status-danger: #dc2626;
-
-  /* Surfaces & Neutral Hierarchy */
-  --color-surface-canvas: #ededed;
-  --color-surface-card: #ffffff;
-  --color-surface-elevated: #ededed;
-  --color-surface-sidebar: #ededed;
-  --color-border-subtle: #9ca3af;
-  --color-text-muted: #4b5563;
-  --color-text-subtle: #9ca3af;
-
-  /* Typography Scales */
-  --font-display: "Space Grotesk", system-ui, sans-serif;
-  --font-body: "Inter", system-ui, sans-serif;
-  --font-manrope: "Manrope", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
-
-  /* Radii & Ergonomics */
-  --radius-touch: 20px;
-  --radius-card: 16px;
-  --radius-input: 12px;
-}
-
-/* Universal Mobile Ergonomics Shielding (iOS WebKit Anti-Zoom) */
-@media screen and (max-width: 768px) {
-
-  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
-  textarea,
-  select {
-    font-size: 16px !important;
-  }
-}
-
-/* Breathing room for virtual keyboards */
-input,
-textarea,
-select {
-  scroll-margin-top: 80px;
-  scroll-margin-bottom: 80px;
-}
-
-/* Safe area utilities */
-.safe-bottom {
-  padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
-}
-
-.safe-top {
-  padding-top: max(12px, env(safe-area-inset-top, 12px));
-}
-
-/* FAB Shadow Elevation E3 */
-.shadow-fab {
-  box-shadow: 0 10px 25px -4px rgba(31, 41, 55, 0.4), 0 6px 12px -2px rgba(17, 24, 39, 0.16);
-}
-
 /* ==========================================================================
    Smooth Entry & Scroll Animations
    ========================================================================== */
@@ -304,22 +222,6 @@ select {
 .reveal-on-scroll.is-visible {
   opacity: 1;
   transform: translateY(0);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-fade-up,
-  .animate-fade-in,
-  .animate-zoom-in,
-  .animate-float,
-  .reveal-on-scroll,
-  .shiny-cta,
-  .shiny-cta::before,
-  .shiny-cta::after {
-    animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-    transition: none !important;
-  }
 }
 
 /* ==========================================================================
@@ -562,4 +464,22 @@ select {
   box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.6), inset 0 0 20px -5px rgba(46, 78, 143, 0.3);
 }
 
->>>>>>> ac465fd (feat: add cinematic scroll-driven hero sequence and landing page components)
+@media (prefers-reduced-motion: reduce) {
+  .ios-press-bounce,
+  .ios-search-morph,
+  .animate-fade-up,
+  .animate-fade-in,
+  .animate-zoom-in,
+  .animate-float,
+  .reveal-on-scroll,
+  .shiny-cta,
+  .shiny-cta::before,
+  .shiny-cta::after,
+  .shiny-text,
+  .shiny-card {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
