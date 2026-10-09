@@ -42,15 +42,6 @@
       id="hero-intro-content"
       class="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 md:pt-32 flex flex-col items-start transition-all duration-300"
     >
-      <!-- Live Status Pill -->
-      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 shadow-lg mb-4 text-white">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span class="text-xs font-mono font-bold tracking-wider uppercase">
-          Flota en Tiempo Real
-        </span>
-        <span class="text-white/40">·</span>
-        <span class="text-xs text-white/80 font-medium">Patio Central</span>
-      </div>
 
       <!-- Fluid Cinematic Title with Dark Blue & Shiny Text effect -->
       <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black font-[Manrope,system-ui,sans-serif] leading-[1.08] tracking-tight max-w-3xl drop-shadow-[0_2px_14px_rgba(255,255,255,0.45)]">
@@ -61,8 +52,8 @@
         </span>
       </h1>
 
-      <p class="text-sm sm:text-base md:text-lg text-white/80 font-[Inter,system-ui,sans-serif] max-w-xl mt-4 mb-7 leading-relaxed drop-shadow-sm">
-        Alquila automóviles y motocicletas en patio con peritaje fotográfico 360°, contrato digital y total transparencia. Desplaza hacia abajo para recorrer la experiencia.
+      <p class="text-sm sm:text-base md:text-lg text-black/80 font-[Inter,system-ui,sans-serif] max-w-xl mt-4 mb-7 leading-relaxed drop-shadow-sm">
+        Alquila carros y motos con total transparencia. Desplaza hacia abajo para recorrer la experiencia.
       </p>
 
       <!-- Action Button -->
@@ -166,6 +157,11 @@
 
 <!-- Client-side High-Performance Scroll-Driven Frame Engine -->
 <script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
   (() => {
     const TOTAL_FRAMES = 77;
     const FRAME_PATHS = Array.from({ length: TOTAL_FRAMES }, (_, i) => {
@@ -187,235 +183,322 @@
 
     if (!track || !stage || !canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true }) || canvas.getContext('2d');
     if (!ctx) return;
-
-    // Cache of loaded image objects
-    const images: (HTMLImageElement | null)[] = new Array(TOTAL_FRAMES).fill(null);
-    let currentRenderedIndex = -1;
-    let isTicking = false;
-    let scrollProgress = 0;
 
     // Check prefers-reduced-motion
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // Helper to calculate interpolation opacity & translateY for cards
-    const getCardVisibility = (progress: number, start: number, peakStart: number, peakEnd: number, end: number) => {
-      if (progress < start || progress > end) return { opacity: 0, translateY: 16 };
-      if (progress >= peakStart && progress <= peakEnd) return { opacity: 1, translateY: 0 };
-      if (progress < peakStart) {
-        const factor = (progress - start) / (peakStart - start);
-        return { opacity: factor, translateY: (1 - factor) * 16 };
-      }
-      const factor = (end - progress) / (end - peakEnd);
-      return { opacity: factor, translateY: (1 - factor) * -16 };
+    // =========================================================================
+    // 1. Decoupled Frame Buffer with createImageBitmap & Background Queue
+    // =========================================================================
+    type FrameSource = ImageBitmap | HTMLImageElement;
+    const frameBuffer: (FrameSource | null)[] = new Array(TOTAL_FRAMES).fill(null);
+    const activeRequests = new Map<number, Promise<FrameSource | null>>();
+    let lastRenderedIndex = -1;
+
+    // Asynchronously fetch and decode image off main thread via createImageBitmap
+    const loadFrameBitmap = async (index: number): Promise<FrameSource | null> => {
+      if (index < 0 || index >= TOTAL_FRAMES) return null;
+      if (frameBuffer[index]) return frameBuffer[index];
+      if (activeRequests.has(index)) return activeRequests.get(index)!;
+
+      const src = FRAME_PATHS[index];
+      if (!src) return null;
+
+      const fetchPromise = (async (): Promise<FrameSource | null> => {
+        try {
+          if ('createImageBitmap' in window) {
+            const res = await fetch(src);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const blob = await res.blob();
+            const bitmap = await createImageBitmap(blob, {
+              premultiplyAlpha: 'default',
+              colorSpaceConversion: 'default',
+            });
+            frameBuffer[index] = bitmap;
+            return bitmap;
+          } else {
+            // Fallback for environments without createImageBitmap
+            return await loadFallbackImage(index, src);
+          }
+        } catch {
+          // Robust fallback on fetch or decode error
+          return await loadFallbackImage(index, src);
+        } finally {
+          activeRequests.delete(index);
+        }
+      })();
+
+      activeRequests.set(index, fetchPromise);
+      return fetchPromise;
     };
 
-    // Responsive Canvas Resize handler
+    const loadFallbackImage = (index: number, src: string): Promise<FrameSource | null> => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => {
+          frameBuffer[index] = img;
+          resolve(img);
+        };
+        img.onerror = () => resolve(null);
+      });
+    };
+
+    // Find nearest already-cached frame to eliminate flashes/jumps while loading
+    const getNearestLoadedFrame = (targetIndex: number): FrameSource | null => {
+      if (frameBuffer[targetIndex]) return frameBuffer[targetIndex];
+      for (let offset = 1; offset < TOTAL_FRAMES; offset++) {
+        const prev = targetIndex - offset;
+        const next = targetIndex + offset;
+        if (prev >= 0 && frameBuffer[prev]) return frameBuffer[prev];
+        if (next < TOTAL_FRAMES && frameBuffer[next]) return frameBuffer[next];
+      }
+      return null;
+    };
+
+    // Decoupled Background Preloader with Concurrency Pool
+    const MAX_CONCURRENT_DOWNLOADS = 4;
+    let preloadingQueue: number[] = [];
+    let activeDownloads = 0;
+
+    const pumpQueue = () => {
+      while (activeDownloads < MAX_CONCURRENT_DOWNLOADS && preloadingQueue.length > 0) {
+        const nextIdx = preloadingQueue.shift();
+        if (nextIdx === undefined) break;
+        if (frameBuffer[nextIdx] || activeRequests.has(nextIdx)) continue;
+
+        activeDownloads++;
+        loadFrameBitmap(nextIdx).finally(() => {
+          activeDownloads--;
+          pumpQueue();
+        });
+      }
+    };
+
+    const prioritizeAroundIndex = (targetIndex: number) => {
+      // Prioritize nearby frames (ahead and behind)
+      const nearby: number[] = [];
+      const windowRange = 8;
+      for (let i = 1; i <= windowRange; i++) {
+        const forward = targetIndex + i;
+        const backward = targetIndex - i;
+        if (forward < TOTAL_FRAMES && !frameBuffer[forward]) nearby.push(forward);
+        if (backward >= 0 && !frameBuffer[backward]) nearby.push(backward);
+      }
+
+      if (nearby.length > 0) {
+        preloadingQueue = [...nearby, ...preloadingQueue.filter((idx) => !nearby.includes(idx))];
+        pumpQueue();
+      }
+    };
+
+    const startBackgroundPreload = () => {
+      // Step 1: Sequential list of frames 1..TOTAL_FRAMES-1
+      const remainingFrames = Array.from({ length: TOTAL_FRAMES - 1 }, (_, i) => i + 1);
+      preloadingQueue.push(...remainingFrames);
+      pumpQueue();
+    };
+
+    // =========================================================================
+    // 2. High-DPI Scaled Canvas Renderer
+    // =========================================================================
     const resizeCanvas = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
       const width = stage.clientWidth;
       const height = stage.clientHeight;
 
-      if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
-        canvas.width = width * dpr;
-        canvas.height = height * dpr;
+      const physicalWidth = Math.round(width * dpr);
+      const physicalHeight = Math.round(height * dpr);
+
+      if (canvas.width !== physicalWidth || canvas.height !== physicalHeight) {
+        canvas.width = physicalWidth;
+        canvas.height = physicalHeight;
       }
 
-      if (currentRenderedIndex >= 0 && images[currentRenderedIndex]) {
-        drawFrame(currentRenderedIndex);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+
+      if (lastRenderedIndex >= 0) {
+        renderFrame(lastRenderedIndex);
       }
     };
 
-    // Draw single frame with object-fit: cover logic
-    const drawFrame = (index: number) => {
-      const img = images[index];
-      if (!img || !img.complete) return;
-
+    const drawFrameOnCanvas = (frame: FrameSource, index: number) => {
       const cw = canvas.width;
       const ch = canvas.height;
-      const iw = img.naturalWidth || 1280;
-      const ih = img.naturalHeight || 720;
+      const iw = 'naturalWidth' in frame ? frame.naturalWidth : frame.width;
+      const ih = 'naturalHeight' in frame ? frame.naturalHeight : frame.height;
 
-      // Aspect ratio cover calculations
+      if (!iw || !ih) return;
+
+      // Mathematical aspect-ratio cover
       const scale = Math.max(cw / iw, ch / ih);
       const nw = iw * scale;
       const nh = ih * scale;
       const nx = (cw - nw) / 2;
       const ny = (ch - nh) / 2;
 
-      ctx.clearRect(0, 0, cw, ih);
-      ctx.drawImage(img, nx, ny, nw, nh);
-      currentRenderedIndex = index;
+      ctx.clearRect(0, 0, cw, ch);
+      ctx.drawImage(frame, nx, ny, nw, nh);
+      lastRenderedIndex = index;
 
-      // Hide fallback poster once first canvas render occurs
+      // Smoothly hide poster after first real frame is drawn
       if (poster && poster.style.opacity !== '0') {
         poster.style.opacity = '0';
       }
     };
 
-    // Load single image with caching
-    const loadImage = (index: number): Promise<HTMLImageElement | null> => {
-      return new Promise((resolve) => {
-        if (images[index]) {
-          resolve(images[index]!);
-          return;
-        }
-        const src = FRAME_PATHS[index];
-        if (!src) {
-          resolve(null);
-          return;
-        }
-        const img = new Image();
-        img.src = src;
-        img.onload = () => {
-          images[index] = img;
-          resolve(img);
-        };
-        img.onerror = () => {
-          resolve(null);
-        };
-      });
-    };
-
-    // Progressive Chunk Preloading Strategy
-    const preloadChunks = async () => {
-      // Step 1: Preload frame 0 immediately
-      await loadImage(0);
-      drawFrame(0);
-
-      // Step 2: Preload early frames (1..15)
-      for (let i = 1; i < 16; i++) {
-        loadImage(i);
-      }
-
-      // Step 3: Progressive preloading in batches of 10 during idle moments
-      let nextBatch = 16;
-      const loadNextBatch = () => {
-        if (nextBatch >= TOTAL_FRAMES) return;
-        const limit = Math.min(nextBatch + 10, TOTAL_FRAMES);
-        for (let i = nextBatch; i < limit; i++) {
-          loadImage(i);
-        }
-        nextBatch = limit;
-        if (nextBatch < TOTAL_FRAMES) {
-          if ('requestIdleCallback' in window) {
-            (window as any).requestIdleCallback(loadNextBatch, { timeout: 1000 });
-          } else {
-            setTimeout(loadNextBatch, 100);
-          }
-        }
-      };
-
-      if ('requestIdleCallback' in window) {
-        (window as any).requestIdleCallback(loadNextBatch, { timeout: 800 });
+    const renderFrame = (index: number) => {
+      const exactFrame = frameBuffer[index];
+      if (exactFrame) {
+        drawFrameOnCanvas(exactFrame, index);
       } else {
-        setTimeout(loadNextBatch, 200);
-      }
-    };
-
-    // Update UI elements based on scroll progress
-    const updateScene = () => {
-      if (prefersReducedMotion) {
-        // Reduced motion: show frame 0 and display HUD cards static
-        drawFrame(0);
-        if (card1) { card1.style.opacity = '1'; card1.style.pointerEvents = 'auto'; }
-        if (card2) { card2.style.opacity = '1'; card2.style.pointerEvents = 'auto'; }
-        if (card3) { card3.style.opacity = '1'; card3.style.pointerEvents = 'auto'; }
-        return;
-      }
-
-      const rect = track.getBoundingClientRect();
-      const scrollDistance = track.offsetHeight - window.innerHeight;
-      const currentScroll = -rect.top;
-      scrollProgress = Math.max(0, Math.min(1, currentScroll / scrollDistance));
-
-      // Calculate frame index
-      const targetFrameIndex = Math.min(
-        TOTAL_FRAMES - 1,
-        Math.max(0, Math.floor(scrollProgress * (TOTAL_FRAMES - 1)))
-      );
-
-      // Render target frame if loaded, otherwise trigger load & maintain current
-      if (images[targetFrameIndex] && images[targetFrameIndex]!.complete) {
-        drawFrame(targetFrameIndex);
-      } else {
-        loadImage(targetFrameIndex).then(() => {
-          if (Math.abs(scrollProgress * (TOTAL_FRAMES - 1) - targetFrameIndex) < 2) {
-            drawFrame(targetFrameIndex);
+        // Render nearest loaded frame to eliminate frame drop saltos
+        const nearest = getNearestLoadedFrame(index);
+        if (nearest) {
+          drawFrameOnCanvas(nearest, index);
+        }
+        // Load target frame on demand with high priority
+        loadFrameBitmap(index).then((loaded) => {
+          if (loaded && Math.abs(playhead.frame - index) < 1.5) {
+            drawFrameOnCanvas(loaded, index);
           }
         });
+        prioritizeAroundIndex(index);
       }
+    };
 
-      // 1. Intro content fading (0.0 -> 0.18)
+    // =========================================================================
+    // 3. GSAP ScrollTrigger Smoothed Interpolation Engine
+    // =========================================================================
+    const playhead = { frame: 0 };
+
+    if (prefersReducedMotion) {
+      // Reduced motion: initialize frame 0 and display static HUDs
+      loadFrameBitmap(0).then((frame0) => {
+        if (frame0) drawFrameOnCanvas(frame0, 0);
+      });
+      if (card1) { card1.style.opacity = '1'; card1.style.pointerEvents = 'auto'; }
+      if (card2) { card2.style.opacity = '1'; card2.style.pointerEvents = 'auto'; }
+      if (card3) { card3.style.opacity = '1'; card3.style.pointerEvents = 'auto'; }
+    } else {
+      // Master GSAP Timeline synchronized with ScrollTrigger
+      const heroTimeline = gsap.timeline({
+        scrollTrigger: {
+          trigger: track,
+          start: 'top top',
+          end: 'bottom bottom',
+          scrub: 0.5, // Smooth lerp interpolation to eliminate jitter and jumps
+          invalidateOnRefresh: true,
+        },
+      });
+
+      // Frame scrubbing animation
+      heroTimeline.to(playhead, {
+        frame: TOTAL_FRAMES - 1,
+        ease: 'none',
+        duration: 1,
+        onUpdate: () => {
+          const targetIndex = Math.min(
+            TOTAL_FRAMES - 1,
+            Math.max(0, Math.round(playhead.frame))
+          );
+          renderFrame(targetIndex);
+        },
+      }, 0);
+
+      // Intro narrative fade out (0.0 -> 0.18)
       if (introContent) {
-        const introOpacity = Math.max(0, 1 - scrollProgress / 0.18);
-        introContent.style.opacity = String(introOpacity);
-        introContent.style.transform = `translate3d(0, ${-scrollProgress * 60}px, 0)`;
-        introContent.style.pointerEvents = introOpacity < 0.1 ? 'none' : 'auto';
+        heroTimeline.to(introContent, {
+          opacity: 0,
+          y: -50,
+          ease: 'power1.out',
+          duration: 0.18,
+          onUpdate: function () {
+            const p = this.progress();
+            introContent.style.pointerEvents = p > 0.8 ? 'none' : 'auto';
+          },
+        }, 0);
       }
 
-      // Scroll indicator fading (0.0 -> 0.12)
+      // Scroll indicator fade out (0.0 -> 0.12)
       if (scrollIndicator) {
-        const indOpacity = Math.max(0, 1 - scrollProgress / 0.12);
-        scrollIndicator.style.opacity = String(indOpacity);
+        heroTimeline.to(scrollIndicator, {
+          opacity: 0,
+          ease: 'power1.out',
+          duration: 0.12,
+        }, 0);
       }
 
-      // 2. HUD Card 1: "Disponible 24/7" (0.15 -> 0.42)
+      // HUD Card 1: "Disponible 24/7" (0.15 -> 0.42)
       if (card1) {
-        const { opacity, translateY } = getCardVisibility(scrollProgress, 0.15, 0.22, 0.35, 0.42);
-        card1.style.opacity = String(opacity);
-        card1.style.transform = `translate3d(0, ${translateY}px, 0)`;
-        card1.style.pointerEvents = opacity > 0.3 ? 'auto' : 'none';
+        heroTimeline.fromTo(card1,
+          { opacity: 0, y: 16, pointerEvents: 'none' },
+          { opacity: 1, y: 0, ease: 'power2.out', duration: 0.07, pointerEvents: 'auto' },
+          0.15
+        );
+        heroTimeline.to(card1,
+          { opacity: 0, y: -16, ease: 'power2.in', duration: 0.07, pointerEvents: 'none' },
+          0.35
+        );
       }
 
-      // 3. HUD Card 2: "Alquila tu vehículo" (0.39 -> 0.66)
+      // HUD Card 2: "Alquila tu vehículo" (0.39 -> 0.66)
       if (card2) {
-        const { opacity, translateY } = getCardVisibility(scrollProgress, 0.39, 0.46, 0.59, 0.66);
-        card2.style.opacity = String(opacity);
-        card2.style.transform = `translate3d(0, ${translateY}px, 0)`;
-        card2.style.pointerEvents = opacity > 0.3 ? 'auto' : 'none';
+        heroTimeline.fromTo(card2,
+          { opacity: 0, y: 16, pointerEvents: 'none' },
+          { opacity: 1, y: 0, ease: 'power2.out', duration: 0.07, pointerEvents: 'auto' },
+          0.39
+        );
+        heroTimeline.to(card2,
+          { opacity: 0, y: -16, ease: 'power2.in', duration: 0.07, pointerEvents: 'none' },
+          0.59
+        );
       }
 
-      // 4. HUD Card 3: "Automóviles disponibles" (0.63 -> 0.88)
+      // HUD Card 3: "Automóviles disponibles" (0.63 -> 0.88)
       if (card3) {
-        const { opacity, translateY } = getCardVisibility(scrollProgress, 0.63, 0.70, 0.82, 0.88);
-        card3.style.opacity = String(opacity);
-        card3.style.transform = `translate3d(0, ${translateY}px, 0)`;
-        card3.style.pointerEvents = opacity > 0.3 ? 'auto' : 'none';
+        heroTimeline.fromTo(card3,
+          { opacity: 0, y: 16, pointerEvents: 'none' },
+          { opacity: 1, y: 0, ease: 'power2.out', duration: 0.07, pointerEvents: 'auto' },
+          0.63
+        );
+        heroTimeline.to(card3,
+          { opacity: 0, y: -16, ease: 'power2.in', duration: 0.07, pointerEvents: 'none' },
+          0.82
+        );
       }
 
-      // 5. Exit Scrim to White Transition (0.86 -> 1.0)
+      // Exit Scrim Fade-to-White (0.86 -> 1.0)
       if (exitScrim) {
-        if (scrollProgress >= 0.86) {
-          const fadeProgress = (scrollProgress - 0.86) / 0.14;
-          exitScrim.style.opacity = String(Math.min(1, fadeProgress));
-        } else {
-          exitScrim.style.opacity = '0';
-        }
+        heroTimeline.fromTo(exitScrim,
+          { opacity: 0 },
+          { opacity: 1, ease: 'power1.in', duration: 0.14 },
+          0.86
+        );
       }
+    }
 
-      isTicking = false;
-    };
-
-    const onScroll = () => {
-      if (!isTicking) {
-        window.requestAnimationFrame(updateScene);
-        isTicking = true;
-      }
-    };
-
-    // Event listeners: register both scroll and touchmove for smooth mobile inertia
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('touchmove', onScroll, { passive: true });
+    // =========================================================================
+    // 4. Lifecycle & Window Event Handlers
+    // =========================================================================
     window.addEventListener('resize', () => {
       resizeCanvas();
-      onScroll();
+      ScrollTrigger.refresh();
     }, { passive: true });
 
-    // Initialize
+    // Immediate initial frame load & queue bootstrap
     resizeCanvas();
-    preloadChunks();
-    updateScene();
+    loadFrameBitmap(0).then((frame0) => {
+      if (frame0) {
+        drawFrameOnCanvas(frame0, 0);
+      }
+      startBackgroundPreload();
+    });
   })();
 </script>
