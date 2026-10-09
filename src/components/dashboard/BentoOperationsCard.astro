@@ -1,0 +1,133 @@
+---
+interface Props {
+  inspectionsCompleted?: number | undefined;
+  carsCount?: number | undefined;
+  motorcyclesCount?: number | undefined;
+  scootersCount?: number | undefined;
+  inspectionRate?: string | undefined;
+}
+
+const {
+  inspectionsCompleted = 12,
+  carsCount = 10,
+  motorcyclesCount = 6,
+  scootersCount = 4,
+  inspectionRate = '100%',
+} = Astro.props;
+---
+
+<article
+  class="rounded-[30px] bg-white p-6 text-[#111827] shadow-md border border-[#9CA3AF]/30 transition-all duration-200 hover:shadow-lg"
+>
+  <!-- Top Row: Category title + Quick Action Button -->
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#EDEDED] text-[#111827]">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="h-5 w-5"
+        >
+          <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <path d="m9 15 2 2 4-4"></path>
+        </svg>
+      </div>
+      <div>
+        <h2 class="font-display text-base font-bold text-[#111827]">
+          Inspecciones y Entrega
+        </h2>
+        <p class="text-xs font-medium text-[#4B5563]">
+          {inspectionsCompleted} peritajes con fotos en Cloudflare R2
+        </p>
+      </div>
+    </div>
+
+    <!-- Quick action plus button (as in reference image) -->
+    <a
+      href="/reservas/nueva"
+      aria-label="Nueva entrega o peritaje"
+      class="flex h-10 w-10 items-center justify-center rounded-full bg-[#EDEDED] text-[#111827] border border-[#9CA3AF]/40 transition hover:bg-[#111827] hover:text-white hover:scale-105 active:scale-95"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="h-4.5 w-4.5"
+      >
+        <line x1="12" x2="12" y1="5" y2="19"></line>
+        <line x1="5" x2="19" y1="12" y2="12"></line>
+      </svg>
+    </a>
+  </div>
+
+  <!-- Middle Row: 4-Column Metric Breakdown -->
+  <div class="mt-6 grid grid-cols-4 gap-2 border-t border-[#9CA3AF]/20 pt-4 text-center">
+    <div class="flex flex-col">
+      <span class="text-[11px] font-medium uppercase tracking-wider text-[#4B5563]">Autos</span>
+      <span class="mt-1 font-display text-lg font-extrabold text-[#111827]">{carsCount}</span>
+    </div>
+    <div class="flex flex-col">
+      <span class="text-[11px] font-medium uppercase tracking-wider text-[#4B5563]">Motos</span>
+      <span class="mt-1 font-display text-lg font-extrabold text-[#111827]">{motorcyclesCount}</span>
+    </div>
+    <div class="flex flex-col">
+      <span class="text-[11px] font-medium uppercase tracking-wider text-[#4B5563]">Scooters</span>
+      <span class="mt-1 font-display text-lg font-extrabold text-[#111827]">{scootersCount}</span>
+    </div>
+    <div class="flex flex-col">
+      <span class="text-[11px] font-medium uppercase tracking-wider text-[#4B5563]">Peritaje</span>
+      <span class="mt-1 font-display text-lg font-extrabold text-emerald-600">{inspectionRate}</span>
+    </div>
+  </div>
+
+  <!-- Bottom Row: Filter Pill Dropdown & Edit Action -->
+  <div class="mt-5 flex items-center justify-between border-t border-[#9CA3AF]/20 pt-4">
+    <!-- Filter Pill (Today v) -->
+    <div class="inline-flex items-center gap-1.5 rounded-full bg-[#EDEDED] px-3.5 py-1.5 text-xs font-semibold text-[#111827]">
+      <span>Turno Hoy</span>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="h-3.5 w-3.5 text-[#4B5563]"
+      >
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </div>
+
+    <!-- Edit/Audit Details Button -->
+    <a
+      href="/vehiculos"
+      aria-label="Ver auditoría de vehículos"
+      class="flex h-9 w-9 items-center justify-center rounded-full bg-[#EDEDED] text-[#4B5563] border border-[#9CA3AF]/30 transition hover:bg-[#111827] hover:text-white active:scale-95"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="h-4 w-4"
+      >
+        <path d="M12 20h9"></path>
+        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+      </svg>
+    </a>
+  </div>
+</article>

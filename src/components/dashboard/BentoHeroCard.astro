@@ -1,0 +1,76 @@
+---
+interface Props {
+  occupancyPercentage?: number | undefined;
+  dateLabel?: string | undefined;
+  activeUnits?: number | undefined;
+  totalUnits?: number | undefined;
+  yardName?: string | undefined;
+}
+
+const {
+  occupancyPercentage = 84,
+  dateLabel = '15 Octubre 2026',
+  activeUnits = 18,
+  totalUnits = 22,
+  yardName = 'Patio Principal',
+} = Astro.props;
+---
+
+<article
+  class="relative overflow-hidden rounded-[30px] bg-[#111827] p-6 text-white shadow-xl transition-transform duration-200 hover:shadow-2xl"
+>
+  <!-- Decorative Background Ring for visual depth -->
+  <div
+    class="pointer-events-none absolute -right-12 -top-12 h-44 w-44 rounded-full bg-white/5 blur-2xl"
+    aria-hidden="true"
+  ></div>
+
+  <div class="relative z-10 flex items-center justify-between gap-4">
+    <!-- Left Column: Metrics & Progress -->
+    <div class="flex flex-col space-y-3">
+      <!-- Tag Pill -->
+      <div class="inline-flex items-center gap-1.5 self-start rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/90 backdrop-blur-md">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="h-3.5 w-3.5"
+        >
+          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+          <polyline points="16 7 22 7 22 13"></polyline>
+        </svg>
+        <span>Ocupación de Flota</span>
+      </div>
+
+      <!-- Main Highlight Number -->
+      <div>
+        <p class="font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
+          {occupancyPercentage}%
+        </p>
+        <p class="mt-1 text-xs font-medium text-[#9CA3AF]">
+          {dateLabel} • {yardName}
+        </p>
+      </div>
+    </div>
+
+    <!-- Right Column: White Inset Mini-Card (as in reference design) -->
+    <div
+      class="flex h-28 w-28 shrink-0 flex-col items-center justify-center rounded-[22px] bg-white p-3 text-[#111827] shadow-lg ring-1 ring-black/5 sm:h-32 sm:w-32"
+    >
+      <span class="font-display text-2xl font-black tracking-tight sm:text-3xl">
+        {activeUnits}
+      </span>
+      <span class="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#4B5563]">
+        de {totalUnits} Activas
+      </span>
+      <span class="mt-1.5 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+        <span class="h-1.5 w-1.5 rounded-full bg-emerald-600"></span>
+        Operativo
+      </span>
+    </div>
+  </div>
+</article>

@@ -12,7 +12,7 @@ const isFleet = activeTab ? activeTab === 'fleet' : currentPath.startsWith('/veh
 const isWallet = activeTab ? activeTab === 'wallet' : currentPath.startsWith('/pagos') || currentPath.startsWith('/finanzas');
 ---
 
-<aside class="hidden w-64 shrink-0 flex-col border-r border-border-subtle bg-surface-sidebar p-4 md:flex min-h-screen">
+<aside class="hidden w-64 shrink-0 flex-col border-r border-border-subtle bg-surface-sidebar p-4 md:flex h-screen sticky top-0 overflow-y-auto">
   <!-- Brand Header -->
   <a href="/home" class="flex items-center gap-3 px-2 py-3 transition hover:opacity-90">
     <div class="flex h-9 w-9 items-center justify-center rounded-[10px] bg-brand-primary text-white shadow-xs">

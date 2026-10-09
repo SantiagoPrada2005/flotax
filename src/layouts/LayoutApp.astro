@@ -45,14 +45,21 @@ const {
       {!hideNav && <Sidebar activeTab={activeTab} />}
 
       <!-- Main Layout Body -->
-      <div class="flex flex-1 flex-col overflow-x-hidden">
-        <!-- Top App Bar -->
-        {!hideNav && <TopBar title={title} showBack={showBack} backHref={backHref} />}
+      <div class="flex flex-1 flex-col min-w-0">
+        <!-- Top App Bar (Fixed) -->
+        {!hideNav && (
+          <TopBar
+            title={title}
+            showBack={showBack}
+            backHref={backHref}
+            class="md:left-64"
+          />
+        )}
 
-        <!-- Content Area: padded for bottom nav on mobile (pb-28) and standard on desktop (pb-8) -->
+        <!-- Content Area: padded for fixed TopBar (pt-16), floating dock on mobile (pb-32) and standard on desktop (pb-8) -->
         <main class:list={[
           "flex-1 w-full",
-          !hideNav ? "pb-28 md:pb-8" : ""
+          !hideNav ? "pt-16 pb-32 md:pb-8" : ""
         ]}>
           <slot />
         </main>
