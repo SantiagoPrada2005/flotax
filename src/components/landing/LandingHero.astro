@@ -1,0 +1,421 @@
+---
+// src/components/landing/LandingHero.astro
+// Cinematic Scroll-Driven Frame Animation with Glassmorphism HUD Floating Cards
+---
+
+<div
+  id="hero-scroll-track"
+  class="relative w-full h-[320vh] sm:h-[350vh] -mt-14 md:-mt-20"
+>
+  <!-- Sticky Viewport Stage (100dvh pinned) -->
+  <div
+    id="hero-sticky-stage"
+    class="sticky top-0 w-full h-[100dvh] overflow-hidden bg-[#0C1120] flex flex-col justify-between select-none"
+  >
+    <!-- Fallback / Initial Poster Frame Image -->
+    <img
+      id="hero-poster"
+      src="/images/landing/hero-sequence/frame-001.webp"
+      alt="FlotaX Automoción Cinematográfica"
+      class="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none transition-opacity duration-500"
+      loading="eager"
+    />
+
+    <!-- Main Rendering Canvas -->
+    <canvas
+      id="hero-sequence-canvas"
+      class="absolute inset-0 w-full h-full object-cover z-0"
+    ></canvas>
+
+    <!-- Top & Bottom Contrast Scrims (Ensures text/HUD legibility over all frames) -->
+    <div class="absolute top-0 inset-x-0 h-44 bg-gradient-to-b from-black/75 via-black/35 to-transparent pointer-events-none z-10"></div>
+    <div class="absolute bottom-0 inset-x-0 h-64 bg-gradient-to-t from-black/90 via-black/45 to-transparent pointer-events-none z-10"></div>
+
+    <!-- Final Cinematic Fade-to-White Exit Overlay (Active on progress >= 0.86) -->
+    <div
+      id="hero-exit-scrim"
+      class="absolute inset-0 bg-white pointer-events-none z-40 opacity-0 transition-opacity duration-300"
+    ></div>
+
+    <!-- Layer 1: Initial Narrative Header & Main CTA (Intro phase: progress 0.0 - 0.28) -->
+    <div
+      id="hero-intro-content"
+      class="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 md:pt-32 flex flex-col items-start transition-all duration-300"
+    >
+      <!-- Live Status Pill -->
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 shadow-lg mb-4 text-white">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-xs font-mono font-bold tracking-wider uppercase">
+          Flota en Tiempo Real
+        </span>
+        <span class="text-white/40">·</span>
+        <span class="text-xs text-white/80 font-medium">Patio Central</span>
+      </div>
+
+      <!-- Fluid Cinematic Title with Dark Blue & Shiny Text effect -->
+      <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black font-[Manrope,system-ui,sans-serif] leading-[1.08] tracking-tight max-w-3xl drop-shadow-[0_2px_14px_rgba(255,255,255,0.45)]">
+        <span class="text-[#0C1120]">Tu próximo vehículo,</span>
+        <br />
+        <span class="shiny-text">
+          controlado al milímetro.
+        </span>
+      </h1>
+
+      <p class="text-sm sm:text-base md:text-lg text-white/80 font-[Inter,system-ui,sans-serif] max-w-xl mt-4 mb-7 leading-relaxed drop-shadow-sm">
+        Alquila automóviles y motocicletas en patio con peritaje fotográfico 360°, contrato digital y total transparencia. Desplaza hacia abajo para recorrer la experiencia.
+      </p>
+
+      <!-- Action Button -->
+      <div class="flex items-center gap-3.5 w-full sm:w-auto">
+        <a
+          href="/catalogo"
+          class="shiny-cta h-12 sm:h-14 text-sm sm:text-base group"
+        >
+          <span>
+            Explorar Unidades
+            <span class="w-7 h-7 rounded-full bg-white/20 text-white flex items-center justify-center text-xs group-hover:translate-x-1 transition-transform ml-1">
+              →
+            </span>
+          </span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Scroll Hint at Bottom Center -->
+    <div
+      id="hero-scroll-indicator"
+      class="relative z-20 w-full flex flex-col items-center justify-center pb-8 pointer-events-none transition-opacity duration-300"
+    >
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-md border border-white/20 text-white/80 text-xs font-mono uppercase tracking-widest shadow-lg">
+        <span class="animate-bounce">↓</span>
+        <span>Desplaza para interactuar</span>
+      </div>
+    </div>
+
+    <!-- ==========================================================================
+         Layer 2: Glassmorphism Floating HUD Cards (Shiny Perimeter + Minimalist)
+         ========================================================================== -->
+
+    <!-- HUD Card 1: "Disponible 24/7" (Activation: ~0.15 to ~0.42, Top-Right) -->
+    <div
+      id="hud-card-1"
+      class="hud-floating-card shiny-card absolute z-30 top-20 sm:top-28 right-3 sm:right-8 lg:right-16 max-w-[calc(100vw-1.5rem)] px-3.5 py-2.5 sm:px-5 sm:py-3.5 rounded-xl sm:rounded-full text-white opacity-0 pointer-events-none will-change-[transform,opacity]"
+    >
+      <div class="flex items-center gap-3">
+        <div class="relative flex items-center justify-center shrink-0">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping absolute"></span>
+        </div>
+        <div class="flex flex-col text-left">
+          <span class="text-xs sm:text-sm font-bold font-[Manrope,system-ui,sans-serif] leading-tight">
+            Disponible 24/7
+          </span>
+          <span class="text-[11px] text-[#A7C9FF]/90 leading-tight">
+            Entrega pericial en &lt; 3 min
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- HUD Card 2: "Alquila tu vehículo" (Activation: ~0.39 to ~0.66, Bottom-Left) -->
+    <div
+      id="hud-card-2"
+      class="hud-floating-card shiny-card absolute z-30 bottom-24 sm:bottom-28 lg:bottom-32 left-3 sm:left-8 lg:left-16 max-w-[calc(100vw-1.5rem)] px-3.5 py-2.5 sm:px-5 sm:py-3.5 rounded-xl sm:rounded-full text-white opacity-0 pointer-events-none will-change-[transform,opacity]"
+    >
+      <div class="flex items-center gap-3">
+        <div class="w-7 h-7 rounded-full bg-[#2E4E8F]/50 flex items-center justify-center text-[#A7C9FF] shrink-0 border border-white/10">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+          </svg>
+        </div>
+        <div class="flex flex-col text-left">
+          <span class="text-xs sm:text-sm font-bold font-[Manrope,system-ui,sans-serif] leading-tight">
+            Alquila tu vehículo
+          </span>
+          <span class="text-[11px] text-[#A7C9FF]/90 leading-tight">
+            Reserva 100% digital sin papeleo
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- HUD Card 3: "Automóviles disponibles" (Activation: ~0.63 to ~0.88, Top-Left) -->
+    <div
+      id="hud-card-3"
+      class="hud-floating-card shiny-card absolute z-30 top-20 sm:top-28 left-3 sm:left-8 lg:left-16 max-w-[calc(100vw-1.5rem)] px-3.5 py-2.5 sm:px-5 sm:py-3.5 rounded-xl sm:rounded-full text-white opacity-0 pointer-events-none will-change-[transform,opacity]"
+    >
+      <div class="flex items-center gap-3">
+        <div class="w-7 h-7 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0 border border-emerald-400/20">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        </div>
+        <div class="flex flex-col text-left">
+          <span class="text-xs sm:text-sm font-bold font-[Manrope,system-ui,sans-serif] leading-tight">
+            Automóviles disponibles
+          </span>
+          <span class="text-[11px] text-[#A7C9FF]/90 leading-tight">
+            Peritaje 360° · Garantía transparente
+          </span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Client-side High-Performance Scroll-Driven Frame Engine -->
+<script>
+  (() => {
+    const TOTAL_FRAMES = 77;
+    const FRAME_PATHS = Array.from({ length: TOTAL_FRAMES }, (_, i) => {
+      const pad = String(i + 1).padStart(3, '0');
+      return `/images/landing/hero-sequence/frame-${pad}.webp`;
+    });
+
+    const track = document.getElementById('hero-scroll-track');
+    const stage = document.getElementById('hero-sticky-stage');
+    const canvas = document.getElementById('hero-sequence-canvas') as HTMLCanvasElement | null;
+    const poster = document.getElementById('hero-poster');
+    const exitScrim = document.getElementById('hero-exit-scrim');
+    const introContent = document.getElementById('hero-intro-content');
+    const scrollIndicator = document.getElementById('hero-scroll-indicator');
+
+    const card1 = document.getElementById('hud-card-1');
+    const card2 = document.getElementById('hud-card-2');
+    const card3 = document.getElementById('hud-card-3');
+
+    if (!track || !stage || !canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Cache of loaded image objects
+    const images: (HTMLImageElement | null)[] = new Array(TOTAL_FRAMES).fill(null);
+    let currentRenderedIndex = -1;
+    let isTicking = false;
+    let scrollProgress = 0;
+
+    // Check prefers-reduced-motion
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Helper to calculate interpolation opacity & translateY for cards
+    const getCardVisibility = (progress: number, start: number, peakStart: number, peakEnd: number, end: number) => {
+      if (progress < start || progress > end) return { opacity: 0, translateY: 16 };
+      if (progress >= peakStart && progress <= peakEnd) return { opacity: 1, translateY: 0 };
+      if (progress < peakStart) {
+        const factor = (progress - start) / (peakStart - start);
+        return { opacity: factor, translateY: (1 - factor) * 16 };
+      }
+      const factor = (end - progress) / (end - peakEnd);
+      return { opacity: factor, translateY: (1 - factor) * -16 };
+    };
+
+    // Responsive Canvas Resize handler
+    const resizeCanvas = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const width = stage.clientWidth;
+      const height = stage.clientHeight;
+
+      if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+      }
+
+      if (currentRenderedIndex >= 0 && images[currentRenderedIndex]) {
+        drawFrame(currentRenderedIndex);
+      }
+    };
+
+    // Draw single frame with object-fit: cover logic
+    const drawFrame = (index: number) => {
+      const img = images[index];
+      if (!img || !img.complete) return;
+
+      const cw = canvas.width;
+      const ch = canvas.height;
+      const iw = img.naturalWidth || 1280;
+      const ih = img.naturalHeight || 720;
+
+      // Aspect ratio cover calculations
+      const scale = Math.max(cw / iw, ch / ih);
+      const nw = iw * scale;
+      const nh = ih * scale;
+      const nx = (cw - nw) / 2;
+      const ny = (ch - nh) / 2;
+
+      ctx.clearRect(0, 0, cw, ih);
+      ctx.drawImage(img, nx, ny, nw, nh);
+      currentRenderedIndex = index;
+
+      // Hide fallback poster once first canvas render occurs
+      if (poster && poster.style.opacity !== '0') {
+        poster.style.opacity = '0';
+      }
+    };
+
+    // Load single image with caching
+    const loadImage = (index: number): Promise<HTMLImageElement | null> => {
+      return new Promise((resolve) => {
+        if (images[index]) {
+          resolve(images[index]!);
+          return;
+        }
+        const src = FRAME_PATHS[index];
+        if (!src) {
+          resolve(null);
+          return;
+        }
+        const img = new Image();
+        img.src = src;
+        img.onload = () => {
+          images[index] = img;
+          resolve(img);
+        };
+        img.onerror = () => {
+          resolve(null);
+        };
+      });
+    };
+
+    // Progressive Chunk Preloading Strategy
+    const preloadChunks = async () => {
+      // Step 1: Preload frame 0 immediately
+      await loadImage(0);
+      drawFrame(0);
+
+      // Step 2: Preload early frames (1..15)
+      for (let i = 1; i < 16; i++) {
+        loadImage(i);
+      }
+
+      // Step 3: Progressive preloading in batches of 10 during idle moments
+      let nextBatch = 16;
+      const loadNextBatch = () => {
+        if (nextBatch >= TOTAL_FRAMES) return;
+        const limit = Math.min(nextBatch + 10, TOTAL_FRAMES);
+        for (let i = nextBatch; i < limit; i++) {
+          loadImage(i);
+        }
+        nextBatch = limit;
+        if (nextBatch < TOTAL_FRAMES) {
+          if ('requestIdleCallback' in window) {
+            (window as any).requestIdleCallback(loadNextBatch, { timeout: 1000 });
+          } else {
+            setTimeout(loadNextBatch, 100);
+          }
+        }
+      };
+
+      if ('requestIdleCallback' in window) {
+        (window as any).requestIdleCallback(loadNextBatch, { timeout: 800 });
+      } else {
+        setTimeout(loadNextBatch, 200);
+      }
+    };
+
+    // Update UI elements based on scroll progress
+    const updateScene = () => {
+      if (prefersReducedMotion) {
+        // Reduced motion: show frame 0 and display HUD cards static
+        drawFrame(0);
+        if (card1) { card1.style.opacity = '1'; card1.style.pointerEvents = 'auto'; }
+        if (card2) { card2.style.opacity = '1'; card2.style.pointerEvents = 'auto'; }
+        if (card3) { card3.style.opacity = '1'; card3.style.pointerEvents = 'auto'; }
+        return;
+      }
+
+      const rect = track.getBoundingClientRect();
+      const scrollDistance = track.offsetHeight - window.innerHeight;
+      const currentScroll = -rect.top;
+      scrollProgress = Math.max(0, Math.min(1, currentScroll / scrollDistance));
+
+      // Calculate frame index
+      const targetFrameIndex = Math.min(
+        TOTAL_FRAMES - 1,
+        Math.max(0, Math.floor(scrollProgress * (TOTAL_FRAMES - 1)))
+      );
+
+      // Render target frame if loaded, otherwise trigger load & maintain current
+      if (images[targetFrameIndex] && images[targetFrameIndex]!.complete) {
+        drawFrame(targetFrameIndex);
+      } else {
+        loadImage(targetFrameIndex).then(() => {
+          if (Math.abs(scrollProgress * (TOTAL_FRAMES - 1) - targetFrameIndex) < 2) {
+            drawFrame(targetFrameIndex);
+          }
+        });
+      }
+
+      // 1. Intro content fading (0.0 -> 0.18)
+      if (introContent) {
+        const introOpacity = Math.max(0, 1 - scrollProgress / 0.18);
+        introContent.style.opacity = String(introOpacity);
+        introContent.style.transform = `translate3d(0, ${-scrollProgress * 60}px, 0)`;
+        introContent.style.pointerEvents = introOpacity < 0.1 ? 'none' : 'auto';
+      }
+
+      // Scroll indicator fading (0.0 -> 0.12)
+      if (scrollIndicator) {
+        const indOpacity = Math.max(0, 1 - scrollProgress / 0.12);
+        scrollIndicator.style.opacity = String(indOpacity);
+      }
+
+      // 2. HUD Card 1: "Disponible 24/7" (0.15 -> 0.42)
+      if (card1) {
+        const { opacity, translateY } = getCardVisibility(scrollProgress, 0.15, 0.22, 0.35, 0.42);
+        card1.style.opacity = String(opacity);
+        card1.style.transform = `translate3d(0, ${translateY}px, 0)`;
+        card1.style.pointerEvents = opacity > 0.3 ? 'auto' : 'none';
+      }
+
+      // 3. HUD Card 2: "Alquila tu vehículo" (0.39 -> 0.66)
+      if (card2) {
+        const { opacity, translateY } = getCardVisibility(scrollProgress, 0.39, 0.46, 0.59, 0.66);
+        card2.style.opacity = String(opacity);
+        card2.style.transform = `translate3d(0, ${translateY}px, 0)`;
+        card2.style.pointerEvents = opacity > 0.3 ? 'auto' : 'none';
+      }
+
+      // 4. HUD Card 3: "Automóviles disponibles" (0.63 -> 0.88)
+      if (card3) {
+        const { opacity, translateY } = getCardVisibility(scrollProgress, 0.63, 0.70, 0.82, 0.88);
+        card3.style.opacity = String(opacity);
+        card3.style.transform = `translate3d(0, ${translateY}px, 0)`;
+        card3.style.pointerEvents = opacity > 0.3 ? 'auto' : 'none';
+      }
+
+      // 5. Exit Scrim to White Transition (0.86 -> 1.0)
+      if (exitScrim) {
+        if (scrollProgress >= 0.86) {
+          const fadeProgress = (scrollProgress - 0.86) / 0.14;
+          exitScrim.style.opacity = String(Math.min(1, fadeProgress));
+        } else {
+          exitScrim.style.opacity = '0';
+        }
+      }
+
+      isTicking = false;
+    };
+
+    const onScroll = () => {
+      if (!isTicking) {
+        window.requestAnimationFrame(updateScene);
+        isTicking = true;
+      }
+    };
+
+    // Event listeners: register both scroll and touchmove for smooth mobile inertia
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('touchmove', onScroll, { passive: true });
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+      onScroll();
+    }, { passive: true });
+
+    // Initialize
+    resizeCanvas();
+    preloadChunks();
+    updateScene();
+  })();
+</script>

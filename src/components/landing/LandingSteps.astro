@@ -1,0 +1,87 @@
+---
+// src/components/landing/LandingSteps.astro
+const steps = [
+  {
+    num: "01",
+    title: "Selecciona tu unidad",
+    desc: "Elige entre sedanes, SUVs o motocicletas con disponibilidad en tiempo real.",
+    icon: "car"
+  },
+  {
+    num: "02",
+    title: "Configura tu reserva",
+    desc: "Establece patio de recogida, fechas y revisa el desglose transparente sin costos ocultos.",
+    icon: "calendar"
+  },
+  {
+    num: "03",
+    title: "Check-in pericial digital",
+    desc: "Valida tu identidad y realiza la inspección fotográfica 360° en tu smartphone.",
+    icon: "shield"
+  },
+  {
+    num: "04",
+    title: "Retira y conduce",
+    desc: "Accede al vehículo en patio al instante con soporte y asistencia en carretera 24/7.",
+    icon: "key"
+  }
+];
+---
+
+<section
+  id="proceso"
+  data-pencil-name="HowSection"
+  class="w-full py-12 sm:py-16 md:py-20 relative z-10 reveal-on-scroll"
+>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-8 md:gap-12">
+    
+    <!-- Section Header -->
+    <div class="flex flex-col gap-2 max-w-xl">
+      <span class="inline-flex items-center gap-1.5 text-xs font-mono font-bold tracking-wider uppercase text-[#2E4E8F] bg-[#EEF2F6] px-3 py-1 rounded-full w-fit">
+        CÓMO FUNCIONA
+      </span>
+      <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#0C1120] font-[Manrope,system-ui,sans-serif] tracking-tight">
+        Alquiler ágil en 4 sencillos pasos
+      </h2>
+      <p class="text-sm sm:text-base text-[#4B5563] leading-relaxed">
+        Diseñado para eliminar filas de espera, trámites en papel y cargos imprevistos en mostrador.
+      </p>
+    </div>
+
+    <!-- 4 Connected Process Cards (Desktop 4-cols / Mobile Vertical List) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      {steps.map((s, idx) => (
+        <div
+          class="relative p-6 rounded-[24px] bg-white border border-[#E8ECF3] shadow-xs hover:shadow-md hover:border-[#2E4E8F]/40 transition-all duration-300 flex flex-col justify-between group"
+        >
+          <!-- Top Row: Badge & Step Number -->
+          <div class="flex items-center justify-between mb-6">
+            <span class="w-10 h-10 rounded-xl bg-[#0C1120] text-white flex items-center justify-center font-mono font-bold text-sm shadow-xs group-hover:scale-105 transition-transform">
+              {s.num}
+            </span>
+            <span class="text-xs font-mono font-semibold text-[#9AA3B2] uppercase tracking-wider">
+              Paso {idx + 1}
+            </span>
+          </div>
+
+          <!-- Content -->
+          <div class="flex flex-col gap-2">
+            <h3 class="text-base sm:text-lg font-bold text-[#0C1120] font-[Manrope,system-ui,sans-serif] tracking-tight">
+              {s.title}
+            </h3>
+            <p class="text-xs sm:text-sm text-[#4B5563] leading-relaxed">
+              {s.desc}
+            </p>
+          </div>
+
+          <!-- Bottom Micro Tag -->
+          <div class="mt-6 pt-4 border-t border-[#F4F6FA] flex items-center gap-2 text-xs text-[#2E4E8F] font-semibold">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#2E4E8F]"></span>
+            <span>100% digital</span>
+          </div>
+        </div>
+      ))}
+    </div>
+
+  </div>
+</section>

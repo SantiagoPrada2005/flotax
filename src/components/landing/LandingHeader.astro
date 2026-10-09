@@ -1,0 +1,142 @@
+---
+// src/components/landing/LandingHeader.astro
+interface Props {
+  user?: {
+    id: string;
+    email?: string | null;
+    name?: string | null;
+  } | null;
+  usuario?: {
+    nombre?: string | null;
+    rol?: string | null;
+  } | null;
+}
+
+const { user = null, usuario = null } = Astro.props;
+---
+
+<header
+  id="main-header"
+  data-pencil-name="Header"
+  class="sticky top-2 sm:top-3 md:top-4 z-50 w-full transition-all duration-300 transform-gpu will-change-transform translate-y-0 opacity-100 px-3 sm:px-4 md:px-6"
+>
+  <div class="max-w-4xl lg:max-w-5xl mx-auto">
+    <div
+      class="w-full h-11 sm:h-12 flex items-center justify-between px-3.5 sm:px-4 md:px-5 rounded-full bg-white/70 backdrop-blur-2xl border border-white/60 shadow-[0_8px_32px_-4px_rgba(12,17,32,0.08),inset_0_1px_1px_0_rgba(255,255,255,0.85)]"
+    >
+      <!-- Brand Logo -->
+      <a
+        href="/"
+        data-pencil-name="Brand"
+        class="flex items-center gap-2 group transition-transform active:scale-[0.98]"
+        aria-label="Inicio FlotaX"
+      >
+        <div
+          data-pencil-name="Logo"
+          class="w-7 h-7 sm:w-7.5 sm:h-7.5 flex items-center justify-center bg-gradient-to-br from-[#2E4E8F] to-[#0C1120] rounded-full shadow-xs text-white font-black text-xs group-hover:scale-105 transition-transform"
+        >
+          F
+        </div>
+        <div class="flex items-baseline gap-1.5">
+          <span
+            data-pencil-name="BrandName"
+            class="text-base sm:text-lg font-extrabold text-[#0C1120] font-[Manrope,system-ui,sans-serif] tracking-tight"
+          >
+            Flota<span class="text-[#2E4E8F]">X</span>
+          </span>
+          <span class="hidden lg:inline-flex items-center gap-1 text-[9px] font-mono uppercase tracking-wider text-[#9AA3B2] bg-[#F4F6FA]/80 px-2 py-0.5 rounded-full">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            Patio
+          </span>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation Links with Balanced Compact Spatial Rhythm -->
+      <nav
+        class="hidden md:flex items-center gap-5 lg:gap-6 text-xs lg:text-[13px] font-semibold text-[#4B5563]"
+        aria-label="Navegación principal"
+      >
+        <a href="#vehiculos" class="hover:text-[#0C1120] transition-colors py-0.5">Vehículos</a>
+        <a href="#categorias" class="hover:text-[#0C1120] transition-colors py-0.5">Categorías</a>
+        <a href="#proceso" class="hover:text-[#0C1120] transition-colors py-0.5">Cómo funciona</a>
+        <a href="#tarifas" class="hover:text-[#0C1120] transition-colors py-0.5">Tarifas</a>
+        <a href="#confianza" class="hover:text-[#0C1120] transition-colors py-0.5">Seguridad</a>
+        <a href="#faq" class="hover:text-[#0C1120] transition-colors py-0.5">Dudas</a>
+      </nav>
+
+      <!-- Right CTAs & Profile Actions -->
+      <div class="flex items-center gap-2 sm:gap-2.5">
+        {user ? (
+          <a
+            href="/home"
+            class="inline-flex h-8 sm:h-8.5 items-center justify-center rounded-full bg-[#0C1120] px-3.5 sm:px-4 text-xs font-bold text-white shadow-xs hover:bg-[#1F2937] active:scale-[0.98] transition-all"
+          >
+            {usuario?.nombre ? `Panel (${usuario.nombre})` : "Ir al Panel"}
+            <span class="ml-1 opacity-70">→</span>
+          </a>
+        ) : (
+          <a
+            href="/login"
+            class="inline-flex h-8 sm:h-8.5 items-center justify-center rounded-full bg-[#0C1120] px-3.5 sm:px-4 text-xs font-bold text-white shadow-xs hover:bg-[#1F2937] active:scale-[0.98] transition-all"
+          >
+            Iniciar sesión
+          </a>
+        )}
+
+        <!-- Mobile Profile Button -->
+        <a
+          href={user ? "/home" : "/login"}
+          data-pencil-name="ProfileBtn"
+          class="md:hidden w-8 h-8 flex items-center justify-center rounded-full bg-white/80 text-[#0C1120] border border-white/60 shadow-xs active:scale-95 transition-all"
+          aria-label={user ? "Abrir panel" : "Iniciar sesión"}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5">
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Smart Scroll Auto-Hide Script -->
+<script>
+  (() => {
+    const header = document.getElementById('main-header');
+    if (!header) return;
+
+    let lastScrollY = window.scrollY;
+    let isTicking = false;
+
+    const updateHeader = () => {
+      const currentScrollY = window.scrollY;
+
+      // Always show at top of page (first 25px)
+      if (currentScrollY <= 25) {
+        header.classList.remove('-translate-y-full', 'opacity-0', 'pointer-events-none');
+        header.classList.add('translate-y-0', 'opacity-100');
+      } 
+      // Scrolling down: hide smoothly to clear full view
+      else if (currentScrollY > lastScrollY && currentScrollY > 60) {
+        header.classList.remove('translate-y-0', 'opacity-100');
+        header.classList.add('-translate-y-full', 'opacity-0', 'pointer-events-none');
+      } 
+      // Scrolling up: reveal gently
+      else if (currentScrollY < lastScrollY) {
+        header.classList.remove('-translate-y-full', 'opacity-0', 'pointer-events-none');
+        header.classList.add('translate-y-0', 'opacity-100');
+      }
+
+      lastScrollY = currentScrollY;
+      isTicking = false;
+    };
+
+    window.addEventListener('scroll', () => {
+      if (!isTicking) {
+        window.requestAnimationFrame(updateHeader);
+        isTicking = true;
+      }
+    }, { passive: true });
+  })();
+</script>

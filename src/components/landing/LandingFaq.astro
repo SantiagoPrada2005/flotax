@@ -1,0 +1,80 @@
+---
+// src/components/landing/LandingFaq.astro
+const faqs = [
+  {
+    q: "¿Necesito tarjeta de crédito para alquilar?",
+    a: "Aceptamos tarjetas de crédito, débito y transferencias bancarias verificadas tanto para el pago del alquiler como para el depósito de garantía en la mayoría de nuestras categorías."
+  },
+  {
+    q: "¿Puedo modificar o cancelar mi reserva?",
+    a: "Sí, puedes modificar fechas, horarios o la unidad seleccionada desde tu panel de usuario hasta 24 horas antes del check-in sin ninguna penalización."
+  },
+  {
+    q: "¿Qué cobertura incluye la tarifa mostrada?",
+    a: "Todas las tarifas integran seguro con cobertura de responsabilidad civil, asistencia vial continua 24/7 y protección pericial digital certificada."
+  },
+  {
+    q: "¿Puedo devolver el vehículo en otra sede o ciudad?",
+    a: "Ofrecemos modalidad one-way interurbana entre nuestros patios autorizados con entrega coordinada desde la reserva."
+  },
+  {
+    q: "¿Cómo funciona la inspección pericial digital con fotos?",
+    a: "Al recibir la unidad, realizas una inspección fotográfica guiada de 360° desde tu smartphone. Las imágenes se almacenan de forma inmutable y certificada en Cloudflare R2 para tu total tranquilidad."
+  }
+];
+---
+<section
+  id="faq"
+  data-pencil-name="FAQSection"
+  class="w-full py-12 sm:py-16 md:py-20 relative z-10 reveal-on-scroll"
+>
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-6 md:gap-10">
+    <div class="flex flex-col gap-2">
+      <span
+        data-pencil-name="FaqKicker"
+        class="inline-flex items-center gap-1.5 text-xs font-mono font-bold tracking-wider uppercase text-[#2E4E8F] bg-[#EEF2F6] px-3 py-1 rounded-full w-fit"
+      >
+        DUDAS FRECUENTES
+      </span>
+      <h2
+        data-pencil-name="FaqTitle"
+        class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#0C1120] font-[Manrope,system-ui,sans-serif] tracking-tight"
+      >
+        Preguntas frecuentes
+      </h2>
+      <p class="text-sm sm:text-base text-[#4B5563]">
+        Resolvemos tus dudas principales para que reserves y conduzcas con absoluta seguridad y transparencia.
+      </p>
+    </div>
+
+    <div
+      data-pencil-name="FaqList"
+      class="w-full flex flex-col gap-3 sm:gap-4"
+    >
+      {faqs.map((faq) => (
+        <details
+          data-pencil-name={`FAQ ${faq.q}`}
+          class="group w-full bg-white rounded-2xl sm:rounded-[22px] overflow-hidden border border-[#E8ECF3] shadow-xs hover:border-[#2E4E8F]/40 transition-all duration-300"
+        >
+          <summary
+            data-pencil-name="AccHead"
+            class="w-full min-h-[64px] flex items-center justify-between px-5 sm:px-6 py-4 cursor-pointer list-none select-none hover:bg-[#F8FAFC] transition-colors"
+          >
+            <span
+              data-pencil-name="AccLabel"
+              class="text-sm sm:text-base font-bold text-[#0C1120] font-[Manrope,system-ui,sans-serif] pr-4"
+            >
+              {faq.q}
+            </span>
+            <span class="w-8 h-8 rounded-full bg-[#F4F6FA] group-open:bg-[#0C1120] group-open:text-white flex items-center justify-center shrink-0 text-[#4B5563] text-sm transition-transform duration-300 group-open:rotate-180">
+              ↓
+            </span>
+          </summary>
+          <div class="px-5 sm:px-6 pb-5 pt-2 text-xs sm:text-sm text-[#4B5563] font-[Inter,system-ui,sans-serif] border-t border-[#F4F6FA] leading-relaxed">
+            {faq.a}
+          </div>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>

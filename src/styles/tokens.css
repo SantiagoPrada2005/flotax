@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 @import "tailwindcss";
 
 @theme {
@@ -150,3 +151,415 @@ select {
     transform: none !important;
   }
 }
+=======
+@import "tailwindcss";
+
+@theme {
+  /* Canonical Palette: #EDEDED | #9CA3AF | #4B5563 | #1F2937 | #111827 */
+  --color-palette-100: #ededed;
+  --color-palette-300: #9ca3af;
+  --color-palette-500: #4b5563;
+  --color-palette-700: #1f2937;
+  --color-palette-900: #111827;
+
+  /* Brand & Semantic Hierarchy */
+  --color-brand-primary: #111827;
+  --color-brand-secondary: #1f2937;
+  --color-brand-accent: #1f2937;
+  --color-brand-coral: #1f2937;
+  --color-brand-blue: #1f2937;
+  --color-status-success: #16a34a;
+  --color-status-warning: #f59e0b;
+  --color-status-danger: #dc2626;
+
+  /* Surfaces & Neutral Hierarchy */
+  --color-surface-canvas: #ededed;
+  --color-surface-card: #ffffff;
+  --color-surface-elevated: #ededed;
+  --color-surface-sidebar: #ededed;
+  --color-border-subtle: #9ca3af;
+  --color-text-muted: #4b5563;
+  --color-text-subtle: #9ca3af;
+
+  /* Typography Scales */
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-manrope: "Manrope", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* Radii & Ergonomics */
+  --radius-touch: 20px;
+  --radius-card: 16px;
+  --radius-input: 12px;
+}
+
+/* Universal Mobile Ergonomics Shielding (iOS WebKit Anti-Zoom) */
+@media screen and (max-width: 768px) {
+
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* Breathing room for virtual keyboards */
+input,
+textarea,
+select {
+  scroll-margin-top: 80px;
+  scroll-margin-bottom: 80px;
+}
+
+/* Safe area utilities */
+.safe-bottom {
+  padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
+}
+
+.safe-top {
+  padding-top: max(12px, env(safe-area-inset-top, 12px));
+}
+
+/* FAB Shadow Elevation E3 */
+.shadow-fab {
+  box-shadow: 0 10px 25px -4px rgba(31, 41, 55, 0.4), 0 6px 12px -2px rgba(17, 24, 39, 0.16);
+}
+
+/* ==========================================================================
+   Smooth Entry & Scroll Animations
+   ========================================================================== */
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes floatSoft {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out both;
+}
+
+.animate-zoom-in {
+  animation: zoomIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-float {
+  animation: floatSoft 4s ease-in-out infinite;
+}
+
+/* Stagger animation delay helper classes */
+.delay-100 { animation-delay: 100ms; }
+.delay-150 { animation-delay: 150ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+
+/* Scroll Reveal Observer Animation */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-on-scroll.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-fade-in,
+  .animate-zoom-in,
+  .animate-float,
+  .reveal-on-scroll,
+  .shiny-cta,
+  .shiny-cta::before,
+  .shiny-cta::after {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* ==========================================================================
+   Shiny Button CTA Effect
+   ========================================================================== */
+
+@property --gradient-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@property --gradient-angle-offset {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@property --gradient-percent {
+  syntax: "<percentage>";
+  initial-value: 5%;
+  inherits: false;
+}
+
+@property --gradient-shine {
+  syntax: "<color>";
+  initial-value: white;
+  inherits: false;
+}
+
+.shiny-cta {
+  --shiny-cta-bg: #0C1120;
+  --shiny-cta-bg-subtle: #1F2937;
+  --shiny-cta-fg: #ffffff;
+  --shiny-cta-highlight: #2E4E8F;
+  --shiny-cta-highlight-subtle: #A7C9FF;
+  --animation: gradient-angle linear infinite;
+  --duration: 3s;
+  --shadow-size: 2px;
+  --transition: 800ms cubic-bezier(0.25, 1, 0.5, 1);
+
+  isolation: isolate;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  outline-offset: 4px;
+  padding: 0.875rem 1.75rem;
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.2;
+  font-weight: 600;
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  color: var(--shiny-cta-fg);
+  background: linear-gradient(var(--shiny-cta-bg), var(--shiny-cta-bg)) padding-box,
+    conic-gradient(
+      from calc(var(--gradient-angle) - var(--gradient-angle-offset)),
+      transparent,
+      var(--shiny-cta-highlight) var(--gradient-percent),
+      var(--gradient-shine) calc(var(--gradient-percent) * 2),
+      var(--shiny-cta-highlight) calc(var(--gradient-percent) * 3),
+      transparent calc(var(--gradient-percent) * 4)
+    ) border-box;
+  box-shadow: inset 0 0 0 1px var(--shiny-cta-bg-subtle);
+  transition: var(--transition);
+  transition-property: --gradient-angle-offset, --gradient-percent, --gradient-shine;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shiny-cta::before,
+.shiny-cta::after,
+.shiny-cta span::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset-inline-start: 50%;
+  inset-block-start: 50%;
+  translate: -50% -50%;
+  z-index: -1;
+}
+
+.shiny-cta:active {
+  translate: 0 1px;
+}
+
+/* Dots pattern */
+.shiny-cta::before {
+  --size: calc(100% - var(--shadow-size) * 3);
+  --position: 2px;
+  --space: calc(var(--position) * 2);
+  width: var(--size);
+  height: var(--size);
+  background: radial-gradient(
+    circle at var(--position) var(--position),
+    white calc(var(--position) / 4),
+    transparent 0
+  ) padding-box;
+  background-size: var(--space) var(--space);
+  background-repeat: space;
+  mask-image: conic-gradient(
+    from calc(var(--gradient-angle) + 45deg),
+    black,
+    transparent 10% 90%,
+    black
+  );
+  border-radius: inherit;
+  opacity: 0.3;
+  z-index: -1;
+}
+
+/* Inner shimmer */
+.shiny-cta::after {
+  --animation: shimmer linear infinite;
+  width: 100%;
+  aspect-ratio: 1;
+  background: linear-gradient(
+    -50deg,
+    transparent,
+    var(--shiny-cta-highlight),
+    transparent
+  );
+  mask-image: radial-gradient(circle at bottom, transparent 40%, black);
+  opacity: 0.5;
+}
+
+.shiny-cta span {
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.shiny-cta span::before {
+  --size: calc(100% + 1rem);
+  width: var(--size);
+  height: var(--size);
+  box-shadow: inset 0 -1ex 2rem 4px var(--shiny-cta-highlight);
+  opacity: 0;
+  transition: opacity var(--transition);
+  animation: calc(var(--duration) * 1.5) breathe linear infinite;
+}
+
+/* Animate */
+.shiny-cta,
+.shiny-cta::before,
+.shiny-cta::after {
+  animation: var(--animation) var(--duration),
+    var(--animation) calc(var(--duration) / 0.4) reverse paused;
+  animation-composition: add;
+}
+
+.shiny-cta:is(:hover, :focus-visible) {
+  --gradient-percent: 20%;
+  --gradient-angle-offset: 95deg;
+  --gradient-shine: var(--shiny-cta-highlight-subtle);
+}
+
+.shiny-cta:is(:hover, :focus-visible),
+.shiny-cta:is(:hover, :focus-visible)::before,
+.shiny-cta:is(:hover, :focus-visible)::after {
+  animation-play-state: running;
+}
+
+.shiny-cta:is(:hover, :focus-visible) span::before {
+  opacity: 1;
+}
+
+@keyframes gradient-angle {
+  to {
+    --gradient-angle: 360deg;
+  }
+}
+
+@keyframes shimmer {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@keyframes breathe {
+  from, to {
+    scale: 1;
+  }
+  50% {
+    scale: 1.2;
+  }
+}
+
+/* ==========================================================================
+   Shiny Text Effect (Hero Title Luxury Shimmer)
+   ========================================================================== */
+
+.shiny-text {
+  background: linear-gradient(
+    115deg,
+    #0C1120 0%,
+    #162A5A 25%,
+    #2E4E8F 45%,
+    #7FB4FF 50%,
+    #2E4E8F 55%,
+    #162A5A 75%,
+    #0C1120 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shiny-text-sweep 6s ease-in-out infinite;
+}
+
+@keyframes shiny-text-sweep {
+  0% {
+    background-position: 100% 0;
+  }
+  50%, 100% {
+    background-position: -100% 0;
+  }
+}
+
+/* ==========================================================================
+   Shiny Card Effect (HUD Floating Glass Cards with Animated Perimeter)
+   ========================================================================== */
+
+.shiny-card {
+  border: 1px solid transparent;
+  background: linear-gradient(rgba(12, 17, 32, 0.90), rgba(12, 17, 32, 0.90)) padding-box,
+    conic-gradient(
+      from var(--gradient-angle),
+      transparent 0%,
+      rgba(46, 78, 143, 0.5) 12%,
+      rgba(167, 201, 255, 0.95) 25%,
+      rgba(46, 78, 143, 0.5) 38%,
+      transparent 50%
+    ) border-box;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  animation: gradient-angle 7s linear infinite;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.6), inset 0 0 20px -5px rgba(46, 78, 143, 0.3);
+}
+
+>>>>>>> ac465fd (feat: add cinematic scroll-driven hero sequence and landing page components)

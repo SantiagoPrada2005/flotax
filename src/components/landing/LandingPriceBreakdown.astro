@@ -1,0 +1,139 @@
+---
+// src/components/landing/LandingPriceBreakdown.astro
+---
+<section
+  id="tarifas"
+  data-pencil-name="PriceSection"
+  class="w-full py-12 sm:py-16 md:py-20 relative z-10 reveal-on-scroll"
+>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-8 md:gap-12">
+    
+    <!-- Header -->
+    <div class="w-full flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div class="max-w-xl flex flex-col gap-2">
+        <span class="inline-flex items-center gap-1.5 text-xs font-mono font-bold tracking-wider uppercase text-[#2E4E8F] bg-[#EEF2F6] px-3 py-1 rounded-full w-fit">
+          TRANSPARENCIA TOTAL
+        </span>
+        <h2
+          data-pencil-name="PriceTitle"
+          class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#0C1120] font-[Manrope,system-ui,sans-serif] tracking-tight"
+        >
+          Conoce el precio exacto antes de reservar
+        </h2>
+        <p class="text-sm sm:text-base text-[#4B5563] leading-relaxed">
+          Sin cargos sorpresa en mostrador. Todos los seguros básicos, impuestos y kilometraje estipulado están incluidos desde el primer momento.
+        </p>
+      </div>
+    </div>
+
+    <!-- Grid: Benefits + Breakdown Card -->
+    <div class="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- Left Column: Value Pillars -->
+      <div class="lg:col-span-5 flex flex-col gap-4 sm:gap-5">
+        <div class="flex items-start gap-4 p-5 rounded-2xl bg-white border border-[#E8ECF3] shadow-xs hover:border-[#2E4E8F]/40 transition-colors">
+          <div class="w-11 h-11 rounded-xl bg-[#EEF2F6] flex items-center justify-center shrink-0 text-[#2E4E8F]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <h4 class="text-base font-bold text-[#0C1120] font-[Manrope,system-ui,sans-serif]">Sin cargos ocultos</h4>
+            <p class="text-xs sm:text-sm text-[#4B5563] mt-1 leading-relaxed">El importe final mostrado es exactamente lo que liquidarás en patio o vía pasarela online.</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-4 p-5 rounded-2xl bg-white border border-[#E8ECF3] shadow-xs hover:border-[#2E4E8F]/40 transition-colors">
+          <div class="w-11 h-11 rounded-xl bg-[#EEF2F6] flex items-center justify-center shrink-0 text-[#2E4E8F]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+          </div>
+          <div>
+            <h4 class="text-base font-bold text-[#0C1120] font-[Manrope,system-ui,sans-serif]">Depósito 100% reembolsable</h4>
+            <p class="text-xs sm:text-sm text-[#4B5563] mt-1 leading-relaxed">La retención de garantía se libera de forma automática tras el check-out pericial de 3 minutos.</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-4 p-5 rounded-2xl bg-white border border-[#E8ECF3] shadow-xs hover:border-[#2E4E8F]/40 transition-colors">
+          <div class="w-11 h-11 rounded-xl bg-[#EEF2F6] flex items-center justify-center shrink-0 text-[#2E4E8F]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <div>
+            <h4 class="text-base font-bold text-[#0C1120] font-[Manrope,system-ui,sans-serif]">Facturación digital inmediata</h4>
+            <p class="text-xs sm:text-sm text-[#4B5563] mt-1 leading-relaxed">Genera tu comprobante fiscal CFDI al instante desde la plataforma sin demoras.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Interactive Price Breakdown Card -->
+      <div
+        data-pencil-name="PriceCard"
+        class="lg:col-span-7 bg-white rounded-[28px] overflow-hidden border border-[#E8ECF3] shadow-[0_15px_35px_-8px_rgba(12,17,32,0.08)]"
+      >
+        <!-- Header Gradient Banner -->
+        <div
+          data-pencil-name="PriceTop"
+          class="w-full h-24 flex items-center justify-between px-6 sm:px-8 bg-gradient-to-r from-[#0C1120] via-[#161B26] to-[#2E4E8F]"
+        >
+          <div class="flex flex-col gap-0.5">
+            <span class="text-xs font-mono font-bold tracking-wider uppercase text-[#9AA3B2]">
+              TOTAL ESTIMADO
+            </span>
+            <span class="text-xs text-white/70">
+              3 días · seguro pericial incluido
+            </span>
+          </div>
+
+          <div class="flex items-baseline gap-1.5">
+            <span class="text-3xl sm:text-4xl font-black text-[#A7C9FF] font-[Manrope,system-ui,sans-serif] leading-none">
+              $7,340
+            </span>
+            <span class="text-xs font-bold text-[#9AA3B2]">
+              MXN
+            </span>
+          </div>
+        </div>
+
+        <!-- Rows Breakdown -->
+        <div class="p-6 sm:p-7 flex flex-col divide-y divide-[#F4F6FA]">
+          <div class="py-3 flex justify-between items-center text-sm">
+            <span class="text-[#4B5563]">Tarifa base</span>
+            <span class="font-bold text-[#0C1120] font-[Manrope,system-ui,sans-serif]">$1,990 /día</span>
+          </div>
+
+          <div class="py-3 flex justify-between items-center text-sm">
+            <span class="text-[#4B5563]">Duración de viaje</span>
+            <span class="font-bold text-[#0C1120] font-[Manrope,system-ui,sans-serif]">3 días</span>
+          </div>
+
+          <div class="py-3 flex justify-between items-center text-sm">
+            <span class="text-[#4B5563]">Descuento reserva anticipada</span>
+            <span class="font-bold text-[#2E4E8F] font-[Manrope,system-ui,sans-serif]">-$400</span>
+          </div>
+
+          <div class="py-3 flex justify-between items-center text-sm">
+            <span class="text-[#4B5563]">Cobertura total & asistencia 24/7</span>
+            <span class="font-bold text-[#0C1120] font-[Manrope,system-ui,sans-serif]">$350</span>
+          </div>
+
+          <div class="pt-4 mt-2 flex justify-between items-center bg-[#F8FAFC] -mx-6 -mb-6 p-6">
+            <div class="flex flex-col">
+              <span class="text-xs sm:text-sm font-bold text-[#0C1120] font-[Manrope,system-ui,sans-serif]">
+                Depósito en garantía
+              </span>
+              <span class="text-[11px] text-[#9AA3B2]">Reembolsable automáticamente a la entrega</span>
+            </div>
+            <span class="text-sm sm:text-base font-bold text-[#0C1120] font-[Manrope,system-ui,sans-serif]">
+              $5,000 MXN
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</section>

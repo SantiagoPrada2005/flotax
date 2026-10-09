@@ -19,5 +19,6 @@ yarn-error.log*
 # Operating System files
 .DS_Store
 *.local
-Thumbs.db
 .pnpm-store
+powershell.bat
+powershell.cmd

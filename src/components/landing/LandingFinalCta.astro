@@ -1,0 +1,58 @@
+---
+// src/components/landing/LandingFinalCta.astro
+---
+<section
+  data-pencil-name="FinalCTA"
+  class="w-full py-12 sm:py-16 md:py-20 lg:py-24 relative z-10 reveal-on-scroll"
+>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div
+      data-pencil-name="FinalCard"
+      class="w-full p-8 sm:p-12 md:p-16 lg:p-20 flex flex-col items-center justify-center text-center bg-gradient-to-br from-[#0C1120] via-[#161B26] to-[#2E4E8F] rounded-[32px] sm:rounded-[44px] shadow-2xl relative overflow-hidden border border-white/10"
+    >
+      <!-- Atmospheric Backdrop Lights -->
+      <div class="absolute -top-24 -left-24 w-80 sm:w-96 h-80 sm:h-96 bg-[#00D4FF]/20 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-24 -right-24 w-80 sm:w-96 h-80 sm:h-96 bg-[#2E4E8F]/40 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="relative z-10 max-w-2xl mx-auto flex flex-col items-center gap-4 sm:gap-5">
+        <span class="inline-flex items-center gap-1.5 text-xs font-mono font-bold tracking-wider uppercase text-[#A7C9FF] bg-white/10 px-3.5 py-1.5 rounded-full backdrop-blur-sm border border-white/15">
+          RESERVA INMEDIATA EN PATIO
+        </span>
+
+        <h2
+          data-pencil-name="CtaTitle"
+          class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white font-[Manrope,system-ui,sans-serif] tracking-tight leading-[1.1]"
+        >
+          Encuentra el vehículo que necesitas hoy mismo.
+        </h2>
+
+        <p
+          data-pencil-name="CtaSub"
+          class="text-sm sm:text-base md:text-lg text-[#9CA3AF] font-[Inter,system-ui,sans-serif] max-w-lg leading-relaxed"
+        >
+          Explora nuestra flota, compara tarifas sin sorpresas y asegura tu movilidad con peritaje fotográfico 360°.
+        </p>
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-center gap-3.5 relative z-10 mt-8">
+        <a
+          href="/catalogo"
+          data-pencil-name="CtaButton"
+          class="shiny-cta h-12 sm:h-14 px-8 sm:px-10 text-sm sm:text-base group"
+        >
+          <span>
+            Explorar Catálogo
+            <span class="group-hover:translate-x-1 transition-transform ml-1">→</span>
+          </span>
+        </a>
+
+        <a
+          href="#tarifas"
+          class="inline-flex h-12 sm:h-14 items-center justify-center px-6 rounded-2xl sm:rounded-full border border-white/20 hover:border-white/40 text-white font-semibold text-sm sm:text-base hover:bg-white/5 active:scale-[0.98] transition-all"
+        >
+          Ver desglose de tarifas
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

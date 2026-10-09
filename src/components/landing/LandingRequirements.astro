@@ -1,0 +1,41 @@
+---
+// src/components/landing/LandingRequirements.astro
+import { RequirementsCarousel } from "@/components/react/RequirementsCarousel";
+---
+
+<section
+  id="requisitos"
+  data-pencil-name="Requirements"
+  class="w-full py-16 sm:py-20 md:py-24 relative z-10 bg-[#F8FAFC]/70 border-y border-[#E8ECF3]"
+>
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center gap-8 md:gap-10">
+    
+    <!-- Section Header -->
+    <div class="flex flex-col items-center gap-2.5 max-w-xl mx-auto">
+      <span class="inline-flex items-center gap-1.5 text-xs font-mono font-bold tracking-wider uppercase text-[#2E4E8F] bg-[#EEF2F6] px-3.5 py-1 rounded-full w-fit">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#2E4E8F] animate-pulse"></span>
+        REQUISITOS OPERATIVOS
+      </span>
+      <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-[#0C1120] font-[Manrope,system-ui,sans-serif] tracking-tight">
+        ¿Qué necesitas para alquilar?
+      </h2>
+      <p class="text-sm sm:text-base text-[#4B5563] leading-relaxed">
+        Todo el proceso de validación documental es 100% digital y se completa en menos de 2 minutos.
+      </p>
+    </div>
+
+    <!-- Stacked Cards Swipe Carousel (Framer Motion) -->
+    <div class="w-full flex justify-center py-4 min-h-[340px]">
+      <RequirementsCarousel client:load />
+    </div>
+
+    <!-- Bottom Advisory Note -->
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-3 p-4 rounded-2xl bg-white border border-[#E8ECF3] shadow-2xs max-w-2xl text-xs text-[#4B5563] text-center sm:text-left">
+      <svg class="w-4 h-4 text-[#2E4E8F] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span>Los requisitos de edad y garantía pueden variar levemente en categorías utilitarias y de alta gama.</span>
+    </div>
+
+  </div>
+</section>
