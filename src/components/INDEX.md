@@ -9,6 +9,7 @@
 | :--- | :--- | :--- |
 | [`navigation/`](./navigation/) | Componentes de navegación (BottomNav, TopBar, Sidebar). | [INDEX.md](./navigation/INDEX.md) |
 | [`dashboard/`](./dashboard/) | Módulos del Bento Grid para el panel operativo (Hero, Métricas, Operaciones). | [INDEX.md](./dashboard/INDEX.md) |
+| [`flota/`](./flota/) | Componentes de catálogo y buscador especializado de vehículos. | [INDEX.md](./flota/INDEX.md) |
 
 ## Invariants & Directory Rules
 

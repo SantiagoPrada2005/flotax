@@ -409,7 +409,6 @@ export default function BottomNavIsland({
               : 'transform 400ms var(--ease-spring-ios), box-shadow 300ms ease',
           }}
         >
-          <span className="absolute bottom-1 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-white animate-pulse" />
         </div>
 
         {items.map((item, index) => {
