@@ -7,8 +7,10 @@
 
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
-| [`BottomNav.astro`](./BottomNav.astro) | Barra Inferior Móvil con FAB 56px | Componente `<BottomNav activeTab="..." />` | Design tokens FlotaX (`tokens.css`) |
-| [`TopBar.astro`](./TopBar.astro) | Barra Superior Móvil y Desktop | Componente `<TopBar title="..." showBack="..." />` | Design tokens FlotaX (`tokens.css`) |
+| [`BottomNav.astro`](./BottomNav.astro) | Orquestador SSR Barra Inferior Móvil | Componente `<BottomNav activeTab="..." />` | [`BottomNavIsland.tsx`](./BottomNavIsland.tsx) |
+| [`BottomNavIsland.tsx`](./BottomNavIsland.tsx) | Isla React 19: Dock Flotante iOS 27 | Componente `<BottomNavIsland ... />` | Tokens de física de resorte y háptica |
+| [`TopBar.astro`](./TopBar.astro) | Orquestador SSR Barra Superior | Componente `<TopBar title="..." showBack="..." />` | [`TopBarIsland.tsx`](./TopBarIsland.tsx) |
+| [`TopBarIsland.tsx`](./TopBarIsland.tsx) | Isla React 19: Dynamic Island Scroll | Componente `<TopBarIsland ... />` | Tokens de vidrio líquido y badges vivos |
 | [`Sidebar.astro`](./Sidebar.astro) | Barra Lateral de Navegación Desktop | Componente `<Sidebar activeTab="..." />` | Design tokens FlotaX (`tokens.css`) |
 
 ## Invariants & Directory Rules

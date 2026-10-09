@@ -1,58 +1,16 @@
 ---
-import LayoutAdmin from '../layouts/LayoutAdmin.astro';
-import { resolveClientTimeContext } from '../lib/time/client-time';
-import BentoHeroCard from '../components/dashboard/BentoHeroCard.astro';
-import BentoMetricsGrid from '../components/dashboard/BentoMetricsGrid.astro';
-import BentoOperationsCard from '../components/dashboard/BentoOperationsCard.astro';
-
-const timeContext = resolveClientTimeContext(Astro.request);
 const usuario = Astro.locals.usuario;
-const operatorName = usuario?.nombre ?? 'David Operador';
+
+if (!usuario) {
+  return Astro.redirect('/login');
+}
+
+// Redirección inteligente por rol: Personal de patio a /admin, clientes a /catalogo
+const esPersonal = usuario.esSuperAdmin || (usuario.localActivo && usuario.localActivo.rol !== 'USUARIO');
+
+if (esPersonal) {
+  return Astro.redirect('/admin');
+}
+
+return Astro.redirect('/catalogo');
 ---
-
-<LayoutAdmin title="FlotaX — Panel de Control" activeTab="home">
-  <div class="mx-auto w-full max-w-md sm:max-w-xl px-4 py-3 space-y-4">
-    <!-- Greeting & Status Header (Matching Reference App Layout) -->
-    <header class="pt-1 pb-1">
-      <p class="text-xs font-semibold uppercase tracking-wider text-[#4B5563]">
-        Panel Operativo • {timeContext.timezone}
-      </p>
-      <div class="mt-0.5 flex items-baseline justify-between">
-        <h1 class="font-display text-2xl font-black tracking-tight text-[#111827] sm:text-3xl">
-          {operatorName}
-        </h1>
-        <span class="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-0.5 text-[11px] font-bold text-[#1F2937] shadow-2xs border border-[#9CA3AF]/30">
-          <span class="h-2 w-2 rounded-full bg-emerald-600 animate-pulse"></span>
-          Turno Activo
-        </span>
-      </div>
-    </header>
-
-    <!-- Bento Grid Section 1: Hero Progress Card -->
-    <BentoHeroCard
-      occupancyPercentage={84}
-      dateLabel={timeContext.dateString}
-      activeUnits={18}
-      totalUnits={22}
-      yardName="Patio Norte"
-    />
-
-    <!-- Bento Grid Section 2: Split 2-Column Metrics with Sparkline -->
-    <BentoMetricsGrid
-      availableCount={14}
-      availableLabel="Disponibles"
-      availableTrend="+3 listas hoy"
-      revenueAmount="$1,450"
-      revenueTrend="+8.4%"
-    />
-
-    <!-- Bento Grid Section 3: Operations & Category Breakdown Card -->
-    <BentoOperationsCard
-      inspectionsCompleted={12}
-      carsCount={10}
-      motorcyclesCount={6}
-      scootersCount={4}
-      inspectionRate="100%"
-    />
-  </div>
-</LayoutAdmin>

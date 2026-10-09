@@ -5,26 +5,26 @@ import { resolveLocalActivo } from '@/lib/auth/session';
 import { getLogger } from '@/lib/logger';
 import { env } from 'cloudflare:workers';
 
-const PROTECTED_PREFIXES = [
-  '/home',
-  '/admin',
-  '/flota',
-  '/vehiculos',
+const ADMIN_PREFIX = '/admin';
+
+const CLIENT_PROTECTED_PREFIXES = [
   '/reservas',
-  '/inspecciones',
-  '/caja',
-  '/pagos',
-  '/finanzas',
   '/perfil',
+  '/alquilar',
+  '/home',
 ];
 
-const AUTH_PAGES = ['/login', '/registro'];
+function isAdminRoute(pathname: string): boolean {
+  return pathname === ADMIN_PREFIX || pathname.startsWith(`${ADMIN_PREFIX}/`);
+}
 
 function isProtectedRoute(pathname: string): boolean {
-  return PROTECTED_PREFIXES.some(
+  return isAdminRoute(pathname) || CLIENT_PROTECTED_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
   );
 }
+
+const AUTH_PAGES = ['/login', '/registro'];
 
 function isAuthPage(pathname: string): boolean {
   return AUTH_PAGES.some(
@@ -141,14 +141,41 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   // 8. Control de acceso perimetral y redirección de rutas
   const pathname = context.url.pathname;
+  const user = context.locals.user;
+  const usuario = context.locals.usuario;
 
-  if (isProtectedRoute(pathname) && !context.locals.user) {
+  // Acceso sin autenticación a cualquier ruta protegida
+  if (isProtectedRoute(pathname) && !user) {
     const returnTo = encodeURIComponent(pathname + context.url.search);
     return context.redirect(`/login?redirect=${returnTo}`);
   }
 
-  if (isAuthPage(pathname) && context.locals.user) {
-    return context.redirect('/home');
+  // Protección RBAC estricta para el entorno operativo (/admin/**)
+  if (isAdminRoute(pathname)) {
+    if (!usuario) {
+      const returnTo = encodeURIComponent(pathname + context.url.search);
+      return context.redirect(`/login?redirect=${returnTo}`);
+    }
+
+    const esPersonal =
+      usuario.esSuperAdmin ||
+      (usuario.localActivo && usuario.localActivo.rol !== 'USUARIO');
+
+    if (!esPersonal) {
+      context.locals.logger.warn(
+        'Intento de acceso a ruta administrativa por usuario sin rol de patio',
+        { userId: usuario.id, path: pathname }
+      );
+      return context.redirect('/catalogo');
+    }
+  }
+
+  // Redirección inteligente si ya tiene sesión activa e intenta visitar /login o /registro
+  if (isAuthPage(pathname) && user) {
+    const esPersonal =
+      usuario?.esSuperAdmin ||
+      (usuario?.localActivo && usuario.localActivo.rol !== 'USUARIO');
+    return context.redirect(esPersonal ? '/admin' : '/catalogo');
   }
 
   try {

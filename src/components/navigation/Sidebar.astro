@@ -6,15 +6,15 @@ interface Props {
 const { activeTab } = Astro.props;
 const currentPath = Astro.url.pathname;
 
-const isHome = activeTab ? activeTab === 'home' : (currentPath === '/home' || currentPath === '/dashboard');
-const isSearch = activeTab ? activeTab === 'search' : currentPath.startsWith('/reservas') || currentPath.startsWith('/buscar');
-const isFleet = activeTab ? activeTab === 'fleet' : currentPath.startsWith('/vehiculos') || currentPath.startsWith('/flota');
-const isWallet = activeTab ? activeTab === 'wallet' : currentPath.startsWith('/pagos') || currentPath.startsWith('/finanzas');
+const isHome = activeTab ? activeTab === 'home' : (currentPath === '/admin' || currentPath === '/admin/');
+const isSearch = activeTab ? activeTab === 'search' : currentPath.startsWith('/admin/reservas');
+const isFleet = activeTab ? activeTab === 'fleet' : currentPath.startsWith('/admin/flota') || currentPath.startsWith('/admin/operaciones');
+const isWallet = activeTab ? activeTab === 'wallet' : currentPath.startsWith('/admin/caja');
 ---
 
 <aside class="hidden w-64 shrink-0 flex-col border-r border-border-subtle bg-surface-sidebar p-4 md:flex h-screen sticky top-0 overflow-y-auto">
   <!-- Brand Header -->
-  <a href="/home" class="flex items-center gap-3 px-2 py-3 transition hover:opacity-90">
+  <a href="/admin" class="flex items-center gap-3 px-2 py-3 transition hover:opacity-90">
     <div class="flex h-9 w-9 items-center justify-center rounded-[10px] bg-brand-primary text-white shadow-xs">
       <span class="font-display text-base font-bold leading-none">M</span>
     </div>
@@ -31,7 +31,7 @@ const isWallet = activeTab ? activeTab === 'wallet' : currentPath.startsWith('/p
   <!-- Action Button: Nueva Reserva -->
   <div class="my-4">
     <a
-      href="/reservas/nueva"
+      href="/admin/reservas/nueva"
       class="flex w-full items-center justify-center gap-2 rounded-input bg-brand-secondary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-primary active:scale-[0.98]"
     >
       <svg
@@ -54,7 +54,7 @@ const isWallet = activeTab ? activeTab === 'wallet' : currentPath.startsWith('/p
   <!-- Navigation Links -->
   <nav class="flex flex-1 flex-col gap-1 py-2 font-medium text-sm">
     <a
-      href="/home"
+      href="/admin"
       aria-current={isHome ? "page" : undefined}
       class:list={[
         "flex items-center gap-3 rounded-input px-3 py-2.5 transition-colors",
@@ -80,7 +80,7 @@ const isWallet = activeTab ? activeTab === 'wallet' : currentPath.startsWith('/p
     </a>
 
     <a
-      href="/reservas"
+      href="/admin/reservas"
       aria-current={isSearch ? "page" : undefined}
       class:list={[
         "flex items-center gap-3 rounded-input px-3 py-2.5 transition-colors",
@@ -106,7 +106,7 @@ const isWallet = activeTab ? activeTab === 'wallet' : currentPath.startsWith('/p
     </a>
 
     <a
-      href="/vehiculos"
+      href="/admin/flota"
       aria-current={isFleet ? "page" : undefined}
       class:list={[
         "flex items-center gap-3 rounded-input px-3 py-2.5 transition-colors",
@@ -134,7 +134,7 @@ const isWallet = activeTab ? activeTab === 'wallet' : currentPath.startsWith('/p
     </a>
 
     <a
-      href="/pagos"
+      href="/admin/caja"
       aria-current={isWallet ? "page" : undefined}
       class:list={[
         "flex items-center gap-3 rounded-input px-3 py-2.5 transition-colors",

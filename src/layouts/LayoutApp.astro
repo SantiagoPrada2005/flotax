@@ -1,5 +1,6 @@
 ---
 import '../styles/tokens.css';
+import { ClientRouter } from 'astro:transitions';
 import TopBar from '../components/navigation/TopBar.astro';
 import Sidebar from '../components/navigation/Sidebar.astro';
 import BottomNav from '../components/navigation/BottomNav.astro';
@@ -10,15 +11,19 @@ interface Props {
   showBack?: boolean | undefined;
   backHref?: string | undefined;
   hideNav?: boolean | undefined;
+  navVariant?: 'admin' | 'client' | undefined;
 }
 
 const {
   title = 'FlotaX — Gestión de Flota y Alquiler',
   activeTab,
   showBack = false,
-  backHref = '/home',
+  backHref = '/catalogo',
   hideNav = false,
+  navVariant = 'client',
 } = Astro.props;
+
+const isAdmin = navVariant === 'admin';
 ---
 
 <!doctype html>
@@ -38,25 +43,26 @@ const {
       rel="stylesheet"
     />
     <title>{title}</title>
+    <ClientRouter />
   </head>
   <body class="flex min-h-full flex-col font-body selection:bg-brand-secondary/20 selection:text-brand-primary">
     <div class="flex min-h-screen w-full flex-row">
-      <!-- Desktop Navigation Sidebar -->
-      {!hideNav && <Sidebar activeTab={activeTab} />}
+      <!-- Desktop Navigation Sidebar (Only for Admin) -->
+      {!hideNav && isAdmin && <Sidebar activeTab={activeTab} />}
 
       <!-- Main Layout Body -->
       <div class="flex flex-1 flex-col min-w-0">
-        <!-- Top App Bar (Fixed) -->
+        <!-- Top App Bar (Floating Pills) -->
         {!hideNav && (
           <TopBar
             title={title}
             showBack={showBack}
             backHref={backHref}
-            class="md:left-64"
+            class={isAdmin ? "md:left-64" : ""}
           />
         )}
 
-        <!-- Content Area: padded for fixed TopBar (pt-16), floating dock on mobile (pb-32) and standard on desktop (pb-8) -->
+        <!-- Content Area: padded for floating TopBar (pt-16), floating dock on mobile (pb-32) and standard on desktop (pb-8) -->
         <main class:list={[
           "flex-1 w-full",
           !hideNav ? "pt-16 pb-32 md:pb-8" : ""
@@ -66,7 +72,7 @@ const {
       </div>
     </div>
 
-    <!-- Mobile Bottom Navigation (64px + FAB 56px) -->
-    {!hideNav && <BottomNav activeTab={activeTab} />}
+    <!-- Mobile Bottom Navigation (Floating Island) -->
+    {!hideNav && <BottomNav activeTab={activeTab} variant={navVariant} />}
   </body>
 </html>

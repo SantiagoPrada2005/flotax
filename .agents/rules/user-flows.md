@@ -17,41 +17,50 @@ Cualquier agente de IA o desarrollador que vaya a:
 
 ---
 
-## 2. Los Tres Flujos Canónicos Inmutables
+## 2. Los Flujos Canónicos Inmutables
 
-Toda pantalla debe pertenecer explícitamente y respetar la jerarquía de uno de los 3 flujos canónicos definidos en el sistema:
+Toda pantalla debe pertenecer explícitamente y respetar la jerarquía de los flujos canónicos definidos en el sistema:
 
-### Flujo 1: Mapa General del Cliente
-- **Ruta Raíz / Inicio (`/`):** Dirige la bienvenida hacia 4 macro-rutas de cliente y 1 de staff:
-  - Catálogo (`/catalogo`)
-  - Alquilar (`/alquilar` o `/vehiculos/:id/alquilar`)
-  - Mis Reservas (`/reservas`)
-  - Perfil (`/perfil`)
-  - Acceso Personal / Staff (`/admin/login` / `/admin`)
-- **Prohibición:** No inventar rutas de primer nivel desconectadas del mapa general sin justificación documentada.
+### Flujo 1: Onboarding y Acceso
+- **Ruta Raíz / Inicio (`/`):** Dirige a `bienvenida`.
+  - *Explorar como visitante:* Navega directo a `ver catálogo`.
+  - *Iniciar sesión:* `correo y código otp` → `ir al catálogo`.
+  - *Registrarse:* `datos básicos` → `autorización de datos (Ley 1581)` → `verificar con código` → `ir al catálogo`.
+  - *Regla de sesión:* Si ya existe sesión activa, salta la bienvenida y abre el catálogo. Cédula y licencia solo se piden en el primer alquiler.
 
 ### Flujo 2: Explorar y Analizar Vehículos
-- **Catálogo (`/catalogo`):** Debe proporcionar búsqueda, filtrado, ordenamiento y conmutación de vista (lista o mosaico).
-- **Ficha del Vehículo (`/vehiculos/:id`):** Debe contener obligatoriamente:
-  - Galería de fotos.
-  - Ficha técnica.
-  - Estado y calendario de disponibilidad en tiempo real.
-  - Tarifa detallada y requisitos.
-  - Herramienta de comparar vehículos.
-  - CTA directo e inconfundible hacia **Alquilar**.
+- **Catálogo (`/catalogo`):** Búsqueda, filtrado, ordenamiento y conmutación de vista (lista o mosaico).
+- **Ficha del Vehículo (`/vehiculos/:id`):** Galería fotográfica en R2, ficha técnica, disponibilidad en tiempo real, desglose de tarifa y CTA a `Alquilar`.
 
-### Flujo 3: Embudo de Alquiler y Estados de Transacción
-El embudo de alquiler es secuencial y no puede saltarse pasos críticos de negocio ni legales:
-1. `Ficha del Vehículo` → `Elegir fechas de alquiler` (validación de disponibilidad inmediata).
-2. `Bifurcación de Sesión`:
-   - Si no está autenticado: `Iniciar sesión o registrarse` (preservando el vehículo y fechas elegidas).
-   - Si está autenticado: Pasar directamente a `Resumen y costo total`.
-3. `Resumen y costo total` (desglose transparente de días, tarifa base, depósito y valor del abono).
-4. `Aceptar términos y datos`: **Obligatorio** consentimiento expreso de **Ley 1581 (Protección de Datos Personales de Colombia)** antes de pagar.
-5. `Pagar o reportar abono`: Pasarela o comprobante de abono.
-6. `Solicitud enviada (Estado: pendiente)`.
-7. `El asesor confirma (Acción de Personal)`: El cliente no pasa a confirmado directamente; el asesor valida en panel operativo.
-8. `Reserva confirmada (Estado: confirmada)`.
+### Flujo 3: Embudo de Alquiler del Cliente
+- Secuencia inmutable: `Ficha` → `Elegir fechas` → `Bifurcación de sesión` → `Resumen y costo total` → `Aceptar términos (Ley 1581)` → `Pagar o reportar abono` → `Solicitud enviada (Estado: pendiente)`.
+
+### Flujo 4: Operación de una Reserva (Personal / Administración)
+- Ciclo de vida operativo completo en patio y oficina:
+  - `Solicitud pendiente` → `Revisar solicitud` (disponibilidad y documentos).
+  - Bifurcación `¿Confirmar reserva?`:
+    - No: `Rechazar y notificar al cliente`.
+    - Sí: `Reserva confirmada` (notifica al cliente).
+  - `Entrega del vehículo` (vehículo pasa a `en alquiler`).
+  - `Devolución del vehículo` (inspección de retorno y kilometraje).
+  - Bifurcación `¿Requiere mantenimiento?`:
+    - Sí: `Enviar a mantenimiento`.
+    - No: `Saldo y cierre del contrato`.
+  - `Reserva cerrada` (vehículo retorna a `disponible`).
+
+### Flujo 5: Backoffice de Personal y Menú por Permisos
+- `Acceso personal` (`/admin/login`) → `Iniciar sesión` → `Menú por permisos` (`/admin`).
+- 6 macro-módulos canónicos:
+  1. *Reservas y contratos:* Solicitudes y calendario, contratos, entrega y devolución.
+  2. *Clientes:* Lista y documentos, historial de alquileres.
+  3. *Flota:* Vehículos, estado y mantenimiento, documentos y alertas.
+  4. *Pagos y gastos:* Pagos y abonos, gastos por vehículo.
+  5. *Reportes:* Ingresos y ocupación, exportar.
+  6. *Administración:* Usuarios y roles, tarifas y configuración, auditoría.
+
+### Flujo 6: Crecimiento de Equipo y Matriz RBAC
+- Estructura escalonada: 1 Persona (Propietario) → 2 Personas (Propietario + Admin) → 3+ Personas (Asesor + Encargado de Flota + Contador).
+- Gobernanza estricta según la matriz de acceso por módulo y pantalla (✓ Completo, L Solo Lectura, R Limitado, — Sin Acceso).
 
 ---
 

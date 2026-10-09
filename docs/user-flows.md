@@ -3,91 +3,68 @@
 **Código:** DOC-UX-001  
 **Proyecto:** FlotaX — Sistema de Alquiler de Vehículos  
 **Ámbito:** Arquitectura de Interfaz, Mapa de Navegación y Flujos de Usuario  
-**Fuente de Verdad:** Diagramas canónicos de User Flow (Cliente y Personal Operativo)  
+**Fuente de Verdad:** Diagramas canónicos de User Flow (Onboarding, Personal, Operación, Roles y Matriz de Acceso)  
 
 ---
 
 ## 1. Visión General del Sistema y Convenciones
 
-Los diagramas de flujo definen la estructura jerárquica de pantallas, componentes interactivos y bifurcaciones de negocio del sistema FlotaX.
+Los diagramas de flujo definen la estructura jerárquica de pantallas, componentes interactivos, bifurcaciones de negocio y ciclo de vida de la flota en FlotaX.
 
-### Tipología de Nodos:
-1. **Pantalla Principal (Verde / Primaria):** Rutas canónicas completas con su propio URL (ej. `/`, `/catalogo`, `/vehiculo/:id`, `/reservas`).
-2. **Función o Pantalla (Gris Claro):** Subvistas, tabs, modales, drawers o componentes interactivos dentro de una pantalla principal.
-3. **Flujo Aparte (Borde Discontinuo / Punteado):** Flujo de backoffice/personal operativo (ej. asesores, mecánicos, administradores) con control de acceso RBAC.
+### Tipología Canónica de Nodos:
+1. **Pantalla Principal (Verde Menta / Borde Verde):** Rutas y vistas canónicas primarias del sistema (ej. `bienvenida`, `menú por permisos`, `flota`, `entrega del vehículo`).
+2. **Función o Pantalla (Gris Claro / Beige Neutro):** Subvistas, tabs, modales, formularios o pasos de soporte operativo (ej. `ver catálogo`, `datos básicos`, `correo y código otp`, `rechazar y notificar`).
+3. **Punto de Decisión (Rombo / Condicional):** Bifurcaciones operativas del sistema (ej. `¿Confirmar reserva?`, `¿Requiere mantenimiento?`).
 
 ```mermaid
 graph TD
     classDef mainScreen fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#065f46;
     classDef subScreen fill:#f3f4f6,stroke:#9ca3af,stroke-width:1px,color:#1f2937;
-    classDef staffFlow fill:#fef3c7,stroke:#d97706,stroke-dasharray: 5 5,stroke-width:1.5px,color:#92400e;
+    classDef decision fill:#f3f4f6,stroke:#9ca3af,stroke-width:1.5px,color:#1f2937;
 
-    A[Pantalla Principal]:::mainScreen
-    B[Función o Subpantalla]:::subScreen
-    C[Flujo Aparte / Personal]:::staffFlow
+    A["Pantalla Principal"]:::mainScreen
+    B["Función o Pantalla"]:::subScreen
+    C{"¿Decisión?"}:::decision
 ```
 
 ---
 
-## 2. Mapa General del Cliente
+## 2. User Flow: Onboarding
 
-Estructura de primer y segundo nivel accesible desde el punto de entrada de la aplicación.
+Define la puerta de entrada, modalidades de acceso inicial para nuevos usuarios, clientes recurrentes y visitantes casuales.
 
 ```mermaid
 graph LR
     classDef mainScreen fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#065f46;
     classDef subScreen fill:#f3f4f6,stroke:#9ca3af,stroke-width:1px,color:#1f2937;
-    classDef staffFlow fill:#fef3c7,stroke:#d97706,stroke-dasharray: 5 5,stroke-width:1.5px,color:#92400e;
 
     inicio["inicio"]:::subScreen --> bienvenida["bienvenida"]:::subScreen
 
-    bienvenida --> catalogo["catálogo"]:::mainScreen
-    bienvenida --> alquilar["alquilar"]:::mainScreen
-    bienvenida --> mis_reservas["mis reservas"]:::mainScreen
-    bienvenida --> perfil["perfil"]:::mainScreen
-    bienvenida -.-> acceso_personal["acceso personal"]:::staffFlow
+    %% Opción 1: Explorar como visitante
+    bienvenida --> exp_vis["explorar como visitante"]:::mainScreen
+    exp_vis --> exp_cat["ver catálogo"]:::subScreen
 
-    %% Catálogo
-    catalogo --> cat_busq["buscar y filtrar"]:::subScreen
-    catalogo --> cat_disp["ver disponibles"]:::subScreen
-    catalogo --> cat_ficha["ficha del vehículo"]:::subScreen
+    %% Opción 2: Iniciar sesión
+    bienvenida --> login["iniciar sesión"]:::mainScreen
+    login --> log_otp["correo y código otp"]:::subScreen
+    login --> log_cat["ir al catálogo"]:::subScreen
 
-    %% Alquilar
-    alquilar --> alq_fechas["elegir fechas"]:::subScreen
-    alquilar --> alq_resumen["resumen y abono"]:::subScreen
-    alquilar --> alq_solicitud["enviar solicitud"]:::subScreen
-
-    %% Mis Reservas
-    mis_reservas --> res_proximas["próximas y en curso"]:::subScreen
-    mis_reservas --> res_historial["historial"]:::subScreen
-    mis_reservas --> res_contrato["contrato y pagos"]:::subScreen
-
-    %% Perfil
-    perfil --> per_datos["datos y licencia"]:::subScreen
-    perfil --> per_notif["notificaciones"]:::subScreen
-    perfil --> per_logout["cerrar sesión"]:::subScreen
-
-    %% Acceso Personal
-    acceso_personal -.-> staff_login["iniciar sesión"]:::staffFlow
-    acceso_personal -.-> staff_panel["panel según rol"]:::staffFlow
+    %% Opción 3: Registrarse
+    bienvenida --> reg["registrarse"]:::mainScreen
+    reg --> reg_datos["datos básicos"]:::subScreen
+    reg --> reg_ley["autorización de datos (Ley 1581)"]:::subScreen
+    reg --> reg_otp["verificar con código"]:::subScreen
+    reg --> reg_cat["ir al catálogo"]:::subScreen
 ```
 
-### Detalle de Módulos del Mapa General:
-
-| Módulo Principal | Ruta Propuesta | Pantallas / Funcionalidades Hijas | Propósito y Reglas |
-| :--- | :--- | :--- | :--- |
-| **Inicio & Bienvenida** | `/` | Hero interactivo, llamada a la acción rápida, selector de categoría. | Punto de aterrizaje para capturar la intención inmediata del cliente. |
-| **Catálogo** | `/catalogo` | Buscar y filtrar, ver disponibles, acceso a ficha de vehículo. | Exploración rápida de flota disponible con filtros en URL (`nuqs`). |
-| **Alquilar** | `/alquilar` o `/vehiculo/:id/alquilar` | Selector de fechas, resumen y cálculo de abono, envío de solicitud. | Flujo guiado de reserva y compromiso de anticipo. |
-| **Mis Reservas** | `/reservas` | Próximas y en curso, historial completo, visualización de contratos y pagos. | Portal post-venta y seguimiento del estado de la reserva del cliente autenticado. |
-| **Perfil** | `/perfil` | Datos personales y foto/validación de licencia, notificaciones, cerrar sesión. | Gestión de identidad, antecedentes de conducción y contacto. |
-| **Acceso Personal** | `/personal/login` → `/admin` | Iniciar sesión administrativo, redirección al panel según rol (Admin, Asesor, Mecánico). | Flujo restringido y protegido por Better Auth y RBAC. |
+> **Regla de Negocio de Onboarding:**  
+> Si ya hay una sesión activa, la app salta la bienvenida y abre el catálogo directamente. La cédula y la licencia se piden la primera vez que el cliente alquila, no en el registro; en el registro únicamente se pide el nombre completo si esta persona no accede con Google.
 
 ---
 
-## 3. Flujo Detallado: Explorar y Analizar Vehículos
+## 3. Flujo de Navegación del Cliente: Explorar y Analizar Vehículos
 
-Flujo específico de descubrimiento, evaluación técnica y comparativa antes de pasar al embudo de alquiler.
+Flujo de descubrimiento, evaluación técnica y comparativa antes de pasar al embudo de alquiler.
 
 ```mermaid
 graph LR
@@ -112,37 +89,21 @@ graph LR
     ficha --> alq_cta["alquilar"]:::mainScreen
 ```
 
-### Especificación Funcional de Pantallas:
-
-#### A. Pantalla: Catálogo (`/catalogo`)
-- **Controles de búsqueda y filtros:**
-  - `buscar`: Búsqueda por texto (marca, modelo, placa, tipo).
-  - `filtrar`: Rango de precio, categoría (auto, moto, scooter/patineta), tipo de transmisión, combustible/eléctrico, sucursal.
-  - `ordenar`: Menor a mayor precio, más recientes, disponibilidad inmediata.
-  - `lista o mosaico`: Alternancia de layout sin recargar la página.
-- **Interacción:** Al hacer clic en cualquier tarjeta de vehículo, navega a la Ficha del Vehículo (`/vehiculo/:id`).
-
-#### B. Pantalla: Ficha del Vehículo (`/vehiculo/:id`)
-- **Secciones / Capacidades:**
-  1. `fotos`: Galería de alta resolución con optimización y visor modal/carrusel.
-  2. `ficha técnica`: Pasajeros, maletas, transmisión, autonomía, potencia y características de seguridad.
-  3. `estado y calendario`: Indicador en tiempo real de disponibilidad y fechas bloqueadas por mantenimiento o reservas vigentes.
-  4. `tarifa y requisitos`: Detalle de tarifa diaria, descuentos (>7 días), depósito en garantía y requisitos de edad/licencia.
-  5. `comparar vehículos`: Drawer o modal de contraste frente a 1-2 vehículos de la misma categoría.
-  6. `alquilar` (CTA Principal): Disparador directo hacia el embudo de alquiler transfiriendo el vehículo seleccionado.
+### Especificación Funcional:
+- **Catálogo (`/catalogo`):** Búsqueda por texto (marca, modelo, placa, tipo), filtrado con sincronización en URL, ordenamiento dinámico y alternancia de cuadrícula/lista.
+- **Ficha del Vehículo (`/vehiculos/:id`):** Galería fotográfica en Cloudflare R2, ficha técnica, disponibilidad en tiempo real, desglose de tarifas y botón de acción (CTA) directo a alquilar.
 
 ---
 
-## 4. Flujo Detallado: Alquilar un Vehículo
+## 4. Flujo Detallado: Alquilar un Vehículo (Embudo del Cliente)
 
-Embudo transaccional paso a paso que cubre desde la selección de fechas hasta la confirmación definitiva por parte del asesor.
+Embudo transaccional paso a paso que cubre desde la selección de fechas hasta la solicitud preliminar del cliente.
 
 ```mermaid
 flowchart TD
     classDef mainScreen fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#065f46;
     classDef subScreen fill:#f3f4f6,stroke:#9ca3af,stroke-width:1px,color:#1f2937;
-    classDef staffFlow fill:#fef3c7,stroke:#d97706,stroke-dasharray: 5 5,stroke-width:1.5px,color:#92400e;
-    classDef decision fill:#fffbeb,stroke:#d97706,stroke-width:1.5px,color:#92400e;
+    classDef decision fill:#f3f4f6,stroke:#9ca3af,stroke-width:1.5px,color:#1f2937;
 
     n_ficha["Ficha del vehículo"]:::mainScreen --> n_fechas["Elegir fechas de alquiler"]:::mainScreen
     n_fechas --- n_disp["valida disponibilidad"]:::subScreen
@@ -160,42 +121,207 @@ flowchart TD
 
     n_pago --> n_enviada["Solicitud enviada"]:::mainScreen
     n_enviada --- n_estado_pend["estado: pendiente"]:::subScreen
-
-    n_enviada -.-> n_asesor["El asesor confirma"]:::staffFlow
-    n_asesor -.- n_accion_staff["acción del personal (asesor)"]:::staffFlow
-
-    n_asesor --> n_confirmada["Reserva confirmada"]:::mainScreen
-    n_confirmada --- n_estado_conf["estado: confirmada"]:::subScreen
 ```
-
-### Matriz de Pasos y Reglas de Negocio del Embudo:
-
-| Paso | Pantalla / Estado | Tipo | Acciones y Reglas de Negocio |
-| :--- | :--- | :--- | :--- |
-| **1** | **Ficha del vehículo** | Pantalla Principal | Punto de origen donde el usuario presiona "Alquilar". |
-| **2** | **Elegir fechas de alquiler** | Pantalla Principal / Modal | Selector con rango de fecha y hora (recogida y devolución). Ejecuta validación instantánea de disponibilidad en base de datos. |
-| **3** | **¿Tiene sesión iniciada?** | Bifurcación / Guardián | - Si `sesión == activa`: Redirige a Resumen y costo total.<br>- Si `sesión == nula`: Redirige a **Iniciar sesión o registrarse** (preservando estado del carrito de reserva en URL/sessionStorage). |
-| **4** | **Iniciar sesión o registrarse** | Pantalla Principal | Autenticación con Better Auth. Al completar con éxito, regresa automáticamente al paso 5. |
-| **5** | **Resumen y costo total** | Pantalla Principal | Desglose transparente: días, tarifa base, seguro, depósito/garantía y monto del abono inicial requerido. |
-| **6** | **Aceptar términos y datos** | Pantalla Principal / Drawer | Checkbox legal mandatorio: Política de tratamiento de datos personales (**Ley 1581**) y contrato preliminar de alquiler. |
-| **7** | **Pagar o reportar abono** | Pantalla Principal | Pasarela digital integrada o subida de comprobante de transferencia bancaria/efectivo. |
-| **8** | **Solicitud enviada** | Pantalla Principal | Pantalla de confirmación preliminar con código de seguimiento. **Estado:** `pendiente`. Se notifica al cliente y al asesor. |
-| **9** | **El asesor confirma** | Acción de Personal (Backoffice) | El asesor operativo valida la licencia, visita domiciliaria (si aplica) y pago del abono en el panel administrativo. |
-| **10** | **Reserva confirmada** | Pantalla Principal / Notificación | Cambio de estado a `confirmada`. Notificación al cliente por WhatsApp/Email y generación de hoja de ruta de entrega. |
 
 ---
 
-## 5. Mapeo de Rutas de Implementación (Convención Astro)
+## 5. User Flow: Operación de una Reserva (Personal o Administración)
 
-| Pantalla Canónica | Ruta Astro (`src/pages/...`) | Componentes Dominio |
+Ciclo de vida operativo completo gestionado por el personal de patio y administración desde que entra una solicitud hasta el cierre final de la reserva.
+
+```mermaid
+flowchart TD
+    classDef mainScreen fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#065f46;
+    classDef subScreen fill:#f3f4f6,stroke:#9ca3af,stroke-width:1px,color:#1f2937;
+    classDef decision fill:#f3f4f6,stroke:#9ca3af,stroke-width:1.5px,color:#1f2937;
+
+    solicitud["Solicitud pendiente"]:::mainScreen
+    sol_nota["llega desde el módulo del cliente"]:::subScreen
+    solicitud -.- sol_nota
+
+    revisar["Revisar solicitud"]:::mainScreen
+    rev_nota["disponibilidad y documentos del vehículo"]:::subScreen
+    revisar -.- rev_nota
+
+    confirmar_decision{"¿Confirmar reserva?"}:::decision
+
+    rechazar["Rechazar y notificar"]:::subScreen
+    rech_nota["notifica al cliente"]:::subScreen
+    rechazar -.- rech_nota
+
+    confirmada["Reserva confirmada"]:::mainScreen
+    conf_nota["notifica al cliente"]:::subScreen
+    confirmada -.- conf_nota
+
+    entrega["Entrega del vehículo"]:::mainScreen
+    ent_nota["estado del vehículo: en alquiler"]:::subScreen
+    entrega -.- ent_nota
+
+    devolucion["Devolución del vehículo"]:::mainScreen
+    dev_nota["revisa estado y kilometraje"]:::subScreen
+    devolucion -.- dev_nota
+
+    mantenimiento_decision{"¿Requiere mantenimiento?"}:::decision
+
+    mantenimiento["Enviar a mantenimiento"]:::mainScreen
+
+    cierre["Saldo y cierre del contrato"]:::mainScreen
+
+    cerrada["Reserva cerrada"]:::mainScreen
+    cer_nota["estado del vehículo: disponible"]:::subScreen
+    cerrada -.- cer_nota
+
+    %% Transiciones del ciclo
+    solicitud --> revisar
+    revisar --> confirmar_decision
+    confirmar_decision -- no --> rechazar
+    confirmar_decision -- sí --> confirmada
+    confirmada --> entrega
+    entrega --> devolucion
+    devolucion --> mantenimiento_decision
+    mantenimiento_decision -- sí --> mantenimiento
+    mantenimiento_decision -- no --> cierre
+    mantenimiento --> cierre
+    cierre --> cerrada
+```
+
+### Estados y Puntos de Control Operativo:
+1. **Solicitud pendiente:** Notificación entrante desde el portal del cliente con abono o solicitud radicada.
+2. **Revisar solicitud:** Validación pericial de documentos del conductor, antecedentes y disponibilidad del vehículo.
+3. **Decisión de Confirmación:**
+   - **Rechazar y notificar:** Se cancela la solicitud y se devuelve notificación justificada al cliente.
+   - **Reserva confirmada:** Generación de contrato preliminar y notificación formal al cliente.
+4. **Entrega del vehículo:** Acta de entrega con inspección fotográfica pericial en Cloudflare R2. El vehículo pasa a estado `en alquiler`.
+5. **Devolución del vehículo:** Peritaje de retorno, registro de kilometraje, combustible y novedades físicas.
+6. **Decisión de Mantenimiento:**
+   - Si presenta averías o requiere service, se deriva a `Enviar a mantenimiento` (estado temporal `en mantenimiento`).
+   - Si está en condiciones óptimas, avanza a liquidación.
+7. **Saldo y cierre del contrato:** Liquidación de depósitos en garantía, cobro de saldos o penalidades pendientes.
+8. **Reserva cerrada:** Contrato finiquitado y el vehículo retorna inmediatamente a estado `disponible` en catálogo.
+
+---
+
+## 6. User Flow: Personal (Empleados y Dueño)
+
+Arquitectura de módulos y funciones accesibles desde el entorno administrativo y operativo (`/admin`).
+
+```mermaid
+graph LR
+    classDef mainScreen fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#065f46;
+    classDef subScreen fill:#f3f4f6,stroke:#9ca3af,stroke-width:1px,color:#1f2937;
+
+    acceso_personal["acceso personal"]:::subScreen --> iniciar_sesion["iniciar sesión"]:::subScreen
+    iniciar_sesion --> menu_permisos["menú por permisos"]:::mainScreen
+
+    %% 1. Reservas y contratos
+    menu_permisos --> mod_reservas["reservas y contratos"]:::mainScreen
+    mod_reservas --> res_solicitudes["solicitudes y calendario"]:::subScreen
+    mod_reservas --> res_contratos["contratos"]:::subScreen
+    mod_reservas --> res_entrega["entrega y devolución"]:::subScreen
+
+    %% 2. Clientes
+    menu_permisos --> mod_clientes["clientes"]:::mainScreen
+    mod_clientes --> cli_lista["lista y documentos"]:::subScreen
+    mod_clientes --> cli_historial["historial de alquileres"]:::subScreen
+
+    %% 3. Flota
+    menu_permisos --> mod_flota["flota"]:::mainScreen
+    mod_flota --> flo_vehiculos["vehículos"]:::subScreen
+    mod_flota --> flo_mantenimiento["estado y mantenimiento"]:::subScreen
+    mod_flota --> flo_alertas["documentos y alertas"]:::subScreen
+
+    %% 4. Pagos y gastos
+    menu_permisos --> mod_pagos["pagos y gastos"]:::mainScreen
+    mod_pagos --> pag_abonos["pagos y abonos"]:::subScreen
+    mod_pagos --> pag_gastos["gastos por vehículo"]:::subScreen
+
+    %% 5. Reportes
+    menu_permisos --> mod_reportes["reportes"]:::mainScreen
+    mod_reportes --> rep_ingresos["ingresos y ocupación"]:::subScreen
+    mod_reportes --> rep_exportar["exportar"]:::subScreen
+
+    %% 6. Administración
+    menu_permisos --> mod_admin["administración"]:::mainScreen
+    mod_admin --> adm_roles["usuarios y roles"]:::subScreen
+    mod_admin --> adm_tarifas["tarifas y configuración"]:::subScreen
+    mod_admin --> adm_auditoria["auditoría"]:::subScreen
+```
+
+> **Principio de Visibilidad Dinámica:**  
+> El menú muestra solo los módulos para los que el usuario tiene permiso. Con una sola persona (el propietario) se ven todos. Quién accede a cada pantalla está normado por la matriz de acceso.
+
+---
+
+## 7. User Flow: Crecimiento del Equipo y Roles
+
+Modelo de adopción progresiva y escalamiento de responsabilidades en la organización de alquiler.
+
+```mermaid
+flowchart LR
+    classDef roleCard fill:#f9fafb,stroke:#059669,stroke-width:1.5px,color:#111827;
+
+    P1["**Una persona**<br>───────────────<br><b>propietario</b><br><br>Una sola cuenta con acceso a todos los módulos. Puede atender clientes, manejar la flota, registrar pagos y ver reportes."]:::roleCard
+    --> P2["**Dos personas**<br>───────────────<br><b>propietario y administrador</b><br><br>El administrador hace casi todo. No cambia el plan ni los datos del negocio, no crea otros administradores y la auditoría es solo de lectura."]:::roleCard
+    --> P3["**Tres o más personas**<br>───────────────<br><b>asesor, encargado de flota y contador</b><br><br>Cada rol ve solo sus módulos. El propietario y el administrador siguen viendo todo. Un mismo usuario puede tener más de un rol."]:::roleCard
+```
+
+### Detalle de Etapas de Crecimiento:
+
+| Etapa | Configuración | Responsabilidades y Alcance |
 | :--- | :--- | :--- |
-| Inicio & Bienvenida | `src/pages/index.astro` | `HeroBienvenida`, `CategoriasGlance`, `DestacadosGrid` |
-| Catálogo | `src/pages/catalogo/index.astro` | `CatalogoFiltros`, `VehiculoGrid`, `VistaToggle` |
-| Ficha del Vehículo | `src/pages/vehiculos/[id].astro` | `GaleriaFotos`, `FichaTecnica`, `CalendarioDisponibilidad`, `BotonAlquilar` |
-| Embudo: Fechas y Resumen | `src/pages/alquilar/[id].astro` | `DateRangeSelector`, `ResumenCostos`, `TerminosLey1581` |
-| Pago / Abono | `src/pages/alquilar/[id]/pago.astro` | `MetodosPagoIsland`, `ComprobanteUpload` |
-| Estado Solicitud | `src/pages/reservas/[id]/estado.astro` | `EstadoTimeline`, `DetalleReservaCard` |
-| Mis Reservas | `src/pages/reservas/index.astro` | `ReservasActivasList`, `HistorialReservasTable` |
-| Perfil de Usuario | `src/pages/perfil/index.astro` | `DatosPersonalesForm`, `LicenciaUpload`, `ConfigNotificaciones` |
-| Acceso Personal | `src/pages/admin/login.astro` | `AdminLoginForm` |
-| Panel Administrativo | `src/pages/admin/dashboard.astro` | `DashboardMetricCards`, `SolicitudesPendientesTable` |
+| **1. Una persona** | **Propietario** (`DUENO`) | Una sola cuenta con acceso absoluto a todos los módulos. Atiende clientes en patio, gestiona la flota, registra cobros/gastos y examina reportes. |
+| **2. Dos personas** | **Propietario + Administrador** (`ADMIN`) | El administrador asume la operación regular diaria. Restricciones del administrador: no modifica la suscripción/plan ni datos fiscales maestros del negocio, no puede crear otros administradores y el módulo de auditoría es estrictamente de solo lectura. |
+| **3. Tres o más personas** | **Asesor + Encargado de Flota + Contador** (`OPERATIVO`, `AUDITOR_FINANCIERO`) | Segregación de funciones por principio de mínimo privilegio (PoLP):<br>• **Asesor:** Atiende reservas, contratos y clientes.<br>• **Encargado de Flota:** Coordina entregas, devoluciones, mantenimiento y documentos técnicos de vehículos.<br>• **Contador:** Supervisa pagos, abonos, gastos y reportes contables.<br>*Nota:* Un mismo usuario puede tener más de un rol simultáneo. |
+
+---
+
+## 8. User Flow: Acceso por Módulo y Rol (Matriz RBAC Operativa)
+
+Matriz de gobierno de accesos que dictamina la visibilidad y capacidad de acción en cada pantalla:
+
+| Módulo | Pantalla | Propietario | Administrador | Asesor | Encargado de Flota | Contador |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| **Reservas y contratos** | Solicitudes y calendario | ✓ | ✓ | ✓ | L | L |
+| | Contratos | ✓ | ✓ | ✓ | — | L |
+| | Entrega y devolución | ✓ | ✓ | ✓ | ✓ | — |
+| **Clientes** | Lista y documentos | ✓ | ✓ | ✓ | — | L |
+| | Historial de alquileres | ✓ | ✓ | ✓ | — | L |
+| **Flota** | Vehículos | ✓ | ✓ | L | ✓ | — |
+| | Estado y mantenimiento | ✓ | ✓ | L | ✓ | L |
+| | Documentos y alertas | ✓ | ✓ | L | ✓ | L |
+| **Pagos y gastos** | Pagos y abonos | ✓ | ✓ | R | — | ✓ |
+| | Gastos por vehículo | ✓ | ✓ | — | L | ✓ |
+| **Reportes** | Ingresos y ocupación | ✓ | ✓ | — | L | ✓ |
+| | Exportar | ✓ | ✓ | — | — | ✓ |
+| **Administración** | Usuarios y roles | ✓ | R | — | — | — |
+| | Tarifas y configuración | ✓ | R | — | — | — |
+| | Auditoría | ✓ | L | — | — | — |
+
+### Convenciones de Permisos:
+- **`✓` Acceso completo:** Crear, leer, modificar y ejecutar acciones transaccionales.
+- **`L` Solo lectura:** Consulta de información e informes sin capacidad de mutación de datos.
+- **`R` Acceso limitado:** Acceso acotado a submódulos específicos o sin permisos de elevación/administración.
+- **`—` Sin acceso:** El módulo o pantalla se oculta en el menú lateral y la ruta devuelve denegación de acceso (`403 Forbidden`).
+
+---
+
+## 9. Mapeo Canónico de Rutas de Implementación (Astro & RBAC)
+
+| Módulo / Pantalla Canónica | Ruta Astro (`src/pages/...`) | Componentes de Dominio Clave | Nivel de Acceso Mínimo |
+| :--- | :--- | :--- | :--- |
+| **Inicio & Bienvenida** | `src/pages/index.astro` | `HeroBienvenida`, `CategoriasGlance` | Público / Visitante |
+| **Catálogo** | `src/pages/catalogo/index.astro` | `CatalogoFiltros`, `VehiculoGrid`, `VistaToggle` | Público / Visitante |
+| **Ficha del Vehículo** | `src/pages/vehiculos/[id].astro` | `GaleriaFotos`, `FichaTecnica`, `CalendarioDisponibilidad` | Público / Visitante |
+| **Embudo: Fechas y Resumen** | `src/pages/alquilar/[id].astro` | `DateRangeSelector`, `ResumenCostos`, `TerminosLey1581` | Cliente Autenticado |
+| **Mis Reservas (Cliente)** | `src/pages/reservas/index.astro` | `ReservasActivasList`, `HistorialReservasTable` | Cliente Autenticado |
+| **Perfil del Cliente** | `src/pages/perfil/index.astro` | `DatosPersonalesForm`, `LicenciaUpload` | Cliente Autenticado |
+| **Acceso Personal** | `src/pages/admin/login.astro` | `AdminLoginForm` | Público (Staff) |
+| **Panel / Menú por Permisos** | `src/pages/admin/index.astro` | `AdminModuleNav`, `DashboardMetrics` | Personal (`tienePermiso`) |
+| **Reservas: Solicitudes y Calendario** | `src/pages/admin/reservas/index.astro` | `SolicitudesTable`, `ReservasCalendario` | Asesor / Encargado (L) / Contador (L) |
+| **Reservas: Contratos** | `src/pages/admin/contratos/index.astro` | `ContratosList`, `ContratoViewer` | Asesor / Contador (L) |
+| **Reservas: Entrega y Devolución** | `src/pages/admin/operaciones/index.astro` | `CheckInCheckOutForm`, `InspeccionPericialR2` | Asesor / Encargado de Flota |
+| **Clientes: Lista y Documentos** | `src/pages/admin/clientes/index.astro` | `ClientesTable`, `DocumentosValidador` | Asesor / Contador (L) |
+| **Flota: Vehículos y Mantenimiento** | `src/pages/admin/flota/index.astro` | `FlotaGrid`, `MantenimientoForm`, `AlertasVencimiento` | Encargado de Flota / Asesor (L) |
+| **Pagos y Gastos** | `src/pages/admin/caja/index.astro` | `AbonosTable`, `GastosVehiculoForm` | Contador / Asesor (R) |
+| **Reportes y Exportación** | `src/pages/admin/reportes/index.astro` | `IngresosOcupacionChart`, `ExportarCSVButton` | Contador / Encargado (L) |
+| **Administración: Config y Auditoría** | `src/pages/admin/configuracion/index.astro` | `UsuariosRolesManager`, `TarifasConfig`, `AuditoriaTable` | Propietario / Administrador (R/L) |

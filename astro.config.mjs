@@ -12,7 +12,7 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
     optimizeDeps: {
-      exclude: ['better-auth', 'zod', 'drizzle-orm'],
+      exclude: ['better-auth', 'zod', 'drizzle-orm', 'astro:actions'],
     },
   },
 });

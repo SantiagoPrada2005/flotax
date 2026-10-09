@@ -1,0 +1,41 @@
+---
+import LayoutAdmin from '@/layouts/LayoutAdmin.astro';
+---
+
+<LayoutAdmin title="FlotaX — Operaciones y Peritaje" activeTab="fleet">
+  <div class="mx-auto w-full max-w-md sm:max-w-xl px-4 py-3 space-y-4">
+    <header class="pt-1 pb-1">
+      <p class="text-xs font-semibold uppercase tracking-wider text-[#4B5563]">
+        Control Pericial
+      </p>
+      <div class="mt-0.5 flex items-baseline justify-between">
+        <h1 class="font-display text-2xl font-black tracking-tight text-[#111827] sm:text-3xl">
+          Entrega y Devolución
+        </h1>
+        <a
+          href="/admin/operaciones/nueva"
+          class="inline-flex min-h-[40px] items-center gap-1.5 rounded-full bg-[#111827] px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#1F2937] active:scale-95"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="h-3.5 w-3.5">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Nueva Inspección
+        </a>
+      </div>
+    </header>
+
+    <div class="rounded-[28px] bg-white p-5 border border-[#9CA3AF]/30 shadow-md">
+      <div class="flex items-center justify-between pb-3 border-b border-[#9CA3AF]/20">
+        <h2 class="font-display text-base font-bold text-[#111827]">Inspecciones Periciales</h2>
+        <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+          <span class="h-1.5 w-1.5 rounded-full bg-emerald-600"></span>
+          Cloudflare R2 Activo
+        </span>
+      </div>
+      <p class="mt-4 text-xs text-[#4B5563] text-center py-6">
+        Registro fotográfico pericial con zero egress para check-in y check-out.
+      </p>
+    </div>
+  </div>
+</LayoutAdmin>
