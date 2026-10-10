@@ -1,0 +1,1 @@
+ALTER TABLE `miembros_local` ADD `onboarding_completado` integer DEFAULT false NOT NULL;

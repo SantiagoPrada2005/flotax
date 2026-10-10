@@ -1,0 +1,30 @@
+---
+import LayoutApp from '@/layouts/LayoutApp.astro';
+import OperatorOnboardingWizard from '@/components/auth/OperatorOnboardingWizard';
+
+const usuario = Astro.locals.usuario;
+
+if (!usuario) {
+  return Astro.redirect('/login');
+}
+
+const localActivo = usuario.localActivo;
+const modoQuery = Astro.url.searchParams.get('modo');
+const modoInicial = modoQuery === 'crear' || !localActivo ? 'crear' : 'induccion';
+
+const nombreOperador = usuario.nombre;
+const nombreLocal = localActivo?.nombre ?? '';
+const rolOperador = localActivo?.rol ?? 'DUENO';
+---
+
+<LayoutApp title="FlotaX — Alquila tus Vehículos" hideNav={true} navVariant="admin">
+  <main class="min-h-screen flex items-center justify-center bg-[#EDEDED]/40 py-6">
+    <OperatorOnboardingWizard
+      client:load
+      nombreOperador={nombreOperador}
+      nombreLocal={nombreLocal}
+      rolOperador={rolOperador}
+      modoInicial={modoInicial}
+    />
+  </main>
+</LayoutApp>

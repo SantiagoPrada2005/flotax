@@ -149,11 +149,6 @@ export async function evaluateIncidentThrottle(
   // 4. Decisión de despacho:
   // Caso A: Primera vez que se detecta (Alerta Temprana Inmediata)
   if (lastAlertedAt === 0) {
-    l1State.lastAlertedAt = now;
-    l1State.burstCount = 0;
-    recordGlobalAlert(now);
-    await updateD1LastAlerted(d1, incidentId, now);
-
     return {
       shouldDispatch: true,
       reason: 'NEW_INCIDENT',
@@ -165,11 +160,6 @@ export async function evaluateIncidentThrottle(
 
   // Caso B: Enfriamiento expiró
   if (now - lastAlertedAt >= cooldownMs) {
-    l1State.lastAlertedAt = now;
-    l1State.burstCount = 0;
-    recordGlobalAlert(now);
-    await updateD1LastAlerted(d1, incidentId, now);
-
     return {
       shouldDispatch: true,
       reason: 'COOLDOWN_EXPIRED',
@@ -181,11 +171,6 @@ export async function evaluateIncidentThrottle(
 
   // Caso C: En enfriamiento, pero supera el umbral de ráfaga (Spike Alert)
   if (l1State.burstCount >= config.spikeThreshold) {
-    l1State.lastAlertedAt = now;
-    l1State.burstCount = 0;
-    recordGlobalAlert(now);
-    await updateD1LastAlerted(d1, incidentId, now);
-
     return {
       shouldDispatch: true,
       reason: 'SPIKE_DETECTED',
@@ -205,11 +190,22 @@ export async function evaluateIncidentThrottle(
   };
 }
 
-async function updateD1LastAlerted(
+/**
+ * Registra formalmente el despacho exitoso de una alerta en L1 y D1
+ */
+export async function recordIncidentDispatched(
   d1: D1Database | undefined,
+  fingerprint: string,
   incidentId: string,
   timestamp: number
 ): Promise<void> {
+  const l1State = l1IncidentCache.get(fingerprint);
+  if (l1State) {
+    l1State.lastAlertedAt = timestamp;
+    l1State.burstCount = 0;
+  }
+  recordGlobalAlert(timestamp);
+
   if (!d1) return;
   try {
     const db = getDb(d1);

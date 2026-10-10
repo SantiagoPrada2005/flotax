@@ -25,6 +25,9 @@ export const miembrosLocal = sqliteTable('miembros_local', {
     .references(() => user.id, { onDelete: 'cascade' }),
   rol: text('rol', { enum: rolesEmpleadoValidos }).notNull(),
   activo: integer('activo', { mode: 'boolean' }).notNull().default(true),
+  onboardingCompletado: integer('onboarding_completado', { mode: 'boolean' })
+    .notNull()
+    .default(false),
   creadoEn: integer('creado_en', { mode: 'timestamp' }).notNull(),
 });
 

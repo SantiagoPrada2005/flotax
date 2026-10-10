@@ -162,11 +162,34 @@ export const onRequest = defineMiddleware(async (context, next) => {
       (usuario.localActivo && usuario.localActivo.rol !== 'USUARIO');
 
     if (!esPersonal) {
+      // Permitir acceso si se encuentra en onboarding para crear su propio patio o unirse con código
+      if (pathname.startsWith('/admin/onboarding')) {
+        return await next();
+      }
+
       context.locals.logger.warn(
         'Intento de acceso a ruta administrativa por usuario sin rol de patio',
         { userId: usuario.id, path: pathname }
       );
       return context.redirect('/catalogo');
+    }
+
+    // Si tiene inducción pendiente en este local, forzar paso por /admin/onboarding
+    const requiereOnboarding =
+      !usuario.esSuperAdmin &&
+      usuario.localActivo &&
+      !usuario.localActivo.onboardingCompletado;
+
+    if (requiereOnboarding && !pathname.startsWith('/admin/onboarding')) {
+      return context.redirect('/admin/onboarding');
+    }
+
+    if (
+      !requiereOnboarding &&
+      pathname.startsWith('/admin/onboarding') &&
+      context.url.searchParams.get('modo') !== 'crear'
+    ) {
+      return context.redirect('/admin');
     }
   }
 

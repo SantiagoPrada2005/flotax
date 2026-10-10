@@ -90,7 +90,17 @@ export function createAuth(d1: D1Database, env?: AuthEnv, options?: CreateAuthOp
           (env?.GOOGLE_CLIENT_SECRET as string | undefined) ||
           (import.meta.env?.GOOGLE_CLIENT_SECRET as string | undefined) ||
           '',
+        disableSignUp: false, // Permitir registrar automáticamente al usuario si no existe al iniciar sesión con Google
       },
+    },
+    account: {
+      accountLinking: {
+        enabled: true,
+        trustedProviders: ['google'],
+      },
+    },
+    onAPIError: {
+      errorURL: `${baseURL}/login`,
     },
     plugins: [
       emailOTP({

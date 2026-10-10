@@ -101,6 +101,7 @@ Asignación de trabajadores y personal al local. Regla: todo empleado o dueño d
 | `usuario_id` | TEXT | NOT NULL, FK `user.id` | Trabajador o dueño. |
 | `rol` | TEXT | NOT NULL | Rol en sede: 'DUENO', 'ADMIN', 'OPERATIVO', 'AUDITOR_FINANCIERO'. |
 | `activo` | INTEGER (boolean) | NOT NULL, DEFAULT true | Habilitación en la sede. |
+| `onboarding_completado` | INTEGER (boolean) | NOT NULL, DEFAULT false | Flag de inducción operativa inicial completada por el usuario. |
 | `creado_en` | TIMESTAMP | NOT NULL | Fecha de alta. |
 
 #### `clientes_local`
@@ -252,6 +253,7 @@ erDiagram
         string usuario_id FK
         string rol
         boolean activo
+        boolean onboarding_completado
         timestamp creado_en
     }
 

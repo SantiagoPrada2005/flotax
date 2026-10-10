@@ -1,0 +1,9 @@
+---
+/**
+ * @page error.astro
+ * @description Redirección defensiva para Better Auth y callbacks externos.
+ * Canaliza cualquier redirección a /error hacia /login preservando los parámetros de diagnóstico.
+ */
+const query = Astro.url.search;
+return Astro.redirect(`/login${query}`);
+---

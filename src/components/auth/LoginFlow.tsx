@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { authClient } from '@/lib/auth/client';
 
 type AuthStep = 'initial' | 'email' | 'otp';
@@ -6,6 +6,36 @@ type AuthMode = 'login' | 'signup';
 
 interface LoginFlowProps {
   initialMode?: AuthMode;
+}
+
+function getFriendlyAuthErrorMessage(code: string, description?: string | null): string {
+  switch (code) {
+    case 'access_denied':
+      return 'Cancelaste el inicio de sesión con Google. Puedes intentar nuevamente cuando desees.';
+    case 'account_not_linked':
+      return 'Tu correo ya se encuentra registrado. Se vinculó tu cuenta de Google automáticamente.';
+    case 'state_not_found':
+    case 'invalid_state':
+    case 'invalid_code':
+      return 'La sesión de validación con Google caducó por seguridad. Por favor, intenta de nuevo.';
+    case 'unable_to_get_user_info':
+      return 'No fue posible obtener la información de perfil desde Google. Intenta nuevamente.';
+    case 'email_not_found':
+      return 'Google no proporcionó una dirección de correo verificada para continuar.';
+    case 'database_unavailable':
+      return 'El servicio de datos no está disponible en este momento. Inténtalo más tarde.';
+    case 'oauth_error':
+    case 'callback_failed':
+    case 'invalid_callback_request':
+      return description
+        ? decodeURIComponent(description)
+        : 'Ocurrió un error al procesar el ingreso con Google. Por favor, intenta de nuevo.';
+    default:
+      if (description) {
+        return decodeURIComponent(description);
+      }
+      return 'No se pudo completar la autenticación. Por favor, intenta nuevamente.';
+  }
 }
 
 export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
@@ -16,6 +46,24 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const errorCode = params.get('error');
+    const errorDesc = params.get('error_description');
+
+    if (errorCode) {
+      setError(getFriendlyAuthErrorMessage(errorCode, errorDesc));
+
+      // Limpiar los parámetros de error de la barra de direcciones de forma silenciosa
+      const cleanUrl = new URL(window.location.href);
+      cleanUrl.searchParams.delete('error');
+      cleanUrl.searchParams.delete('error_description');
+      cleanUrl.searchParams.delete('error_code');
+      window.history.replaceState({}, '', cleanUrl.toString());
+    }
+  }, []);
 
   const toggleMode = () => {
     setMode((prev) => (prev === 'login' ? 'signup' : 'login'));
@@ -34,13 +82,29 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
     try {
       setIsLoading(true);
       setError(null);
-      await authClient.signIn.social({
+      const destination = getDestinationUrl();
+      const loginUrl = typeof window !== 'undefined' ? `${window.location.origin}/login` : '/login';
+
+      const res = await authClient.signIn.social({
         provider: 'google',
-        callbackURL: getDestinationUrl(),
+        callbackURL: destination,
+        errorCallbackURL: loginUrl,
       });
+
+      if (res?.error) {
+        setError(res.error.message || 'No se pudo conectar con el servicio de autenticación de Google.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Si la API devuelve la URL de Google (status 200 con payload JSON), forzamos la navegación
+      if (res?.data?.url) {
+        window.location.assign(res.data.url);
+        return;
+      }
     } catch (err: unknown) {
       console.error('Error al iniciar sesión con Google:', err);
-      setError('No se pudo conectar con Google. Por favor, intenta de nuevo.');
+      setError('No se pudo conectar con el servicio de autenticación de Google. Por favor, intenta de nuevo.');
       setIsLoading(false);
     }
   };
@@ -222,6 +286,11 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
             </svg>
             <span>Continuar con Google</span>
           </button>
+          <p className="text-[12px] text-[#4B5563] text-center -mt-1 leading-normal">
+            {mode === 'login'
+              ? 'Accede o crea tu cuenta al instante con Google sin pasos adicionales.'
+              : 'Regístrate o accede directamente con tu cuenta de Google.'}
+          </p>
 
           {/* Divider */}
           <div className="relative my-0.5 flex items-center justify-center">

@@ -2,7 +2,7 @@ import type { D1Database } from '@cloudflare/workers-types';
 import type { ILogSink, LogEntry, AlertThrottleConfig } from '../types';
 import type { EmailService } from '@/lib/email';
 import { computeErrorFingerprint } from '../alerts/fingerprint';
-import { evaluateIncidentThrottle } from '../alerts/throttle';
+import { evaluateIncidentThrottle, recordIncidentDispatched } from '../alerts/throttle';
 import { renderDeveloperAlertEmail } from '../templates/alert-email';
 
 export class EmailAlertSink implements ILogSink {
@@ -50,15 +50,34 @@ export class EmailAlertSink implements ILogSink {
         config: this.config,
       });
 
-      // 6. Despachar a todos los destinatarios configurados
+      // 6. Despachar a todos los destinatarios configurados y verificar entrega efectiva
+      let atLeastOneDispatched = false;
       for (const developerEmail of this.config.developerEmails) {
-        await this.emailService.send({
+        const sendResult = await this.emailService.send({
           to: developerEmail,
           from: this.config.alertsFrom,
           subject,
           html,
           text,
         });
+
+        if (sendResult.success) {
+          atLeastOneDispatched = true;
+        } else {
+          console.error(
+            `[EmailAlertSink Despacho Fallido a ${developerEmail}]: ${sendResult.error || sendResult.code || 'Desconocido'}`
+          );
+        }
+      }
+
+      // 7. Solo si se despachó al menos una alerta, registrar enfriamiento y actualizar D1
+      if (atLeastOneDispatched) {
+        await recordIncidentDispatched(
+          this.d1,
+          fingerprint,
+          decision.incidentId,
+          Date.now()
+        );
       }
     } catch (sinkError) {
       // Fail-Safe: Una falla en el envío de la alerta NUNCA debe tumbar la petición

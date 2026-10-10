@@ -24,7 +24,7 @@
 		"EMAIL_DEFAULT_FROM": "FlotaX <notificaciones@flotax.innovaweb.pro>",
 		"EMAIL_AUTH_FROM": "FlotaX Seguridad <auth@flotax.innovaweb.pro>",
 		"EMAIL_ALERTS_FROM": "FlotaX Alertas <soporte@flotax.innovaweb.pro>",
-		"ALERT_DEVELOPER_EMAILS": "dev@flotax.innovaweb.pro",
+		"ALERT_DEVELOPER_EMAILS": "santiagopradamoreno@gmail.com",
 		"APP_ENV": "development"
 	},
 	"r2_buckets": [
@@ -48,5 +48,13 @@
 			"invocation_logs": true,
 			"enabled": true
 		},
-	}
+	},
+	"routes": [
+		{
+			"pattern": "flotax.innovaweb.pro",
+			"custom_domain": true,
+			"enabled": true,
+			"previews_enabled": false
+		}
+	]
 }

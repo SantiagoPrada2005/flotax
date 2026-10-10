@@ -9,6 +9,7 @@ export interface LocalActivoSesion {
   slug: string;
   rol: RolSistema;
   esDueno: boolean;
+  onboardingCompletado: boolean;
 }
 
 export interface UsuarioSesion {
@@ -85,6 +86,7 @@ export async function resolveLocalActivo(
         rol: miembrosLocal.rol,
         duenoId: localesAlquiler.duenoId,
         localActivo: localesAlquiler.activo,
+        onboardingCompletado: miembrosLocal.onboardingCompletado,
       })
       .from(miembrosLocal)
       .innerJoin(localesAlquiler, eq(miembrosLocal.localId, localesAlquiler.id))
@@ -105,6 +107,7 @@ export async function resolveLocalActivo(
         slug: match.slugLocal,
         rol: match.rol,
         esDueno: match.duenoId === usuarioId,
+        onboardingCompletado: Boolean(match.onboardingCompletado),
       };
     }
   }
@@ -118,6 +121,7 @@ export async function resolveLocalActivo(
       rol: miembrosLocal.rol,
       duenoId: localesAlquiler.duenoId,
       localActivo: localesAlquiler.activo,
+      onboardingCompletado: miembrosLocal.onboardingCompletado,
     })
     .from(miembrosLocal)
     .innerJoin(localesAlquiler, eq(miembrosLocal.localId, localesAlquiler.id))
@@ -137,6 +141,7 @@ export async function resolveLocalActivo(
       slug: primerMatch.slugLocal,
       rol: primerMatch.rol,
       esDueno: primerMatch.duenoId === usuarioId,
+      onboardingCompletado: Boolean(primerMatch.onboardingCompletado),
     };
   }
 
@@ -162,10 +167,80 @@ export async function resolveLocalActivo(
         slug: matchOrigen.slug,
         rol: 'USUARIO',
         esDueno: false,
+        onboardingCompletado: true, // Clientes no requieren inducción operativa de patio
       };
     }
   }
 
   return null;
+}
+
+/**
+ * Resumen de una membresía activa de un colaborador para el selector multi-sede.
+ */
+export interface MembresiaLocalResumen {
+  localId: string;
+  nombreLocal: string;
+  slugLocal: string;
+  rol: RolSistema;
+  esDueno: boolean;
+  onboardingCompletado: boolean;
+}
+
+/**
+ * Retorna todos los locales activos donde el usuario es miembro activo.
+ * Usado por el selector rápido de sedes en la barra superior operativa.
+ */
+export async function obtenerLocalesMembresia(
+  db: AppDb,
+  usuarioId: string
+): Promise<MembresiaLocalResumen[]> {
+  const miembros = await db
+    .select({
+      localId: localesAlquiler.id,
+      nombreLocal: localesAlquiler.nombre,
+      slugLocal: localesAlquiler.slug,
+      rol: miembrosLocal.rol,
+      duenoId: localesAlquiler.duenoId,
+      onboardingCompletado: miembrosLocal.onboardingCompletado,
+      localActivo: localesAlquiler.activo,
+    })
+    .from(miembrosLocal)
+    .innerJoin(localesAlquiler, eq(miembrosLocal.localId, localesAlquiler.id))
+    .where(
+      and(
+        eq(miembrosLocal.usuarioId, usuarioId),
+        eq(miembrosLocal.activo, true),
+        eq(localesAlquiler.activo, true)
+      )
+    );
+
+  return miembros.map((m) => ({
+    localId: m.localId,
+    nombreLocal: m.nombreLocal,
+    slugLocal: m.slugLocal,
+    rol: m.rol,
+    esDueno: m.duenoId === usuarioId,
+    onboardingCompletado: Boolean(m.onboardingCompletado),
+  }));
+}
+
+/**
+ * Marca como completada la inducción operativa inicial de un miembro de patio.
+ */
+export async function completarOnboardingOperativo(
+  db: AppDb,
+  usuarioId: string,
+  localId: string
+): Promise<void> {
+  await db
+    .update(miembrosLocal)
+    .set({ onboardingCompletado: true })
+    .where(
+      and(
+        eq(miembrosLocal.usuarioId, usuarioId),
+        eq(miembrosLocal.localId, localId)
+      )
+    );
 }
 

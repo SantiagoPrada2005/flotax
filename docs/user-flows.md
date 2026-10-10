@@ -59,6 +59,9 @@ graph LR
 
 > **Regla de Negocio de Onboarding:**  
 > Si ya hay una sesión activa, la app salta la bienvenida y abre el catálogo directamente. La cédula y la licencia se piden la primera vez que el cliente alquila, no en el registro; en el registro únicamente se pide el nombre completo si esta persona no accede con Google.
+>
+> **Acceso Unificado y Resiliente con Google OAuth:**  
+> El botón "Continuar con Google" unifica login y registro: si la cuenta no existe en la base de datos, se provisiona automáticamente (JIT) sin arrojar error al usuario ni obligarlo a reiniciar el flujo en la pestaña opuesta. Si el callback `/api/auth/callback/google` detecta cancelación o error, se redirige de forma segura a `/login` con mensajes en lenguaje humano y sin estados colgados o errores 500.
 
 ---
 
@@ -325,3 +328,58 @@ Matriz de gobierno de accesos que dictamina la visibilidad y capacidad de acció
 | **Pagos y Gastos** | `src/pages/admin/caja/index.astro` | `AbonosTable`, `GastosVehiculoForm` | Contador / Asesor (R) |
 | **Reportes y Exportación** | `src/pages/admin/reportes/index.astro` | `IngresosOcupacionChart`, `ExportarCSVButton` | Contador / Encargado (L) |
 | **Administración: Config y Auditoría** | `src/pages/admin/configuracion/index.astro` | `UsuariosRolesManager`, `TarifasConfig`, `AuditoriaTable` | Propietario / Administrador (R/L) |
+| **Inducción Operativa de Patio** | `src/pages/admin/onboarding.astro` | `OnboardingStepsWizard`, `CamaraPermissionGate` | Personal con `onboardingCompletado = false` |
+
+---
+
+## 10. User Flow: Paradigma de Portal Persistente (Switch Explícito y Creación de Patio)
+
+Define la alternancia entre la experiencia de cliente consumidor y la cabina operativa de patio sin fragmentación de cuentas ni credenciales duplicadas, permitiendo además que cualquier cliente ofrezca sus vehículos en alquiler.
+
+```mermaid
+flowchart TD
+    classDef mainScreen fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#065f46;
+    classDef subScreen fill:#f3f4f6,stroke:#9ca3af,stroke-width:1px,color:#1f2937;
+    classDef decision fill:#f3f4f6,stroke:#9ca3af,stroke-width:1.5px,color:#1f2937;
+
+    avatar_cli["Perfil del Cliente (/perfil)"]:::subScreen --> chk_staff{"¿Tiene patio o<br>membresía activa?"}:::decision
+
+    %% Camino A: No tiene patio -> Oportunidad de Anfitrión
+    chk_staff -- No --> cta_host["Tarjeta: 'Alquila vehículos a otros usuarios'"]:::mainScreen
+    cta_host --> btn_start["CTA: Comenzar a alquilar"]:::subScreen
+    btn_start --> screen_onb_create["Onboarding: Crear Patio (/admin/onboarding?modo=crear)"]:::mainScreen
+    screen_onb_create --> step_biz["1. Datos del Patio (Nombre, Ciudad, Teléfono)"]:::subScreen
+    step_biz --> step_switch_guide["2. Comprensión de los 2 Entornos"]:::subScreen
+    step_switch_guide --> step_cam_biz["3. Autorización de Cámara para Peritajes R2"]:::subScreen
+    step_cam_biz --> act_create_patio["Acción: crearPatioOperativo (Rol: DUEÑO)"]:::subScreen
+    act_create_patio --> screen_admin["Cabina Operativa (/admin)"]:::mainScreen
+
+    %% Camino B: Ya tiene patio -> Switch Directo
+    chk_staff -- Sí --> opt_switch["💼 Switch: Modo Operador Activo"]:::mainScreen
+    opt_switch --> chk_onb{"¿onboardingCompletado?"}:::decision
+    chk_onb -- No --> screen_onb_ind["Inducción de Colaborador (/admin/onboarding)"]:::mainScreen
+    screen_onb_ind --> act_finish["Acción: finalizarOnboardingOperativo"]:::subScreen
+    act_finish --> screen_admin
+    chk_onb -- Sí --> screen_admin
+
+    %% Conmutación Multi-Sede
+    screen_admin --> topbar_sede["📍 Selector de Sede en TopBar"]:::subScreen
+    topbar_sede --> chk_sedes{"¿Múltiples sedes activas?"}:::decision
+    chk_sedes -- 1 sede --> info_fija["Texto informativo estático"]:::subScreen
+    chk_sedes -- 2 o más sedes --> sheet_sedes["Bottom Sheet: Elegir Sede de Trabajo"]:::mainScreen
+    sheet_sedes --> act_switch_sede["Acción: conmutarLocalActivo"]:::subScreen
+    act_switch_sede --> reload_sede["Recarga reactiva con inventario de la nueva sede"]:::subScreen
+
+    %% Retorno a Cliente
+    screen_admin --> opt_exit["🚗 Salir a Modo Personal (Alquilar)"]:::mainScreen
+    opt_exit --> act_to_client["Acción: cambiarModoPortal(CLIENTE)"]:::subScreen
+    act_to_client --> screen_cat["Catálogo de Alquiler (/catalogo)"]:::mainScreen
+```
+
+### Reglas de Negocio del Paradigma de Portal:
+1. **Autonomía y Rol DUEÑO:** Cualquier cliente puede crear libremente un nuevo patio de alquiler, convirtiéndose automáticamente en `DUENO` con soberanía total sobre su flota, tarifas y personal.
+2. **Segregación de Roles por Invitación:** Los roles operativos sobre patios existentes (`ADMIN`, `OPERATIVO`, `AUDITOR_FINANCIERO`) requieren una invitación transaccional emitida por el dueño.
+3. **Identidad Canónica Única:** Una sola cuenta (`user.id`) aloja tanto el historial personal como las atribuciones de patio.
+4. **Persistencia Transparente:** La sede y el portal elegidos persisten en cookies HTTP-only seguras (`movix_local_activo` y `movix_portal_modo`).
+5. **Prevención de Conflicto de Interés:** El personal o dueño que alquile como cliente está sujeto a las mismas validaciones de riesgo y tarifas regulares; queda prohibido el auto-peritaje de entrega/devolución.
+
