@@ -35,3 +35,52 @@ export interface FiltrosBusquedaVehiculo {
   categoria?: CategoriaVehiculo | 'TODOS' | undefined;
   soloDisponibles?: boolean | undefined;
 }
+
+export type MotivoBloqueoDisponibilidad = 'RESERVADO' | 'MANTENIMIENTO';
+
+export interface BloqueNoDisponible {
+  id: string;
+  vehiculoId: string;
+  fechaInicio: string; // YYYY-MM-DD
+  fechaFin: string;    // YYYY-MM-DD (inclusive)
+  motivo: MotivoBloqueoDisponibilidad;
+  etiqueta: string;
+}
+
+export interface FranjaDisponible {
+  id: string;
+  fechaInicio: string; // YYYY-MM-DD
+  fechaFin: string;    // YYYY-MM-DD (inclusive)
+  diasDisponibles: number;
+  etiquetaCorta: string; // ej: "10 Oct – 16 Oct"
+}
+
+export type EstadoDiaCalendario =
+  | 'PASADO'
+  | 'DISPONIBLE'
+  | 'RESERVADO'
+  | 'MANTENIMIENTO';
+
+export interface DiaCalendarioItem {
+  fechaISO: string;       // YYYY-MM-DD
+  numeroDia: number;      // 1..31
+  diaSemanaIndice: number; // 0 (Lun) .. 6 (Dom)
+  diaSemanaCorto: string; // "LUN", "MAR", etc.
+  estado: EstadoDiaCalendario;
+  etiquetaBloqueo?: string | undefined;
+  franjaId?: string | undefined;
+}
+
+export interface CotizacionAlquiler {
+  vehiculoId: string;
+  fechaInicio: string;
+  fechaFin: string;
+  diasAlquiler: number;
+  precioDia: number;
+  subtotalTarifa: number;
+  coberturaPericial: number;
+  depositoGarantia: number;
+  totalAlquiler: number;
+  abonoMinimoReserva: number;
+}
+

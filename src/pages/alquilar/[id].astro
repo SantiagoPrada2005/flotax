@@ -1,0 +1,51 @@
+---
+import LayoutApp from '@/layouts/LayoutApp.astro';
+import RentalWizardFlow from '@/components/alquiler/RentalWizardFlow';
+import { obtenerVehiculoPorId } from '@/lib/flota';
+import { resolveClientTimeContext } from '@/lib/time/client-time';
+
+const { id } = Astro.params;
+const vehiculo = id ? obtenerVehiculoPorId(id) : undefined;
+
+if (!vehiculo) {
+  return Astro.redirect('/catalogo');
+}
+
+const { dateString: hoyISO } = resolveClientTimeContext(Astro.request);
+
+const desdeParam = Astro.url.searchParams.get('desde') ?? undefined;
+const hastaParam = Astro.url.searchParams.get('hasta') ?? undefined;
+const stepParam = Astro.url.searchParams.get('step');
+const pasoInicial =
+  stepParam === '2' ? 2 : stepParam === '3' ? 3 : stepParam === '4' ? 4 : 1;
+
+const usuarioLocals = Astro.locals.usuario;
+const usuarioActual = usuarioLocals
+  ? {
+      id: usuarioLocals.id,
+      nombre: usuarioLocals.nombre,
+      correo: usuarioLocals.correo,
+      telefono: usuarioLocals.telefono,
+      tipoDocumento: usuarioLocals.tipoDocumento,
+      numeroDocumento: usuarioLocals.numeroDocumento,
+    }
+  : null;
+---
+
+<LayoutApp
+  title={`Alquilar ${vehiculo.marca} ${vehiculo.modelo} — FlotaX`}
+  hideNav={true}
+  navVariant="client"
+>
+  <div class="mx-auto flex min-h-dvh w-full max-w-md sm:max-w-xl flex-col justify-between px-3.5 py-2.5 safe-top safe-bottom">
+    <RentalWizardFlow
+      client:load
+      vehiculo={vehiculo}
+      hoyISO={hoyISO}
+      usuarioActual={usuarioActual}
+      fechaInicioInicial={desdeParam}
+      fechaFinInicial={hastaParam}
+      pasoInicial={pasoInicial}
+    />
+  </div>
+</LayoutApp>
