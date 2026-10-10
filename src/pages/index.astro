@@ -37,10 +37,11 @@ const usuario = Astro.locals.usuario;
     <LandingFooter user={user} />
   </div>
 
-  <!-- Scroll Reveal Observer for Entrance Animations -->
+  <!-- Scroll Reveal Observer for Entrance Animations with ClientRouter Support -->
   <script>
     const setupScrollReveal = () => {
-      const targets = document.querySelectorAll('.reveal-on-scroll');
+      document.documentElement.classList.add('js-ready');
+      const targets = document.querySelectorAll('.reveal-on-scroll:not(.is-visible)');
       if (!targets.length) return;
 
       if ('IntersectionObserver' in window) {
@@ -65,10 +66,7 @@ const usuario = Astro.locals.usuario;
       }
     };
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', setupScrollReveal);
-    } else {
-      setupScrollReveal();
-    }
+    // Re-bind seamlessly across ClientRouter View Transitions
+    document.addEventListener('astro:page-load', setupScrollReveal);
   </script>
 </LayoutApp>

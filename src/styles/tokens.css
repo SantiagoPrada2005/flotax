@@ -211,17 +211,23 @@ select {
 .delay-400 { animation-delay: 400ms; }
 .delay-500 { animation-delay: 500ms; }
 
-/* Scroll Reveal Observer Animation */
+/* Scroll Reveal Progressive Enhancement Animation */
 .reveal-on-scroll {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+html.js-ready .reveal-on-scroll:not(.is-visible) {
   opacity: 0;
   transform: translateY(24px);
   transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: opacity, transform;
 }
 
-.reveal-on-scroll.is-visible {
+html.js-ready .reveal-on-scroll.is-visible {
   opacity: 1;
   transform: translateY(0);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ==========================================================================
@@ -472,6 +478,8 @@ select {
   .animate-zoom-in,
   .animate-float,
   .reveal-on-scroll,
+  html.js-ready .reveal-on-scroll,
+  html.js-ready .reveal-on-scroll:not(.is-visible),
   .shiny-cta,
   .shiny-cta::before,
   .shiny-cta::after,
