@@ -11,7 +11,7 @@
 | [`catalogo/`](./catalogo/) | Catálogo público y filtros de vehículos disponibles (`/catalogo`). | — |
 | [`vehiculos/`](./vehiculos/) | Ficha técnica detallada de unidad (`/vehiculos/[id]`). | — |
 | [`alquilar/`](./alquilar/) | Embudo multi-paso de alquiler con calendario de franjas (`/alquilar/[id]`). | — |
-| [`reservas/`](./reservas/) | Portal de historial y reservas del cliente (`/reservas`). | — |
+| [`reservas/`](./reservas/) | Portal de calendario suizo, listado de alquileres (`/reservas`) y vista dedicada de alquiler e inspección (`/reservas/[codigo]`). | — |
 | [`perfil/`](./perfil/) | Datos personales y licencia de conducción del cliente (`/perfil`). | — |
 | [`api/`](./api/) | Endpoints REST internos y webhooks (`/api/**`). | — |
 

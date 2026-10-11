@@ -11,6 +11,7 @@
 | [`dashboard/`](./dashboard/) | Módulos del Bento Grid para el panel operativo (Hero, Métricas, Operaciones). | [INDEX.md](./dashboard/INDEX.md) |
 | [`flota/`](./flota/) | Componentes de catálogo y buscador especializado de vehículos. | [INDEX.md](./flota/INDEX.md) |
 | [`alquiler/`](./alquiler/) | Wizard multi-paso de alquiler y calendario editorial de franjas de disponibilidad. | [INDEX.md](./alquiler/INDEX.md) |
+| [`reservas/`](./reservas/) | Portal de reservas del cliente: Calendario Editorial Suizo, Agenda de Hitos y Bento Grid de Especificaciones. | [INDEX.md](./reservas/INDEX.md) |
 | [`auth/`](./auth/) | Componentes de acceso y wizards de inducción de personal. | [INDEX.md](./auth/INDEX.md) |
 | [`perfil/`](./perfil/) | Componentes de perfil y switch de portal cliente/operador. | [INDEX.md](./perfil/INDEX.md) |
 

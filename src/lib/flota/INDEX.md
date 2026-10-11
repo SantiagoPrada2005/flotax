@@ -1,9 +1,21 @@
-# Módulo Flota — Biblioteca de Dominio
+# Index: `src/lib/flota`
 
-| Archivo | Tipo | Descripción | Relaciones Clave |
+**Responsibility**: Dominio de catálogo, especificaciones técnicas, buscador evaluativo de unidades, motor de franjas de disponibilidad, calendario suizo de reservas e inspección R2/waybill del cliente.
+**Architectural Layer**: Domain / Application Layer
+
+## File Manifest
+
+| File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
-| [`types.ts`](./types.ts) | Definiciones de Tipos | Contratos TypeScript para vehículos, estados, categorías, franjas de disponibilidad y cotizaciones | [`mock-vehiculos.ts`](./mock-vehiculos.ts), [`disponibilidad.ts`](./disponibilidad.ts) |
-| [`mock-vehiculos.ts`](./mock-vehiculos.ts) | Datos y Búsqueda | Repositorio canónico de flota y algoritmo puro de búsqueda evaluativa | [`types.ts`](./types.ts) |
-| [`disponibilidad.ts`](./disponibilidad.ts) | Motor de Franjas y Tarifas | Generación de calendario mensual, detección de franjas contiguas y liquidación de costos | [`types.ts`](./types.ts), [`client-time.ts`](../time/client-time.ts) |
-| [`index.ts`](./index.ts) | Re-exportación Canónica | Punto de entrada del dominio flota | [`types.ts`](./types.ts), [`mock-vehiculos.ts`](./mock-vehiculos.ts), [`disponibilidad.ts`](./disponibilidad.ts) |
+| [`types.ts`](./types.ts) | Definiciones de Tipos | `VehiculoItem`, `EstadoVehiculo`, `CategoriaVehiculo`, `CotizacionAlquiler`, `DiaCalendarioItem`, `FranjaDisponible` | — |
+| [`mock-vehiculos.ts`](./mock-vehiculos.ts) | Repositorio y Búsqueda | `FLOTA_CANONICA`, `buscarVehiculos`, `obtenerVehiculoPorId` | `./types` |
+| [`disponibilidad.ts`](./disponibilidad.ts) | Motor de Franjas y Tarifas | `construirCalendarioMes`, `calcularCotizacionAlquiler`, `esRangoDisponibleValido`, `formatearFechaCorta`, `sumarDiasISO` | `./types`, `@/lib/time/client-time` |
+| [`reservas-cliente.ts`](./reservas-cliente.ts) | Reservas, Calendario Suizo, Waybill e Inspección R2 | `ReservaClienteItem`, `PuntoInspeccionR2`, `RubroLiquidacionWaybill`, `hidratarReservasCliente`, `obtenerReservaClientePorCodigo`, `construirCalendarioSuizoReservas`, `obtenerPuntosInspeccionPorVehiculo`, `obtenerRubrosWaybillReserva` | `./types`, `./disponibilidad`, `./mock-vehiculos` |
+| [`index.ts`](./index.ts) | Barrel Export | Re-exporta todos los contratos y funciones del dominio flota | `./types`, `./mock-vehiculos`, `./disponibilidad`, `./reservas-cliente` |
 
+## Invariants & Directory Rules
+
+- All additions, deletions, or public API modifications must be reflected in this index.
+- Maintain strict boundary encapsulation and domain layer separation.
+
+<!-- Reconciled by codebase-index -->
