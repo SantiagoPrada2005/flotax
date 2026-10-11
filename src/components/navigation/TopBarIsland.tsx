@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { isStandalonePwa, openInstallPromptModal } from '@/lib/pwa';
 import TopBarSearch from './TopBarSearch';
 
 export interface TopBarIslandProps {
@@ -16,12 +17,19 @@ export default function TopBarIsland({
 }: TopBarIslandProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(true);
 
   useEffect(() => {
+    setIsStandalone(isStandalonePwa());
     const handleScroll = () => setIsScrolled(window.scrollY > 12);
+    const handleInstalled = () => setIsStandalone(true);
     window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('appinstalled', handleInstalled);
     handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('appinstalled', handleInstalled);
+    };
   }, []);
 
   const triggerHaptic = () => {
@@ -83,6 +91,24 @@ export default function TopBarIsland({
 
       {/* Right Floating Controls & Search */}
       <div className="pointer-events-auto flex items-center gap-2 sm:gap-2.5">
+        {!isStandalone && (
+          <button
+            type="button"
+            onClick={() => {
+              triggerHaptic();
+              openInstallPromptModal();
+            }}
+            aria-label="Instalar aplicación FlotaX"
+            className={`ios-press-bounce flex h-11 items-center gap-1.5 rounded-full bg-[#111827] px-3.5 text-xs font-bold text-[#EDEDED] border border-[#4B5563]/60 shadow-sm transition-all duration-200 hover:bg-[#1F2937] cursor-pointer ${fadeClass}`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            <span>Instalar</span>
+          </button>
+        )}
 
         <TopBarSearch
           isScrolled={isScrolled}

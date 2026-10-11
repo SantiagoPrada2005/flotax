@@ -2,7 +2,7 @@
   "id": "/",
   "name": "FlotaX — Gestión y Alquiler de Flota",
   "short_name": "FlotaX",
-  "description": "Sistema operativo móvil y gestión perimetral en tiempo real para el alquiler y control de flotas de vehículos.",
+  "description": "Alquila automóviles, motocicletas y utilitarios en minutos o gestiona tu flota en tiempo real desde tu dispositivo.",
   "start_url": "/home",
   "scope": "/",
   "display": "standalone",
@@ -38,6 +38,22 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/icons/screenshot-mobile.png",
+      "sizes": "540x960",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Catálogo y reserva rápida de vehículos en FlotaX"
+    },
+    {
+      "src": "/icons/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Panel operativo y gestión de flota en tiempo real"
     }
   ],
   "shortcuts": [

@@ -1,14 +1,15 @@
 # Index: `src/lib/pwa`
 
-**Responsibility**: Utilidades de dominio para ejecución como Progressive Web App (PWA) en modo standalone, validación de rutas SPA y registro del Service Worker perimetral.
+**Responsibility**: Utilidades de dominio para ejecución como Progressive Web App (PWA) en modo standalone, instalación adaptativa (Android `beforeinstallprompt` e iOS Safari/Chrome), validación de rutas SPA y registro del Service Worker perimetral.
 **Architectural Layer**: Infrastructure / Client PWA Runtime Layer
 
 ## File Manifest
 
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
-| [`index.ts`](./index.ts) | Barrel Export | `isStandalonePwa`, `isSpaInterceptableUrl`, `registerPwaServiceWorker` | `./standalone` |
-| [`standalone.ts`](./standalone.ts) | Pure PWA Domain Utilities | `isStandalonePwa()`, `isSpaInterceptableUrl()`, `registerPwaServiceWorker()` | Estándares Web (`window.matchMedia`, `navigator.serviceWorker`) |
+| [`index.ts`](./index.ts) | Barrel Export | `isStandalonePwa`, `isSpaInterceptableUrl`, `registerPwaServiceWorker`, `detectInstallPlatform`, `isInstallPromptDismissed`, `dismissInstallPromptForDays`, `markAppInstalled`, `isAppMarkedInstalled`, `openInstallPromptModal`, `BeforeInstallPromptEvent`, `PwaInstallPlatform` | `./standalone`, `./install` |
+| [`install.ts`](./install.ts) | Pure PWA Install Domain Utilities | `detectInstallPlatform()`, `isInstallPromptDismissed()`, `dismissInstallPromptForDays()`, `markAppInstalled()`, `isAppMarkedInstalled()`, `openInstallPromptModal()` | Estándares Web (`beforeinstallprompt`, `localStorage`, `CustomEvent`) |
+| [`standalone.ts`](./standalone.ts) | Pure PWA Standalone & SPA Utilities | `isStandalonePwa()`, `isSpaInterceptableUrl()`, `registerPwaServiceWorker()` | Estándares Web (`window.matchMedia`, `navigator.serviceWorker`) |
 
 ## Invariants & Directory Rules
 
