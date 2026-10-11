@@ -162,6 +162,7 @@ movix/
 │   ├── lib/                      # Lógica de dominio y clientes categorizados por carpeta
 │   │   ├── auth/                 # Configuración de Better Auth, RBAC, guardias y sesiones
 │   │   ├── email/                # Servicio y templates para Cloudflare Send Email
+│   │   ├── pwa/                  # Detección standalone, guardias SPA y registro de Service Worker
 │   │   └── time/                 # Formateo centralizado de tiempo y fechas
 │   ├── pages/                    # Rutas y páginas de Astro (<150 LOC por archivo)
 │   │   ├── api/                  # Endpoints REST específicos (auth, email webhooks)
@@ -195,6 +196,7 @@ Consulta siempre el archivo de regla correspondiente antes de realizar cambios e
 | **RUL-FLX-007** | [`mobile-deep-work.md`](file:///Users/santiago/proyectos/movix/.agents/rules/mobile-deep-work.md) | Flujos móviles secuenciales en pantallas ≤430px para operarios en campo. |
 | **RUL-FLX-018** | [`no-deprecated-code.md`](file:///Users/santiago/proyectos/movix/.agents/rules/no-deprecated-code.md) | Tolerancia cero a APIs `@deprecated` (`TS6385`, `TS6387`) y Zod 4 compliance. |
 | **RUL-FLX-019** | [`drizzle-end-to-end-type-safety.md`](file:///Users/santiago/proyectos/movix/.agents/rules/drizzle-end-to-end-type-safety.md) | Tipado estricto E2E con Drizzle ORM, zero aserciones (`as`) e inferencia nativa. |
+| **RUL-FLX-020** | [`pwa-spa-governance.md`](file:///Users/santiago/proyectos/movix/.agents/rules/pwa-spa-governance.md) | Gobernanza PWA Standalone y navegación SPA con `<ClientRouter />` y `navigate()`. |
 | — | [`astro-check.md`](file:///Users/santiago/proyectos/movix/.agents/rules/astro-check.md) | Ejecución obligatoria de `pnpm check` (0 errores, 0 warnings, 0 hints). |
 | — | [`engines.md`](file:///Users/santiago/proyectos/movix/.agents/rules/engines.md) | Uso exclusivo de `pnpm` y TypeScript super estricto (cero `any`). |
 | — | [`cloudflare-runtime-bindings.md`](file:///Users/santiago/proyectos/movix/.agents/rules/cloudflare-runtime-bindings.md) | Acceso moderno a bindings vía `cloudflare:workers` (nunca `locals.runtime.env`). |
@@ -226,9 +228,10 @@ Consulta siempre el archivo de regla correspondiente antes de realizar cambios e
 ### 6.2 Runbook B: Crear una Isla Reactiva (`src/components/react/` o `.tsx`)
 1. **Evaluar Necesidad de React**: Solo crear isla si requiere interactividad rica en cliente (formularios con `useActionState`, cámara pericial, drag & drop, calendarios interactivos).
 2. **Prohibición de Scripts Vanilla**: Nunca usar TypeScript imperativo manipulando el DOM.
-3. **Importación con Directiva de Cliente**: En la página `.astro`, incluir la directiva de hidratación adecuada (`client:load`, `client:visible` o `client:idle`).
-4. **Ergonomía de Formularios**: Todos los `<input>` deben tener clases de tamaño de fuente que aseguren al menos `16px` (`text-base`).
-5. **Verificación**: Ejecutar `pnpm check`.
+3. **Navegación SPA (`RUL-FLX-020`)**: Usar siempre `navigate('/ruta')` de `'astro:transitions/client'` para cambios de ruta internos (prohibido `window.location.href`). Si la isla usa `transition:persist`, sincronizar el estado de ruta con el evento `astro:page-load`.
+4. **Importación con Directiva de Cliente**: En la página `.astro`, incluir la directiva de hidratación adecuada (`client:load`, `client:visible` o `client:idle`).
+5. **Ergonomía de Formularios**: Todos los `<input>` deben tener clases de tamaño de fuente que aseguren al menos `16px` (`text-base`).
+6. **Verificación**: Ejecutar `pnpm check`.
 
 ### 6.3 Runbook C: Modificar o Crear Tablas de Base de Datos (`src/db/schema/`)
 1. **Crear o Editar Schema**: Definir la tabla en [`src/db/schema/{modulo}.ts`](file:///Users/santiago/proyectos/movix/src/db/schema) usando `sqliteTable` de `drizzle-orm/sqlite-core`.

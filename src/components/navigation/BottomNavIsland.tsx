@@ -24,27 +24,35 @@ export default function BottomNavIsland({
   variant = 'client',
   className = '',
 }: BottomNavIslandProps) {
-  const isAdmin = variant === 'admin' || currentPath.startsWith('/admin');
+  const [livePath, setLivePath] = useState(currentPath);
+  const isInitialPath = livePath === currentPath;
+  const effectiveTab = isInitialPath ? activeTab : undefined;
+  const isAdmin =
+    livePath.startsWith('/admin') || (isInitialPath && variant === 'admin');
 
-  // Compute active states
-  const isAdminHome = activeTab === 'home' || currentPath === '/admin' || currentPath === '/admin/';
-  const isAdminFleet = activeTab === 'fleet' || currentPath.startsWith('/admin/flota');
+  // Compute active states from reactive livePath
+  const isAdminHome =
+    effectiveTab === 'home' || livePath === '/admin' || livePath === '/admin/';
+  const isAdminFleet =
+    effectiveTab === 'fleet' || livePath.startsWith('/admin/flota');
   const isAdminOps =
-    activeTab === 'search' ||
-    currentPath.startsWith('/admin/operaciones') ||
-    currentPath.startsWith('/admin/reservas');
-  const isAdminCash = activeTab === 'wallet' || currentPath.startsWith('/admin/caja');
+    effectiveTab === 'search' ||
+    livePath.startsWith('/admin/operaciones') ||
+    livePath.startsWith('/admin/reservas');
+  const isAdminCash =
+    effectiveTab === 'wallet' || livePath.startsWith('/admin/caja');
 
   const isClientCatalog =
-    activeTab === 'home' ||
-    currentPath === '/' ||
-    currentPath.startsWith('/catalogo') ||
-    currentPath.startsWith('/vehiculos');
+    effectiveTab === 'home' ||
+    livePath === '/' ||
+    livePath.startsWith('/catalogo') ||
+    livePath.startsWith('/vehiculos');
   const isClientBookings =
-    activeTab === 'search' ||
-    currentPath.startsWith('/reservas') ||
-    currentPath.startsWith('/alquilar');
-  const isClientProfile = activeTab === 'profile' || currentPath.startsWith('/perfil');
+    effectiveTab === 'search' ||
+    livePath.startsWith('/reservas') ||
+    livePath.startsWith('/alquilar');
+  const isClientProfile =
+    effectiveTab === 'profile' || livePath.startsWith('/perfil');
 
   const adminItems: NavItem[] = [
     {
@@ -233,7 +241,10 @@ export default function BottomNavIsland({
   useEffect(() => {
     const updateTabFromPath = () => {
       const path = window.location.pathname;
-      const idx = items.findIndex((i) => {
+      setLivePath(path);
+      const nextIsAdmin = path.startsWith('/admin');
+      const nextItems = nextIsAdmin ? adminItems : clientItems;
+      const idx = nextItems.findIndex((i) => {
         if (i.href === '/admin') {
           return path === '/admin' || path === '/admin/';
         }
@@ -259,7 +270,7 @@ export default function BottomNavIsland({
       document.removeEventListener('astro:page-load', updateTabFromPath);
       window.removeEventListener('popstate', updateTabFromPath);
     };
-  }, [items, currentPath]);
+  }, [currentPath]);
 
   // Window-level move and up handlers to ensure 100% uninterrupted tracking
   useEffect(() => {

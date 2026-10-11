@@ -143,6 +143,21 @@ select {
   mix-blend-mode: normal !important;
 }
 
+/* Standalone Installed PWA Ergonomics (Prevent whole-window rubber-banding & browser tap flash) */
+html[data-pwa-standalone="true"],
+html[data-pwa-standalone="true"] body {
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (display-mode: standalone) {
+  html,
+  body {
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
 /* ==========================================================================
    Smooth Entry & Scroll Animations
    ========================================================================== */

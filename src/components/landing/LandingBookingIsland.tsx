@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, type SyntheticEvent } from 'react';
+import { navigate } from 'astro:transitions/client';
 
 interface CategoryOption {
   id: 'todos' | 'carros' | 'motos';
@@ -25,6 +26,25 @@ export function LandingBookingIsland() {
 
   const [fechaInicio, setFechaInicio] = useState(formatDateVal(today));
   const [fechaFin, setFechaFin] = useState(formatDateVal(returnDate));
+
+  const handleSearchSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (selectedCat !== 'todos') {
+      params.set('cat', selectedCat);
+    }
+    if (sede) {
+      params.set('sede', sede);
+    }
+    if (fechaInicio) {
+      params.set('desde', fechaInicio);
+    }
+    if (fechaFin) {
+      params.set('hasta', fechaFin);
+    }
+    const query = params.toString();
+    navigate(query ? `/catalogo?${query}` : '/catalogo');
+  };
 
   return (
     <section
@@ -79,7 +99,7 @@ export function LandingBookingIsland() {
             </div>
 
             {/* Integrated Horizontal Search Command Bar */}
-            <form action="/catalogo" method="GET" className="w-full grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4 items-stretch">
+            <form action="/catalogo" method="GET" onSubmit={handleSearchSubmit} className="w-full grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4 items-stretch">
               {/* Hidden Category Filter if specific */}
               {selectedCat !== 'todos' && (
                 <input type="hidden" name="cat" value={selectedCat} />

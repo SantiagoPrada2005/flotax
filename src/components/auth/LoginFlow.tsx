@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { navigate } from 'astro:transitions/client';
 import { authClient } from '@/lib/auth/client';
 
 type AuthStep = 'initial' | 'email' | 'otp';
@@ -163,7 +164,7 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
       if (res?.error) {
         setError(res.error.message || 'El código ingresado es incorrecto o ha expirado.');
       } else {
-        window.location.href = getDestinationUrl();
+        navigate(getDestinationUrl());
       }
     } catch (err: unknown) {
       console.error('Error verificando OTP:', err);

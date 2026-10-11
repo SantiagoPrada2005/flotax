@@ -14,6 +14,7 @@
 | [`TopBarSearch.tsx`](./TopBarSearch.tsx) | Isla React 19: Buscador Morphing iOS 27 | Componente `<TopBarSearch ... />` | [`VehicleSearchSpotlight.tsx`](../flota/VehicleSearchSpotlight.tsx) |
 | [`Sidebar.astro`](./Sidebar.astro) | Barra Lateral de Navegación Desktop | Componente `<Sidebar activeTab="..." />` | Design tokens FlotaX (`tokens.css`) |
 | [`ExitAdminButton.tsx`](./ExitAdminButton.tsx) | Botón Conmutador a Portal Cliente | Componente `<ExitAdminButton />` | `astro:actions`, `astro:transitions/client` |
+| [`PwaRuntimeIsland.tsx`](./PwaRuntimeIsland.tsx) | Isla React 19: Orquestador PWA Standalone & SPA | Componente `<PwaRuntimeIsland />` | `@/lib/pwa`, `astro:transitions/client` |
 
 ## Invariants & Directory Rules
 

@@ -10,7 +10,6 @@ const ADMIN_PREFIX = '/admin';
 const CLIENT_PROTECTED_PREFIXES = [
   '/reservas',
   '/perfil',
-  '/home',
 ];
 
 function isAdminRoute(pathname: string): boolean {
@@ -48,10 +47,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
   context.locals.session = null;
   context.locals.usuario = null;
 
-  // 2. Omitir peticiones de assets internos de Astro o favicons
+  // 2. Omitir peticiones de assets internos de Astro, favicons o artefactos estáticos de PWA
   if (
     context.url.pathname.startsWith('/_astro') ||
-    context.url.pathname.startsWith('/favicon')
+    context.url.pathname.startsWith('/favicon') ||
+    context.url.pathname.startsWith('/icons/') ||
+    context.url.pathname === '/manifest.webmanifest' ||
+    context.url.pathname === '/sw.js' ||
+    context.url.pathname === '/apple-touch-icon.png'
   ) {
     return await next();
   }

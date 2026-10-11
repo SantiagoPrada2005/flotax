@@ -11,6 +11,7 @@
 | [`email/`](./email/) | Módulo transaccional de correos con Cloudflare Workers API y dominio flotax.innovaweb.pro. | [INDEX.md](./email/INDEX.md) |
 | [`flota/`](./flota/) | Dominio de catálogo, especificaciones técnicas y buscador evaluativo de unidades. | [INDEX.md](./flota/INDEX.md) |
 | [`logger/`](./logger/) | Módulo de logging centralizado, sanitización de datos y alertas tempranas a desarrolladores. | [INDEX.md](./logger/INDEX.md) |
+| [`pwa/`](./pwa/) | Detección de ejecución PWA standalone, validación de rutas SPA y registro del Service Worker perimetral. | [INDEX.md](./pwa/INDEX.md) |
 | [`time/`](./time/) | Funciones y utilidades de cliente para manipulación y visualización de fechas y zonas horarias. | [INDEX.md](./time/INDEX.md) |
 
 ## File Manifest
