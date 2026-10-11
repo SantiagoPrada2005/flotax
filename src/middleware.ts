@@ -52,6 +52,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     context.url.pathname.startsWith('/_astro') ||
     context.url.pathname.startsWith('/favicon') ||
     context.url.pathname.startsWith('/icons/') ||
+    context.url.pathname.startsWith('/instructions/') ||
     context.url.pathname === '/manifest.webmanifest' ||
     context.url.pathname === '/sw.js' ||
     context.url.pathname === '/apple-touch-icon.png'
