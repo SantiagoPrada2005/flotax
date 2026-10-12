@@ -1,0 +1,45 @@
+---
+import LayoutAdmin from '@/layouts/LayoutAdmin.astro';
+import { resolveClientTimeContext } from '@/lib/time/client-time';
+import { getYardMetricsSnapshot } from '@/lib/metricas';
+import MetricsInteractiveHub from '@/components/dashboard/MetricsInteractiveHub';
+
+const timeContext = resolveClientTimeContext(Astro.request);
+const usuario = Astro.locals.usuario;
+
+const operatorName = usuario?.nombre ?? 'David Operador';
+const yardName = usuario?.localActivo?.nombre ?? 'Patio Norte';
+const operatorRole = usuario?.localActivo?.rol ?? 'DUEÑO';
+
+const snapshot = getYardMetricsSnapshot({
+  yardName,
+  operatorName,
+  operatorRole,
+  timezone: timeContext.timezone,
+  dateLabel: timeContext.dateString,
+});
+---
+
+<LayoutAdmin title="FlotaX — Métricas y Telemetría" activeTab="metrics">
+  <div class="mx-auto w-full max-w-md sm:max-w-xl px-4 py-3 space-y-4">
+    <!-- Greeting & Status Header (Matching Reference 1 iOS App Header) -->
+    <header class="pt-1 pb-0.5 flex items-center justify-between border-b border-[#9CA3AF]/30">
+      <div>
+        <p class="text-[11px] font-semibold uppercase tracking-wider text-[#4B5563]">
+          {yardName} • {timeContext.timezone}
+        </p>
+        <h1 class="mt-0.5 font-display text-xl font-black tracking-tight text-[#111827] sm:text-2xl">
+          Hola, {operatorName.split(' ')[0]}!
+        </h1>
+      </div>
+
+      <span class="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-[#111827] shadow-2xs border border-[#9CA3AF]/35">
+        <span class="h-2 w-2 rounded-full bg-emerald-600 animate-pulse"></span>
+        Telemetría Viva
+      </span>
+    </header>
+
+    <!-- Interactive 3-Level Progressive Disclosure Metrics Hub -->
+    <MetricsInteractiveHub client:load snapshot={snapshot} initialLens="BENTO" />
+  </div>
+</LayoutAdmin>

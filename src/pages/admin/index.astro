@@ -17,14 +17,25 @@ const operatorName = usuario?.nombre ?? 'David Operador';
       <p class="text-xs font-semibold uppercase tracking-wider text-[#4B5563]">
         Panel Operativo de Patio • {timeContext.timezone}
       </p>
-      <div class="mt-0.5 flex items-baseline justify-between">
+      <div class="mt-0.5 flex items-baseline justify-between gap-2">
         <h1 class="font-display text-2xl font-black tracking-tight text-[#111827] sm:text-3xl">
           {operatorName}
         </h1>
-        <span class="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-0.5 text-[11px] font-bold text-[#1F2937] shadow-2xs border border-[#9CA3AF]/30">
-          <span class="h-2 w-2 rounded-full bg-emerald-600 animate-pulse"></span>
-          Turno Activo
-        </span>
+        <div class="flex items-center gap-2">
+          <a
+            href="/admin/metricas"
+            class="ios-press-bounce inline-flex items-center gap-1 rounded-full bg-[#111827] px-3 py-1 text-[11px] font-bold text-[#EDEDED] shadow-xs transition hover:bg-[#1F2937]"
+          >
+            <span>Métricas iOS</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="h-3 w-3">
+              <path d="m9 18 6-6-6-6"></path>
+            </svg>
+          </a>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-0.5 text-[11px] font-bold text-[#1F2937] shadow-2xs border border-[#9CA3AF]/30">
+            <span class="h-2 w-2 rounded-full bg-emerald-600 animate-pulse"></span>
+            Turno Activo
+          </span>
+        </div>
       </div>
     </header>
 

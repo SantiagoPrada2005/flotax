@@ -3,7 +3,7 @@ import { navigate } from 'astro:transitions/client';
 
 export interface BottomNavIslandProps {
   currentPath: string;
-  activeTab?: ('home' | 'search' | 'fleet' | 'wallet' | 'profile') | undefined;
+  activeTab?: ('home' | 'metrics' | 'search' | 'fleet' | 'wallet' | 'profile') | undefined;
   variant?: ('admin' | 'client') | undefined;
   className?: string | undefined;
 }
@@ -33,6 +33,10 @@ export default function BottomNavIsland({
   // Compute active states from reactive livePath
   const isAdminHome =
     effectiveTab === 'home' || livePath === '/admin' || livePath === '/admin/';
+  const isAdminMetrics =
+    effectiveTab === 'metrics' ||
+    livePath.startsWith('/admin/metricas') ||
+    livePath.startsWith('/admin/reportes');
   const isAdminFleet =
     effectiveTab === 'fleet' || livePath.startsWith('/admin/flota');
   const isAdminOps =
@@ -73,6 +77,28 @@ export default function BottomNavIsland({
         >
           <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" />
           <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        </svg>
+      ),
+    },
+    {
+      key: 'metrics',
+      label: 'Métricas y Telemetría',
+      href: '/admin/metricas',
+      isActive: isAdminMetrics,
+      icon: (active) => (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={active ? 2.4 : 1.9}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={`h-5 w-5 transition-transform duration-300 ${active ? 'scale-105' : 'group-hover:scale-110'}`}
+        >
+          <line x1="18" x2="18" y1="20" y2="10" />
+          <line x1="12" x2="12" y1="20" y2="4" />
+          <line x1="6" x2="6" y1="20" y2="14" />
         </svg>
       ),
     },

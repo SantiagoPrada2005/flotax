@@ -13,6 +13,8 @@
 | [`flotax-logo-pulse.glsl`](./flotax-logo-pulse.glsl) | Shader Fragment WebGL 1.0 | Animación 01: Barrido especular cinético $+62.3^\circ$ sobre las 3 masas del isotipo FlotaX | `logo.pen` |
 | [`flotax-loader-cad.glsl`](./flotax-loader-cad.glsl) | Shader Fragment WebGL 1.0 | Animación 02: Retícula milimétrica CAD, estelas de túnel de viento laminar y haz láser pericial | `logo.pen` |
 | [`flotax-logo-scan.glsl`](./flotax-logo-scan.glsl) | Shader Fragment WebGL 1.0 | Animación 02: Transición Wireframe-to-Solid con achurado técnico $+62.3^\circ$ sobre el isotipo | `logo.pen` |
+| [`flotax-metrics-wave.glsl`](./flotax-metrics-wave.glsl) | Shader Fragment WebGL 1.0 | Telemetría iOS: Doble onda líquida animada (estilo Bessonov) con achurado técnico $+62.3^\circ$ | `logo.pen` |
+| [`flotax-metrics-spline.glsl`](./flotax-metrics-spline.glsl) | Shader Fragment WebGL 1.0 | Telemetría iOS: Curva spline cúbica con relleno achurado $+62.3^\circ$ y pulso de nodo activo | `logo.pen` |
 
 ## Invariants & Directory Rules
 

@@ -3,7 +3,7 @@ import ExitAdminButton from './ExitAdminButton';
 import FlotaxIsotype from '../ui/FlotaxIsotype.astro';
 
 interface Props {
-  activeTab?: 'home' | 'search' | 'fleet' | 'wallet' | 'profile' | undefined;
+  activeTab?: 'home' | 'metrics' | 'search' | 'fleet' | 'wallet' | 'profile' | undefined;
 }
 
 const { activeTab } = Astro.props;
@@ -11,6 +11,7 @@ const currentPath = Astro.url.pathname;
 const usuario = Astro.locals.usuario;
 
 const isHome = activeTab ? activeTab === 'home' : (currentPath === '/admin' || currentPath === '/admin/');
+const isMetrics = activeTab ? activeTab === 'metrics' : currentPath.startsWith('/admin/metricas');
 const isSearch = activeTab ? activeTab === 'search' : currentPath.startsWith('/admin/reservas');
 const isFleet = activeTab ? activeTab === 'fleet' : currentPath.startsWith('/admin/flota') || currentPath.startsWith('/admin/operaciones');
 const isWallet = activeTab ? activeTab === 'wallet' : currentPath.startsWith('/admin/caja');
@@ -81,6 +82,33 @@ const isWallet = activeTab ? activeTab === 'wallet' : currentPath.startsWith('/a
         <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
       </svg>
       <span>Panel General</span>
+    </a>
+
+    <a
+      href="/admin/metricas"
+      aria-current={isMetrics ? "page" : undefined}
+      class:list={[
+        "flex items-center gap-3 rounded-input px-3 py-2.5 transition-colors",
+        isMetrics
+          ? "bg-surface-card text-brand-primary font-semibold shadow-xs border border-border-subtle"
+          : "text-neutral-600 hover:bg-surface-elevated hover:text-brand-primary"
+      ]}
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width={isMetrics ? "2.2" : "1.8"}
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="h-5 w-5"
+      >
+        <line x1="18" x2="18" y1="20" y2="10"></line>
+        <line x1="12" x2="12" y1="20" y2="4"></line>
+        <line x1="6" x2="6" y1="20" y2="14"></line>
+      </svg>
+      <span>Métricas & Telemetría</span>
     </a>
 
     <a

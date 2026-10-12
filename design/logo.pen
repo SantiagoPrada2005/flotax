@@ -4340,6 +4340,1263 @@
           ]
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "MTR01",
+      "x": 5080,
+      "y": -1640,
+      "name": "Lamina 03 — Sistema de Metricas & Telemetria iOS (3 Niveles Interactivos)",
+      "clip": true,
+      "width": 1600,
+      "fill": "$brand-surface",
+      "cornerRadius": 24,
+      "stroke": "$brand-gray-light",
+      "strokeWidth": 1,
+      "layout": "vertical",
+      "gap": 36,
+      "padding": 48,
+      "children": [
+        {
+          "type": "frame",
+          "id": "MTR_HDR",
+          "name": "Header Editorial Metricas",
+          "width": "fill_container",
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "MTR_H_L",
+              "name": "HUD Left Metrics",
+              "fill": "$brand-black",
+              "content": "FLOTAX OS  ·  ARQUITECTURA DE MÉTRICAS & TELEMETRÍA MÓVIL iOS (REVELACIÓN PROGRESIVA)",
+              "fontFamily": "Inter",
+              "fontSize": 12,
+              "fontWeight": "700",
+              "letterSpacing": 1.5
+            },
+            {
+              "type": "text",
+              "id": "MTR_H_R",
+              "name": "HUD Right Metrics",
+              "fill": "$brand-gray-mid",
+              "content": "PALETA CANÓNICA (#111827 · #1F2937 · #4B5563 · #9CA3AF · #EDEDED)  ·  SHADERS GLSL +62.3°",
+              "fontFamily": "Inter",
+              "fontSize": 11,
+              "fontWeight": "600",
+              "letterSpacing": 1.4
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "MTR_ROW",
+          "name": "Fila de 3 Dispositivos iOS (390px)",
+          "width": "fill_container",
+          "justifyContent": "space_between",
+          "alignItems": "start",
+          "gap": 32,
+          "children": [
+            {
+              "type": "frame",
+              "id": "IOS_SCR_1",
+              "name": "iOS 01 — Vista Glance (Resumen & Curva Oscura)",
+              "width": 390,
+              "fill": "#FFFFFF",
+              "cornerRadius": 44,
+              "stroke": "$brand-black",
+              "strokeWidth": 6,
+              "layout": "vertical",
+              "gap": 18,
+              "padding": 22,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "IOS1_TOP",
+                  "name": "Header Turno",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "IOS1_WL",
+                      "name": "Saludo Operador",
+                      "fill": "$brand-gray-mid",
+                      "content": "Patio Norte · Turno Activo",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "IOS1_B1",
+                      "name": "Indicador Vivo",
+                      "fill": "$brand-black",
+                      "content": "9:41  ·  R2 OK",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 11,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "IOS1_KPI",
+                  "name": "Hero KPI Recaudo",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "IOS1_VAL",
+                      "name": "Monto Principal",
+                      "fill": "$brand-black",
+                      "content": "$ 13,553.00",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 32,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "IOS1_SUB",
+                      "name": "Etiqueta Balance",
+                      "fill": "$brand-gray-mid",
+                      "content": "Recaudo Neto del Periodo  ·  +8.4% vs ayer",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "IOS1_CHART",
+                  "name": "Tarjeta Curva Spline con Achurado GLSL",
+                  "width": "fill_container",
+                  "height": 210,
+                  "cornerRadius": 26,
+                  "clip": true,
+                  "fill": {
+                    "type": "shader",
+                    "enabled": true,
+                    "url": "flotax-metrics-spline.glsl",
+                    "uniforms": {
+                      "u_bg": "#111827",
+                      "u_charcoal": "#1F2937",
+                      "u_slate": "#4B5563",
+                      "u_gray": "#9CA3AF",
+                      "u_curve": "#EDEDED"
+                    }
+                  },
+                  "layout": "vertical",
+                  "justifyContent": "space_between",
+                  "padding": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "IOS1_CH_TOP",
+                      "name": "Tooltip Nodo Activo",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "IOS1_CH_LBL",
+                          "name": "Escala Max",
+                          "fill": "$brand-gray-light",
+                          "content": "500 · 100 · 50",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 10,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "IOS1_BADGE",
+                          "name": "Pildora Valor Activo",
+                          "fill": "$brand-surface",
+                          "cornerRadius": 8,
+                          "padding": [
+                            4,
+                            10
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "IOS1_B_TXT",
+                              "name": "Valor Nodo",
+                              "fill": "$brand-black",
+                              "content": "+$409 hoy",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 11,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "IOS1_RANGES",
+                      "name": "Selector de Temporalidad",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "R_1D",
+                          "name": "1D",
+                          "fill": "$brand-gray-light",
+                          "content": "1D",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "R_5D_BOX",
+                          "name": "5D Activo",
+                          "fill": "$brand-graphite",
+                          "cornerRadius": 8,
+                          "padding": [
+                            4,
+                            10
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "R_5D",
+                              "name": "5D",
+                              "fill": "$brand-surface",
+                              "content": "5D",
+                              "fontFamily": "Inter",
+                              "fontSize": 11,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "R_1M",
+                          "name": "1M",
+                          "fill": "$brand-gray-light",
+                          "content": "1M",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "R_3M",
+                          "name": "3M",
+                          "fill": "$brand-gray-light",
+                          "content": "3M",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "R_6M",
+                          "name": "6M",
+                          "fill": "$brand-gray-light",
+                          "content": "6M",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "R_1Y",
+                          "name": "1A",
+                          "fill": "$brand-gray-light",
+                          "content": "1A",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "IOS1_CATS",
+                  "name": "Filtro Circular por Categoria de Flota",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "IOS1_C_TIT",
+                      "name": "Titulo Categorias",
+                      "fill": "$brand-black",
+                      "content": "Flota en Operación (Filtro Vivo)",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "IOS1_BUBBLES",
+                      "name": "Tira de Burbujas",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "BUB_1",
+                          "name": "Todos",
+                          "width": 54,
+                          "height": 54,
+                          "cornerRadius": 27,
+                          "fill": "$brand-black",
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "BUB_1_T",
+                              "name": "Txt Todos",
+                              "fill": "$brand-surface",
+                              "content": "22",
+                              "fontFamily": "Space Grotesk",
+                              "fontSize": 15,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "BUB_2",
+                          "name": "Autos",
+                          "width": 54,
+                          "height": 54,
+                          "cornerRadius": 27,
+                          "fill": "$brand-surface",
+                          "stroke": "$brand-gray-light",
+                          "strokeWidth": 1,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "BUB_2_T",
+                              "name": "Txt Autos",
+                              "fill": "$brand-black",
+                              "content": "10A",
+                              "fontFamily": "Space Grotesk",
+                              "fontSize": 13,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "BUB_3",
+                          "name": "Motos",
+                          "width": 54,
+                          "height": 54,
+                          "cornerRadius": 27,
+                          "fill": "$brand-surface",
+                          "stroke": "$brand-gray-light",
+                          "strokeWidth": 1,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "BUB_3_T",
+                              "name": "Txt Motos",
+                              "fill": "$brand-black",
+                              "content": "6M",
+                              "fontFamily": "Space Grotesk",
+                              "fontSize": 13,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "BUB_4",
+                          "name": "Scooters",
+                          "width": 54,
+                          "height": 54,
+                          "cornerRadius": 27,
+                          "fill": "$brand-surface",
+                          "stroke": "$brand-gray-light",
+                          "strokeWidth": 1,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "BUB_4_T",
+                              "name": "Txt Scooters",
+                              "fill": "$brand-black",
+                              "content": "4S",
+                              "fontFamily": "Space Grotesk",
+                              "fontSize": 13,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "BUB_5",
+                          "name": "Utilitarios",
+                          "width": 54,
+                          "height": 54,
+                          "cornerRadius": 27,
+                          "fill": "$brand-graphite",
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "BUB_5_T",
+                              "name": "Txt Util",
+                              "fill": "$brand-surface",
+                              "content": "+2U",
+                              "fontFamily": "Space Grotesk",
+                              "fontSize": 13,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "IOS1_HIST",
+                  "name": "Historial Compacto del Turno",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "IOS1_H_HDR",
+                      "name": "Cabecera Historial",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "IOS1_H_T",
+                          "name": "Liquidaciones",
+                          "fill": "$brand-black",
+                          "content": "Movimientos del Turno",
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "IOS1_H_F",
+                          "name": "Filtro Hoy",
+                          "fill": "$brand-gray-mid",
+                          "content": "Hoy ▾",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "IOS1_ROW1",
+                      "name": "Movimiento 1",
+                      "width": "fill_container",
+                      "fill": "$brand-surface",
+                      "cornerRadius": 16,
+                      "padding": 12,
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "R1_NAME",
+                          "name": "Concepto 1",
+                          "fill": "$brand-black",
+                          "content": "Entrega Mazda CX-30 · KLP-902",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "R1_AMT",
+                          "name": "Monto 1",
+                          "fill": "$brand-black",
+                          "content": "+ $460.00",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "IOS1_ROW2",
+                      "name": "Movimiento 2",
+                      "width": "fill_container",
+                      "fill": "$brand-surface",
+                      "cornerRadius": 16,
+                      "padding": 12,
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "R2_NAME",
+                          "name": "Concepto 2",
+                          "fill": "$brand-black",
+                          "content": "Mantenimiento Frenos · MT-04",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "R2_AMT",
+                          "name": "Monto 2",
+                          "fill": "$brand-gray-mid",
+                          "content": "- $40.99",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "IOS_SCR_2",
+              "name": "iOS 02 — Explorador Interactivo de Tendencia (Drill-Down)",
+              "width": 390,
+              "fill": "#FFFFFF",
+              "cornerRadius": 44,
+              "stroke": "$brand-black",
+              "strokeWidth": 6,
+              "layout": "vertical",
+              "gap": 18,
+              "padding": 22,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "IOS2_TOP",
+                  "name": "Header Drilldown",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "IOS2_TIT",
+                      "name": "Titulo Explorador",
+                      "fill": "$brand-black",
+                      "content": "← Análisis de Curva Operativa",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "IOS2_META",
+                      "name": "Meta Scrub",
+                      "fill": "$brand-gray-mid",
+                      "content": "SCRUBBING",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 10,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "IOS2_TABS",
+                  "name": "Pildoras de Periodo (Ref 1 Centro)",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "T_MAIN",
+                      "name": "Tab Principal",
+                      "fill": "$brand-black",
+                      "cornerRadius": 14,
+                      "padding": [
+                        8,
+                        16
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "T_MAIN_T",
+                          "name": "Txt Principal",
+                          "fill": "$brand-surface",
+                          "content": "Principal",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "T_WK",
+                      "name": "Semanal",
+                      "fill": "$brand-gray-mid",
+                      "content": "Semanal",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "T_MO",
+                      "name": "Mensual",
+                      "fill": "$brand-gray-mid",
+                      "content": "Mensual",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "T_YR",
+                      "name": "Anual",
+                      "fill": "$brand-gray-mid",
+                      "content": "Anual",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "IOS2_CANVAS_CHART",
+                  "name": "Curva Expandida en Superficie Clara",
+                  "width": "fill_container",
+                  "height": 220,
+                  "cornerRadius": 24,
+                  "fill": "$brand-surface",
+                  "stroke": "$brand-gray-light",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "justifyContent": "space_between",
+                  "padding": 18,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "IOS2_PEAK",
+                      "name": "Indicador Pico Seleccionado",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "IOS2_PK_L",
+                          "name": "Fecha Punto",
+                          "fill": "$brand-gray-mid",
+                          "content": "Jueves 14:30  ·  Pico de Entregas",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "IOS2_PK_B",
+                          "name": "Badge 409",
+                          "fill": "$brand-black",
+                          "cornerRadius": 10,
+                          "padding": [
+                            5,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "IOS2_PK_V",
+                              "name": "Val 409",
+                              "fill": "$brand-surface",
+                              "content": "$409.00",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 12,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "path",
+                      "id": "IOS2_SPLINE_PATH",
+                      "name": "Trazo Vectorial Spline Expandido",
+                      "geometry": "M0 110 C 35 40, 65 40, 95 85 C 125 120, 145 30, 175 65 C 205 100, 225 10, 260 45 C 295 80, 315 60, 340 95",
+                      "viewBox": [
+                        0,
+                        0,
+                        340,
+                        130
+                      ],
+                      "width": "fill_container",
+                      "height": 110,
+                      "stroke": "$brand-black",
+                      "strokeWidth": 3
+                    },
+                    {
+                      "type": "frame",
+                      "id": "IOS2_DAYS",
+                      "name": "Selector Fino 2D..7D",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "D_2D",
+                          "name": "2D Pill",
+                          "fill": "#FFFFFF",
+                          "cornerRadius": 10,
+                          "padding": [
+                            4,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "D_2D_T",
+                              "name": "2D",
+                              "fill": "$brand-black",
+                              "content": "2D",
+                              "fontFamily": "Inter",
+                              "fontSize": 11,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "D_4D",
+                          "name": "4D",
+                          "fill": "$brand-gray-mid",
+                          "content": "4D",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "D_5D",
+                          "name": "5D",
+                          "fill": "$brand-gray-mid",
+                          "content": "5D",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "D_6D",
+                          "name": "6D",
+                          "fill": "$brand-gray-mid",
+                          "content": "6D",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "D_7D",
+                          "name": "7D",
+                          "fill": "$brand-gray-mid",
+                          "content": "7D",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "IOS2_LIST",
+                  "name": "Desglose Detallado del Punto",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "IOS2_L_TIT",
+                      "name": "Tit Desglose",
+                      "fill": "$brand-black",
+                      "content": "Operaciones en el intervalo seleccionado",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "IOS2_ITEM1",
+                      "name": "Item 1",
+                      "width": "fill_container",
+                      "fill": "$brand-surface",
+                      "cornerRadius": 16,
+                      "padding": 12,
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "I2_1_N",
+                          "name": "Nom 1",
+                          "fill": "$brand-black",
+                          "content": "Reserva #FX-814 · Toyota Corolla",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "I2_1_V",
+                          "name": "Val 1",
+                          "fill": "$brand-black",
+                          "content": "+ $320.19",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "IOS2_ITEM2",
+                      "name": "Item 2",
+                      "width": "fill_container",
+                      "fill": "$brand-surface",
+                      "cornerRadius": 16,
+                      "padding": 12,
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "I2_2_N",
+                          "name": "Nom 2",
+                          "fill": "$brand-black",
+                          "content": "Prórroga 2 Días · Yamaha NMAX",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "I2_2_V",
+                          "name": "Val 2",
+                          "fill": "$brand-black",
+                          "content": "+ $122.00",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "IOS2_ITEM3",
+                      "name": "Item 3",
+                      "width": "fill_container",
+                      "fill": "$brand-surface",
+                      "cornerRadius": 16,
+                      "padding": 12,
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "I2_3_N",
+                          "name": "Nom 3",
+                          "fill": "$brand-black",
+                          "content": "Lavado & Peritaje R2 · Scooter S4",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "I2_3_V",
+                          "name": "Val 3",
+                          "fill": "$brand-gray-mid",
+                          "content": "- $34.10",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "IOS_SCR_3",
+              "name": "iOS 03 — Lente Bento de Telemetria & Onda Liquida",
+              "width": 390,
+              "fill": "#FFFFFF",
+              "cornerRadius": 44,
+              "stroke": "$brand-black",
+              "strokeWidth": 6,
+              "layout": "vertical",
+              "gap": 18,
+              "padding": 22,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "IOS3_TOP",
+                  "name": "Header Bento",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "IOS3_WL",
+                      "name": "Subtitulo Telemetria",
+                      "fill": "$brand-gray-mid",
+                      "content": "Pulso Bento  ·  Patio Norte",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "IOS3_TIME",
+                      "name": "Hora",
+                      "fill": "$brand-black",
+                      "content": "HOY",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 11,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "IOS3_KPI",
+                  "name": "Hero KPI Bento",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "IOS3_VAL",
+                      "name": "Val Bento",
+                      "fill": "$brand-black",
+                      "content": "$ 13,553.00",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 32,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "IOS3_SUB",
+                      "name": "Sub Bento",
+                      "fill": "$brand-gray-mid",
+                      "content": "Balance Operativo Consolidado",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "IOS3_PILLS",
+                  "name": "Dos Tarjetas Resumen (Ref 1 Derecha)",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "P_LEFT",
+                      "name": "Contratos Activos",
+                      "width": "fill_container",
+                      "fill": "$brand-surface",
+                      "cornerRadius": 20,
+                      "stroke": "$brand-gray-light",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 14,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "PL_L",
+                          "name": "Lbl Contratos",
+                          "fill": "$brand-gray-mid",
+                          "content": "Contratos Activos ›",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "PL_V",
+                          "name": "Val Contratos",
+                          "fill": "$brand-black",
+                          "content": "$11,303.00",
+                          "fontFamily": "Space Grotesk",
+                          "fontSize": 17,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "P_RIGHT",
+                      "name": "Efectivo en Caja",
+                      "width": "fill_container",
+                      "fill": "$brand-surface",
+                      "cornerRadius": 20,
+                      "stroke": "$brand-gray-light",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 14,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "PR_L",
+                          "name": "Lbl Caja",
+                          "fill": "$brand-gray-mid",
+                          "content": "Caja Turno ›",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "PR_V",
+                          "name": "Val Caja",
+                          "fill": "$brand-black",
+                          "content": "$2,250.00",
+                          "fontFamily": "Space Grotesk",
+                          "fontSize": 17,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "IOS3_BENTO",
+                  "name": "Bento Asimetrico (Onda Liquida GLSL + Waffle + Radial)",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "BENTO_WAVE",
+                      "name": "Tarjeta Vertical Onda Liquida (Ref 4 + Ref 1.3)",
+                      "width": 166,
+                      "height": 268,
+                      "cornerRadius": 26,
+                      "clip": true,
+                      "fill": {
+                        "type": "shader",
+                        "enabled": true,
+                        "url": "flotax-metrics-wave.glsl",
+                        "uniforms": {
+                          "u_level": 0.84,
+                          "u_bg": "#111827",
+                          "u_waveBack": "#1F2937",
+                          "u_waveFront": "#4B5563",
+                          "u_crest": "#9CA3AF",
+                          "u_surface": "#EDEDED"
+                        }
+                      },
+                      "layout": "vertical",
+                      "justifyContent": "space_between",
+                      "padding": 16,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "BW_TOP",
+                          "name": "Lbl Ocupacion",
+                          "fill": "$brand-surface",
+                          "content": "Ocupación Real",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "BW_PILL",
+                          "name": "Pildora Central 84%",
+                          "fill": "$brand-black",
+                          "cornerRadius": 18,
+                          "stroke": "$brand-gray-light",
+                          "strokeWidth": 1,
+                          "padding": [
+                            10,
+                            16
+                          ],
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "BW_PCT",
+                              "name": "84%",
+                              "fill": "$brand-surface",
+                              "content": "⚡ 84%",
+                              "fontFamily": "Space Grotesk",
+                              "fontSize": 22,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "BW_BOT",
+                          "name": "Meta Unidades",
+                          "fill": "$brand-surface",
+                          "content": "18 / 22 en ruta",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 11,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "BENTO_RIGHT_COL",
+                      "name": "Columna Derecha Apilada",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "BENTO_WAFFLE",
+                          "name": "Tarjeta Matriz de Unidades (Ref 5)",
+                          "width": "fill_container",
+                          "height": 128,
+                          "fill": "$brand-surface",
+                          "cornerRadius": 24,
+                          "stroke": "$brand-gray-light",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "justifyContent": "space_between",
+                          "padding": 14,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "BWF_T",
+                              "name": "Lbl Matriz",
+                              "fill": "$brand-black",
+                              "content": "Disponibilidad · 82%",
+                              "fontFamily": "Inter",
+                              "fontSize": 11,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "BWF_V",
+                              "name": "Val Matriz",
+                              "fill": "$brand-black",
+                              "content": "14 Listas",
+                              "fontFamily": "Space Grotesk",
+                              "fontSize": 20,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "BWF_S",
+                              "name": "Sub Matriz",
+                              "fill": "$brand-gray-mid",
+                              "content": "● 14 OK   ⊘ 2 Taller",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 10,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "BENTO_RADIAL",
+                          "name": "Tarjeta Tacometro Pericial R2 (Ref 3)",
+                          "width": "fill_container",
+                          "height": 128,
+                          "fill": "$brand-black",
+                          "cornerRadius": 24,
+                          "layout": "vertical",
+                          "justifyContent": "space_between",
+                          "padding": 14,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "BRD_T",
+                              "name": "Lbl Peritaje",
+                              "fill": "$brand-gray-light",
+                              "content": "Salud & R2",
+                              "fontFamily": "Inter",
+                              "fontSize": 11,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "BRD_V",
+                              "name": "Val Peritaje",
+                              "fill": "$brand-surface",
+                              "content": "100% OK",
+                              "fontFamily": "Space Grotesk",
+                              "fontSize": 20,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "BRD_S",
+                              "name": "Sub Peritaje",
+                              "fill": "$brand-gray-light",
+                              "content": "12 fotos R2 hoy",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 10,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "variables": {

@@ -715,6 +715,65 @@ html.js-ready .reveal-on-scroll.is-visible {
   transform-origin: center;
 }
 
+/* ==========================================================================
+   FlotaX iOS Metrics & Telemetry System (Liquid Waves & +62.3° Hatching)
+   Canonical Palette Only: #111827 | #1F2937 | #4B5563 | #9CA3AF | #EDEDED
+   ========================================================================== */
+
+.bg-hatch-diagonal {
+  background-image: repeating-linear-gradient(
+    -62.3deg,
+    rgba(17, 24, 39, 0.16) 0px,
+    rgba(17, 24, 39, 0.16) 1.5px,
+    transparent 1.5px,
+    transparent 5.5px
+  );
+}
+
+.bg-hatch-diagonal-dark {
+  background-image: repeating-linear-gradient(
+    -62.3deg,
+    rgba(237, 237, 237, 0.22) 0px,
+    rgba(237, 237, 237, 0.22) 1.5px,
+    transparent 1.5px,
+    transparent 6px
+  );
+}
+
+@keyframes liquidWaveDrift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(-25%, 2px, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes liquidWaveDriftReverse {
+  0% {
+    transform: translate3d(-50%, 0, 0);
+  }
+  50% {
+    transform: translate3d(-25%, -2px, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate-liquid-wave-front {
+  animation: liquidWaveDrift 6.5s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-liquid-wave-back {
+  animation: liquidWaveDriftReverse 8.5s ease-in-out infinite;
+  will-change: transform;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ios-press-bounce,
   .ios-search-morph,
@@ -742,7 +801,9 @@ html.js-ready .reveal-on-scroll.is-visible {
   .flotax-cad-laser-beam,
   .flotax-cad-slipstream,
   .flotax-cad-slipstream-fast,
-  .flotax-cad-tach-cell {
+  .flotax-cad-tach-cell,
+  .animate-liquid-wave-front,
+  .animate-liquid-wave-back {
     animation: none !important;
     clip-path: none !important;
     opacity: 1 !important;
@@ -750,5 +811,3 @@ html.js-ready .reveal-on-scroll.is-visible {
     transition: none !important;
   }
 }
-
-
