@@ -47,6 +47,7 @@ export default function PwaRuntimeIsland() {
   const [platform, setPlatform] = useState<PwaInstallPlatform>('other');
   const [isRouteLoading, setIsRouteLoading] = useState(false);
   const [loadingLabel, setLoadingLabel] = useState<string | undefined>(undefined);
+  const [loadingVariant, setLoadingVariant] = useState<'orbital' | 'cad'>('orbital');
 
   useEffect(() => {
     void registerPwaServiceWorker();
@@ -172,23 +173,7 @@ export default function PwaRuntimeIsland() {
       }, 1000);
     }
 
-    let routeLoadTimer: ReturnType<typeof setTimeout> | undefined;
-
-    const handleBeforePreparation = () => {
-      if (routeLoadTimer) {
-        clearTimeout(routeLoadTimer);
-      }
-      routeLoadTimer = setTimeout(() => {
-        setLoadingLabel(undefined);
-        setIsRouteLoading(true);
-      }, 160);
-    };
-
     const handlePageLoad = () => {
-      if (routeLoadTimer) {
-        clearTimeout(routeLoadTimer);
-        routeLoadTimer = undefined;
-      }
       setIsRouteLoading(false);
       syncStandaloneState();
     };
@@ -197,9 +182,13 @@ export default function PwaRuntimeIsland() {
       const customEvent = event as CustomEvent<{
         visible?: boolean;
         label?: string;
+        variant?: 'orbital' | 'cad';
       }>;
       const visible = Boolean(customEvent.detail?.visible);
       setLoadingLabel(customEvent.detail?.label);
+      if (customEvent.detail?.variant) {
+        setLoadingVariant(customEvent.detail.variant);
+      }
       setIsRouteLoading(visible);
     };
 
@@ -207,7 +196,6 @@ export default function PwaRuntimeIsland() {
     window.addEventListener('appinstalled', handleAppInstalled);
     window.addEventListener('flotax:open-install', handleOpenInstallRequest);
     window.addEventListener('flotax:loading', handleCustomLoading);
-    document.addEventListener('astro:before-preparation', handleBeforePreparation);
     document.addEventListener('astro:page-load', handlePageLoad);
     document.addEventListener('click', handleDocumentClick);
 
@@ -215,14 +203,10 @@ export default function PwaRuntimeIsland() {
       if (bannerTimer) {
         clearTimeout(bannerTimer);
       }
-      if (routeLoadTimer) {
-        clearTimeout(routeLoadTimer);
-      }
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
       window.removeEventListener('flotax:open-install', handleOpenInstallRequest);
       window.removeEventListener('flotax:loading', handleCustomLoading);
-      document.removeEventListener('astro:before-preparation', handleBeforePreparation);
       document.removeEventListener('astro:page-load', handlePageLoad);
       document.removeEventListener('click', handleDocumentClick);
     };
@@ -276,6 +260,7 @@ export default function PwaRuntimeIsland() {
     return (
       <FlotaxLoadingScreen
         isVisible={isRouteLoading}
+        variant={loadingVariant}
         {...(loadingLabel !== undefined ? { statusLabel: loadingLabel } : {})}
       />
     );
@@ -292,6 +277,7 @@ export default function PwaRuntimeIsland() {
     <>
       <FlotaxLoadingScreen
         isVisible={isRouteLoading}
+        variant={loadingVariant}
         {...(loadingLabel !== undefined ? { statusLabel: loadingLabel } : {})}
       />
 

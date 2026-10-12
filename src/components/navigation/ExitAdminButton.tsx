@@ -11,6 +11,15 @@ export default function ExitAdminButton({ className = '' }: ExitAdminButtonProps
 
   const handleExit = () => {
     if (isPending) return;
+    window.dispatchEvent(
+      new CustomEvent('flotax:loading', {
+        detail: {
+          visible: true,
+          label: 'CONMUTANDO A PORTAL DE CLIENTE',
+          variant: 'orbital',
+        },
+      })
+    );
     startTransition(async () => {
       try {
         const result = await actions.portal.cambiarModoPortal({ modo: 'CLIENTE' });
@@ -19,7 +28,12 @@ export default function ExitAdminButton({ className = '' }: ExitAdminButtonProps
         } else {
           navigate('/catalogo');
         }
-      } catch (err) {
+      } catch {
+        window.dispatchEvent(
+          new CustomEvent('flotax:loading', {
+            detail: { visible: false },
+          })
+        );
         navigate('/catalogo');
       }
     });

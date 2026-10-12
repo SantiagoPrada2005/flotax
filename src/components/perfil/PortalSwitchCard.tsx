@@ -25,11 +25,25 @@ export default function PortalSwitchCard({
   const handleToggle = () => {
     if (!tieneAccesoOperativo || isPending) return;
     setErrorMsg(null);
+    window.dispatchEvent(
+      new CustomEvent('flotax:loading', {
+        detail: {
+          visible: true,
+          label: 'INICIALIZANDO ENTORNO OPERATIVO DE PATIO',
+          variant: 'cad',
+        },
+      })
+    );
 
     startTransition(async () => {
       try {
         const result = await actions.portal.cambiarModoPortal({ modo: 'ADMIN' });
         if (result.error) {
+          window.dispatchEvent(
+            new CustomEvent('flotax:loading', {
+              detail: { visible: false },
+            })
+          );
           setErrorMsg(result.error.message || 'No fue posible cambiar al modo operador.');
           return;
         }
@@ -37,7 +51,12 @@ export default function PortalSwitchCard({
         if (result.data?.rutaDestino) {
           navigate(result.data.rutaDestino);
         }
-      } catch (err) {
+      } catch {
+        window.dispatchEvent(
+          new CustomEvent('flotax:loading', {
+            detail: { visible: false },
+          })
+        );
         setErrorMsg('Ocurrió un error inesperado al conectar con el servidor.');
       }
     });
