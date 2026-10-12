@@ -3,6 +3,7 @@ import { navigate } from 'astro:transitions/client';
 import {
   ENCABEZADOS_SEMANA_EDITORIAL,
   construirCalendarioSuizoReservas,
+  formatearFechaCorta,
   formatearRangoReservaHumano,
   hidratarReservasCliente,
   obtenerInfoDiaFechaISO,
@@ -37,7 +38,8 @@ export default function MisReservasHub({ hoyISO }: MisReservasHubProps) {
     obtenerReservasSemillaCliente(hoyISO)
   );
   const [codigoActivo, setCodigoActivo] = useState<string>('');
-  const [fechaFiltroISO, setFechaFiltroISO] = useState<string | null>(null);
+  const [filtroInicioISO, setFiltroInicioISO] = useState<string | null>(null);
+  const [filtroFinISO, setFiltroFinISO] = useState<string | null>(null);
 
   const [anioHoy = 2026, mesHoyUno = 10] = hoyISO.split('-').map(Number);
   const [mesCursor, setMesCursor] = useState<{
@@ -68,12 +70,20 @@ export default function MisReservasHub({ hoyISO }: MisReservasHubProps) {
     );
   }, [reservas, codigoActivo]);
 
+  const hayFiltroActivo = filtroInicioISO !== null;
+  const finFiltroEfectivo = filtroFinISO ?? filtroInicioISO;
+
   const fechaCabeceraISO =
-    fechaFiltroISO ?? reservaActiva?.fechaInicio ?? hoyISO;
+    filtroInicioISO ?? reservaActiva?.fechaInicio ?? hoyISO;
 
   const infoDiaCabecera = useMemo(
     () => obtenerInfoDiaFechaISO(fechaCabeceraISO),
     [fechaCabeceraISO]
+  );
+
+  const infoDiaFinFiltro = useMemo(
+    () => (filtroFinISO ? obtenerInfoDiaFechaISO(filtroFinISO) : null),
+    [filtroFinISO]
   );
 
   const calendario = useMemo(
@@ -89,11 +99,12 @@ export default function MisReservasHub({ hoyISO }: MisReservasHubProps) {
   );
 
   const alquileresMostrados = useMemo(() => {
-    if (!fechaFiltroISO) return reservas;
+    if (!filtroInicioISO) return reservas;
+    const fin = filtroFinISO ?? filtroInicioISO;
     return reservas.filter(
-      (r) => fechaFiltroISO >= r.fechaInicio && fechaFiltroISO <= r.fechaFin
+      (r) => r.fechaInicio <= fin && r.fechaFin >= filtroInicioISO
     );
-  }, [reservas, fechaFiltroISO]);
+  }, [reservas, filtroInicioISO, filtroFinISO]);
 
   const cambiarMes = (delta: number) => {
     setMesCursor((prev) => {
@@ -107,27 +118,45 @@ export default function MisReservasHub({ hoyISO }: MisReservasHubProps) {
     });
   };
 
+  const limpiarFiltro = () => {
+    setFiltroInicioISO(null);
+    setFiltroFinISO(null);
+  };
+
   const manejarToqueDia = (celda: CeldaCalendarioSuizo) => {
     if (!celda.esMesActual) {
       const [y = 2026, m = 10] = celda.fechaISO.split('-').map(Number);
       setMesCursor({ anio: y, mesIndexCero: m - 1 });
     }
 
-    const reservaEnFecha = reservas.find(
-      (r) => celda.fechaISO >= r.fechaInicio && celda.fechaISO <= r.fechaFin
-    );
-    if (reservaEnFecha) {
-      setCodigoActivo(reservaEnFecha.codigo);
+    const fechaTocada = celda.fechaISO;
+
+    // Paso 1: Si no hay inicio o ya había un rango completo, iniciar nueva selección
+    if (!filtroInicioISO || filtroFinISO !== null) {
+      setFiltroInicioISO(fechaTocada);
+      setFiltroFinISO(null);
+      return;
     }
 
-    setFechaFiltroISO((prev) =>
-      prev === celda.fechaISO ? null : celda.fechaISO
-    );
+    // Si toca el mismo día de inicio estando pendiente el fin, limpia el filtro
+    if (fechaTocada === filtroInicioISO) {
+      setFiltroInicioISO(null);
+      setFiltroFinISO(null);
+      return;
+    }
+
+    // Paso 2: Completar el rango ordenando inicio y fin cronológicamente
+    if (fechaTocada < filtroInicioISO) {
+      setFiltroFinISO(filtroInicioISO);
+      setFiltroInicioISO(fechaTocada);
+    } else {
+      setFiltroFinISO(fechaTocada);
+    }
   };
 
   const seleccionarAlquilerDeLista = (reserva: ReservaClienteItem) => {
     setCodigoActivo(reserva.codigo);
-    setFechaFiltroISO(null);
+    limpiarFiltro();
     const [y = 2026, m = 10] = reserva.fechaInicio.split('-').map(Number);
     setMesCursor({ anio: y, mesIndexCero: m - 1 });
   };
@@ -220,7 +249,21 @@ export default function MisReservasHub({ hoyISO }: MisReservasHubProps) {
           className="mt-1 grid grid-cols-7 gap-y-1.5 animate-fade-in"
         >
           {calendario.celdas.map((celda) => {
-            const esDiaFiltrado = celda.fechaISO === fechaFiltroISO;
+            const esInicioFiltro = Boolean(
+              filtroInicioISO && celda.fechaISO === filtroInicioISO
+            );
+            const esFinFiltro = Boolean(
+              finFiltroEfectivo && celda.fechaISO === finFiltroEfectivo
+            );
+            const enRangoFiltro = Boolean(
+              filtroInicioISO &&
+                finFiltroEfectivo &&
+                celda.fechaISO >= filtroInicioISO &&
+                celda.fechaISO <= finFiltroEfectivo
+            );
+            const esIntermedioFiltro =
+              enRangoFiltro && !esInicioFiltro && !esFinFiltro;
+
             const enAlgunAlquiler = reservas.some(
               (r) =>
                 celda.fechaISO >= r.fechaInicio && celda.fechaISO <= r.fechaFin
@@ -229,41 +272,93 @@ export default function MisReservasHub({ hoyISO }: MisReservasHubProps) {
             let clasesCirculo = '';
             if (!celda.esMesActual) {
               // Días fuera de mes sin fondo circular para evitar fatiga visual
-              clasesCirculo = 'bg-transparent text-[#9CA3AF]/55 font-normal';
-            } else if (esDiaFiltrado || celda.enReservaActiva) {
-              clasesCirculo = 'bg-[#111827] text-white font-bold';
+              clasesCirculo = enRangoFiltro
+                ? 'bg-[#1F2937]/75 text-white font-semibold'
+                : 'bg-transparent text-[#9CA3AF]/55 font-normal';
+            } else if (esInicioFiltro || esFinFiltro) {
+              // Extremos del filtro (Inicio / Fin): tono más oscuro de la paleta
+              clasesCirculo =
+                'bg-[#111827] text-white font-bold shadow-xs ring-2 ring-[#111827] ring-offset-1 ring-offset-white z-10';
+            } else if (esIntermedioFiltro) {
+              // Días intermedios dentro del rango filtrado
+              clasesCirculo = 'bg-[#1F2937] text-white font-semibold z-10';
             } else if (enAlgunAlquiler) {
-              clasesCirculo =
-                'bg-white text-[#111827] ring-1.5 ring-[#111827] font-semibold';
+              // Días con alquiler de vehículo: tono más claro que el filtro
+              clasesCirculo = celda.enReservaActiva
+                ? 'bg-[#9CA3AF]/60 text-[#111827] font-bold ring-1.5 ring-[#4B5563]'
+                : 'bg-[#9CA3AF]/45 text-[#111827] font-semibold ring-1 ring-[#9CA3AF]';
             } else {
+              // Días regulares sin alquiler
               clasesCirculo =
-                'bg-[#EDEDED]/75 text-[#111827] font-medium hover:bg-[#EDEDED]';
+                'bg-[#EDEDED]/65 text-[#4B5563] font-medium hover:bg-[#EDEDED]';
             }
 
             return (
               <div
                 key={celda.fechaISO}
-                className="flex items-center justify-center h-10 w-full"
+                className="relative flex items-center justify-center h-10 w-full"
               >
+                {enRangoFiltro &&
+                  filtroInicioISO &&
+                  finFiltroEfectivo &&
+                  filtroInicioISO !== finFiltroEfectivo && (
+                    <div
+                      aria-hidden="true"
+                      className={`absolute inset-y-1 bg-[#111827]/12 ${
+                        esInicioFiltro
+                          ? 'left-1/2 right-0 rounded-l-full'
+                          : esFinFiltro
+                          ? 'left-0 right-1/2 rounded-r-full'
+                          : 'inset-x-0'
+                      }`}
+                    />
+                  )}
+
                 <button
                   type="button"
                   onClick={() => manejarToqueDia(celda)}
-                  aria-label={`${celda.numeroDia} de ${calendario.nombreMesCapitalizado}`}
-                  aria-pressed={esDiaFiltrado || celda.enReservaActiva}
-                  className={`ios-press-bounce flex h-9 w-9 flex-col items-center justify-center rounded-full text-xs tabular-nums select-none cursor-pointer transition-colors ${clasesCirculo}`}
+                  aria-label={`${celda.numeroDia} de ${calendario.nombreMesCapitalizado}${
+                    enAlgunAlquiler ? ' (Día con alquiler)' : ''
+                  }`}
+                  aria-pressed={enRangoFiltro}
+                  className={`ios-press-bounce relative flex h-9 w-9 flex-col items-center justify-center rounded-full text-xs tabular-nums select-none cursor-pointer transition-colors ${clasesCirculo}`}
                 >
                   <span>{celda.numeroDia}</span>
+                  {enAlgunAlquiler && (
+                    <span
+                      aria-hidden="true"
+                      className={`h-1 w-1 rounded-full ${
+                        enRangoFiltro ? 'bg-white/85' : 'bg-[#4B5563]'
+                      }`}
+                    />
+                  )}
                 </button>
               </div>
             );
           })}
         </div>
 
-        {/* Indicador sutil inferior de lámina móvil */}
-        <div
-          aria-hidden="true"
-          className="mt-3 mx-auto h-1 w-8 rounded-full bg-[#EDEDED]"
-        />
+        {/* Leyenda compacta + Estado del filtro de doble selección */}
+        <div className="mt-3 flex items-center justify-between gap-2 border-t border-[#EDEDED] pt-2.5 text-[11px] font-medium text-[#4B5563]">
+          <div className="flex items-center gap-3">
+            <span className="inline-flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-[#9CA3AF]/60 ring-1 ring-[#4B5563]" />
+              <span>Con alquiler</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-[#111827]" />
+              <span>Filtro</span>
+            </span>
+          </div>
+
+          <span className="text-[11px] font-semibold text-[#111827] tabular-nums">
+            {!filtroInicioISO
+              ? 'Toca inicio y fin para filtrar'
+              : !filtroFinISO
+              ? `Desde ${formatearFechaCorta(filtroInicioISO)} · Toca día final`
+              : `${formatearFechaCorta(filtroInicioISO)} – ${formatearFechaCorta(filtroFinISO)}`}
+          </span>
+        </div>
       </section>
 
       {/* =====================================================================
@@ -274,21 +369,25 @@ export default function MisReservasHub({ hoyISO }: MisReservasHubProps) {
         aria-label="Listado de alquileres"
         className="flex-1 px-5 pt-5 space-y-3.5"
       >
-        {/* Cabecera Editorial: Día Grande + Conteo + Píldora "View all" */}
+        {/* Cabecera Editorial: Día / Rango Grande + Conteo + Píldora "Ver todos" */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3.5">
             <div className="border-l-2 border-[#9CA3AF]/60 pl-3">
               <span className="block text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
-                {fechaFiltroISO ? 'FILTRO' : 'AGENDA'}
+                {hayFiltroActivo ? 'FILTRO' : 'AGENDA'}
               </span>
               <span
-                key={infoDiaCabecera.numeroDia}
+                key={`${infoDiaCabecera.numeroDia}-${infoDiaFinFiltro?.numeroDia ?? ''}`}
                 className="block font-display text-2xl font-black leading-none text-[#111827] tabular-nums"
               >
-                {infoDiaCabecera.numeroDia}
+                {infoDiaFinFiltro
+                  ? `${infoDiaCabecera.numeroDia}–${infoDiaFinFiltro.numeroDia}`
+                  : infoDiaCabecera.numeroDia}
               </span>
               <span className="block text-[11px] font-medium text-[#4B5563]">
-                {infoDiaCabecera.diaSemanaCorto}
+                {infoDiaFinFiltro
+                  ? `${infoDiaCabecera.diaSemanaCorto} – ${infoDiaFinFiltro.diaSemanaCorto}`
+                  : infoDiaCabecera.diaSemanaCorto}
               </span>
             </div>
 
@@ -300,10 +399,10 @@ export default function MisReservasHub({ hoyISO }: MisReservasHubProps) {
             </p>
           </div>
 
-          {fechaFiltroISO && (
+          {hayFiltroActivo && (
             <button
               type="button"
-              onClick={() => setFechaFiltroISO(null)}
+              onClick={limpiarFiltro}
               className="ios-press-bounce rounded-full bg-[#111827] px-3.5 py-1.5 text-[11px] font-semibold text-white cursor-pointer"
             >
               Ver todos
@@ -386,12 +485,14 @@ export default function MisReservasHub({ hoyISO }: MisReservasHubProps) {
         ) : (
           <div className="rounded-[22px] bg-white/70 px-4 py-5 text-center space-y-2">
             <p className="text-xs font-medium text-[#4B5563]">
-              Sin alquileres en este día
+              {filtroFinISO
+                ? 'Sin alquileres en este rango de fechas'
+                : 'Sin alquileres en este día'}
             </p>
-            {fechaFiltroISO && (
+            {hayFiltroActivo && (
               <button
                 type="button"
-                onClick={() => setFechaFiltroISO(null)}
+                onClick={limpiarFiltro}
                 className="ios-press-bounce rounded-full bg-[#111827] px-4 py-1.5 text-xs font-semibold text-white cursor-pointer"
               >
                 Ver todos

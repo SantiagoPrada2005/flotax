@@ -14,6 +14,7 @@
 | [`reservas/`](./reservas/) | Portal de reservas del cliente: Calendario Editorial Suizo, Agenda de Hitos y Bento Grid de Especificaciones. | [INDEX.md](./reservas/INDEX.md) |
 | [`auth/`](./auth/) | Componentes de acceso y wizards de inducción de personal. | [INDEX.md](./auth/INDEX.md) |
 | [`perfil/`](./perfil/) | Componentes de perfil y switch de portal cliente/operador. | [INDEX.md](./perfil/INDEX.md) |
+| [`ui/`](./ui/) | Primitivas y componentes visuales agnósticos Tier 1 (Isotipo FlotaX, botones). | [INDEX.md](./ui/INDEX.md) |
 
 ## Invariants & Directory Rules
 

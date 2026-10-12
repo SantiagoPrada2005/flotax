@@ -1,5 +1,6 @@
 ---
-// src/components/landing/LandingFooter.astro
+import FlotaxIsotype from '../ui/FlotaxIsotype.astro';
+
 interface Props {
   user?: {
     id: string;
@@ -25,13 +26,13 @@ const { user = null } = Astro.props;
         >
           <div
             data-pencil-name="FootLogo"
-            class="w-8 h-8 flex items-center justify-center bg-gradient-to-br from-[#2E4E8F] to-[#0C1120] rounded-xl text-white font-extrabold text-sm shadow-xs"
+            class="w-8 h-8 flex items-center justify-center bg-[#111827] rounded-xl text-[#EDEDED] shadow-xs"
           >
-            F
+            <FlotaxIsotype size={18} fill="#EDEDED" />
           </div>
           <span
             data-pencil-name="FootName"
-            class="text-xl font-extrabold text-[#0C1120] font-[Manrope,system-ui,sans-serif] tracking-tight"
+            class="text-xl font-extrabold text-[#111827] font-[Manrope,system-ui,sans-serif] tracking-tight"
           >
             FlotaX
           </span>

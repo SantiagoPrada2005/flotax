@@ -1,5 +1,6 @@
 ---
-// src/components/landing/LandingHeader.astro
+import FlotaxIsotype from '../ui/FlotaxIsotype.astro';
+
 interface Props {
   user?: {
     id: string;
@@ -33,16 +34,16 @@ const { user = null, usuario = null } = Astro.props;
       >
         <div
           data-pencil-name="Logo"
-          class="w-7 h-7 sm:w-7.5 sm:h-7.5 flex items-center justify-center bg-gradient-to-br from-[#2E4E8F] to-[#0C1120] rounded-full shadow-xs text-white font-black text-xs group-hover:scale-105 transition-transform"
+          class="w-7 h-7 sm:w-7.5 sm:h-7.5 flex items-center justify-center bg-[#111827] rounded-full shadow-xs text-[#EDEDED] group-hover:scale-105 transition-transform"
         >
-          F
+          <FlotaxIsotype size={16} fill="#EDEDED" />
         </div>
         <div class="flex items-baseline gap-1.5">
           <span
             data-pencil-name="BrandName"
-            class="text-base sm:text-lg font-extrabold text-[#0C1120] font-[Manrope,system-ui,sans-serif] tracking-tight"
+            class="text-base sm:text-lg font-extrabold text-[#111827] font-[Manrope,system-ui,sans-serif] tracking-tight"
           >
-            Flota<span class="text-[#2E4E8F]">X</span>
+            Flota<span>X</span>
           </span>
         </div>
       </a>

@@ -15,7 +15,9 @@
 | [`Sidebar.astro`](./Sidebar.astro) | Barra Lateral de Navegación Desktop | Componente `<Sidebar activeTab="..." />` | Design tokens FlotaX (`tokens.css`) |
 | [`ExitAdminButton.tsx`](./ExitAdminButton.tsx) | Botón Conmutador a Portal Cliente | Componente `<ExitAdminButton />` | `astro:actions`, `astro:transitions/client` |
 | [`IosInstallGuideModal.tsx`](./IosInstallGuideModal.tsx) | Isla React 19: Guía Interactiva en Video para iOS PWA | Componente `<IosInstallGuideModal ... />` | Recortes de video `/instructions/ios-step-*.mp4` |
-| [`PwaRuntimeIsland.tsx`](./PwaRuntimeIsland.tsx) | Isla React 19: Orquestador PWA Standalone & SPA | Componente `<PwaRuntimeIsland />` | `@/lib/pwa`, `astro:transitions/client`, [`IosInstallGuideModal.tsx`](./IosInstallGuideModal.tsx) |
+| [`PwaRuntimeIsland.tsx`](./PwaRuntimeIsland.tsx) | Isla React 19: Orquestador PWA Standalone, SPA & Loader | Componente `<PwaRuntimeIsland />` | `@/lib/pwa`, `astro:transitions/client`, [`IosInstallGuideModal.tsx`](./IosInstallGuideModal.tsx), [`FlotaxLoadingScreen.tsx`](./FlotaxLoadingScreen.tsx) |
+| [`FlotaxLoadingScreen.tsx`](./FlotaxLoadingScreen.tsx) | Isla React 19: Pantalla de Carga Full-Screen Cinética (Variantes `orbital` y `cad`) | Componente `<FlotaxLoadingScreen ... />`, `FlotaxLoadingScreenProps`, `FlotaxLoaderVariant` | Design tokens FlotaX (`tokens.css`) |
+| [`FlotaxLoaderPreviewIsland.tsx`](./FlotaxLoaderPreviewIsland.tsx) | Isla React 19: Simulador e Inspector Interactivo de Carga | Componente `<FlotaxLoaderPreviewIsland />` | [`FlotaxLoadingScreen.tsx`](./FlotaxLoadingScreen.tsx), `astro:transitions/client` |
 
 ## Invariants & Directory Rules
 

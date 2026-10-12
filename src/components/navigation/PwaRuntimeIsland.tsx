@@ -12,6 +12,7 @@ import {
   registerPwaServiceWorker,
 } from '@/lib/pwa';
 import IosInstallGuideModal from './IosInstallGuideModal';
+import FlotaxLoadingScreen from './FlotaxLoadingScreen';
 
 const FULLSCREEN_NO_DOCK_PATHS: ReadonlyArray<string> = [
   '/',
@@ -32,6 +33,7 @@ function isDockHiddenOnPath(pathname: string): boolean {
  * 1. Registro del Service Worker (/sw.js) y contención SPA en modo standalone.
  * 2. Captura global de beforeinstallprompt (Android/Desktop) e instalación de 1 toque.
  * 3. Asistente visual interactivo con recortes de video reales para iOS Safari.
+ * 4. Pantalla de carga cinética a pantalla completa (FlotaxLoadingScreen).
  */
 export default function PwaRuntimeIsland() {
   const deferredPromptRef = useRef<BeforeInstallPromptEvent | null>(null);
@@ -43,6 +45,8 @@ export default function PwaRuntimeIsland() {
   const [isInstalling, setIsInstalling] = useState(false);
   const [justInstalled, setJustInstalled] = useState(false);
   const [platform, setPlatform] = useState<PwaInstallPlatform>('other');
+  const [isRouteLoading, setIsRouteLoading] = useState(false);
+  const [loadingLabel, setLoadingLabel] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     void registerPwaServiceWorker();
@@ -168,20 +172,58 @@ export default function PwaRuntimeIsland() {
       }, 1000);
     }
 
+    let routeLoadTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const handleBeforePreparation = () => {
+      if (routeLoadTimer) {
+        clearTimeout(routeLoadTimer);
+      }
+      routeLoadTimer = setTimeout(() => {
+        setLoadingLabel(undefined);
+        setIsRouteLoading(true);
+      }, 160);
+    };
+
+    const handlePageLoad = () => {
+      if (routeLoadTimer) {
+        clearTimeout(routeLoadTimer);
+        routeLoadTimer = undefined;
+      }
+      setIsRouteLoading(false);
+      syncStandaloneState();
+    };
+
+    const handleCustomLoading = (event: Event) => {
+      const customEvent = event as CustomEvent<{
+        visible?: boolean;
+        label?: string;
+      }>;
+      const visible = Boolean(customEvent.detail?.visible);
+      setLoadingLabel(customEvent.detail?.label);
+      setIsRouteLoading(visible);
+    };
+
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
     window.addEventListener('flotax:open-install', handleOpenInstallRequest);
-    document.addEventListener('astro:page-load', syncStandaloneState);
+    window.addEventListener('flotax:loading', handleCustomLoading);
+    document.addEventListener('astro:before-preparation', handleBeforePreparation);
+    document.addEventListener('astro:page-load', handlePageLoad);
     document.addEventListener('click', handleDocumentClick);
 
     return () => {
       if (bannerTimer) {
         clearTimeout(bannerTimer);
       }
+      if (routeLoadTimer) {
+        clearTimeout(routeLoadTimer);
+      }
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
       window.removeEventListener('flotax:open-install', handleOpenInstallRequest);
-      document.removeEventListener('astro:page-load', syncStandaloneState);
+      window.removeEventListener('flotax:loading', handleCustomLoading);
+      document.removeEventListener('astro:before-preparation', handleBeforePreparation);
+      document.removeEventListener('astro:page-load', handlePageLoad);
       document.removeEventListener('click', handleDocumentClick);
     };
   }, []);
@@ -231,7 +273,12 @@ export default function PwaRuntimeIsland() {
   };
 
   if (isStandalone) {
-    return null;
+    return (
+      <FlotaxLoadingScreen
+        isVisible={isRouteLoading}
+        {...(loadingLabel !== undefined ? { statusLabel: loadingLabel } : {})}
+      />
+    );
   }
 
   const dockHidden = isDockHiddenOnPath(livePath);
@@ -243,6 +290,11 @@ export default function PwaRuntimeIsland() {
 
   return (
     <>
+      <FlotaxLoadingScreen
+        isVisible={isRouteLoading}
+        {...(loadingLabel !== undefined ? { statusLabel: loadingLabel } : {})}
+      />
+
       {/* Toast de Confirmación tras Instalar */}
       {justInstalled && (
         <div
@@ -275,9 +327,13 @@ export default function PwaRuntimeIsland() {
           <div className="flex items-center justify-between gap-3 rounded-[24px] bg-[#111827] p-3.5 sm:p-4 text-[#EDEDED] shadow-[0_22px_48px_-10px_rgba(17,24,39,0.45)] border border-[#4B5563]/50 ring-1 ring-white/10">
             <div className="flex items-center gap-3 min-w-0">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-[#1F2937] border border-[#4B5563]/60 shadow-inner">
-                <span className="font-display text-xl font-black tracking-tight text-[#EDEDED]">
-                  F<span className="text-[#9CA3AF]">.</span>
-                </span>
+                <svg
+                  viewBox="0 0 270 200"
+                  className="h-6 w-8 fill-[#EDEDED]"
+                  aria-hidden="true"
+                >
+                  <path d="M 97.00 23.75 Q 100.05 18.00 106.55 18.00 L 251.50 18.00 Q 256.00 18.00 253.91 21.98 L 234.64 58.69 Q 231.85 64.00 225.85 64.00 L 133.90 64.00 Q 128.90 64.00 126.58 68.43 L 116.55 87.52 Q 114.46 91.50 110.80 88.89 L 79.97 66.90 Q 75.90 64.00 78.24 59.58 Z M 63.06 88.42 Q 65.40 84.00 69.47 86.90 L 99.89 108.60 Q 103.96 111.50 101.64 115.93 L 69.74 176.69 Q 66.95 182.00 60.95 182.00 L 18.50 182.00 Q 14.00 182.00 16.09 178.02 Z M 136.90 86.87 Q 139.45 82.00 144.95 82.00 L 237.50 82.00 Q 242.00 82.00 239.91 85.98 L 220.64 122.69 Q 217.85 128.00 211.85 128.00 L 157.92 128.00 Q 151.92 128.00 147.04 124.52 L 129.35 111.90 Q 125.28 109.00 127.60 104.57 Z" />
+                </svg>
               </div>
 
               <div className="min-w-0">

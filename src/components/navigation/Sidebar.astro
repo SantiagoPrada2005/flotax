@@ -1,5 +1,6 @@
 ---
 import ExitAdminButton from './ExitAdminButton';
+import FlotaxIsotype from '../ui/FlotaxIsotype.astro';
 
 interface Props {
   activeTab?: 'home' | 'search' | 'fleet' | 'wallet' | 'profile' | undefined;
@@ -18,12 +19,12 @@ const isWallet = activeTab ? activeTab === 'wallet' : currentPath.startsWith('/a
 <aside class="hidden w-64 shrink-0 flex-col border-r border-border-subtle bg-surface-sidebar p-4 md:flex h-screen sticky top-0 overflow-y-auto">
   <!-- Brand Header -->
   <a href="/admin" class="flex items-center gap-3 px-2 py-3 transition hover:opacity-90">
-    <div class="flex h-9 w-9 items-center justify-center rounded-[10px] bg-brand-primary text-white shadow-xs">
-      <span class="font-display text-base font-bold leading-none">M</span>
+    <div class="flex h-9 w-9 items-center justify-center rounded-[10px] bg-brand-primary text-[#EDEDED] shadow-xs">
+      <FlotaxIsotype size={20} fill="#EDEDED" />
     </div>
     <div class="flex flex-col">
       <span class="font-display text-lg font-bold tracking-tight text-brand-primary">
-        Flota<span class="text-brand-coral">X</span>
+        Flota<span>X</span>
       </span>
       <span class="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
         Gestión Perimetral

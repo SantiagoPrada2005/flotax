@@ -8,6 +8,11 @@
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
 | [`design.pen`](./design.pen) | Archivo Fuente Pencil | Sistema de diseño de interfaces, tokens y mockups completos | Pencil App |
+| [`logo.pen`](./logo.pen) | Archivo Fuente Pencil | Identidad visual FlotaX y 2 láminas de animación de carga full-screen (Orbital & Escáner CAD) | Pencil App, [`flotax-loader-bg.glsl`](./flotax-loader-bg.glsl), [`flotax-logo-pulse.glsl`](./flotax-logo-pulse.glsl), [`flotax-loader-cad.glsl`](./flotax-loader-cad.glsl), [`flotax-logo-scan.glsl`](./flotax-logo-scan.glsl) |
+| [`flotax-loader-bg.glsl`](./flotax-loader-bg.glsl) | Shader Fragment WebGL 1.0 | Animación 01: Fondo de telemetría perimetral, retícula orbital y guías láser ($+62.3^\circ$ / $-35.5^\circ$) | `logo.pen` |
+| [`flotax-logo-pulse.glsl`](./flotax-logo-pulse.glsl) | Shader Fragment WebGL 1.0 | Animación 01: Barrido especular cinético $+62.3^\circ$ sobre las 3 masas del isotipo FlotaX | `logo.pen` |
+| [`flotax-loader-cad.glsl`](./flotax-loader-cad.glsl) | Shader Fragment WebGL 1.0 | Animación 02: Retícula milimétrica CAD, estelas de túnel de viento laminar y haz láser pericial | `logo.pen` |
+| [`flotax-logo-scan.glsl`](./flotax-logo-scan.glsl) | Shader Fragment WebGL 1.0 | Animación 02: Transición Wireframe-to-Solid con achurado técnico $+62.3^\circ$ sobre el isotipo | `logo.pen` |
 
 ## Invariants & Directory Rules
 

@@ -24,6 +24,7 @@
 | [`login.astro`](./login.astro) | Página `/login` | Flujo de acceso OTP / Google | `@/components/auth/LoginFlow` |
 | [`registro.astro`](./registro.astro) | Página `/registro` | Registro de nuevos usuarios clientes | `@/components/auth/LoginFlow` |
 | [`error.astro`](./error.astro) | Fallback `/error` | Redirección defensiva hacia `/login` preservando query params | `Astro.redirect` |
+| [`animacion.astro`](./animacion.astro) | Vista dedicada `/animacion` | Visor y simulador interactivo de la animación de carga full-screen | `@/components/navigation/FlotaxLoaderPreviewIsland` |
 
 ## Invariants & Directory Rules
 

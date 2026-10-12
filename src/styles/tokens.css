@@ -485,6 +485,236 @@ html.js-ready .reveal-on-scroll.is-visible {
   box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.6), inset 0 0 20px -5px rgba(46, 78, 143, 0.3);
 }
 
+/* ==========================================================================
+   FlotaX Full-Screen Kinetic F+X Loading Animation
+   Canonical Palette Only: #111827 | #1F2937 | #4B5563 | #9CA3AF | #EDEDED
+   ========================================================================== */
+
+@keyframes flotaxMass2Kinetic {
+  0% {
+    opacity: 0;
+    transform: translate3d(-16px, 28px, 0);
+  }
+  18%, 78% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  92%, 100% {
+    opacity: 0.25;
+    transform: translate3d(4px, -7px, 0);
+  }
+}
+
+@keyframes flotaxMass1Kinetic {
+  0%, 6% {
+    opacity: 0;
+    transform: translate3d(-24px, -12px, 0);
+  }
+  26%, 78% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  92%, 100% {
+    opacity: 0.25;
+    transform: translate3d(10px, 0, 0);
+  }
+}
+
+@keyframes flotaxMass3Kinetic {
+  0%, 14% {
+    opacity: 0;
+    transform: translate3d(24px, 16px, 0);
+  }
+  34%, 78% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  92%, 100% {
+    opacity: 0.25;
+    transform: translate3d(10px, 7px, 0);
+  }
+}
+
+@keyframes flotaxSheenSweep {
+  0%, 24% {
+    transform: translate3d(-140%, 0, 0) skewX(-27.7deg);
+    opacity: 0;
+  }
+  45% {
+    opacity: 0.9;
+  }
+  68%, 100% {
+    transform: translate3d(220%, 0, 0) skewX(-27.7deg);
+    opacity: 0;
+  }
+}
+
+@keyframes flotaxProgressSweep {
+  0% {
+    transform: translate3d(-105%, 0, 0);
+  }
+  55% {
+    transform: translate3d(15%, 0, 0);
+  }
+  100% {
+    transform: translate3d(115%, 0, 0);
+  }
+}
+
+@keyframes flotaxOrbitSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes flotaxSonarPulse {
+  0% {
+    transform: scale(0.72);
+    opacity: 0.65;
+  }
+  100% {
+    transform: scale(1.38);
+    opacity: 0;
+  }
+}
+
+.flotax-loader-m2 {
+  animation: flotaxMass2Kinetic 2.6s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  will-change: transform, opacity;
+}
+
+.flotax-loader-m1 {
+  animation: flotaxMass1Kinetic 2.6s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  will-change: transform, opacity;
+}
+
+.flotax-loader-m3 {
+  animation: flotaxMass3Kinetic 2.6s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  will-change: transform, opacity;
+}
+
+.flotax-loader-orbit {
+  animation: flotaxOrbitSpin 5.2s linear infinite;
+  transform-origin: center;
+}
+
+.flotax-loader-sonar {
+  animation: flotaxSonarPulse 2.6s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  transform-origin: center;
+}
+
+.flotax-loader-bar {
+  animation: flotaxProgressSweep 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  will-change: transform;
+}
+
+.flotax-loader-sheen {
+  animation: flotaxSheenSweep 2.6s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  will-change: transform, opacity;
+}
+
+/* ==========================================================================
+   FlotaX Full-Screen Loading Animation 02 — Escáner Pericial CAD & Túnel
+   ========================================================================== */
+
+@keyframes flotaxCadLaserDraw {
+  0% {
+    stroke-dashoffset: 620;
+    opacity: 0.35;
+  }
+  35%, 80% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: -620;
+    opacity: 0.35;
+  }
+}
+
+@keyframes flotaxCadSolidClip {
+  0%, 12% {
+    clip-path: inset(0 100% 0 0);
+  }
+  52%, 78% {
+    clip-path: inset(0 0% 0 0);
+  }
+  94%, 100% {
+    clip-path: inset(0 0 0 100%);
+  }
+}
+
+@keyframes flotaxCadScannerBeam {
+  0%, 10% {
+    transform: translate3d(-155px, 0, 0) skewX(-27.7deg);
+    opacity: 0;
+  }
+  16% {
+    opacity: 1;
+  }
+  52% {
+    transform: translate3d(155px, 0, 0) skewX(-27.7deg);
+    opacity: 1;
+  }
+  62%, 100% {
+    transform: translate3d(175px, 0, 0) skewX(-27.7deg);
+    opacity: 0;
+  }
+}
+
+@keyframes flotaxWindSlipstream {
+  from {
+    stroke-dashoffset: 480;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes flotaxTachCellWave {
+  0%, 100% {
+    opacity: 0.22;
+    transform: scaleY(0.82);
+  }
+  40%, 70% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+.flotax-cad-wireframe {
+  stroke-dasharray: 620;
+  animation: flotaxCadLaserDraw 2.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.flotax-cad-solid-reveal {
+  animation: flotaxCadSolidClip 2.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  will-change: clip-path;
+}
+
+.flotax-cad-laser-beam {
+  animation: flotaxCadScannerBeam 2.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  will-change: transform, opacity;
+}
+
+.flotax-cad-slipstream {
+  stroke-dasharray: 90 150;
+  animation: flotaxWindSlipstream 1.6s linear infinite;
+}
+
+.flotax-cad-slipstream-fast {
+  stroke-dasharray: 120 180;
+  animation: flotaxWindSlipstream 1.15s linear infinite;
+}
+
+.flotax-cad-tach-cell {
+  animation: flotaxTachCellWave 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  transform-origin: center;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ios-press-bounce,
   .ios-search-morph,
@@ -499,10 +729,26 @@ html.js-ready .reveal-on-scroll.is-visible {
   .shiny-cta::before,
   .shiny-cta::after,
   .shiny-text,
-  .shiny-card {
+  .shiny-card,
+  .flotax-loader-m1,
+  .flotax-loader-m2,
+  .flotax-loader-m3,
+  .flotax-loader-orbit,
+  .flotax-loader-sonar,
+  .flotax-loader-bar,
+  .flotax-loader-sheen,
+  .flotax-cad-wireframe,
+  .flotax-cad-solid-reveal,
+  .flotax-cad-laser-beam,
+  .flotax-cad-slipstream,
+  .flotax-cad-slipstream-fast,
+  .flotax-cad-tach-cell {
     animation: none !important;
+    clip-path: none !important;
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
   }
 }
+
+

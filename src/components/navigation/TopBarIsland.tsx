@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { isStandalonePwa, openInstallPromptModal } from '@/lib/pwa';
 import TopBarSearch from './TopBarSearch';
+import FlotaxIsotype from '@/components/ui/FlotaxIsotype';
 
 export interface TopBarIslandProps {
   title?: string | undefined;
@@ -81,7 +82,10 @@ export default function TopBarIsland({
             </button>
 
             {title && (
-              <div className={`hidden items-center gap-2 rounded-full px-4 py-2 border transition-all duration-300 md:flex ${pillClass}`}>
+              <div className={`hidden items-center gap-2.5 rounded-full px-3.5 py-1.5 border transition-all duration-300 md:flex ${pillClass}`}>
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#111827] text-[#EDEDED] shrink-0">
+                  <FlotaxIsotype size={11} fill="#EDEDED" />
+                </div>
                 <span className="text-xs font-bold uppercase tracking-wider text-[#4B5563]">{title}</span>
               </div>
             )}

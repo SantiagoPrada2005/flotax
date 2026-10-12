@@ -1,0 +1,11 @@
+---
+import LayoutApp from '../layouts/LayoutApp.astro';
+import FlotaxLoaderPreviewIsland from '../components/navigation/FlotaxLoaderPreviewIsland';
+---
+
+<LayoutApp
+  title="Animación de Carga Full-Screen — FlotaX"
+  hideNav={true}
+>
+  <FlotaxLoaderPreviewIsland client:load />
+</LayoutApp>
