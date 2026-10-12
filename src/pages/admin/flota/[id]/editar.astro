@@ -1,0 +1,45 @@
+---
+import LayoutAdmin from '@/layouts/LayoutAdmin.astro';
+import VehicleFormIsland from '@/components/flota/VehicleFormIsland';
+import { obtenerVehiculoAsync } from '@/lib/flota';
+import { env } from 'cloudflare:workers';
+import { getDb } from '@/lib/db';
+
+const { id } = Astro.params;
+const db = env.DB ? getDb(env.DB) : undefined;
+const vehiculo = id ? await obtenerVehiculoAsync(id, db) : undefined;
+
+if (!vehiculo) {
+  return Astro.redirect('/admin/flota');
+}
+---
+
+<LayoutAdmin
+  title={`Editar — ${vehiculo.marca} ${vehiculo.modelo}`}
+  activeTab="fleet"
+  showBack={true}
+  backHref="/admin/flota"
+>
+  <div class="mx-auto w-full max-w-md sm:max-w-xl px-4 py-3 space-y-4">
+    <!-- Header de la Pantalla -->
+    <header class="pt-1 pb-1">
+      <p class="text-xs font-semibold uppercase tracking-wider text-[#4B5563]">
+        Modificación de Unidad • {vehiculo.placa}
+      </p>
+      <div class="mt-0.5 flex items-baseline justify-between">
+        <h1 class="font-display text-2xl font-black tracking-tight text-[#111827] sm:text-3xl">
+          Modificar Vehículo
+        </h1>
+        <span class="inline-flex items-center gap-1 rounded-full bg-[#EDEDED] px-2.5 py-0.5 text-[11px] font-bold text-[#111827] border border-[#9CA3AF]/40">
+          ID: {vehiculo.id.slice(0, 14)}
+        </span>
+      </div>
+      <p class="mt-1 text-xs text-[#4B5563]">
+        Ajuste las tarifas de alquiler, estado operativo, fotos o especificaciones mecánicas.
+      </p>
+    </header>
+
+    <!-- Formulario de Modificación -->
+    <VehicleFormIsland vehiculoInicial={vehiculo} client:load />
+  </div>
+</LayoutAdmin>

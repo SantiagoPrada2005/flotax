@@ -3,7 +3,12 @@ import LayoutApp from '@/layouts/LayoutApp.astro';
 import CatalogSearchTrigger from '@/components/flota/CatalogSearchTrigger';
 import BrandFilterBar from '@/components/flota/BrandFilterBar';
 import VehicleCatalogCard from '@/components/flota/VehicleCatalogCard';
-import { FLOTA_CANONICA } from '@/lib/flota/mock-vehiculos';
+import { listarVehiculos } from '@/lib/flota';
+import { env } from 'cloudflare:workers';
+import { getDb } from '@/lib/db';
+
+const db = env.DB ? getDb(env.DB) : undefined;
+const vehiculos = await listarVehiculos(db);
 ---
 
 <LayoutApp
@@ -47,13 +52,13 @@ import { FLOTA_CANONICA } from '@/lib/flota/mock-vehiculos';
       </div>
 
       <span class="font-mono text-xs font-semibold text-[#71717A] bg-white border border-[#E4E4E7] px-3 py-1 rounded-full shadow-2xs">
-        {FLOTA_CANONICA.length} unidades
+        {vehiculos.length} unidades
       </span>
     </div>
 
     {/* 5. Listado de Tarjetas Premium 'Popular Cars' (Screen 1) */}
     <div class="space-y-4">
-      {FLOTA_CANONICA.map((vehiculo) => (
+      {vehiculos.map((vehiculo) => (
         <VehicleCatalogCard client:visible vehiculo={vehiculo} />
       ))}
     </div>

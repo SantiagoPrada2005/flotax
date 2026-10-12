@@ -1,0 +1,23 @@
+---
+// src/components/landing/LandingFleetShowcase.astro
+import LandingFleetShowcaseIsland from './LandingFleetShowcaseIsland';
+import { listarVehiculos } from '@/lib/flota';
+import { env } from 'cloudflare:workers';
+import { getDb } from '@/lib/db';
+
+const db = env.DB ? getDb(env.DB) : undefined;
+const vehiculos = await listarVehiculos(db);
+---
+
+<section
+  id="vehiculos"
+  data-pencil-name="FleetShowcaseSection"
+  class="w-full py-12 sm:py-16 md:py-20 relative z-10 reveal-on-scroll"
+>
+  <!-- Anchor transparente para compatibilidad con enlaces a #categorias -->
+  <div id="categorias" class="absolute -top-20 left-0 pointer-events-none"></div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <LandingFleetShowcaseIsland client:load initialVehiculos={vehiculos} />
+  </div>
+</section>

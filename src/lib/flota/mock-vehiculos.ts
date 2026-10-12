@@ -188,3 +188,20 @@ export function buscarVehiculos(filtros: FiltrosBusquedaVehiculo): VehiculoItem[
 export function obtenerVehiculoPorId(id: string): VehiculoItem | undefined {
   return FLOTA_CANONICA.find((v) => v.id === id);
 }
+
+export function registrarVehiculoEnMemoria(vehiculo: VehiculoItem): void {
+  const index = FLOTA_CANONICA.findIndex((v) => v.id === vehiculo.id);
+  if (index >= 0) {
+    FLOTA_CANONICA[index] = vehiculo;
+  } else {
+    FLOTA_CANONICA.unshift(vehiculo);
+  }
+}
+
+export function eliminarVehiculoEnMemoria(id: string): void {
+  const index = FLOTA_CANONICA.findIndex((v) => v.id === id);
+  if (index >= 0) {
+    FLOTA_CANONICA.splice(index, 1);
+  }
+}
+

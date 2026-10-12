@@ -1,0 +1,31 @@
+CREATE TABLE `vehiculos` (
+	`id` text PRIMARY KEY NOT NULL,
+	`local_id` text,
+	`marca` text NOT NULL,
+	`modelo` text NOT NULL,
+	`anio` integer NOT NULL,
+	`categoria` text NOT NULL,
+	`categoria_etiqueta` text NOT NULL,
+	`placa` text NOT NULL,
+	`estado` text DEFAULT 'DISPONIBLE' NOT NULL,
+	`precio_dia` integer NOT NULL,
+	`deposito_garantia` integer NOT NULL,
+	`transmision` text NOT NULL,
+	`combustible` text NOT NULL,
+	`capacidad_pasajeros` integer NOT NULL,
+	`autonomia_km` integer,
+	`kilometraje` integer NOT NULL,
+	`imagen_url` text NOT NULL,
+	`destacado` integer DEFAULT false NOT NULL,
+	`descripcion` text NOT NULL,
+	`aceleracion` text,
+	`velocidad_maxima` text,
+	`rating` real,
+	`autonomia_odo` text,
+	`activo` integer DEFAULT true NOT NULL,
+	`creado_en` integer NOT NULL,
+	`actualizado_en` integer NOT NULL,
+	FOREIGN KEY (`local_id`) REFERENCES `locales_alquiler`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `vehiculos_placa_unique` ON `vehiculos` (`placa`);

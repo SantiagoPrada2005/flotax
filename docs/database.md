@@ -165,7 +165,41 @@ Persistencia y deduplicación global de errores entre isolates de Cloudflare Wor
 | `estado` | TEXT | NOT NULL, DEFAULT 'ABIERTO' | Estado operativo ('ABIERTO', 'MITIGADO', 'RESUELTO'). |
 | `metadata` | TEXT | NULLABLE | JSON sanitizado con contexto de petición y stack trace. |
 | `creado_en` | TIMESTAMP | NOT NULL | Creación del registro. |
-| `actualizado_en` | TIMESTAMP | NOT NULL | Última actualización. |
+| ---
+
+### 4. Módulo de Flota de Vehículos
+
+#### `vehiculos`
+Catálogo de unidades físicas y operativas disponibles para alquiler y control perimetral de patio.
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|---------------|-------------|
+| `id` | TEXT | PRIMARY KEY | Identificador único del vehículo (ej. 'veh-mercedes-eqb'). |
+| `local_id` | TEXT | NULLABLE, FK `locales_alquiler.id` | Local o patio al que pertenece la unidad. |
+| `marca` | TEXT | NOT NULL | Fabricante de la unidad (ej. 'Mercedes-Benz', 'BMW'). |
+| `modelo` | TEXT | NOT NULL | Modelo comercial (ej. 'EQB 350 4MATIC Luxury'). |
+| `anio` | INTEGER | NOT NULL | Año del modelo (ej. 2024). |
+| `categoria` | TEXT | NOT NULL | Categoría canónica: 'SEDAN', 'SUV', 'MOTO', 'PATINETA', 'UTILITARIO'. |
+| `categoria_etiqueta` | TEXT | NOT NULL | Etiqueta amigable (ej. 'SUV Eléctrica', 'Coupe Deportivo'). |
+| `placa` | TEXT | NOT NULL, UNIQUE | Placa o matrícula oficial (ej. 'FLX-801'). |
+| `estado` | TEXT | NOT NULL, DEFAULT 'DISPONIBLE' | Estado operativo: 'DISPONIBLE', 'RESERVADO', 'MANTENIMIENTO', 'FUERA_SERVICIO'. |
+| `precio_dia` | INTEGER | NOT NULL | Tarifa diaria en COP (ej. 280000). |
+| `deposito_garantia` | INTEGER | NOT NULL | Depósito o fianza de garantía en COP (ej. 750000). |
+| `transmision` | TEXT | NOT NULL | Tipo de transmisión ('Automática', 'Manual', 'Eléctrica'). |
+| `combustible` | TEXT | NOT NULL | Tipo de propulsión ('Gasolina', 'Diésel', 'Eléctrico', 'Híbrido'). |
+| `capacidad_pasajeros` | INTEGER | NOT NULL | Aforo máximo de personas (ej. 5 o 7). |
+| `autonomia_km` | INTEGER | NULLABLE | Autonomía estimada en km para eléctricos o híbridos. |
+| `kilometraje` | INTEGER | NOT NULL | Lectura actual del odómetro. |
+| `imagen_url` | TEXT | NOT NULL | URL de la imagen principal del vehículo. |
+| `destacado` | INTEGER (boolean) | NOT NULL, DEFAULT false | Flag para visibilidad prioritaria en catálogo. |
+| `descripcion` | TEXT | NOT NULL | Reseña técnica y descriptiva para el cliente. |
+| `aceleracion` | TEXT | NULLABLE | Métrica de aceleración (ej. '3.8 s'). |
+| `velocidad_maxima` | TEXT | NULLABLE | Velocidad punta (ej. '210 km/h'). |
+| `rating` | REAL | NULLABLE | Calificación promedio del modelo (ej. 4.8). |
+| `autonomia_odo` | TEXT | NULLABLE | Métrica visual de autonomía/odómetro (ej. '420 km'). |
+| `activo` | INTEGER (boolean) | NOT NULL, DEFAULT true | Estado de habilitación en el sistema. |
+| `creado_en` | TIMESTAMP | NOT NULL | Fecha de alta en inventario. |
+| `actualizado_en` | TIMESTAMP | NOT NULL | Fecha de última modificación. |
 
 ---
 
@@ -185,6 +219,7 @@ erDiagram
     locales_alquiler ||--o{ clientes_local : "clientes captados"
     locales_alquiler ||--o{ invitaciones_local : "invitaciones activas"
     locales_alquiler ||--o{ historial_transferencias_local : "auditoria titularidad"
+    locales_alquiler ||--o{ vehiculos : "posee unidades"
 
     user {
         string id PK
@@ -300,6 +335,35 @@ erDiagram
         timestamp ultimo_correo_en
         string estado
         string metadata
+        timestamp creado_en
+        timestamp actualizado_en
+    }
+
+    vehiculos {
+        string id PK
+        string local_id FK
+        string marca
+        string modelo
+        integer anio
+        string categoria
+        string categoria_etiqueta
+        string placa UK
+        string estado
+        integer precio_dia
+        integer deposito_garantia
+        string transmision
+        string combustible
+        integer capacidad_pasajeros
+        integer autonomia_km
+        integer kilometraje
+        string imagen_url
+        boolean destacado
+        string descripcion
+        string aceleracion
+        string velocidad_maxima
+        real rating
+        string autonomia_odo
+        boolean activo
         timestamp creado_en
         timestamp actualizado_en
     }

@@ -7,7 +7,7 @@
 
 | Subdirectory | Responsibility | Index |
 | :--- | :--- | :--- |
-| [`flota/`](./flota/) | Control de inventario, mantenimiento y estados de flota. | — |
+| [`flota/`](./flota/) | Control de inventario, mantenimiento y estados de flota. | [INDEX.md](./flota/INDEX.md) |
 | [`metricas/`](./metricas/) | Métricas y telemetría móvil iOS con revelación progresiva en 3 niveles (`/admin/metricas`). | — |
 | [`operaciones/`](./operaciones/) | Entrega, devolución y peritajes multimedia en R2. | — |
 | [`reservas/`](./reservas/) | Gestión de solicitudes, contratos y calendario de patio. | — |

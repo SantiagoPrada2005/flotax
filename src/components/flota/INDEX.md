@@ -7,3 +7,6 @@
 | [`CatalogSearchTrigger.tsx`](./CatalogSearchTrigger.tsx) | Isla React 19: Disparador de Catálogo | Botón accesible que sincroniza el catálogo con el buscador global iOS 27 | [`TopBarSearch.tsx`](../navigation/TopBarSearch.tsx) |
 | [`VehicleCatalogCard.tsx`](./VehicleCatalogCard.tsx) | Isla React 19: Tarjeta Popular Cars | Tarjeta con foto 3/4 de estudio, sombra de suelo y grid de 4 especificaciones | [`mock-vehiculos.ts`](../../lib/flota/mock-vehiculos.ts) |
 | [`BrandFilterBar.tsx`](./BrandFilterBar.tsx) | Isla React 19: Carrusel de Marcas | Selector horizontal de marcas y categorías con chips interactivos | [`catalogo/index.astro`](../../pages/catalogo/index.astro) |
+| [`FleetInventoryManager.tsx`](./FleetInventoryManager.tsx) | Isla React 19: Gestor de Flota Admin | Panel interactivo de unidades, contadores por estado, búsqueda, cambios de estado rápidos y baja | [`admin/flota/index.astro`](../../pages/admin/flota/index.astro), `actions.flota` |
+| [`VehicleFormIsland.tsx`](./VehicleFormIsland.tsx) | Isla React 19: Formulario de Vehículo | Formulario completo para dar de alta nuevas unidades y modificar existentes con vista previa | [`admin/flota/nuevo.astro`](../../pages/admin/flota/nuevo.astro), [`admin/flota/[id]/editar.astro`](../../pages/admin/flota/[id]/editar.astro), `actions.flota` |
+

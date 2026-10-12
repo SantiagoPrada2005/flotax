@@ -15,6 +15,7 @@
 | [`locales.ts`](./locales.ts) | Esquema Drizzle | Tabla `locales` (entidad multi-tenant) | `drizzle-orm/sqlite-core` |
 | [`miembros.ts`](./miembros.ts) | Esquema Drizzle | Tabla `miembros` y asignación de roles por local | `drizzle-orm/sqlite-core` |
 | [`transferencias.ts`](./transferencias.ts) | Esquema Drizzle | Tabla `transferencias` operativas | `drizzle-orm/sqlite-core` |
+| [`vehiculos.ts`](./vehiculos.ts) | Esquema Drizzle | Tabla `vehiculos` de flota, especificaciones y tarifas | `drizzle-orm/sqlite-core`, `./locales` |
 | [`usuarios_admin.ts`](./usuarios_admin.ts) | Esquema Drizzle (Legacy) | `usuarioAdmin`, `rolesValidos`, tipos de usuario admin | `drizzle-orm/sqlite-core` |
 
 ## Invariants & Directory Rules

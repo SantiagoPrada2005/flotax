@@ -11,7 +11,8 @@
 | [`mock-vehiculos.ts`](./mock-vehiculos.ts) | Repositorio y Búsqueda | `FLOTA_CANONICA`, `buscarVehiculos`, `obtenerVehiculoPorId` | `./types` |
 | [`disponibilidad.ts`](./disponibilidad.ts) | Motor de Franjas y Tarifas | `construirCalendarioMes`, `calcularCotizacionAlquiler`, `esRangoDisponibleValido`, `formatearFechaCorta`, `sumarDiasISO` | `./types`, `@/lib/time/client-time` |
 | [`reservas-cliente.ts`](./reservas-cliente.ts) | Reservas, Calendario Suizo, Waybill e Inspección R2 | `ReservaClienteItem`, `PuntoInspeccionR2`, `RubroLiquidacionWaybill`, `hidratarReservasCliente`, `obtenerReservaClientePorCodigo`, `construirCalendarioSuizoReservas`, `obtenerPuntosInspeccionPorVehiculo`, `obtenerRubrosWaybillReserva` | `./types`, `./disponibilidad`, `./mock-vehiculos` |
-| [`index.ts`](./index.ts) | Barrel Export | Re-exporta todos los contratos y funciones del dominio flota | `./types`, `./mock-vehiculos`, `./disponibilidad`, `./reservas-cliente` |
+| [`repositorio.ts`](./repositorio.ts) | Repositorio D1 & Memoria | `listarVehiculos`, `obtenerVehiculoAsync`, `guardarVehiculo`, `actualizarEstadoVehiculo`, `darDeBajaVehiculo` | `./mock-vehiculos`, `@/db/schema/vehiculos`, `@/lib/db` |
+| [`index.ts`](./index.ts) | Barrel Export | Re-exporta todos los contratos y funciones del dominio flota | `./types`, `./mock-vehiculos`, `./disponibilidad`, `./reservas-cliente`, `./repositorio` |
 
 ## Invariants & Directory Rules
 

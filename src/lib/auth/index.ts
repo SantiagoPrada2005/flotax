@@ -31,7 +31,12 @@ export function createAuth(d1: D1Database, env?: AuthEnv, options?: CreateAuthOp
   const db = getDb(d1);
 
   const requestOrigin = options?.baseURL;
+  const isLocalOrigin =
+    requestOrigin &&
+    (requestOrigin.includes('localhost') || requestOrigin.includes('127.0.0.1'));
+
   const baseURL =
+    (isLocalOrigin ? requestOrigin : undefined) ||
     (env?.BETTER_AUTH_URL as string | undefined) ||
     requestOrigin ||
     (import.meta.env?.BETTER_AUTH_URL as string | undefined) ||
@@ -40,6 +45,7 @@ export function createAuth(d1: D1Database, env?: AuthEnv, options?: CreateAuthOp
   const secret =
     (env?.BETTER_AUTH_SECRET as string | undefined) ||
     (import.meta.env?.BETTER_AUTH_SECRET as string | undefined) ||
+    (process.env?.BETTER_AUTH_SECRET as string | undefined) ||
     'movix-flotax-auth-secret-key-32-chars-min';
 
   const canonicalOrigins = [
@@ -64,6 +70,18 @@ export function createAuth(d1: D1Database, env?: AuthEnv, options?: CreateAuthOp
     )
   );
 
+  const googleClientId =
+    (env?.GOOGLE_CLIENT_ID as string | undefined) ||
+    (import.meta.env?.GOOGLE_CLIENT_ID as string | undefined) ||
+    (process.env?.GOOGLE_CLIENT_ID as string | undefined) ||
+    '';
+
+  const googleClientSecret =
+    (env?.GOOGLE_CLIENT_SECRET as string | undefined) ||
+    (import.meta.env?.GOOGLE_CLIENT_SECRET as string | undefined) ||
+    (process.env?.GOOGLE_CLIENT_SECRET as string | undefined) ||
+    '';
+
   return betterAuth({
     database: drizzleAdapter(db, {
       provider: 'sqlite',
@@ -82,14 +100,8 @@ export function createAuth(d1: D1Database, env?: AuthEnv, options?: CreateAuthOp
     },
     socialProviders: {
       google: {
-        clientId:
-          (env?.GOOGLE_CLIENT_ID as string | undefined) ||
-          (import.meta.env?.GOOGLE_CLIENT_ID as string | undefined) ||
-          '',
-        clientSecret:
-          (env?.GOOGLE_CLIENT_SECRET as string | undefined) ||
-          (import.meta.env?.GOOGLE_CLIENT_SECRET as string | undefined) ||
-          '',
+        clientId: googleClientId,
+        clientSecret: googleClientSecret,
         disableSignUp: false, // Permitir registrar automáticamente al usuario si no existe al iniciar sesión con Google
       },
     },

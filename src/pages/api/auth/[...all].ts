@@ -2,6 +2,8 @@ import type { APIRoute } from 'astro';
 import { createAuth } from '@/lib/auth';
 import { env } from 'cloudflare:workers';
 
+import { ensureD1Schema } from '@/lib/db/bootstrap';
+
 export const ALL: APIRoute = async (context) => {
   const originHeader = context.request.headers.get('origin');
   const refererHeader = context.request.headers.get('referer');
@@ -22,6 +24,9 @@ export const ALL: APIRoute = async (context) => {
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
+
+  // Asegurar que las tablas de Better Auth existan en D1 antes de procesar
+  await ensureD1Schema(d1);
 
   try {
     const auth = createAuth(d1, env, {
