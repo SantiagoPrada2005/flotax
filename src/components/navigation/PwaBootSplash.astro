@@ -1,0 +1,359 @@
+---
+interface Props {
+  statusLabel?: string | undefined;
+}
+
+const {
+  statusLabel = 'ESCANEO PERICIAL Y DISPONIBILIDAD DE FLOTA',
+} = Astro.props;
+
+const M1_PATH =
+  'M 97.00 23.75 Q 100.05 18.00 106.55 18.00 L 251.50 18.00 Q 256.00 18.00 253.91 21.98 L 234.64 58.69 Q 231.85 64.00 225.85 64.00 L 133.90 64.00 Q 128.90 64.00 126.58 68.43 L 116.55 87.52 Q 114.46 91.50 110.80 88.89 L 79.97 66.90 Q 75.90 64.00 78.24 59.58 Z';
+
+const M2_PATH =
+  'M 63.06 88.42 Q 65.40 84.00 69.47 86.90 L 99.89 108.60 Q 103.96 111.50 101.64 115.93 L 69.74 176.69 Q 66.95 182.00 60.95 182.00 L 18.50 182.00 Q 14.00 182.00 16.09 178.02 Z';
+
+const M3_PATH =
+  'M 136.90 86.87 Q 139.45 82.00 144.95 82.00 L 237.50 82.00 Q 242.00 82.00 239.91 85.98 L 220.64 122.69 Q 217.85 128.00 211.85 128.00 L 157.92 128.00 Q 151.92 128.00 147.04 124.52 L 129.35 111.90 Q 125.28 109.00 127.60 104.57 Z';
+
+const CUSTOM_F_PATH =
+  'M 2.00 20.20 Q 2.00 18.20 4.00 18.20 L 51.00 18.20 Q 53.00 18.20 52.08 19.98 L 46.42 31.02 Q 45.50 32.80 43.50 32.80 L 20.00 32.80 Q 18.50 32.80 18.50 34.30 L 18.50 47.70 Q 18.50 49.20 20.00 49.20 L 41.00 49.20 Q 43.00 49.20 42.08 50.98 L 36.42 61.72 Q 35.50 63.50 33.50 63.50 L 20.00 63.50 Q 18.50 63.50 18.50 65.00 L 18.50 93.00 Q 18.50 95.00 16.50 95.00 L 4.00 95.00 Q 2.00 95.00 2.00 93.00 Z';
+
+const CUSTOM_X_MAIN_PATH =
+  'M 43.59 19.99 Q 44.50 18.20 46.50 18.20 L 61.00 18.20 Q 63.00 18.20 62.09 19.99 L 21.41 93.21 Q 20.50 95.00 18.50 95.00 L 4.00 95.00 Q 2.00 95.00 2.91 93.21 Z';
+
+const CUSTOM_X_WEDGES_PATH =
+  'M 2.91 19.99 Q 2.00 18.20 4.00 18.20 L 18.50 18.20 Q 20.50 18.20 21.41 19.85 L 27.69 31.19 Q 28.60 32.84 27.69 34.49 L 20.26 47.90 Q 19.35 49.55 18.44 47.90 Z M 46.56 65.30 Q 45.65 63.65 44.74 65.30 L 37.31 78.71 Q 36.40 80.36 37.31 82.01 L 43.59 93.35 Q 44.50 95.00 46.50 95.00 L 61.00 95.00 Q 63.00 95.00 62.09 93.21 Z';
+
+const TACH_CELL_INDICES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] as const;
+---
+
+<!-- Critical In-line Style to guarantee instant paint on standalone PWA cold start -->
+<style is:inline>
+  #flotax-boot-splash {
+    display: none;
+  }
+  html.pwa-boot-active #flotax-boot-splash {
+    display: flex;
+  }
+  html.pwa-boot-active {
+    background-color: #EDEDED !important;
+  }
+  .pwa-boot-splash-fade {
+    opacity: 0 !important;
+    transform: scale(1.02) !important;
+    pointer-events: none !important;
+    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+</style>
+
+<!-- Synchronous Detection Script (Runs in-stream before painting elements) -->
+<script is:inline>
+  (function () {
+    try {
+      var isStandalone =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        Boolean(
+          window.navigator &&
+            'standalone' in window.navigator &&
+            window.navigator.standalone
+        );
+      var bootSeen = sessionStorage.getItem('flotax_pwa_boot_seen');
+      if (isStandalone && !bootSeen) {
+        document.documentElement.classList.add('pwa-boot-active');
+        var metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (metaTheme) {
+          metaTheme.setAttribute('content', '#EDEDED');
+        }
+      }
+    } catch (_) {}
+  })();
+</script>
+
+<div
+  id="flotax-boot-splash"
+  role="status"
+  aria-live="polite"
+  aria-label="Escaneando plataforma FlotaX"
+  transition:persist="flotax-pwa-boot-splash"
+  class="fixed inset-0 z-100 min-h-dvh w-screen flex-col items-center justify-center overflow-hidden bg-[#EDEDED] text-[#111827] select-none"
+>
+  <!-- Retícula CAD Milimétrica, Vectores +62.3° / -35.5° y Túnel de Viento Laminar -->
+  <svg
+    aria-hidden="true"
+    viewBox="0 0 1200 800"
+    preserveAspectRatio="xMidYMid slice"
+    class="pointer-events-none absolute inset-0 h-full w-full"
+  >
+    <defs>
+      <pattern
+        id="flotax-cad-subgrid-boot"
+        width="24"
+        height="24"
+        patternUnits="userSpaceOnUse"
+      >
+        <path
+          d="M 24 0 L 0 0 0 24"
+          fill="none"
+          stroke="#9CA3AF"
+          stroke-width="0.45"
+          stroke-opacity="0.38"
+        ></path>
+      </pattern>
+      <pattern
+        id="flotax-cad-maingrid-boot"
+        width="120"
+        height="120"
+        patternUnits="userSpaceOnUse"
+      >
+        <rect width="120" height="120" fill="url(#flotax-cad-subgrid-boot)"></rect>
+        <path
+          d="M 120 0 L 0 0 0 120"
+          fill="none"
+          stroke="#9CA3AF"
+          stroke-width="0.9"
+          stroke-opacity="0.55"
+        ></path>
+      </pattern>
+    </defs>
+
+    <!-- Cuadrícula de Ingeniería CAD -->
+    <rect width="1200" height="800" fill="url(#flotax-cad-maingrid-boot)"></rect>
+
+    <!-- Vectores Constructivos Diagonales (+62.3° Ascendente y -35.5° Corte en X) -->
+    <line
+      x1="390"
+      y1="800"
+      x2="810"
+      y2="0"
+      stroke="#9CA3AF"
+      stroke-width="1.25"
+      stroke-dasharray="6 6"
+    ></line>
+    <line
+      x1="200"
+      y1="115"
+      x2="1000"
+      y2="685"
+      stroke="#9CA3AF"
+      stroke-width="1.25"
+      stroke-dasharray="6 6"
+    ></line>
+
+    <!-- Estelas Laminares de Túnel Aerodinámico -->
+    <g stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" opacity="0.55">
+      <line x1="40" y1="260" x2="420" y2="260" class="flotax-cad-slipstream"></line>
+      <line x1="780" y1="260" x2="1160" y2="260" class="flotax-cad-slipstream-fast"></line>
+      <line x1="0" y1="340" x2="380" y2="340" class="flotax-cad-slipstream-fast"></line>
+      <line x1="820" y1="340" x2="1200" y2="340" class="flotax-cad-slipstream"></line>
+      <line x1="60" y1="460" x2="390" y2="460" class="flotax-cad-slipstream"></line>
+      <line x1="810" y1="460" x2="1140" y2="460" class="flotax-cad-slipstream-fast"></line>
+      <line x1="20" y1="540" x2="430" y2="540" class="flotax-cad-slipstream-fast"></line>
+      <line x1="770" y1="540" x2="1180" y2="540" class="flotax-cad-slipstream"></line>
+    </g>
+
+    <!-- Escuadras Perimetrales de Calibración CAD alrededor del centro -->
+    <g stroke="#1F2937" stroke-width="2" fill="none">
+      <path d="M 350 220 L 350 175 L 405 175"></path>
+      <path d="M 850 220 L 850 175 L 795 175"></path>
+      <path d="M 350 580 L 350 625 L 405 625"></path>
+      <path d="M 850 580 L 850 625 L 795 625"></path>
+    </g>
+  </svg>
+
+  <!-- Núcleo Central de Escaneo Pericial CAD -->
+  <div class="relative z-10 flex flex-col items-center justify-center px-6">
+    <!-- Cinta de Telemetría Angular Superior -->
+    <div
+      class="mb-6 inline-flex items-center gap-4 rounded-md bg-[#111827] px-3.5 py-1.5 font-mono text-[10px] font-bold tracking-[0.14em] text-[#EDEDED] shadow-xs"
+    >
+      <span>VEC +62.3° ASC</span>
+      <span class="text-[#9CA3AF]">X-CUT -35.5°</span>
+      <span>CAL R=5.0MM</span>
+    </div>
+
+    <!-- Escenario Isotipo Wireframe-to-Solid con Escáner Láser a +62.3° -->
+    <div
+      class="relative flex h-[136px] w-[184px] sm:h-[156px] sm:w-[210px] items-center justify-center"
+    >
+      <!-- Capa 1: Malla CAD Achurada y Trazado Láser Perimetral -->
+      <svg
+        viewBox="0 0 270 200"
+        class="h-full w-full overflow-visible"
+        aria-hidden="true"
+      >
+        <defs>
+          <pattern
+            id="flotax-iso-hatch-boot"
+            width="8"
+            height="8"
+            patternTransform="rotate(-62.3)"
+            patternUnits="userSpaceOnUse"
+          >
+            <line
+              x1="0"
+              y1="0"
+              x2="0"
+              y2="8"
+              stroke="#9CA3AF"
+              stroke-width="1.5"
+            ></line>
+          </pattern>
+        </defs>
+
+        <!-- Relleno achurado técnico de fondo -->
+        <g fill="url(#flotax-iso-hatch-boot)" opacity="0.85">
+          <path d={M1_PATH}></path>
+          <path d={M2_PATH}></path>
+          <path d={M3_PATH}></path>
+        </g>
+
+        <!-- Trazado láser perimetral de alta precisión -->
+        <g
+          fill="none"
+          stroke="#1F2937"
+          stroke-width="2"
+          class="flotax-cad-wireframe"
+        >
+          <path d={M1_PATH}></path>
+          <path d={M2_PATH}></path>
+          <path d={M3_PATH}></path>
+        </g>
+
+        <!-- Miras de calibración en vértices clave -->
+        <g stroke="#4B5563" stroke-width="1.25">
+          <circle cx="100" cy="18" r="3.5" fill="#EDEDED"></circle>
+          <circle cx="253" cy="20" r="3.5" fill="#EDEDED"></circle>
+          <circle cx="65" cy="85" r="3.5" fill="#EDEDED"></circle>
+          <circle cx="140" cy="82" r="3.5" fill="#EDEDED"></circle>
+        </g>
+      </svg>
+
+      <!-- Capa 2: Bloques Sólidos Revelados por el Escáner Pericial -->
+      <div
+        aria-hidden="true"
+        class="flotax-cad-solid-reveal pointer-events-none absolute inset-0 flex items-center justify-center"
+      >
+        <svg
+          viewBox="0 0 270 200"
+          class="h-full w-full overflow-visible"
+        >
+          <path d={M2_PATH} fill="#1F2937"></path>
+          <path d={M1_PATH} fill="#111827"></path>
+          <path
+            d={M3_PATH}
+            fill="#4B5563"
+            stroke="#111827"
+            stroke-width="1.5"
+          ></path>
+        </svg>
+      </div>
+
+      <!-- Haz Láser de Escaneo Pericial Inclinado (+62.3°) -->
+      <div
+        aria-hidden="true"
+        class="flotax-cad-laser-beam pointer-events-none absolute inset-y-[-14px] w-[3px] bg-[#111827] shadow-[0_0_16px_4px_rgba(75,85,99,0.55)]"
+      ></div>
+    </div>
+
+    <!-- Logotipo Tipográfico Personalizado: FlotaX (Versión Principal Positiva) -->
+    <div
+      aria-label="FlotaX"
+      class="mt-6 flex items-center justify-center"
+    >
+      <svg
+        viewBox="2 0 52 110"
+        class="h-[44px] w-[21px] sm:h-[50px] sm:w-[24px] fill-[#111827]"
+        aria-hidden="true"
+      >
+        <path d={CUSTOM_F_PATH}></path>
+      </svg>
+      <span
+        class="font-body text-[44px] sm:text-[50px] font-extrabold leading-none tracking-[-0.045em] text-[#111827]"
+      >
+        lota
+      </span>
+      <svg
+        viewBox="0 0 65 110"
+        class="h-[44px] w-[27px] sm:h-[50px] sm:w-[31px]"
+        aria-hidden="true"
+      >
+        <path d={CUSTOM_X_MAIN_PATH} fill="#111827"></path>
+        <path d={CUSTOM_X_WEDGES_PATH} fill="#4B5563"></path>
+      </svg>
+    </div>
+
+    <!-- Tacómetro de 12 Celdas Paralelogramo (+62.3°) y Telemetría -->
+    <div class="mt-7 flex flex-col items-center gap-3.5">
+      <div
+        aria-hidden="true"
+        class="flex items-center justify-center gap-1.5"
+      >
+        {TACH_CELL_INDICES.map((idx) => (
+          <span
+            style={`animation-delay: ${idx * 110}ms; clip-path: polygon(30% 0%, 100% 0%, 70% 100%, 0% 100%);`}
+            class={`flotax-cad-tach-cell inline-block h-[10px] w-[16px] sm:w-[18px] ${
+              idx < 8
+                ? 'bg-[#111827]'
+                : idx < 10
+                  ? 'bg-[#4B5563]'
+                  : 'bg-[#9CA3AF]'
+            }`}
+          />
+        ))}
+      </div>
+
+      <p class="text-center font-mono text-[10px] sm:text-[11px] font-bold tracking-[0.2em] text-[#1F2937] uppercase">
+        {statusLabel}
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const bootStartTime = performance.now();
+  let isDismissed = false;
+
+  const dismissBootSplash = () => {
+    if (isDismissed) return;
+    const splash = document.getElementById('flotax-boot-splash');
+    if (!splash) return;
+
+    // Si la PWA arranca en '/', PwaRuntimeIsland la redirigirá a '/home' (y luego a '/catalogo' o '/admin')
+    // Mantenemos el splash hasta que llegue a la vista final
+    if (
+      window.location.pathname === '/' &&
+      document.documentElement.classList.contains('pwa-boot-active')
+    ) {
+      return;
+    }
+
+    const elapsed = performance.now() - bootStartTime;
+    const remainingDelay = Math.max(0, 750 - elapsed);
+
+    setTimeout(() => {
+      if (isDismissed) return;
+      isDismissed = true;
+
+      splash.classList.add('pwa-boot-splash-fade');
+      try {
+        sessionStorage.setItem('flotax_pwa_boot_seen', '1');
+      } catch (_) {}
+
+      setTimeout(() => {
+        splash.style.display = 'none';
+        document.documentElement.classList.remove('pwa-boot-active');
+      }, 360);
+    }, remainingDelay);
+  };
+
+  // Escuchar cuando Astro complete la navegación / hidratación inicial
+  document.addEventListener('astro:page-load', dismissBootSplash);
+
+  // Fallback de seguridad: si tras 3.5 segundos sigue activo por red lenta o error, liberar la UI
+  setTimeout(() => {
+    if (!isDismissed) {
+      dismissBootSplash();
+    }
+  }, 3500);
+</script>

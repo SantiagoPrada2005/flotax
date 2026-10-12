@@ -18,6 +18,7 @@
 | [`PwaRuntimeIsland.tsx`](./PwaRuntimeIsland.tsx) | Isla React 19: Orquestador PWA Standalone, SPA & Loader | Componente `<PwaRuntimeIsland />` | `@/lib/pwa`, `astro:transitions/client`, [`IosInstallGuideModal.tsx`](./IosInstallGuideModal.tsx), [`FlotaxLoadingScreen.tsx`](./FlotaxLoadingScreen.tsx) |
 | [`FlotaxLoadingScreen.tsx`](./FlotaxLoadingScreen.tsx) | Isla React 19: Pantalla de Carga Full-Screen Cinética (Variantes `orbital` y `cad`) | Componente `<FlotaxLoadingScreen ... />`, `FlotaxLoadingScreenProps`, `FlotaxLoaderVariant` | Design tokens FlotaX (`tokens.css`) |
 | [`FlotaxLoaderPreviewIsland.tsx`](./FlotaxLoaderPreviewIsland.tsx) | Isla React 19: Simulador e Inspector Interactivo de Carga | Componente `<FlotaxLoaderPreviewIsland />` | [`FlotaxLoadingScreen.tsx`](./FlotaxLoadingScreen.tsx), `astro:transitions/client` |
+| [`PwaBootSplash.astro`](./PwaBootSplash.astro) | Splash Screen SSR Inmediato de Arranque Frío PWA (Escáner Pericial CAD) | Componente `<PwaBootSplash statusLabel="..." />` | Design tokens FlotaX (`tokens.css`), Astro `<ClientRouter />` |
 
 ## Invariants & Directory Rules
 

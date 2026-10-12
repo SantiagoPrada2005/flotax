@@ -5,6 +5,7 @@ import TopBar from '../components/navigation/TopBar.astro';
 import Sidebar from '../components/navigation/Sidebar.astro';
 import BottomNav from '../components/navigation/BottomNav.astro';
 import PwaRuntimeIsland from '../components/navigation/PwaRuntimeIsland';
+import PwaBootSplash from '../components/navigation/PwaBootSplash.astro';
 
 interface Props {
   title?: string | undefined;
@@ -56,6 +57,7 @@ const isAdmin = navVariant === 'admin';
     <ClientRouter />
   </head>
   <body class="flex min-h-full flex-col font-body selection:bg-brand-secondary/20 selection:text-brand-primary">
+    <PwaBootSplash />
     <PwaRuntimeIsland client:load transition:persist="flotax-pwa-runtime" />
     <div class="flex min-h-screen w-full flex-row">
       <!-- Desktop Navigation Sidebar (Only for Admin) -->
