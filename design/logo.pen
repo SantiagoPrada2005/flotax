@@ -5597,6 +5597,421 @@
           ]
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "ADM_RES_01",
+      "x": 6820,
+      "y": -1640,
+      "name": "Lamina 04 — Gestion Operativa de Reservas (/admin/reservas & /admin/reservas/[codigo])",
+      "clip": true,
+      "width": 1080,
+      "fill": "$brand-surface",
+      "cornerRadius": 24,
+      "stroke": "$brand-gray-light",
+      "strokeWidth": 1,
+      "layout": "vertical",
+      "gap": 32,
+      "padding": 48,
+      "children": [
+        {
+          "type": "frame",
+          "id": "AR_HDR",
+          "name": "Header Editorial Admin Reservas",
+          "width": "fill_container",
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "AR_H_L",
+              "name": "HUD Left Admin Reservas",
+              "fill": "$brand-black",
+              "content": "FLOTAX OS  ·  SIMETRÍA OPERATIVA /ADMIN/RESERVAS & /ADMIN/RESERVAS/[CODIGO]",
+              "fontFamily": "Inter",
+              "fontSize": 12,
+              "fontWeight": "700",
+              "letterSpacing": 1.4
+            },
+            {
+              "type": "text",
+              "id": "AR_H_R",
+              "name": "HUD Right Admin Reservas",
+              "fill": "$brand-gray-mid",
+              "content": "CALENDARIO SUIZO + INSPECCIÓN R2 + MÁQUINA DE ESTADOS",
+              "fontFamily": "JetBrains Mono",
+              "fontSize": 11,
+              "fontWeight": "600"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "AR_ROW",
+          "name": "Par de Dispositivos iOS Admin (390px)",
+          "width": "fill_container",
+          "justifyContent": "space_between",
+          "alignItems": "start",
+          "gap": 36,
+          "children": [
+            {
+              "type": "frame",
+              "id": "AR_IOS_1",
+              "name": "iOS Admin 01 — /admin/reservas (Calendario Suizo + Triage de Patio)",
+              "width": 440,
+              "fill": "$brand-surface",
+              "cornerRadius": 44,
+              "stroke": "$brand-black",
+              "strokeWidth": 6,
+              "layout": "vertical",
+              "gap": 14,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "AR1_CAL",
+                  "name": "Superficie Superior Calendario Suizo",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 28,
+                  "layout": "vertical",
+                  "gap": 10,
+                  "padding": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "AR1_CAL_TOP",
+                      "name": "Barra Mes + Boton Nueva",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "AR1_MES",
+                          "name": "Mes Activo",
+                          "fill": "$brand-black",
+                          "content": "Octubre 2026",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "AR1_BTN_NEW",
+                          "name": "Pildora + Nueva",
+                          "fill": "$brand-black",
+                          "cornerRadius": 20,
+                          "padding": [6, 12],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "AR1_BTN_NEW_T",
+                              "name": "Txt Nueva",
+                              "fill": "#FFFFFF",
+                              "content": "+ Nueva",
+                              "fontFamily": "Inter",
+                              "fontSize": 11,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "AR1_CAL_HINT",
+                      "name": "Resumen Rango",
+                      "fill": "$brand-gray-mid",
+                      "content": "Lu  Ma  Mi  Ju  Vi  Sá  Do   ·   3 reservas en agenda",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 10,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "AR1_PILLS",
+                  "name": "Pildoras de Estado Operativo",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "AR1_P_ALL",
+                      "name": "Tab Todas",
+                      "fill": "$brand-black",
+                      "cornerRadius": 18,
+                      "padding": [6, 12],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "AR1_P_ALL_T",
+                          "name": "Txt Todas",
+                          "fill": "#FFFFFF",
+                          "content": "Todas 3",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "AR1_P_PND",
+                      "name": "Tab Pendientes",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 18,
+                      "padding": [6, 12],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "AR1_P_PND_T",
+                          "name": "Txt Pendientes",
+                          "fill": "$brand-black",
+                          "content": "Pendientes 1",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "AR1_P_CUR",
+                      "name": "Tab En Curso",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 18,
+                      "padding": [6, 12],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "AR1_P_CUR_T",
+                          "name": "Txt En Curso",
+                          "fill": "$brand-gray-mid",
+                          "content": "En curso 1",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "AR1_CARD1",
+                  "name": "Fila Solicitud Pendiente",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 22,
+                  "padding": 14,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "AR1_C1_COL",
+                      "name": "Info Solicitud",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "AR1_C1_META",
+                          "name": "Meta Solicitud",
+                          "fill": "$brand-gray-mid",
+                          "content": "13 oct – 16 oct · PENDIENTE · #FLX-309418",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "AR1_C1_VEH",
+                          "name": "Vehiculo Solicitud",
+                          "fill": "$brand-black",
+                          "content": "MAZDA CX-30 GRAND TOURING",
+                          "fontFamily": "Space Grotesk",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "AR1_C1_DRV",
+                          "name": "Conductor Solicitud",
+                          "fill": "$brand-graphite",
+                          "content": "Valeria Gómez · CC 1.152.409.381 · Lic. B1 · Abono 30%",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "AR1_C1_ACT",
+                      "name": "Accion Rapida Aprobar",
+                      "fill": "$brand-black",
+                      "cornerRadius": 18,
+                      "padding": [8, 12],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "AR1_C1_ACT_T",
+                          "name": "Txt Aprobar",
+                          "fill": "#FFFFFF",
+                          "content": "Aprobar ↗",
+                          "fontFamily": "Inter",
+                          "fontSize": 11,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "AR_IOS_2",
+              "name": "iOS Admin 02 — /admin/reservas/[codigo] (Inspección R2 y Ciclo Operativo)",
+              "width": 440,
+              "fill": "$brand-surface",
+              "cornerRadius": 44,
+              "stroke": "$brand-black",
+              "strokeWidth": 6,
+              "layout": "vertical",
+              "gap": 14,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "AR2_HDR",
+                  "name": "Cabecera Vehiculo + Conductor",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "AR2_TITLE",
+                      "name": "Titulo Unidad",
+                      "fill": "$brand-black",
+                      "content": "Mercedes-Benz EQB 350",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 22,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "AR2_PILLS",
+                      "name": "Pildoras Contexto",
+                      "fill": "$brand-graphite",
+                      "content": "Mateo Restrepo (Lic. B1)  ·  En curso  ·  #FLX-849210",
+                      "fontFamily": "Inter",
+                      "fontSize": 11,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "AR2_SHEET",
+                  "name": "Lamina Inferior Blanca + Maquina de Estados",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 28,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 18,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "AR2_ZONA",
+                      "name": "Zona R2 Activa",
+                      "fill": "$brand-black",
+                      "content": "Estación 1: Odómetro y Batería (14.200 km · 100%)",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 14,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "AR2_DICT",
+                      "name": "Dictamen Editable",
+                      "fill": "$brand-gray-mid",
+                      "content": "Dictamen: [Verificado OK]  [Original R2]  [Con novedad]",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 10,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "AR2_CTA",
+                      "name": "Boton Ciclo de Vida Thumb-Zone",
+                      "width": "fill_container",
+                      "fill": "$brand-black",
+                      "cornerRadius": 22,
+                      "padding": 12,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "AR2_CTA_T",
+                          "name": "Txt Cierre",
+                          "fill": "#FFFFFF",
+                          "content": "Registrar devolución y cerrar contrato",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "MTR_INST_SPEC",
+          "name": "Catalogo de 6 Instrumentos Visuales Diferenciados (Nivel 3)",
+          "width": "fill_container",
+          "fill": "$brand-black",
+          "cornerRadius": 24,
+          "padding": 24,
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "MTR_INST_T1",
+              "name": "Titulo Instrumentos Nivel 3",
+              "fill": "$brand-surface",
+              "content": "NIVEL 3 — 6 INSTRUMENTOS VISUALES ÚNICOS (CERO MODALES REPETIDOS)",
+              "fontFamily": "Inter",
+              "fontSize": 12,
+              "fontWeight": "700",
+              "letterSpacing": 1.2
+            },
+            {
+              "type": "text",
+              "id": "MTR_INST_T2",
+              "name": "Detalle Instrumentos Nivel 3",
+              "fill": "$brand-gray-light",
+              "content": "1. Dynamic Island In-Situ (Mapa S-Curve + Anillo ETA)  ·  2. Cámaras Líquidas Bessonov 2x2 + Simulador de Marea  ·  3. Matriz Waffle 20 Nodos + Clúster Automotriz C-Arc (E➔F)  ·  4. Giroscopio Pericial 360° + Arco L➔H  ·  5. Radar de Circuito Cerrado StandBy (Sector/Vuelta)  ·  6. Rueda Polar Suiza Achurada (+62.3°) + Montaña con Aguja",
+              "fontFamily": "Inter",
+              "fontSize": 11,
+              "fontWeight": "600"
+            }
+          ]
+        }
+      ]
     }
   ],
   "variables": {

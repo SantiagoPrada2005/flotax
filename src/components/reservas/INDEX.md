@@ -1,14 +1,14 @@
 # Index: `src/components/reservas`
 
-**Responsibility**: Componentes interactivos del portal de reservas del cliente (`/reservas` y `/reservas/[codigo]`), incluyendo el Calendario Editorial Suizo + Listado de Alquileres y la Vista Dedicada de Inspección R2, Waybill y Feature Highlights.
+**Responsibility**: Componentes interactivos unificados de reservas (`modo="cliente" | "admin"`) para `/reservas`, `/reservas/[codigo]`, `/admin/reservas` y `/admin/reservas/[codigo]`, incluyendo el Calendario Editorial Suizo + Agenda con Triage Operativo y la Vista Dedicada de Inspección R2, Waybill, Expediente del Conductor y Máquina de Estados.
 **Architectural Layer**: Presentation / Domain Components (Tier 2)
 
 ## File Manifest
 
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
-| [`AlquilerDetalleView.tsx`](./AlquilerDetalleView.tsx) | Isla React 19: Vista Dedicada de Alquiler e Inspección R2 | `AlquilerDetalleView`, `AlquilerDetalleViewProps` | `@/lib/flota` |
-| [`MisReservasHub.tsx`](./MisReservasHub.tsx) | Isla React 19: Calendario + Listado de Alquileres | `MisReservasHub`, `MisReservasHubProps` | `@/lib/flota`, `astro:transitions/client` |
+| [`AlquilerDetalleView.tsx`](./AlquilerDetalleView.tsx) | Isla React 19: Vista Dedicada de Alquiler, Inspección R2 y Ciclo Operativo | `AlquilerDetalleView`, `AlquilerDetalleViewProps` | `@/lib/flota`, `astro:actions` |
+| [`MisReservasHub.tsx`](./MisReservasHub.tsx) | Isla React 19: Calendario Suizo + Agenda de Alquileres (Cliente y Admin) | `MisReservasHub`, `MisReservasHubProps` | `@/lib/flota`, `astro:actions`, `astro:transitions/client` |
 
 ## Invariants & Directory Rules
 

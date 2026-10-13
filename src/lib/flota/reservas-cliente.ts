@@ -7,13 +7,34 @@ import {
 import { FLOTA_CANONICA, obtenerVehiculoPorId } from './mock-vehiculos';
 import type { VehiculoItem } from './types';
 
+export const STORAGE_KEY_RESERVAS_FLOTAX = 'flotax_reservas_cliente';
+
 export type EstadoReservaCliente =
   | 'EN_CURSO'
   | 'CONFIRMADA'
   | 'PENDIENTE'
-  | 'COMPLETADA';
+  | 'COMPLETADA'
+  | 'RECHAZADA';
 
 export type ModalidadEntregaReserva = 'PATIO_PRINCIPAL' | 'DOMICILIO_MEDELLIN';
+
+export type EstadoPuntoR2 = 'ORIGINAL' | 'VERIFICADO' | 'PROTEGIDO' | 'NOVEDAD';
+
+export type EstadoGarantiaReserva =
+  | 'PENDIENTE'
+  | 'CUSTODIA_ACTIVA'
+  | 'LIBERADA'
+  | 'RETENIDA_NOVEDAD';
+
+export interface DatosConductorReserva {
+  nombreCompleto: string;
+  tipoDocumento: 'CC' | 'CE' | 'PASAPORTE';
+  numeroDocumento: string;
+  categoriaLicencia: 'B1' | 'B2' | 'A2' | 'C1';
+  telefono: string;
+  correo: string;
+  ley1581Aceptada: boolean;
+}
 
 export interface EspecificacionesBentoVehiculo {
   motorDetalle: string;
@@ -31,7 +52,7 @@ export interface PuntoInspeccionR2 {
   zona: string;
   etiqueta: string;
   dictamen: string;
-  estado: 'ORIGINAL' | 'VERIFICADO' | 'PROTEGIDO';
+  estado: EstadoPuntoR2;
   coordX: string; // porcentaje CSS left
   coordY: string; // porcentaje CSS top
 }
@@ -58,6 +79,29 @@ export interface ReservaClienteItem {
   sedeNombre: string;
   creadaEn: string;
   specsBento: EspecificacionesBentoVehiculo;
+  conductor: DatosConductorReserva;
+  estadoGarantia: EstadoGarantiaReserva;
+  kilometrajeEntrega: number;
+  kilometrajeRetorno?: number | undefined;
+  nivelCargaPorcentaje: number;
+  requiereMantenimientoRetorno?: boolean | undefined;
+  motivoRechazo?: string | undefined;
+  puntosR2Custom?: PuntoInspeccionR2[] | undefined;
+}
+
+export interface NuevaReservaPatioInput {
+  vehiculoId: string;
+  fechaInicio: string;
+  fechaFin: string;
+  nombreCompleto: string;
+  tipoDocumento: 'CC' | 'CE' | 'PASAPORTE';
+  numeroDocumento: string;
+  categoriaLicencia: 'B1' | 'B2' | 'A2' | 'C1';
+  telefono: string;
+  correo: string;
+  modalidadEntrega: ModalidadEntregaReserva;
+  estadoInicial: 'PENDIENTE' | 'CONFIRMADA';
+  porcentajeAbonoInicial: 30 | 100;
 }
 
 export type TipoHitoAgenda =
@@ -220,8 +264,16 @@ export function obtenerSpecsBentoPorVehiculo(
 }
 
 export function obtenerPuntosInspeccionPorVehiculo(
-  vehiculo: VehiculoItem
+  vehiculo: VehiculoItem,
+  reserva?: ReservaClienteItem | undefined
 ): PuntoInspeccionR2[] {
+  if (reserva?.puntosR2Custom && reserva.puntosR2Custom.length > 0) {
+    return reserva.puntosR2Custom;
+  }
+
+  const kmSalida = reserva?.kilometrajeEntrega ?? vehiculo.kilometraje;
+  const pctCarga = reserva?.nivelCargaPorcentaje ?? 100;
+
   return [
     {
       id: 'r2-carroceria',
@@ -244,8 +296,8 @@ export function obtenerPuntosInspeccionPorVehiculo(
     {
       id: 'r2-telemetria',
       zona: 'Odómetro y Batería / Tanque',
-      etiqueta: `Salida: ${vehiculo.kilometraje.toLocaleString('es-CO')} km · 100%`,
-      dictamen: `Entrega con carga/combustible al 100% y telemetría perimetral activa`,
+      etiqueta: `Salida: ${kmSalida.toLocaleString('es-CO')} km · ${pctCarga}%`,
+      dictamen: `Entrega con carga/combustible al ${pctCarga}% y telemetría perimetral activa`,
       estado: 'PROTEGIDO',
       coordX: '64%',
       coordY: '58%',
@@ -260,6 +312,15 @@ export function obtenerRubrosWaybillReserva(
   const coberturaR2 = Math.max(0, reserva.totalAlquiler - subtotalTarifa);
   const saldoPatio = Math.max(0, reserva.totalAlquiler - reserva.montoReportado);
   const baseCalculo = Math.max(1, reserva.totalAlquiler);
+
+  const etiquetaEstadoGarantia =
+    reserva.estadoGarantia === 'LIBERADA'
+      ? 'Liberada al cliente'
+      : reserva.estadoGarantia === 'RETENIDA_NOVEDAD'
+        ? 'Retenida por novedad'
+        : saldoPatio > 0
+          ? 'Saldo pendiente'
+          : 'Paz y salvo';
 
   return [
     {
@@ -294,9 +355,7 @@ export function obtenerRubrosWaybillReserva(
     },
     {
       id: 'deposito-garantia',
-      etiqueta: `Garantía Reembolsable (${
-        saldoPatio > 0 ? 'Saldo pendiente' : 'Paz y salvo'
-      })`,
+      etiqueta: `Garantía Reembolsable (${etiquetaEstadoGarantia})`,
       etiquetaCorta: 'Garantía',
       monto: reserva.vehiculo.depositoGarantia,
       porcentajeSobreTotal: 100,
@@ -327,25 +386,37 @@ export function obtenerInfoDiaFechaISO(fechaISO: string): {
 }
 
 /**
- * Construye las reservas canónicas iniciales del cliente relativas a `hoyISO`.
+ * Construye las reservas canónicas iniciales relativas a `hoyISO`.
+ * Incluye los 3 estados clave de operación en patio: PENDIENTE, EN_CURSO y CONFIRMADA.
  */
 export function obtenerReservasSemillaCliente(hoyISO: string): ReservaClienteItem[] {
   const vehiculoPrincipal =
     obtenerVehiculoPorId('veh-mercedes-eqb') ?? FLOTA_CANONICA[0]!;
   const vehiculoSecundario =
     obtenerVehiculoPorId('veh-bmw-m2-coupe') ?? FLOTA_CANONICA[1] ?? vehiculoPrincipal;
+  const vehiculoTercero =
+    obtenerVehiculoPorId('veh-mazda-cx30') ?? FLOTA_CANONICA[2] ?? vehiculoPrincipal;
 
+  // Reserva 1: EN_CURSO (Salió ayer, regresa en 3 días)
   const inicio1 = sumarDiasISO(hoyISO, -1);
   const fin1 = sumarDiasISO(hoyISO, 3);
   const dias1 = calcularDiasInclusivos(inicio1, fin1);
   const subtotal1 = dias1 * vehiculoPrincipal.precioDia;
   const total1 = subtotal1 + Math.round(subtotal1 * 0.08);
 
-  const inicio2 = sumarDiasISO(hoyISO, 8);
-  const fin2 = sumarDiasISO(hoyISO, 11);
+  // Reserva 2: PENDIENTE (Solicitud entrante para mañana, requiere validación de patio)
+  const inicio2 = sumarDiasISO(hoyISO, 1);
+  const fin2 = sumarDiasISO(hoyISO, 4);
   const dias2 = calcularDiasInclusivos(inicio2, fin2);
-  const subtotal2 = dias2 * vehiculoSecundario.precioDia;
+  const subtotal2 = dias2 * vehiculoTercero.precioDia;
   const total2 = subtotal2 + Math.round(subtotal2 * 0.08);
+
+  // Reserva 3: CONFIRMADA (Lista para check-in y entrega R2 la próxima semana)
+  const inicio3 = sumarDiasISO(hoyISO, 8);
+  const fin3 = sumarDiasISO(hoyISO, 11);
+  const dias3 = calcularDiasInclusivos(inicio3, fin3);
+  const subtotal3 = dias3 * vehiculoSecundario.precioDia;
+  const total3 = subtotal3 + Math.round(subtotal3 * 0.08);
 
   return [
     {
@@ -362,21 +433,72 @@ export function obtenerReservasSemillaCliente(hoyISO: string): ReservaClienteIte
       sedeNombre: 'Patio Norte Medellín',
       creadaEn: `${inicio1}T08:30:00.000Z`,
       specsBento: obtenerSpecsBentoPorVehiculo(vehiculoPrincipal.id),
+      conductor: {
+        nombreCompleto: 'Mateo Restrepo Vélez',
+        tipoDocumento: 'CC',
+        numeroDocumento: '1.037.648.912',
+        categoriaLicencia: 'B1',
+        telefono: '+57 300 418 9204',
+        correo: 'mateo.restrepo@empresa.co',
+        ley1581Aceptada: true,
+      },
+      estadoGarantia: 'CUSTODIA_ACTIVA',
+      kilometrajeEntrega: vehiculoPrincipal.kilometraje,
+      nivelCargaPorcentaje: 100,
     },
     {
-      codigo: 'FLX-512094',
-      vehiculoId: vehiculoSecundario.id,
-      vehiculo: vehiculoSecundario,
+      codigo: 'FLX-309418',
+      vehiculoId: vehiculoTercero.id,
+      vehiculo: vehiculoTercero,
       fechaInicio: inicio2,
       fechaFin: fin2,
       diasAlquiler: dias2,
       totalAlquiler: total2,
       montoReportado: Math.round(total2 * 0.3),
+      estado: 'PENDIENTE',
+      modalidadEntrega: 'PATIO_PRINCIPAL',
+      sedeNombre: 'Patio Norte Medellín',
+      creadaEn: `${hoyISO}T09:15:00.000Z`,
+      specsBento: obtenerSpecsBentoPorVehiculo(vehiculoTercero.id),
+      conductor: {
+        nombreCompleto: 'Valeria Gómez Arango',
+        tipoDocumento: 'CC',
+        numeroDocumento: '1.152.409.381',
+        categoriaLicencia: 'B1',
+        telefono: '+57 314 820 5519',
+        correo: 'valeria.gomez@estudio.co',
+        ley1581Aceptada: true,
+      },
+      estadoGarantia: 'PENDIENTE',
+      kilometrajeEntrega: vehiculoTercero.kilometraje,
+      nivelCargaPorcentaje: 100,
+    },
+    {
+      codigo: 'FLX-512094',
+      vehiculoId: vehiculoSecundario.id,
+      vehiculo: vehiculoSecundario,
+      fechaInicio: inicio3,
+      fechaFin: fin3,
+      diasAlquiler: dias3,
+      totalAlquiler: total3,
+      montoReportado: Math.round(total3 * 0.3),
       estado: 'CONFIRMADA',
       modalidadEntrega: 'DOMICILIO_MEDELLIN',
       sedeNombre: 'Sede El Poblado',
       creadaEn: `${hoyISO}T10:15:00.000Z`,
       specsBento: obtenerSpecsBentoPorVehiculo(vehiculoSecundario.id),
+      conductor: {
+        nombreCompleto: 'Sebastián Correa Londoño',
+        tipoDocumento: 'CC',
+        numeroDocumento: '71.384.209',
+        categoriaLicencia: 'B2',
+        telefono: '+57 310 694 1180',
+        correo: 's.correa@inversiones.co',
+        ley1581Aceptada: true,
+      },
+      estadoGarantia: 'CUSTODIA_ACTIVA',
+      kilometrajeEntrega: vehiculoSecundario.kilometraje,
+      nivelCargaPorcentaje: 100,
     },
   ];
 }
@@ -385,9 +507,93 @@ function esObjetoRecord(val: unknown): val is Record<string, unknown> {
   return typeof val === 'object' && val !== null && !Array.isArray(val);
 }
 
+function parsearConductor(
+  raw: unknown,
+  fallbackVehiculo: VehiculoItem
+): DatosConductorReserva {
+  if (esObjetoRecord(raw)) {
+    const nombreCompleto =
+      typeof raw.nombreCompleto === 'string' && raw.nombreCompleto.trim()
+        ? raw.nombreCompleto.trim()
+        : 'Cliente Verificado FlotaX';
+    const tipoDocRaw = raw.tipoDocumento;
+    const tipoDocumento: 'CC' | 'CE' | 'PASAPORTE' =
+      tipoDocRaw === 'CE' || tipoDocRaw === 'PASAPORTE' ? tipoDocRaw : 'CC';
+    const numeroDocumento =
+      typeof raw.numeroDocumento === 'string' && raw.numeroDocumento.trim()
+        ? raw.numeroDocumento.trim()
+        : '1.037.512.890';
+    const licRaw = raw.categoriaLicencia;
+    const categoriaLicencia: 'B1' | 'B2' | 'A2' | 'C1' =
+      licRaw === 'B1' || licRaw === 'B2' || licRaw === 'A2' || licRaw === 'C1'
+        ? licRaw
+        : fallbackVehiculo.categoria === 'MOTO'
+          ? 'A2'
+          : 'B1';
+    const telefono =
+      typeof raw.telefono === 'string' && raw.telefono.trim()
+        ? raw.telefono.trim()
+        : '+57 301 550 8420';
+    const correo =
+      typeof raw.correo === 'string' && raw.correo.trim()
+        ? raw.correo.trim()
+        : 'cliente@flotax.co';
+    const ley1581Aceptada =
+      typeof raw.ley1581Aceptada === 'boolean' ? raw.ley1581Aceptada : true;
+
+    return {
+      nombreCompleto,
+      tipoDocumento,
+      numeroDocumento,
+      categoriaLicencia,
+      telefono,
+      correo,
+      ley1581Aceptada,
+    };
+  }
+
+  return {
+    nombreCompleto: 'Cliente Verificado FlotaX',
+    tipoDocumento: 'CC',
+    numeroDocumento: '1.037.512.890',
+    categoriaLicencia: fallbackVehiculo.categoria === 'MOTO' ? 'A2' : 'B1',
+    telefono: '+57 301 550 8420',
+    correo: 'cliente@flotax.co',
+    ley1581Aceptada: true,
+  };
+}
+
+function parsearPuntosR2Custom(raw: unknown): PuntoInspeccionR2[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  const resultado: PuntoInspeccionR2[] = [];
+  for (const item of raw) {
+    if (!esObjetoRecord(item)) continue;
+    const id = typeof item.id === 'string' ? item.id : null;
+    const zona = typeof item.zona === 'string' ? item.zona : null;
+    const etiqueta = typeof item.etiqueta === 'string' ? item.etiqueta : null;
+    const dictamen = typeof item.dictamen === 'string' ? item.dictamen : null;
+    const coordX = typeof item.coordX === 'string' ? item.coordX : '50%';
+    const coordY = typeof item.coordY === 'string' ? item.coordY : '50%';
+    const estRaw = item.estado;
+    const estado: EstadoPuntoR2 =
+      estRaw === 'ORIGINAL' ||
+      estRaw === 'VERIFICADO' ||
+      estRaw === 'PROTEGIDO' ||
+      estRaw === 'NOVEDAD'
+        ? estRaw
+        : 'VERIFICADO';
+
+    if (id && zona && etiqueta && dictamen) {
+      resultado.push({ id, zona, etiqueta, dictamen, estado, coordX, coordY });
+    }
+  }
+  return resultado.length > 0 ? resultado : undefined;
+}
+
 /**
- * Hidrata de forma segura las solicitudes guardadas por `RentalWizardFlow`
- * en `localStorage.getItem('flotax_reservas_cliente')` y las fusiona con las semillas.
+ * Hidrata de forma segura las solicitudes guardadas por `RentalWizardFlow` o
+ * actualizadas por administración en `localStorage.getItem('flotax_reservas_cliente')`
+ * y las fusiona con las semillas.
  */
 export function hidratarReservasCliente(
   rawStorageJson: string | null,
@@ -410,6 +616,14 @@ export function hidratarReservasCliente(
     }
   }
 
+  const semillas = obtenerReservasSemillaCliente(hoyISO).filter(
+    (s) => !ocultos.has(s.codigo)
+  );
+  const semillaPorCodigo = new Map<string, ReservaClienteItem>();
+  for (const sem of semillas) {
+    semillaPorCodigo.set(sem.codigo, sem);
+  }
+
   const desdeStorage: ReservaClienteItem[] = [];
 
   if (rawStorageJson) {
@@ -420,7 +634,7 @@ export function hidratarReservasCliente(
           if (!esObjetoRecord(entry)) continue;
           const codigo =
             typeof entry.codigo === 'string' && entry.codigo.trim()
-              ? entry.codigo
+              ? entry.codigo.trim()
               : null;
           const vehiculoId =
             typeof entry.vehiculoId === 'string' ? entry.vehiculoId : null;
@@ -436,6 +650,8 @@ export function hidratarReservasCliente(
             obtenerVehiculoPorId(vehiculoId) ?? FLOTA_CANONICA[0];
           if (!vehiculo) continue;
 
+          const semillaBase = semillaPorCodigo.get(codigo);
+
           const diasAlquiler =
             typeof entry.diasAlquiler === 'number' && entry.diasAlquiler > 0
               ? entry.diasAlquiler
@@ -447,7 +663,7 @@ export function hidratarReservasCliente(
               : diasAlquiler * vehiculo.precioDia;
 
           const montoReportado =
-            typeof entry.montoReportado === 'number' && entry.montoReportado > 0
+            typeof entry.montoReportado === 'number' && entry.montoReportado >= 0
               ? entry.montoReportado
               : Math.round(totalAlquiler * 0.3);
 
@@ -455,9 +671,58 @@ export function hidratarReservasCliente(
           const estado: EstadoReservaCliente =
             estadoRaw === 'EN_CURSO' ||
             estadoRaw === 'CONFIRMADA' ||
-            estadoRaw === 'COMPLETADA'
+            estadoRaw === 'COMPLETADA' ||
+            estadoRaw === 'RECHAZADA'
               ? estadoRaw
               : 'PENDIENTE';
+
+          const modRaw = entry.modalidadEntrega;
+          const modalidadEntrega: ModalidadEntregaReserva =
+            modRaw === 'DOMICILIO_MEDELLIN' || modRaw === 'PATIO_PRINCIPAL'
+              ? modRaw
+              : semillaBase?.modalidadEntrega ?? 'PATIO_PRINCIPAL';
+
+          const garRaw = entry.estadoGarantia;
+          const estadoGarantia: EstadoGarantiaReserva =
+            garRaw === 'PENDIENTE' ||
+            garRaw === 'CUSTODIA_ACTIVA' ||
+            garRaw === 'LIBERADA' ||
+            garRaw === 'RETENIDA_NOVEDAD'
+              ? garRaw
+              : estado === 'COMPLETADA'
+                ? 'LIBERADA'
+                : estado === 'PENDIENTE'
+                  ? 'PENDIENTE'
+                  : 'CUSTODIA_ACTIVA';
+
+          const kilometrajeEntrega =
+            typeof entry.kilometrajeEntrega === 'number' &&
+            entry.kilometrajeEntrega >= 0
+              ? entry.kilometrajeEntrega
+              : semillaBase?.kilometrajeEntrega ?? vehiculo.kilometraje;
+
+          const kilometrajeRetorno =
+            typeof entry.kilometrajeRetorno === 'number' &&
+            entry.kilometrajeRetorno >= 0
+              ? entry.kilometrajeRetorno
+              : undefined;
+
+          const nivelCargaPorcentaje =
+            typeof entry.nivelCargaPorcentaje === 'number' &&
+            entry.nivelCargaPorcentaje >= 0 &&
+            entry.nivelCargaPorcentaje <= 100
+              ? entry.nivelCargaPorcentaje
+              : 100;
+
+          const requiereMantenimientoRetorno =
+            typeof entry.requiereMantenimientoRetorno === 'boolean'
+              ? entry.requiereMantenimientoRetorno
+              : undefined;
+
+          const motivoRechazo =
+            typeof entry.motivoRechazo === 'string' && entry.motivoRechazo.trim()
+              ? entry.motivoRechazo.trim()
+              : undefined;
 
           desdeStorage.push({
             codigo,
@@ -469,13 +734,26 @@ export function hidratarReservasCliente(
             totalAlquiler,
             montoReportado,
             estado,
-            modalidadEntrega: 'PATIO_PRINCIPAL',
-            sedeNombre: 'Patio Norte Medellín',
+            modalidadEntrega,
+            sedeNombre:
+              typeof entry.sedeNombre === 'string' && entry.sedeNombre.trim()
+                ? entry.sedeNombre
+                : semillaBase?.sedeNombre ?? 'Patio Norte Medellín',
             creadaEn:
               typeof entry.creadaEn === 'string'
                 ? entry.creadaEn
                 : `${hoyISO}T12:00:00.000Z`,
             specsBento: obtenerSpecsBentoPorVehiculo(vehiculo.id),
+            conductor: entry.conductor
+              ? parsearConductor(entry.conductor, vehiculo)
+              : semillaBase?.conductor ?? parsearConductor(null, vehiculo),
+            estadoGarantia,
+            kilometrajeEntrega,
+            kilometrajeRetorno,
+            nivelCargaPorcentaje,
+            requiereMantenimientoRetorno,
+            motivoRechazo,
+            puntosR2Custom: parsearPuntosR2Custom(entry.puntosR2Custom),
           });
         }
       }
@@ -483,10 +761,6 @@ export function hidratarReservasCliente(
       // Ignorar errores de parseo en cliente
     }
   }
-
-  const semillas = obtenerReservasSemillaCliente(hoyISO).filter(
-    (s) => !ocultos.has(s.codigo)
-  );
 
   const mapaPorCodigo = new Map<string, ReservaClienteItem>();
   for (const item of desdeStorage) {
@@ -520,6 +794,105 @@ export function obtenerReservaClientePorCodigo(
 }
 
 /**
+ * Persiste una reserva modificada por el operador o el cliente en la lista completa
+ * y la guarda en `localStorage` cuando está disponible en el navegador.
+ */
+export function persistirReservaActualizadaEnStorage(
+  reservaActualizada: ReservaClienteItem,
+  rawStorageActual: string | null,
+  hoyISO: string
+): ReservaClienteItem[] {
+  const actuales = hidratarReservasCliente(rawStorageActual, null, hoyISO);
+  const existe = actuales.some(
+    (r) => r.codigo.toUpperCase() === reservaActualizada.codigo.toUpperCase()
+  );
+
+  const nuevaLista = existe
+    ? actuales.map((r) =>
+        r.codigo.toUpperCase() === reservaActualizada.codigo.toUpperCase()
+          ? reservaActualizada
+          : r
+      )
+    : [reservaActualizada, ...actuales];
+
+  if (typeof window !== 'undefined') {
+    try {
+      window.localStorage.setItem(
+        STORAGE_KEY_RESERVAS_FLOTAX,
+        JSON.stringify(nuevaLista)
+      );
+    } catch {
+      // Ignorar restricciones de almacenamiento
+    }
+  }
+
+  return nuevaLista;
+}
+
+/**
+ * Crea una nueva reserva directamente desde el mostrador de patio (`/admin/reservas`).
+ */
+export function crearReservaMostradorPatio(
+  input: NuevaReservaPatioInput,
+  rawStorageActual: string | null,
+  hoyISO: string
+): { creada: ReservaClienteItem; lista: ReservaClienteItem[] } {
+  const vehiculo =
+    obtenerVehiculoPorId(input.vehiculoId) ?? FLOTA_CANONICA[0]!;
+  const inicio = input.fechaInicio <= input.fechaFin ? input.fechaInicio : input.fechaFin;
+  const fin = input.fechaFin >= input.fechaInicio ? input.fechaFin : input.fechaInicio;
+  const diasAlquiler = calcularDiasInclusivos(inicio, fin);
+  const subtotal = diasAlquiler * vehiculo.precioDia;
+  const totalAlquiler = subtotal + Math.round(subtotal * 0.08);
+  const montoReportado =
+    input.porcentajeAbonoInicial === 100
+      ? totalAlquiler
+      : Math.round(totalAlquiler * 0.3);
+
+  const codigo = `FLX-${Math.floor(100000 + Math.random() * 900000)}`;
+
+  const creada: ReservaClienteItem = {
+    codigo,
+    vehiculoId: vehiculo.id,
+    vehiculo,
+    fechaInicio: inicio,
+    fechaFin: fin,
+    diasAlquiler,
+    totalAlquiler,
+    montoReportado,
+    estado: input.estadoInicial,
+    modalidadEntrega: input.modalidadEntrega,
+    sedeNombre:
+      input.modalidadEntrega === 'DOMICILIO_MEDELLIN'
+        ? 'Entrega a Domicilio Medellín'
+        : 'Patio Norte Medellín',
+    creadaEn: new Date().toISOString(),
+    specsBento: obtenerSpecsBentoPorVehiculo(vehiculo.id),
+    conductor: {
+      nombreCompleto: input.nombreCompleto.trim() || 'Cliente Mostrador Patio',
+      tipoDocumento: input.tipoDocumento,
+      numeroDocumento: input.numeroDocumento.trim() || '1.037.000.000',
+      categoriaLicencia: input.categoriaLicencia,
+      telefono: input.telefono.trim() || '+57 300 000 0000',
+      correo: input.correo.trim() || 'recepcion@flotax.co',
+      ley1581Aceptada: true,
+    },
+    estadoGarantia:
+      input.estadoInicial === 'CONFIRMADA' ? 'CUSTODIA_ACTIVA' : 'PENDIENTE',
+    kilometrajeEntrega: vehiculo.kilometraje,
+    nivelCargaPorcentaje: 100,
+  };
+
+  const lista = persistirReservaActualizadaEnStorage(
+    creada,
+    rawStorageActual,
+    hoyISO
+  );
+
+  return { creada, lista };
+}
+
+/**
  * Genera todos los hitos operativos de agenda para una reserva o conjunto de reservas.
  */
 export function generarHitosDeReservas(
@@ -528,6 +901,7 @@ export function generarHitosDeReservas(
   const hitos: HitoAgendaReserva[] = [];
 
   for (const res of reservas) {
+    if (res.estado === 'RECHAZADA') continue;
     const { vehiculo } = res;
 
     if (res.estado === 'PENDIENTE') {

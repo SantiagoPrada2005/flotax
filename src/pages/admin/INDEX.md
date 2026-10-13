@@ -11,7 +11,7 @@
 | [`flota/`](./flota/) | Enrutamiento para la gestión perimetral e inventario de la flota (listado, alta de nuevas unidades y edición). | [INDEX.md](./flota/INDEX.md) |
 | [`metricas/`](./metricas/) | Directory `metricas` | *(No index)* |
 | [`operaciones/`](./operaciones/) | Directory `operaciones` | *(No index)* |
-| [`reservas/`](./reservas/) | Directory `reservas` | *(No index)* |
+| [`reservas/`](./reservas/) | Enrutamiento del módulo de gestión operativa de reservas (`/admin/reservas` y `/admin/reservas/[codigo]`). | *(No index)* |
 
 ## File Manifest
 

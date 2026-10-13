@@ -14,13 +14,16 @@ import {
   finalizarOnboardingOperativo,
   crearPatioOperativo,
 } from './portal';
-
 import {
   guardarVehiculoAction,
   cambiarEstadoVehiculoAction,
   eliminarVehiculoAction,
   obtenerVehiculoDetalleAction,
 } from './flota';
+import {
+  cambiarEstadoReservaAction,
+  registrarCobroWaybillAction,
+} from './reservas';
 
 export const server = {
   notificaciones: {
@@ -46,5 +49,9 @@ export const server = {
     cambiarEstadoVehiculo: cambiarEstadoVehiculoAction,
     eliminarVehiculo: eliminarVehiculoAction,
     obtenerVehiculoDetalle: obtenerVehiculoDetalleAction,
+  },
+  reservas: {
+    cambiarEstado: cambiarEstadoReservaAction,
+    registrarCobroWaybill: registrarCobroWaybillAction,
   },
 };

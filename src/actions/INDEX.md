@@ -9,9 +9,10 @@
 | :--- | :--- | :--- | :--- |
 | [`caja.ts`](./caja.ts) | Server Action / Caso de Uso | `registrarAbono` | `astro:actions`, `zod`, `@/lib/auth` |
 | [`flota.ts`](./flota.ts) | Server Action / Flota y Unidades | `guardarVehiculoAction`, `cambiarEstadoVehiculoAction`, `eliminarVehiculoAction`, `obtenerVehiculoDetalleAction` | `astro:actions`, `zod`, `cloudflare:workers`, `@/lib/flota/repositorio` |
-| [`index.ts`](./index.ts) | Barrel Export / Server Actions Root | `server` | `./caja`, `./portal`, `./flota` |
+| [`index.ts`](./index.ts) | Barrel Export / Server Actions Root | `server` | `./caja`, `./portal`, `./flota`, `./reservas` |
 | [`notificaciones.ts`](./notificaciones.ts) | TypeScript / JavaScript Module | - | - |
 | [`portal.ts`](./portal.ts) | Server Action / Casos de Uso | `cambiarModoPortal`, `conmutarLocalActivo`, `finalizarOnboardingOperativo`, `crearPatioOperativo` | `astro:actions`, `zod`, `cloudflare:workers`, `@/lib/auth` |
+| [`reservas.ts`](./reservas.ts) | Server Action / Operaciones de Reserva | `cambiarEstadoReservaAction`, `registrarCobroWaybillAction` | `astro:actions`, `zod`, `cloudflare:workers`, `@/lib/flota/repositorio`, `@/lib/notificaciones` |
 
 ## Invariants & Directory Rules
 

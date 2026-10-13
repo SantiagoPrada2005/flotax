@@ -127,8 +127,8 @@ export default function BottomNavIsland({
     },
     {
       key: 'ops',
-      label: 'Operaciones y Peritaje',
-      href: '/admin/operaciones',
+      label: 'Reservas y Peritaje',
+      href: '/admin/reservas',
       isActive: isAdminOps,
       icon: (active) => (
         <svg
