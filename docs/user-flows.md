@@ -383,3 +383,34 @@ flowchart TD
 4. **Persistencia Transparente:** La sede y el portal elegidos persisten en cookies HTTP-only seguras (`movix_local_activo` y `movix_portal_modo`).
 5. **Prevención de Conflicto de Interés:** El personal o dueño que alquile como cliente está sujeto a las mismas validaciones de riesgo y tarifas regulares; queda prohibido el auto-peritaje de entrega/devolución.
 
+---
+
+## 11. User Flow: Centro de Notificaciones
+
+Todos los usuarios con sesión ven la campana en la `TopBar`. El aviso se emite con un **scope** (a quién va dirigido) y se entrega por bandeja in-app, push y, en eventos críticos, correo.
+
+```mermaid
+flowchart TD
+    classDef mainScreen fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#065f46;
+    classDef subScreen fill:#f3f4f6,stroke:#9ca3af,stroke-width:1px,color:#1f2937;
+    classDef decision fill:#f3f4f6,stroke:#9ca3af,stroke-width:1.5px,color:#1f2937;
+
+    evento["Acción de negocio emite un evento"]:::subScreen --> scope{"Scope del destino"}:::decision
+    scope -- "USUARIO" --> u1["Usuarios concretos"]:::subScreen
+    scope -- "LOCAL" --> u2["Todos los miembros del patio"]:::subScreen
+    scope -- "LOCAL_ROLES" --> u3["Miembros del patio con ciertos roles"]:::subScreen
+    scope -- "PLATAFORMA" --> u4["Todos los usuarios activos"]:::subScreen
+    u1 & u2 & u3 & u4 --> bandeja["Bandeja in-app + push + correo (según tipo)"]:::subScreen
+
+    campana["Tocar la campana"]:::mainScreen --> panel["Sheet (móvil) / popover (escritorio)"]:::mainScreen
+    panel --> fila["Tocar un aviso"]:::subScreen --> destino["Navega al recurso y lo marca como leído"]:::mainScreen
+    panel --> todas["Marcar todas (con deshacer)"]:::subScreen
+    panel --> historial["Ver todas (/notificaciones)"]:::mainScreen
+    panel --> pushcta["Activar avisos del sistema (permiso push)"]:::subScreen
+```
+
+### Reglas
+1. **Aislamiento por modo de portal:** en modo cliente solo se ven avisos personales; en modo operador, los personales más los del patio activo.
+2. **Marcado como leído:** al tocar la fila o con "Marcar todas"; nunca automáticamente al abrir el panel.
+3. **Push:** el permiso se solicita únicamente tras tocar "Activar". En iOS solo funciona con la PWA instalada.
+4. **Ruta:** `/notificaciones` (requiere sesión), disponible en ambos modos.

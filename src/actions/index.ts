@@ -1,5 +1,14 @@
 import { registrarAbono } from './caja';
 import {
+  listarNotificaciones,
+  contarNotificacionesNoLeidas,
+  marcarNotificacionesLeidas,
+  marcarTodasNotificacionesLeidas,
+  deshacerNotificacionesLeidas,
+  suscribirPush,
+  cancelarPush,
+} from './notificaciones';
+import {
   cambiarModoPortal,
   conmutarLocalActivo,
   finalizarOnboardingOperativo,
@@ -14,6 +23,15 @@ import {
 } from './flota';
 
 export const server = {
+  notificaciones: {
+    listar: listarNotificaciones,
+    contarNoLeidas: contarNotificacionesNoLeidas,
+    marcarLeidas: marcarNotificacionesLeidas,
+    marcarTodasLeidas: marcarTodasNotificacionesLeidas,
+    deshacerLeidas: deshacerNotificacionesLeidas,
+    suscribirPush,
+    cancelarPush,
+  },
   caja: {
     registrarAbono,
   },

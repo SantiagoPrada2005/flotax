@@ -93,9 +93,9 @@ export function TextRoll({
                 duration,
                 delay: getExitDelay(i),
               }}
-              onAnimationComplete={
-                letters.length === i + 1 ? onAnimationComplete : undefined
-              }
+              {...(letters.length === i + 1 && onAnimationComplete
+                ? { onAnimationComplete }
+                : {})}
             >
               {letter === ' ' ? '\u00A0' : letter}
             </motion.span>

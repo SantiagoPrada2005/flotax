@@ -1,6 +1,5 @@
 import { useState, useTransition } from 'react';
 import { actions } from 'astro:actions';
-import { navigate } from 'astro:transitions/client';
 import type { VehiculoItem, CategoriaVehiculo, EstadoVehiculo } from '@/lib/flota/types';
 
 export interface FleetInventoryManagerProps {
@@ -14,14 +13,6 @@ const CATEGORIAS: Array<{ id: CategoriaVehiculo | 'TODAS'; label: string }> = [
   { id: 'MOTO', label: 'Moto' },
   { id: 'PATINETA', label: 'Patineta' },
   { id: 'UTILITARIO', label: 'Utilitario' },
-];
-
-const ESTADOS_FILTRO: Array<{ id: EstadoVehiculo | 'TODOS'; label: string; countKey?: EstadoVehiculo }> = [
-  { id: 'TODOS', label: 'Todos' },
-  { id: 'DISPONIBLE', label: 'Disponibles', countKey: 'DISPONIBLE' },
-  { id: 'RESERVADO', label: 'En Alquiler', countKey: 'RESERVADO' },
-  { id: 'MANTENIMIENTO', label: 'Mantenimiento', countKey: 'MANTENIMIENTO' },
-  { id: 'FUERA_SERVICIO', label: 'Fuera de Servicio', countKey: 'FUERA_SERVICIO' },
 ];
 
 export default function FleetInventoryManager({ initialVehiculos }: FleetInventoryManagerProps) {

@@ -7,28 +7,29 @@
 
 | Subdirectory | Responsibility | Index |
 | :--- | :--- | :--- |
-| [`admin/`](./admin/) | Sistema operativo y panel administrativo de patio (`/admin/**`). | [INDEX.md](./admin/INDEX.md) |
-| [`catalogo/`](./catalogo/) | Catálogo público y filtros de vehículos disponibles (`/catalogo`). | — |
-| [`vehiculos/`](./vehiculos/) | Ficha técnica detallada de unidad (`/vehiculos/[id]`). | — |
-| [`alquilar/`](./alquilar/) | Embudo multi-paso de alquiler con calendario de franjas (`/alquilar/[id]`). | — |
-| [`reservas/`](./reservas/) | Portal de calendario suizo, listado de alquileres (`/reservas`) y vista dedicada de alquiler e inspección (`/reservas/[codigo]`). | — |
-| [`perfil/`](./perfil/) | Datos personales y licencia de conducción del cliente (`/perfil`). | — |
-| [`api/`](./api/) | Endpoints REST internos y webhooks (`/api/**`). | — |
+| [`admin/`](./admin/) | Enrutamiento de páginas del entorno operativo y administración de FlotaX (Dashboard de patio, control de flota, operaciones, reservas y caja). | [INDEX.md](./admin/INDEX.md) |
+| [`alquilar/`](./alquilar/) | Directory `alquilar` | *(No index)* |
+| [`api/`](./api/) | Directory `api` | *(No index)* |
+| [`catalogo/`](./catalogo/) | Directory `catalogo` | *(No index)* |
+| [`notificaciones/`](./notificaciones/) | Directory `notificaciones` | *(No index)* |
+| [`perfil/`](./perfil/) | Directory `perfil` | *(No index)* |
+| [`reservas/`](./reservas/) | Directory `reservas` | *(No index)* |
+| [`vehiculos/`](./vehiculos/) | Directory `vehiculos` | *(No index)* |
 
 ## File Manifest
 
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
-| [`index.astro`](./index.astro) | Página raíz `/` | Onboarding y landing pública de FlotaX | `@/layouts/LayoutApp.astro` |
+| [`animacion.astro`](./animacion.astro) | Vista dedicada `/animacion` | Visor y simulador interactivo de la animación de carga full-screen | `@/components/navigation/FlotaxLoaderPreviewIsland` |
+| [`error.astro`](./error.astro) | Fallback `/error` | Redirección defensiva hacia `/login` preservando query params | `Astro.redirect` |
 | [`home.astro`](./home.astro) | Router `/home` | Enrutador inteligente por rol hacia `/admin` o `/catalogo` | `Astro.locals.usuario` |
+| [`index.astro`](./index.astro) | Página raíz `/` | Onboarding y landing pública de FlotaX | `@/layouts/LayoutApp.astro` |
 | [`login.astro`](./login.astro) | Página `/login` | Flujo de acceso OTP / Google | `@/components/auth/LoginFlow` |
 | [`registro.astro`](./registro.astro) | Página `/registro` | Registro de nuevos usuarios clientes | `@/components/auth/LoginFlow` |
-| [`error.astro`](./error.astro) | Fallback `/error` | Redirección defensiva hacia `/login` preservando query params | `Astro.redirect` |
-| [`animacion.astro`](./animacion.astro) | Vista dedicada `/animacion` | Visor y simulador interactivo de la animación de carga full-screen | `@/components/navigation/FlotaxLoaderPreviewIsland` |
 
 ## Invariants & Directory Rules
 
-- Client routes reside at the root; administrative routes reside strictly under `/admin/`.
 - All additions, deletions, or public API modifications must be reflected in this index.
+- Maintain strict boundary encapsulation and domain layer separation.
 
 <!-- Reconciled by codebase-index -->

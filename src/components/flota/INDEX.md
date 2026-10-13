@@ -1,12 +1,23 @@
-# Módulo Flota — Componentes de UI
+# Index: `src/components/flota`
 
-| Archivo | Tipo | Descripción | Relaciones Clave |
+**Responsibility**: TODO: Define core domain responsibility of this directory.
+**Architectural Layer**: TODO: (e.g. Domain | Application | Infrastructure | Presentation | Shared)
+
+## File Manifest
+
+| File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
-| [`VehicleSearchSpotlight.tsx`](./VehicleSearchSpotlight.tsx) | Isla React 19: Buscador de Flota | Overlay a pantalla completa con búsqueda predictiva y filtros rápidos | [`VehicleSearchResultItem.tsx`](./VehicleSearchResultItem.tsx), [`mock-vehiculos.ts`](../../lib/flota/mock-vehiculos.ts) |
-| [`VehicleSearchResultItem.tsx`](./VehicleSearchResultItem.tsx) | Componente Fila de Vehículo | Tarjeta compacta de resultado con foto, specs, placa, precio y badge | [`VehicleSearchSpotlight.tsx`](./VehicleSearchSpotlight.tsx), [`types.ts`](../../lib/flota/types.ts) |
-| [`CatalogSearchTrigger.tsx`](./CatalogSearchTrigger.tsx) | Isla React 19: Disparador de Catálogo | Botón accesible que sincroniza el catálogo con el buscador global iOS 27 | [`TopBarSearch.tsx`](../navigation/TopBarSearch.tsx) |
-| [`VehicleCatalogCard.tsx`](./VehicleCatalogCard.tsx) | Isla React 19: Tarjeta Popular Cars | Tarjeta con foto 3/4 de estudio, sombra de suelo y grid de 4 especificaciones | [`mock-vehiculos.ts`](../../lib/flota/mock-vehiculos.ts) |
-| [`BrandFilterBar.tsx`](./BrandFilterBar.tsx) | Isla React 19: Carrusel de Marcas | Selector horizontal de marcas y categorías con chips interactivos | [`catalogo/index.astro`](../../pages/catalogo/index.astro) |
-| [`FleetInventoryManager.tsx`](./FleetInventoryManager.tsx) | Isla React 19: Gestor de Flota Admin | Panel interactivo de unidades, contadores por estado, búsqueda, cambios de estado rápidos y baja | [`admin/flota/index.astro`](../../pages/admin/flota/index.astro), `actions.flota` |
-| [`VehicleFormIsland.tsx`](./VehicleFormIsland.tsx) | Isla React 19: Formulario de Vehículo | Formulario completo para dar de alta nuevas unidades y modificar existentes con vista previa | [`admin/flota/nuevo.astro`](../../pages/admin/flota/nuevo.astro), [`admin/flota/[id]/editar.astro`](../../pages/admin/flota/[id]/editar.astro), `actions.flota` |
+| [`BrandFilterBar.tsx`](./BrandFilterBar.tsx) | Module / Utility | - | - |
+| [`CatalogSearchTrigger.tsx`](./CatalogSearchTrigger.tsx) | Module / Utility | - | - |
+| [`FleetInventoryManager.tsx`](./FleetInventoryManager.tsx) | Module / Utility | - | - |
+| [`VehicleCatalogCard.tsx`](./VehicleCatalogCard.tsx) | Module / Utility | - | - |
+| [`VehicleFormIsland.tsx`](./VehicleFormIsland.tsx) | Module / Utility | - | - |
+| [`VehicleSearchResultItem.tsx`](./VehicleSearchResultItem.tsx) | Module / Utility | - | - |
+| [`VehicleSearchSpotlight.tsx`](./VehicleSearchSpotlight.tsx) | Module / Utility | - | - |
 
+## Invariants & Directory Rules
+
+- All additions, deletions, or public API modifications must be reflected in this index.
+- Maintain strict boundary encapsulation and domain layer separation.
+
+<!-- Reconciled by codebase-index -->

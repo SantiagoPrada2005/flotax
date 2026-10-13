@@ -21,4 +21,5 @@ yarn-error.log*
 *.local
 .pnpm-store
 powershell.bat
-powershell.cmd
+powershell.cmd
+.dev.vars

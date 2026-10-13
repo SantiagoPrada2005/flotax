@@ -1,0 +1,15 @@
+---
+import LayoutApp from '@/layouts/LayoutApp.astro';
+import NotificacionesPagina from '@/components/notificaciones/NotificacionesPagina';
+
+const modoOperador = Astro.cookies.get('movix_portal_modo')?.value === 'ADMIN';
+---
+
+<LayoutApp
+  title="FlotaX — Notificaciones"
+  navVariant={modoOperador ? 'admin' : 'client'}
+  showBack
+  backHref={modoOperador ? '/admin' : '/catalogo'}
+>
+  <NotificacionesPagina client:load />
+</LayoutApp>

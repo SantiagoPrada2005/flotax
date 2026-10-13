@@ -7,8 +7,8 @@
 
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
-| [`MisReservasHub.tsx`](./MisReservasHub.tsx) | Isla React 19: Calendario + Listado de Alquileres | `MisReservasHub`, `MisReservasHubProps` | `@/lib/flota`, `astro:transitions/client` |
 | [`AlquilerDetalleView.tsx`](./AlquilerDetalleView.tsx) | Isla React 19: Vista Dedicada de Alquiler e Inspección R2 | `AlquilerDetalleView`, `AlquilerDetalleViewProps` | `@/lib/flota` |
+| [`MisReservasHub.tsx`](./MisReservasHub.tsx) | Isla React 19: Calendario + Listado de Alquileres | `MisReservasHub`, `MisReservasHubProps` | `@/lib/flota`, `astro:transitions/client` |
 
 ## Invariants & Directory Rules
 

@@ -9,14 +9,15 @@
 | :--- | :--- | :--- | :--- |
 | [`auth.ts`](./auth.ts) | Esquema Drizzle | Tablas Better Auth (`user`, `session`, `account`, `verification`) | `drizzle-orm/sqlite-core` |
 | [`clientes_local.ts`](./clientes_local.ts) | Esquema Drizzle | Tabla `clientesLocal` (cartera de clientes por local) | `drizzle-orm/sqlite-core` |
-| [`index.ts`](./index.ts) | Barrel Export | Re-exporta todos los esquemas y tipos de base de datos | Todos los esquemas locales |
 | [`incidentes.ts`](./incidentes.ts) | Esquema Drizzle | Tabla `incidentesSistema` (alertas tempranas, incidentes y deduplicación) | `drizzle-orm/sqlite-core` |
+| [`index.ts`](./index.ts) | Barrel Export | Re-exporta todos los esquemas y tipos de base de datos | Todos los esquemas locales |
 | [`invitaciones.ts`](./invitaciones.ts) | Esquema Drizzle | Tabla `invitaciones` a locales | `drizzle-orm/sqlite-core` |
 | [`locales.ts`](./locales.ts) | Esquema Drizzle | Tabla `locales` (entidad multi-tenant) | `drizzle-orm/sqlite-core` |
 | [`miembros.ts`](./miembros.ts) | Esquema Drizzle | Tabla `miembros` y asignación de roles por local | `drizzle-orm/sqlite-core` |
+| [`notificaciones.ts`](./notificaciones.ts) | TypeScript / JavaScript Module | - | - |
 | [`transferencias.ts`](./transferencias.ts) | Esquema Drizzle | Tabla `transferencias` operativas | `drizzle-orm/sqlite-core` |
-| [`vehiculos.ts`](./vehiculos.ts) | Esquema Drizzle | Tabla `vehiculos` de flota, especificaciones y tarifas | `drizzle-orm/sqlite-core`, `./locales` |
 | [`usuarios_admin.ts`](./usuarios_admin.ts) | Esquema Drizzle (Legacy) | `usuarioAdmin`, `rolesValidos`, tipos de usuario admin | `drizzle-orm/sqlite-core` |
+| [`vehiculos.ts`](./vehiculos.ts) | Esquema Drizzle | Tabla `vehiculos` de flota, especificaciones y tarifas | `drizzle-orm/sqlite-core`, `./locales` |
 
 ## Invariants & Directory Rules
 

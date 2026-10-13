@@ -26,6 +26,9 @@ declare module 'cloudflare:workers' {
     APP_ENV?: string;
     BETTER_AUTH_URL?: string;
     BETTER_AUTH_SECRET?: string;
+    VAPID_PUBLIC_KEY?: string;
+    VAPID_PRIVATE_KEY?: string;
+    VAPID_SUBJECT?: string;
     GOOGLE_CLIENT_ID?: string;
     GOOGLE_CLIENT_SECRET?: string;
     [key: string]: unknown;

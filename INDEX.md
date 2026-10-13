@@ -9,6 +9,7 @@
 | :--- | :--- | :--- |
 | [`design/`](./design/) | Diseños visuales vectoriales (Pencil / .pen), assets gráficos exportados y especificaciones UI/UX. | [INDEX.md](./design/INDEX.md) |
 | [`docs/`](./docs/) | Documentación técnica, registros de decisiones arquitectónicas (ADRs), especificación del modelo de datos y lineamientos de UX/ergonomía. | [INDEX.md](./docs/INDEX.md) |
+| [`drizzle/`](./drizzle/) | Directory `drizzle` | *(No index)* |
 | [`public/`](./public/) | Directory `public` | *(No index)* |
 | [`src/`](./src/) | Raíz del código fuente de la aplicación Astro / Cloudflare Workers (Lógica de negocio, base de datos, Server Actions y UI). | [INDEX.md](./src/INDEX.md) |
 

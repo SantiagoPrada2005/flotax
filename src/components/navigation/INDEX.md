@@ -9,20 +9,20 @@
 | :--- | :--- | :--- | :--- |
 | [`BottomNav.astro`](./BottomNav.astro) | Orquestador SSR Barra Inferior Móvil | Componente `<BottomNav activeTab="..." />` | [`BottomNavIsland.tsx`](./BottomNavIsland.tsx) |
 | [`BottomNavIsland.tsx`](./BottomNavIsland.tsx) | Isla React 19: Dock Flotante iOS 27 | Componente `<BottomNavIsland ... />` | Tokens de física de resorte y háptica |
+| [`ExitAdminButton.tsx`](./ExitAdminButton.tsx) | Botón Conmutador a Portal Cliente | Componente `<ExitAdminButton />` | `astro:actions`, `astro:transitions/client` |
+| [`FlotaxLoaderPreviewIsland.tsx`](./FlotaxLoaderPreviewIsland.tsx) | Isla React 19: Simulador e Inspector Interactivo de Carga | Componente `<FlotaxLoaderPreviewIsland />` | [`FlotaxLoadingScreen.tsx`](./FlotaxLoadingScreen.tsx), `astro:transitions/client` |
+| [`FlotaxLoadingScreen.tsx`](./FlotaxLoadingScreen.tsx) | Isla React 19: Pantalla de Carga Full-Screen Cinética (Variantes `orbital` y `cad`) | Componente `<FlotaxLoadingScreen ... />`, `FlotaxLoadingScreenProps`, `FlotaxLoaderVariant` | Design tokens FlotaX (`tokens.css`) |
+| [`IosInstallGuideModal.tsx`](./IosInstallGuideModal.tsx) | Isla React 19: Guía Interactiva en Video para iOS PWA | Componente `<IosInstallGuideModal ... />` | Recortes de video `/instructions/ios-step-*.mp4` |
+| [`PwaBootSplash.astro`](./PwaBootSplash.astro) | Splash Screen SSR Inmediato de Arranque Frío PWA (Escáner Pericial CAD) | Componente `<PwaBootSplash statusLabel="..." />` | Design tokens FlotaX (`tokens.css`), Astro `<ClientRouter />` |
+| [`PwaRuntimeIsland.tsx`](./PwaRuntimeIsland.tsx) | Isla React 19: Orquestador PWA Standalone, SPA & Loader | Componente `<PwaRuntimeIsland />` | `@/lib/pwa`, `astro:transitions/client`, [`IosInstallGuideModal.tsx`](./IosInstallGuideModal.tsx), [`FlotaxLoadingScreen.tsx`](./FlotaxLoadingScreen.tsx) |
+| [`Sidebar.astro`](./Sidebar.astro) | Barra Lateral de Navegación Desktop | Componente `<Sidebar activeTab="..." />` | Design tokens FlotaX (`tokens.css`) |
 | [`TopBar.astro`](./TopBar.astro) | Orquestador SSR Barra Superior | Componente `<TopBar title="..." showBack="..." />` | [`TopBarIsland.tsx`](./TopBarIsland.tsx) |
 | [`TopBarIsland.tsx`](./TopBarIsland.tsx) | Isla React 19: Dynamic Island Scroll | Componente `<TopBarIsland ... />` | Tokens de vidrio líquido y badges vivos |
 | [`TopBarSearch.tsx`](./TopBarSearch.tsx) | Isla React 19: Buscador Morphing iOS 27 | Componente `<TopBarSearch ... />` | [`VehicleSearchSpotlight.tsx`](../flota/VehicleSearchSpotlight.tsx) |
-| [`Sidebar.astro`](./Sidebar.astro) | Barra Lateral de Navegación Desktop | Componente `<Sidebar activeTab="..." />` | Design tokens FlotaX (`tokens.css`) |
-| [`ExitAdminButton.tsx`](./ExitAdminButton.tsx) | Botón Conmutador a Portal Cliente | Componente `<ExitAdminButton />` | `astro:actions`, `astro:transitions/client` |
-| [`IosInstallGuideModal.tsx`](./IosInstallGuideModal.tsx) | Isla React 19: Guía Interactiva en Video para iOS PWA | Componente `<IosInstallGuideModal ... />` | Recortes de video `/instructions/ios-step-*.mp4` |
-| [`PwaRuntimeIsland.tsx`](./PwaRuntimeIsland.tsx) | Isla React 19: Orquestador PWA Standalone, SPA & Loader | Componente `<PwaRuntimeIsland />` | `@/lib/pwa`, `astro:transitions/client`, [`IosInstallGuideModal.tsx`](./IosInstallGuideModal.tsx), [`FlotaxLoadingScreen.tsx`](./FlotaxLoadingScreen.tsx) |
-| [`FlotaxLoadingScreen.tsx`](./FlotaxLoadingScreen.tsx) | Isla React 19: Pantalla de Carga Full-Screen Cinética (Variantes `orbital` y `cad`) | Componente `<FlotaxLoadingScreen ... />`, `FlotaxLoadingScreenProps`, `FlotaxLoaderVariant` | Design tokens FlotaX (`tokens.css`) |
-| [`FlotaxLoaderPreviewIsland.tsx`](./FlotaxLoaderPreviewIsland.tsx) | Isla React 19: Simulador e Inspector Interactivo de Carga | Componente `<FlotaxLoaderPreviewIsland />` | [`FlotaxLoadingScreen.tsx`](./FlotaxLoadingScreen.tsx), `astro:transitions/client` |
-| [`PwaBootSplash.astro`](./PwaBootSplash.astro) | Splash Screen SSR Inmediato de Arranque Frío PWA (Escáner Pericial CAD) | Componente `<PwaBootSplash statusLabel="..." />` | Design tokens FlotaX (`tokens.css`), Astro `<ClientRouter />` |
 
 ## Invariants & Directory Rules
 
 - All additions, deletions, or public API modifications must be reflected in this index.
-- Touch targets must adhere to minimum 44px ergonomics.
+- Maintain strict boundary encapsulation and domain layer separation.
 
 <!-- Reconciled by codebase-index -->

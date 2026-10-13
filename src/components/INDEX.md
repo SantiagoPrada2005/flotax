@@ -7,17 +7,27 @@
 
 | Subdirectory | Responsibility | Index |
 | :--- | :--- | :--- |
-| [`navigation/`](./navigation/) | Componentes de navegación (BottomNav, TopBar, Sidebar). | [INDEX.md](./navigation/INDEX.md) |
-| [`dashboard/`](./dashboard/) | Módulos del Bento Grid para el panel operativo (Hero, Métricas, Operaciones). | [INDEX.md](./dashboard/INDEX.md) |
-| [`flota/`](./flota/) | Componentes de catálogo y buscador especializado de vehículos. | [INDEX.md](./flota/INDEX.md) |
-| [`alquiler/`](./alquiler/) | Wizard multi-paso de alquiler y calendario editorial de franjas de disponibilidad. | [INDEX.md](./alquiler/INDEX.md) |
-| [`reservas/`](./reservas/) | Portal de reservas del cliente: Calendario Editorial Suizo, Agenda de Hitos y Bento Grid de Especificaciones. | [INDEX.md](./reservas/INDEX.md) |
-| [`auth/`](./auth/) | Componentes de acceso y wizards de inducción de personal. | [INDEX.md](./auth/INDEX.md) |
-| [`perfil/`](./perfil/) | Componentes de perfil y switch de portal cliente/operador. | [INDEX.md](./perfil/INDEX.md) |
-| [`ui/`](./ui/) | Primitivas y componentes visuales agnósticos Tier 1 (Isotipo FlotaX, botones). | [INDEX.md](./ui/INDEX.md) |
+| [`alquiler/`](./alquiler/) | Componentes interactivos para el embudo multi-paso de alquiler de vehículos y calendario editorial de franjas de disponibilidad. | [INDEX.md](./alquiler/INDEX.md) |
+| [`auth/`](./auth/) | Componentes de autenticación, flujos de acceso OTP y wizards de inducción de personal operativo. | [INDEX.md](./auth/INDEX.md) |
+| [`dashboard/`](./dashboard/) | Componentes modulares del Bento Grid para el panel de control operativo (Hero, Métricas con Sparkline, Operaciones y Categorías). | [INDEX.md](./dashboard/INDEX.md) |
+| [`flota/`](./flota/) | TODO: Define core domain responsibility of this directory. | [INDEX.md](./flota/INDEX.md) |
+| [`landing/`](./landing/) | Componentes visuales y secciones promocionales de la landing page principal de FlotaX. | [INDEX.md](./landing/INDEX.md) |
+| [`navigation/`](./navigation/) | Componentes atómicos y estructurales de navegación (Bottom Navigation Bar, Top App Bar, Desktop Sidebar). | [INDEX.md](./navigation/INDEX.md) |
+| [`notificaciones/`](./notificaciones/) | Directory `notificaciones` | *(No index)* |
+| [`perfil/`](./perfil/) | Componentes de interfaz de usuario para el perfil de usuario y control de conmutación de portal (Cliente / Operativo). | [INDEX.md](./perfil/INDEX.md) |
+| [`react/`](./react/) | Directory `react` | *(No index)* |
+| [`reservas/`](./reservas/) | Componentes interactivos del portal de reservas del cliente (`/reservas` y `/reservas/[codigo]`), incluyendo el Calendario Editorial Suizo + Listado de Alquileres y la Vista Dedicada de Inspección R2, Waybill y Feature Highlights. | [INDEX.md](./reservas/INDEX.md) |
+| [`ui/`](./ui/) | Primitivas y componentes visuales agnósticos Tier 1 del sistema de diseño FlotaX. | [INDEX.md](./ui/INDEX.md) |
+
+## File Manifest
+
+| File | Role / Pattern | Public Exports / API | Key Dependencies |
+| :--- | :--- | :--- | :--- |
+| *(None)* | - | - | - |
 
 ## Invariants & Directory Rules
 
 - All additions, deletions, or public API modifications must be reflected in this index.
+- Maintain strict boundary encapsulation and domain layer separation.
 
 <!-- Reconciled by codebase-index -->

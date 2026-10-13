@@ -8,7 +8,7 @@ import {
   darDeBajaVehiculo,
   obtenerVehiculoAsync,
 } from '@/lib/flota/repositorio';
-import type { VehiculoItem, CategoriaVehiculo, EstadoVehiculo } from '@/lib/flota/types';
+import type { VehiculoItem, CategoriaVehiculo } from '@/lib/flota/types';
 
 const CATEGORIA_ETIQUETAS: Record<CategoriaVehiculo, string> = {
   SEDAN: 'Sedán Ejecutivo',

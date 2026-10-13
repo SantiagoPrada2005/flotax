@@ -9,6 +9,7 @@
 | :--- | :--- | :--- | :--- |
 | [`index.ts`](./index.ts) | Barrel Export | `isStandalonePwa`, `isSpaInterceptableUrl`, `registerPwaServiceWorker`, `detectInstallPlatform`, `isInstallPromptDismissed`, `dismissInstallPromptForDays`, `markAppInstalled`, `isAppMarkedInstalled`, `openInstallPromptModal`, `BeforeInstallPromptEvent`, `PwaInstallPlatform` | `./standalone`, `./install` |
 | [`install.ts`](./install.ts) | Pure PWA Install Domain Utilities | `detectInstallPlatform()`, `isInstallPromptDismissed()`, `dismissInstallPromptForDays()`, `markAppInstalled()`, `isAppMarkedInstalled()`, `openInstallPromptModal()` | Estándares Web (`beforeinstallprompt`, `localStorage`, `CustomEvent`) |
+| [`push.ts`](./push.ts) | TypeScript / JavaScript Module | - | - |
 | [`standalone.ts`](./standalone.ts) | Pure PWA Standalone & SPA Utilities | `isStandalonePwa()`, `isSpaInterceptableUrl()`, `registerPwaServiceWorker()` | Estándares Web (`window.matchMedia`, `navigator.serviceWorker`) |
 
 ## Invariants & Directory Rules

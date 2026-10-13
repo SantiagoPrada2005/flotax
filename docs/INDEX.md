@@ -12,7 +12,6 @@
 | [`PRJ_arquitectura_y_stack_tecnico_alquiler_vehiculos.md`](./PRJ_arquitectura_y_stack_tecnico_alquiler_vehiculos.md) | Blueprint del Proyecto | Arquitectura global, Cloudflare D1, Astro, Better Auth y RBAC | Cloudflare D1, Better Auth |
 | [`database.md`](./database.md) | Documento Técnico | Modelo relacional, tablas, tipos y diagramas ER de la base de datos | Drizzle ORM |
 | [`mobile-inputs-and-ergonomics.md`](./mobile-inputs-and-ergonomics.md) | Lineamientos UX | Guía ergonómica para diseño táctil e interfaces móviles | - |
-| [`reactivity-architecture-audit.md`](./reactivity-architecture-audit.md) | Auditoría Técnica | Auditoría sobre reactividad y arquitectura de componentes | - |
 | [`user-flows.md`](./user-flows.md) | Documento Técnico & UX | User flows canónicos de FlotaX (Onboarding, Operación de reservas, Menú de personal, Roles y Matriz RBAC) | Mermaid |
 
 ## Invariants & Directory Rules

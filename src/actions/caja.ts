@@ -1,6 +1,8 @@
 import { defineAction } from 'astro:actions';
 import { z } from 'zod';
+import { env } from 'cloudflare:workers';
 import { requireLocalAuth, PERMISOS } from '@/lib/auth';
+import { crearServicioNotificaciones } from '@/lib/notificaciones';
 
 export const registrarAbono = defineAction({
   input: z.object({
@@ -16,6 +18,27 @@ export const registrarAbono = defineAction({
 
     // Lógica transaccional con Drizzle ORM sobre Cloudflare D1
     // El tenant está 100% aislado mediante localId
+    // Aviso a quienes gestionan la caja del patio (sin notificar a quien registró el abono)
+    await crearServicioNotificaciones(env, context.locals.logger).notificar({
+      tipo: 'ABONO_REGISTRADO',
+      payload: {
+        contratoId: input.contratoId,
+        montoFormateado: new Intl.NumberFormat('es-CO', {
+          style: 'currency',
+          currency: 'COP',
+          maximumFractionDigits: 0,
+        }).format(input.monto),
+        metodoPago: input.metodoPago,
+      },
+      destino: {
+        alcance: 'LOCAL_ROLES',
+        localId,
+        roles: ['DUENO', 'ADMIN', 'AUDITOR_FINANCIERO'],
+      },
+      localId,
+      actorId: usuario.id,
+    });
+
     return {
       ok: true,
       mensaje: 'Abono asentado correctamente',

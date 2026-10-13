@@ -25,7 +25,9 @@
 		"EMAIL_AUTH_FROM": "FlotaX Seguridad <auth@flotax.innovaweb.pro>",
 		"EMAIL_ALERTS_FROM": "FlotaX Alertas <soporte@flotax.innovaweb.pro>",
 		"ALERT_DEVELOPER_EMAILS": "santiagopradamoreno@gmail.com",
-		"APP_ENV": "development"
+		"APP_ENV": "development",
+		"VAPID_PUBLIC_KEY": "BKQjDE2hrc3Zqj8YbmLcBStABd8-LGGJnZN8wW54W91C7I5jo23WW8-NsLTdK4u5yEFmYKxTQSW87tDZRWfpgVU",
+		"VAPID_SUBJECT": "mailto:notificaciones@flotax.innovaweb.pro"
 	},
 	"r2_buckets": [
 		{

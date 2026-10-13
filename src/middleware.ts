@@ -10,6 +10,7 @@ const ADMIN_PREFIX = '/admin';
 const CLIENT_PROTECTED_PREFIXES = [
   '/reservas',
   '/perfil',
+  '/notificaciones',
 ];
 
 function isAdminRoute(pathname: string): boolean {

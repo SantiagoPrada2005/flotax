@@ -63,3 +63,38 @@ function isValidTimeZone(tz: string): boolean {
     return false;
   }
 }
+
+/**
+ * Tiempo relativo en español para listados ("hace 5 min", "hace 2 h", "hace 3 d").
+ * A partir de una semana devuelve la fecha corta en la zona horaria objetivo.
+ */
+export function formatTiempoRelativo(
+  fecha: Date,
+  ahora: Date = new Date(),
+  timezone: string = DEFAULT_TIMEZONE
+): string {
+  const segundos = Math.max(0, Math.floor((ahora.getTime() - fecha.getTime()) / 1000));
+  if (segundos < 60) return 'ahora';
+  const minutos = Math.floor(segundos / 60);
+  if (minutos < 60) return `hace ${minutos} min`;
+  const horas = Math.floor(minutos / 60);
+  if (horas < 24) return `hace ${horas} h`;
+  const dias = Math.floor(horas / 24);
+  if (dias < 7) return `hace ${dias} d`;
+  return new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'short', timeZone: timezone }).format(fecha);
+}
+
+export type GrupoTemporal = 'Hoy' | 'Ayer' | 'Anteriores';
+
+/** Agrupa una fecha en Hoy / Ayer / Anteriores según el día calendario en la zona horaria objetivo. */
+export function grupoTemporal(
+  fecha: Date,
+  ahora: Date = new Date(),
+  timezone: string = DEFAULT_TIMEZONE
+): GrupoTemporal {
+  const diaFecha = toClientISODate(fecha, timezone);
+  if (diaFecha === toClientISODate(ahora, timezone)) return 'Hoy';
+  const ayer = new Date(ahora.getTime() - 24 * 60 * 60 * 1000);
+  if (diaFecha === toClientISODate(ayer, timezone)) return 'Ayer';
+  return 'Anteriores';
+}

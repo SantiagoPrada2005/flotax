@@ -146,7 +146,7 @@ export default function VehicleFormIsland({ vehiculoInicial }: VehicleFormIsland
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     e.preventDefault();
     setErrorMsg(null);
 

@@ -12,6 +12,6 @@
 ## Invariants & Directory Rules
 
 - All additions, deletions, or public API modifications must be reflected in this index.
-- Touch targets must adhere to minimum 44px ergonomics.
+- Maintain strict boundary encapsulation and domain layer separation.
 
 <!-- Reconciled by codebase-index -->

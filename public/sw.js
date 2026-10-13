@@ -183,3 +183,50 @@ self.addEventListener('fetch', (event) => {
     );
   }
 });
+
+/**
+ * Web Push: muestra la notificación del sistema y avisa a las pestañas abiertas
+ * para que refresquen el contador de la campana.
+ */
+self.addEventListener('push', (event) => {
+  let datos = {};
+  try {
+    datos = event.data ? event.data.json() : {};
+  } catch {
+    datos = {};
+  }
+
+  const titulo = datos.titulo || 'FlotaX';
+  const opciones = {
+    body: datos.detalle || 'Tienes una novedad en FlotaX.',
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
+    tag: datos.id || 'flotax-notificacion',
+    renotify: Boolean(datos.urgente),
+    data: { href: datos.href || '/notificaciones' },
+  };
+
+  event.waitUntil(
+    Promise.all([
+      self.registration.showNotification(titulo, opciones),
+      self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((ventanas) => {
+        ventanas.forEach((ventana) => ventana.postMessage({ type: 'flotax:notificacion-nueva' }));
+      }),
+    ])
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const destino = new URL(event.notification.data?.href || '/notificaciones', self.location.origin).href;
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((ventanas) => {
+      const abierta = ventanas.find((ventana) => new URL(ventana.url).origin === self.location.origin);
+      if (abierta) {
+        return abierta.focus().then(() => abierta.navigate(destino));
+      }
+      return self.clients.openWindow(destino);
+    })
+  );
+});

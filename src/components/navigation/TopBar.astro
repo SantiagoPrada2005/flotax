@@ -1,4 +1,5 @@
 ---
+import { env } from 'cloudflare:workers';
 import TopBarIsland from './TopBarIsland';
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
 }
 
 const { title = 'FlotaX', showBack = false, backHref = '/', class: className = '' } = Astro.props;
+const autenticado = Boolean(Astro.locals.usuario);
 ---
 
 <TopBarIsland
@@ -17,4 +19,6 @@ const { title = 'FlotaX', showBack = false, backHref = '/', class: className = '
   showBack={showBack}
   backHref={backHref}
   className={className}
+  autenticado={autenticado}
+  clavePublicaVapid={env.VAPID_PUBLIC_KEY}
 />

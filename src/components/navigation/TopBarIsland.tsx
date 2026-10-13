@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react';
 import { isStandalonePwa, openInstallPromptModal } from '@/lib/pwa';
 import TopBarSearch from './TopBarSearch';
 import FlotaxIsotype from '@/components/ui/FlotaxIsotype';
+import NotificacionesBell from '@/components/notificaciones/NotificacionesBell';
 
 export interface TopBarIslandProps {
   title?: string | undefined;
   showBack?: boolean | undefined;
   backHref?: string | undefined;
   className?: string | undefined;
+  autenticado?: boolean | undefined;
+  clavePublicaVapid?: string | undefined;
 }
 
 export default function TopBarIsland({
@@ -15,6 +18,8 @@ export default function TopBarIsland({
   showBack = false,
   backHref = '/',
   className = '',
+  autenticado = false,
+  clavePublicaVapid,
 }: TopBarIslandProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -121,21 +126,13 @@ export default function TopBarIsland({
           onClose={() => setIsSearchOpen(false)}
         />
 
-        <button
-          type="button"
-          aria-label="Notificaciones"
-          onPointerDown={triggerHaptic}
-          className={`ios-press-bounce relative flex h-11 w-11 items-center justify-center rounded-full text-[#4B5563] hover:text-[#111827] border ${pillClass} transition-all duration-200 ${fadeClass}`}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4.5 w-4.5">
-            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-          </svg>
-          <span className="absolute right-2.5 top-2.5 flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600 ring-2 ring-white" />
-          </span>
-        </button>
+        <NotificacionesBell
+          autenticado={autenticado}
+          clavePublicaVapid={clavePublicaVapid}
+          pillClass={pillClass}
+          fadeClass={fadeClass}
+          onHaptic={triggerHaptic}
+        />
 
         <a
           href="/perfil"

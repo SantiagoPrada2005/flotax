@@ -203,6 +203,43 @@ Catálogo de unidades físicas y operativas disponibles para alquiler y control 
 
 ---
 
+### 5. Módulo de Notificaciones
+
+#### `notificaciones`
+Bandeja in-app con *fan-out on write*: una fila por destinatario. El **alcance** (scope) con el que se emitió el aviso es `USUARIO` (uno o varios usuarios concretos), `LOCAL` (todos los miembros activos de un patio), `LOCAL_ROLES` (miembros de un patio con ciertos roles) o `PLATAFORMA` (todos los usuarios activos).
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|---------------|-------------|
+| `id` | TEXT | PRIMARY KEY | Identificador único de la notificación. |
+| `usuario_id` | TEXT | NOT NULL, FK `user.id` (CASCADE) | Destinatario. |
+| `local_id` | TEXT | NULLABLE, FK `locales_alquiler.id` (CASCADE) | `NULL` = aviso personal (modo cliente); con valor = aviso del patio (modo operador). |
+| `tipo` | TEXT | NOT NULL | Evento del catálogo (`SOLICITUD_NUEVA`, `RESERVA_CONFIRMADA`, ...). |
+| `alcance` | TEXT | NOT NULL | 'USUARIO', 'LOCAL', 'LOCAL_ROLES', 'PLATAFORMA'. Solo auditoría. |
+| `prioridad` | TEXT | NOT NULL, DEFAULT 'NORMAL' | 'NORMAL' o 'URGENTE'. |
+| `titulo` | TEXT | NOT NULL | Título corto (verbo + objeto). |
+| `detalle` | TEXT | NULLABLE | Dato clave (vehículo, fechas, monto). |
+| `href` | TEXT | NULLABLE | Ruta interna a la que navega al tocar el aviso. |
+| `dedupe_key` | TEXT | NULLABLE, UNIQUE con `usuario_id` | Evita avisos duplicados del mismo hecho. |
+| `leida_en` | TIMESTAMP | NULLABLE | `NULL` = sin leer. |
+| `creada_en` | TIMESTAMP | NOT NULL | Fecha de emisión. |
+
+Índices: `notificaciones_bandeja_idx (usuario_id, leida_en, creada_en)` y único `notificaciones_dedupe_idx (usuario_id, dedupe_key)`.
+
+#### `suscripciones_push`
+Suscripciones Web Push por dispositivo.
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|---------------|-------------|
+| `id` | TEXT | PRIMARY KEY | Identificador de la suscripción. |
+| `usuario_id` | TEXT | NOT NULL, FK `user.id` (CASCADE) | Propietario del dispositivo. |
+| `endpoint` | TEXT | NOT NULL, UNIQUE | URL del servicio push del navegador. |
+| `p256dh` | TEXT | NOT NULL | Llave pública ECDH del cliente (base64url). |
+| `auth` | TEXT | NOT NULL | Secreto de autenticación del cliente (base64url). |
+| `agente` | TEXT | NULLABLE | User-Agent para identificar el dispositivo. |
+| `creada_en` | TIMESTAMP | NOT NULL | Fecha de alta. |
+
+---
+
 ## Diagrama Entidad-Relación
 
 ```mermaid
@@ -220,6 +257,9 @@ erDiagram
     locales_alquiler ||--o{ invitaciones_local : "invitaciones activas"
     locales_alquiler ||--o{ historial_transferencias_local : "auditoria titularidad"
     locales_alquiler ||--o{ vehiculos : "posee unidades"
+    user ||--o{ notificaciones : "recibe"
+    locales_alquiler ||--o{ notificaciones : "avisos del patio"
+    user ||--o{ suscripciones_push : "dispositivos push"
 
     user {
         string id PK
@@ -367,5 +407,29 @@ erDiagram
         timestamp creado_en
         timestamp actualizado_en
     }
-```
 
+    notificaciones {
+        string id PK
+        string usuario_id FK
+        string local_id FK
+        string tipo
+        string alcance
+        string prioridad
+        string titulo
+        string detalle
+        string href
+        string dedupe_key
+        timestamp leida_en
+        timestamp creada_en
+    }
+
+    suscripciones_push {
+        string id PK
+        string usuario_id FK
+        string endpoint UK
+        string p256dh
+        string auth
+        string agente
+        timestamp creada_en
+    }
+```

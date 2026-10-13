@@ -7,15 +7,15 @@
 
 | Subdirectory | Responsibility | Index |
 | :--- | :--- | :--- |
-| [`templates/`](./templates/) | Motores de renderizado de plantillas HTML responsivas y texto plano (OTP, Reservas, Inspecciones). | — |
+| [`templates/`](./templates/) | Directory `templates` | *(No index)* |
 
 ## File Manifest
 
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
-| [`types.ts`](./types.ts) | Domain Types & Contracts | `IEmailSender`, `SendEmailOptions`, `EmailResult`, schemas Zod | `zod` |
-| [`service.ts`](./service.ts) | Hexagonal Adapters & Domain Service | `EmailService`, `CloudflareEmailAdapter`, `ConsoleEmailAdapter` | `@cloudflare/workers-types`, `./types`, `./templates` |
 | [`index.ts`](./index.ts) | Public Facade & Factory | `getEmailService(env)`, re-export de tipos y plantillas | `./service`, `./types`, `./templates` |
+| [`service.ts`](./service.ts) | Hexagonal Adapters & Domain Service | `EmailService`, `CloudflareEmailAdapter`, `ConsoleEmailAdapter` | `@cloudflare/workers-types`, `./types`, `./templates` |
+| [`types.ts`](./types.ts) | Domain Types & Contracts | `IEmailSender`, `SendEmailOptions`, `EmailResult`, schemas Zod | `zod` |
 
 ## Invariants & Directory Rules
 
