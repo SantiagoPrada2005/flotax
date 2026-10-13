@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { actions } from 'astro:actions';
+import { navigate } from 'astro:transitions/client';
 import {
   STORAGE_KEY_RESERVAS_FLOTAX,
   formatearRangoReservaHumano,
@@ -1364,7 +1365,52 @@ export default function AlquilerDetalleView({
             )}
           </div>
         )}
+
+        {/* ===================================================================
+            BARRA DE ENTREGA Y EVALUACIÓN INTERACTIVA (MODO CLIENTE · 100DVH WIZARD)
+            =================================================================== */}
+        {!esAdmin && (
+          <div className="border-t border-[#EDEDED] pt-3.5 space-y-2.5">
+            {reserva.evaluacionEntrega ? (
+              <div className="flex items-center justify-between gap-3 rounded-[20px] bg-[#EDEDED]/85 px-3.5 py-2.5">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="rounded-full bg-[#111827] px-2 py-0.5 font-mono text-[10px] font-bold text-white">
+                      {reserva.evaluacionEntrega.puntajeNumerico}.0 ★
+                    </span>
+                    <span className="font-display text-xs font-bold text-[#111827] truncate">
+                      Entrega y evaluación registradas
+                    </span>
+                  </div>
+                  <p className="mt-0.5 text-[11px] font-medium text-[#4B5563] truncate">
+                    {reserva.evaluacionEntrega.aspectosDestacados.join(' · ') ||
+                      'Paz y salvo digital R2 activo'}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => navigate(`/reservas/${reserva.codigo}/entrega`)}
+                  className="ios-press-bounce shrink-0 rounded-full bg-white px-3 py-1.5 text-[11px] font-bold text-[#111827] cursor-pointer"
+                >
+                  Ver resumen
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => navigate(`/reservas/${reserva.codigo}/entrega`)}
+                className="ios-press-bounce flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#1F2937] cursor-pointer"
+              >
+                <span>⛶</span>
+                <span>Entregar vehículo y calificar servicio</span>
+                <span>→</span>
+              </button>
+            )}
+          </div>
+        )}
       </section>
     </div>
   );
 }
+

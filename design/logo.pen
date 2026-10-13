@@ -4394,9 +4394,8 @@
           "id": "MTR_ROW",
           "name": "Fila de 3 Dispositivos iOS (390px)",
           "width": "fill_container",
-          "justifyContent": "space_between",
-          "alignItems": "start",
           "gap": 32,
+          "justifyContent": "space_between",
           "children": [
             {
               "type": "frame",
@@ -4475,10 +4474,9 @@
                   "type": "frame",
                   "id": "IOS1_CHART",
                   "name": "Tarjeta Curva Spline con Achurado GLSL",
+                  "clip": true,
                   "width": "fill_container",
                   "height": 210,
-                  "cornerRadius": 26,
-                  "clip": true,
                   "fill": {
                     "type": "shader",
                     "enabled": true,
@@ -4491,9 +4489,10 @@
                       "u_curve": "#EDEDED"
                     }
                   },
+                  "cornerRadius": 26,
                   "layout": "vertical",
-                  "justifyContent": "space_between",
                   "padding": 16,
+                  "justifyContent": "space_between",
                   "children": [
                     {
                       "type": "frame",
@@ -4655,8 +4654,8 @@
                           "name": "Todos",
                           "width": 54,
                           "height": 54,
-                          "cornerRadius": 27,
                           "fill": "$brand-black",
+                          "cornerRadius": 27,
                           "justifyContent": "center",
                           "alignItems": "center",
                           "children": [
@@ -4678,8 +4677,8 @@
                           "name": "Autos",
                           "width": 54,
                           "height": 54,
-                          "cornerRadius": 27,
                           "fill": "$brand-surface",
+                          "cornerRadius": 27,
                           "stroke": "$brand-gray-light",
                           "strokeWidth": 1,
                           "justifyContent": "center",
@@ -4703,8 +4702,8 @@
                           "name": "Motos",
                           "width": 54,
                           "height": 54,
-                          "cornerRadius": 27,
                           "fill": "$brand-surface",
+                          "cornerRadius": 27,
                           "stroke": "$brand-gray-light",
                           "strokeWidth": 1,
                           "justifyContent": "center",
@@ -4728,8 +4727,8 @@
                           "name": "Scooters",
                           "width": 54,
                           "height": 54,
-                          "cornerRadius": 27,
                           "fill": "$brand-surface",
+                          "cornerRadius": 27,
                           "stroke": "$brand-gray-light",
                           "strokeWidth": 1,
                           "justifyContent": "center",
@@ -4753,8 +4752,8 @@
                           "name": "Utilitarios",
                           "width": 54,
                           "height": 54,
-                          "cornerRadius": 27,
                           "fill": "$brand-graphite",
+                          "cornerRadius": 27,
                           "justifyContent": "center",
                           "alignItems": "center",
                           "children": [
@@ -4994,13 +4993,13 @@
                   "name": "Curva Expandida en Superficie Clara",
                   "width": "fill_container",
                   "height": 220,
-                  "cornerRadius": 24,
                   "fill": "$brand-surface",
+                  "cornerRadius": 24,
                   "stroke": "$brand-gray-light",
                   "strokeWidth": 1,
                   "layout": "vertical",
-                  "justifyContent": "space_between",
                   "padding": 18,
+                  "justifyContent": "space_between",
                   "children": [
                     {
                       "type": "frame",
@@ -5049,7 +5048,7 @@
                       "type": "path",
                       "id": "IOS2_SPLINE_PATH",
                       "name": "Trazo Vectorial Spline Expandido",
-                      "geometry": "M0 110 C 35 40, 65 40, 95 85 C 125 120, 145 30, 175 65 C 205 100, 225 10, 260 45 C 295 80, 315 60, 340 95",
+                      "geometry": "M0 110c35-70 65-70 95-25 30 35 50-55 80-20 30 35 50-55 85-20 35 35 55 15 80 50",
                       "viewBox": [
                         0,
                         0,
@@ -5420,10 +5419,9 @@
                       "type": "frame",
                       "id": "BENTO_WAVE",
                       "name": "Tarjeta Vertical Onda Liquida (Ref 4 + Ref 1.3)",
+                      "clip": true,
                       "width": 166,
                       "height": 268,
-                      "cornerRadius": 26,
-                      "clip": true,
                       "fill": {
                         "type": "shader",
                         "enabled": true,
@@ -5437,9 +5435,10 @@
                           "u_surface": "#EDEDED"
                         }
                       },
+                      "cornerRadius": 26,
                       "layout": "vertical",
-                      "justifyContent": "space_between",
                       "padding": 16,
+                      "justifyContent": "space_between",
                       "children": [
                         {
                           "type": "text",
@@ -5509,8 +5508,8 @@
                           "stroke": "$brand-gray-light",
                           "strokeWidth": 1,
                           "layout": "vertical",
-                          "justifyContent": "space_between",
                           "padding": 14,
+                          "justifyContent": "space_between",
                           "children": [
                             {
                               "type": "text",
@@ -5553,8 +5552,8 @@
                           "fill": "$brand-black",
                           "cornerRadius": 24,
                           "layout": "vertical",
-                          "justifyContent": "space_between",
                           "padding": 14,
+                          "justifyContent": "space_between",
                           "children": [
                             {
                               "type": "text",
@@ -5650,9 +5649,8 @@
           "id": "AR_ROW",
           "name": "Par de Dispositivos iOS Admin (390px)",
           "width": "fill_container",
-          "justifyContent": "space_between",
-          "alignItems": "start",
           "gap": 36,
+          "justifyContent": "space_between",
           "children": [
             {
               "type": "frame",
@@ -5702,7 +5700,10 @@
                           "name": "Pildora + Nueva",
                           "fill": "$brand-black",
                           "cornerRadius": 20,
-                          "padding": [6, 12],
+                          "padding": [
+                            6,
+                            12
+                          ],
                           "children": [
                             {
                               "type": "text",
@@ -5744,7 +5745,10 @@
                       "name": "Tab Todas",
                       "fill": "$brand-black",
                       "cornerRadius": 18,
-                      "padding": [6, 12],
+                      "padding": [
+                        6,
+                        12
+                      ],
                       "children": [
                         {
                           "type": "text",
@@ -5764,7 +5768,10 @@
                       "name": "Tab Pendientes",
                       "fill": "#FFFFFF",
                       "cornerRadius": 18,
-                      "padding": [6, 12],
+                      "padding": [
+                        6,
+                        12
+                      ],
                       "children": [
                         {
                           "type": "text",
@@ -5784,7 +5791,10 @@
                       "name": "Tab En Curso",
                       "fill": "#FFFFFF",
                       "cornerRadius": 18,
-                      "padding": [6, 12],
+                      "padding": [
+                        6,
+                        12
+                      ],
                       "children": [
                         {
                           "type": "text",
@@ -5856,7 +5866,10 @@
                       "name": "Accion Rapida Aprobar",
                       "fill": "$brand-black",
                       "cornerRadius": 18,
-                      "padding": [8, 12],
+                      "padding": [
+                        8,
+                        12
+                      ],
                       "children": [
                         {
                           "type": "text",
@@ -5984,9 +5997,9 @@
           "width": "fill_container",
           "fill": "$brand-black",
           "cornerRadius": 24,
-          "padding": 24,
           "layout": "vertical",
           "gap": 12,
+          "padding": 24,
           "children": [
             {
               "type": "text",
@@ -6005,6 +6018,3409 @@
               "name": "Detalle Instrumentos Nivel 3",
               "fill": "$brand-gray-light",
               "content": "1. Dynamic Island In-Situ (Mapa S-Curve + Anillo ETA)  ·  2. Cámaras Líquidas Bessonov 2x2 + Simulador de Marea  ·  3. Matriz Waffle 20 Nodos + Clúster Automotriz C-Arc (E➔F)  ·  4. Giroscopio Pericial 360° + Arco L➔H  ·  5. Radar de Circuito Cerrado StandBy (Sector/Vuelta)  ·  6. Rueda Polar Suiza Achurada (+62.3°) + Montaña con Aguja",
+              "fontFamily": "Inter",
+              "fontSize": 11,
+              "fontWeight": "600"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "ITI2c",
+      "x": 7980,
+      "y": -1640,
+      "name": "Lamina 05 — Sistema de Contingencia Perimetral (404 · Sin Internet · 500)",
+      "clip": true,
+      "width": 1540,
+      "fill": "$brand-surface",
+      "cornerRadius": 24,
+      "stroke": "$brand-gray-light",
+      "strokeWidth": 1,
+      "layout": "vertical",
+      "gap": 32,
+      "padding": 48,
+      "children": [
+        {
+          "type": "frame",
+          "id": "Wmz7c",
+          "name": "Header Editorial Contingencia y Errores",
+          "width": "fill_container",
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "HP0ZM",
+              "name": "HUD Left Contingencia",
+              "fill": "$brand-black",
+              "content": "FLOTAX OS  ·  LÁMINA 05 — CONTINGENCIA PERIMETRAL: ERROR 404, FALTA DE INTERNET (OFFLINE) & 500",
+              "fontFamily": "Inter",
+              "fontSize": 12,
+              "fontWeight": "700",
+              "letterSpacing": 1.4
+            },
+            {
+              "type": "text",
+              "id": "xYzUw",
+              "name": "HUD Right Contingencia",
+              "fill": "$brand-gray-mid",
+              "content": "SHADERS GLSL +62.3°  ·  PWA SERVICE WORKER FALLBACK  ·  PALETA CANÓNICA 5 TONOS",
+              "fontFamily": "JetBrains Mono",
+              "fontSize": 11,
+              "fontWeight": "600"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "nO8cA",
+          "name": "Fila de 3 Dispositivos iOS — Estados de Error y Offline",
+          "width": "fill_container",
+          "gap": 32,
+          "justifyContent": "space_between",
+          "children": [
+            {
+              "type": "frame",
+              "id": "yJY8q",
+              "name": "iOS 01 — Error 404 (Unidad o Ruta Fuera de Perimetro)",
+              "width": 456,
+              "fill": "$brand-surface",
+              "cornerRadius": 44,
+              "stroke": "$brand-black",
+              "strokeWidth": 6,
+              "layout": "vertical",
+              "gap": 16,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "fuAya",
+                  "name": "Top App Bar 404",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "P5ZFv",
+                      "name": "Pildora Retorno 404",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 999,
+                      "stroke": "$brand-gray-light",
+                      "strokeWidth": 1,
+                      "gap": 6,
+                      "padding": [
+                        8,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Ab9iC",
+                          "name": "Label Retorno 404",
+                          "fill": "$brand-black",
+                          "content": "← Patio FlotaX",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "qwgQL",
+                      "name": "Badge Codigo 404",
+                      "fill": "$brand-black",
+                      "cornerRadius": 999,
+                      "padding": [
+                        6,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "pq1O1",
+                          "name": "Texto Badge 404",
+                          "fill": "$brand-surface",
+                          "content": "HTTP 404 · PERÍMETRO",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700",
+                          "letterSpacing": 1
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "e8GoJN",
+                  "name": "Escenario Shader CAD Radar 404",
+                  "clip": true,
+                  "width": "fill_container",
+                  "height": 228,
+                  "fill": {
+                    "type": "shader",
+                    "enabled": true,
+                    "url": "flotax-error-404-radar.glsl",
+                    "uniforms": {
+                      "u_surface": "#EDEDED",
+                      "u_grayLight": "#9CA3AF",
+                      "u_grayMid": "#4B5563",
+                      "u_graphite": "#1F2937",
+                      "u_bg": "#111827"
+                    }
+                  },
+                  "cornerRadius": 28,
+                  "stroke": "$brand-gray-light",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "padding": 18,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "pm0Eo",
+                      "name": "HUD Superior Radar 404",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "WQKKV",
+                          "name": "Tag Telemetria 404",
+                          "fill": "$brand-graphite",
+                          "content": "VEC +62.3° · SECTOR N/A",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "e7OKwe",
+                          "name": "Tag Coordenada 404",
+                          "fill": "$brand-gray-mid",
+                          "content": "LOC: SIN COINCIDENCIA",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 10,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "LJ5rH",
+                      "name": "Nucleo Tipografico 404 + Isotipo",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 22,
+                      "stroke": "$brand-black",
+                      "strokeWidth": 2,
+                      "gap": 14,
+                      "padding": [
+                        14,
+                        24
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "Ye4i3",
+                          "type": "ref",
+                          "ref": "URwpF",
+                          "name": "Isotipo 404",
+                          "width": 54,
+                          "height": 40
+                        },
+                        {
+                          "type": "text",
+                          "id": "tkfHr",
+                          "name": "Display 404",
+                          "fill": "$brand-black",
+                          "content": "404",
+                          "fontFamily": "Space Grotesk",
+                          "fontSize": 44,
+                          "fontWeight": "700",
+                          "letterSpacing": -2
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "KeqQy",
+                      "name": "HUD Inferior Radar 404",
+                      "fill": "$brand-black",
+                      "cornerRadius": 8,
+                      "padding": [
+                        5,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "wI2EB",
+                          "name": "Texto HUD Inferior 404",
+                          "fill": "$brand-surface",
+                          "content": "OBJETIVO FUERA DEL RADIO DE PATIO",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700",
+                          "letterSpacing": 1.2
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "n00oOv",
+                  "name": "Tarjeta Mensaje y Recuperacion 404",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 28,
+                  "stroke": "$brand-gray-light",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 14,
+                  "padding": 20,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "WJ3lP",
+                      "name": "Titulo Humano 404",
+                      "fill": "$brand-black",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Esta ruta o vehículo no está en el patio",
+                      "lineHeight": 1.15,
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 22,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "GCLaM",
+                      "name": "Descripcion Humana 404",
+                      "fill": "$brand-gray-mid",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "El enlace que abriste no existe, cambió de ubicación o el código de reserva ya fue cerrado. Usa los accesos rápidos para retomar tu operación.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "e9lxwA",
+                      "name": "Caja Ruta Solicitada 404",
+                      "width": "fill_container",
+                      "fill": "$brand-surface",
+                      "cornerRadius": 14,
+                      "stroke": "$brand-gray-light",
+                      "strokeWidth": 1,
+                      "padding": [
+                        10,
+                        14
+                      ],
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "eOfWt",
+                          "name": "Label Ruta 404",
+                          "fill": "$brand-gray-mid",
+                          "content": "RUTA SOLICITADA",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "O1ge73",
+                          "name": "Valor Ruta 404",
+                          "fill": "$brand-black",
+                          "content": "/vehiculos/unidad-904",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 11,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "R9Mfq",
+                      "name": "Chips de Destinos Frecuentes 404",
+                      "width": "fill_container",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "J984O",
+                          "name": "Chip Catálogo",
+                          "width": "fill_container",
+                          "fill": "$brand-surface",
+                          "cornerRadius": 12,
+                          "padding": [
+                            9,
+                            10
+                          ],
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "HyATc",
+                              "name": "Texto Chip Catálogo",
+                              "fill": "$brand-black",
+                              "content": "Catálogo",
+                              "fontFamily": "Inter",
+                              "fontSize": 11,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "uip75",
+                          "name": "Chip Mis Reservas",
+                          "width": "fill_container",
+                          "fill": "$brand-surface",
+                          "cornerRadius": 12,
+                          "padding": [
+                            9,
+                            10
+                          ],
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "mvePe",
+                              "name": "Texto Chip Mis Reservas",
+                              "fill": "$brand-black",
+                              "content": "Mis Reservas",
+                              "fontFamily": "Inter",
+                              "fontSize": 11,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "n5PRG",
+                          "name": "Chip Panel Patio",
+                          "width": "fill_container",
+                          "fill": "$brand-surface",
+                          "cornerRadius": 12,
+                          "padding": [
+                            9,
+                            10
+                          ],
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "yexfj",
+                              "name": "Texto Chip Panel Patio",
+                              "fill": "$brand-black",
+                              "content": "Panel Patio",
+                              "fontFamily": "Inter",
+                              "fontSize": 11,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Mro4v",
+                      "name": "CTA Primario 404 (48px Touch)",
+                      "width": "fill_container",
+                      "height": 48,
+                      "fill": "$brand-black",
+                      "cornerRadius": 999,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Y3Ye1b",
+                          "name": "Label CTA Primario 404",
+                          "fill": "$brand-surface",
+                          "content": "Explorar catálogo de vehículos →",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "yiK7b",
+                      "name": "CTA Secundario 404 (48px Touch)",
+                      "width": "fill_container",
+                      "height": 46,
+                      "fill": "$brand-surface",
+                      "cornerRadius": 999,
+                      "stroke": "$brand-gray-light",
+                      "strokeWidth": 1,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "auHUq",
+                          "name": "Label CTA Secundario 404",
+                          "fill": "$brand-black",
+                          "content": "Volver a la pantalla anterior",
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "mX6ap",
+              "name": "iOS 02 — Falta de Internet / Modo Offline (Patio Sin Cobertura)",
+              "width": 456,
+              "fill": "$brand-black",
+              "cornerRadius": 44,
+              "stroke": "$brand-gray-mid",
+              "strokeWidth": 6,
+              "layout": "vertical",
+              "gap": 16,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "kQAx0",
+                  "name": "Top App Bar Offline",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "R8jtuO",
+                      "name": "Pildora Estado Red Offline",
+                      "fill": "$brand-graphite",
+                      "cornerRadius": 999,
+                      "stroke": "$brand-gray-mid",
+                      "strokeWidth": 1,
+                      "gap": 8,
+                      "padding": [
+                        8,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "gRUi6",
+                          "name": "Dot Pulso Offline",
+                          "fill": "$brand-surface",
+                          "width": 8,
+                          "height": 8
+                        },
+                        {
+                          "type": "text",
+                          "id": "r6g1HG",
+                          "name": "Label Estado Offline",
+                          "fill": "$brand-surface",
+                          "content": "SIN SEÑAL · MODO AUTÓNOMO",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700",
+                          "letterSpacing": 0.8
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "S3SVsh",
+                      "name": "Badge Ping Reconexion",
+                      "fill": "$brand-graphite",
+                      "cornerRadius": 999,
+                      "padding": [
+                        6,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "rFdeO",
+                          "name": "Texto Ping Reconexion",
+                          "fill": "$brand-gray-light",
+                          "content": "AUTO-PING · 5S",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "NDA9D",
+                  "name": "Escenario Shader Sonar Offline",
+                  "clip": true,
+                  "width": "fill_container",
+                  "height": 228,
+                  "fill": {
+                    "type": "shader",
+                    "enabled": true,
+                    "url": "flotax-error-offline-sonar.glsl",
+                    "uniforms": {
+                      "u_bg": "#111827",
+                      "u_graphite": "#1F2937",
+                      "u_grayMid": "#4B5563",
+                      "u_grayLight": "#9CA3AF",
+                      "u_surface": "#EDEDED"
+                    }
+                  },
+                  "cornerRadius": 28,
+                  "stroke": "$brand-gray-mid",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "padding": 18,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "FT3W6",
+                      "name": "HUD Superior Sonar Offline",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "GrmWj",
+                          "name": "Tag Carrier Offline",
+                          "fill": "$brand-gray-light",
+                          "content": "CARRIER: 0.0 KB/S · LINK DOWN",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Xj6UC",
+                          "name": "Tag SW Cache",
+                          "fill": "$brand-surface",
+                          "content": "SW CACHE: ACTIVO",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "k7ze2Q",
+                      "name": "Nucleo Sonar Offline",
+                      "fill": "$brand-graphite",
+                      "cornerRadius": 22,
+                      "stroke": "$brand-surface",
+                      "strokeWidth": 1.5,
+                      "gap": 14,
+                      "padding": [
+                        14,
+                        22
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "O4yGhR",
+                          "name": "Icono Wifi Off",
+                          "width": 32,
+                          "height": 32,
+                          "icon": "wifi-off",
+                          "library": "lucide",
+                          "fill": "$brand-surface"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "YDN5u",
+                          "name": "Columna Texto Nucleo Offline",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "PzShQ",
+                              "name": "LabelEnlaceInterrumpido",
+                              "fill": "$brand-surface",
+                              "content": "ENLACE CAÍDO",
+                              "fontFamily": "Space Grotesk",
+                              "fontSize": 20,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "hhcjo",
+                              "name": "SublabelEnlaceInterrumpido",
+                              "fill": "$brand-gray-light",
+                              "content": "ESPERANDO RED MÓVIL / WI-FI",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 9,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "rgEs6",
+                      "name": "HUD Inferior Sonar Offline",
+                      "fill": "$brand-surface",
+                      "cornerRadius": 8,
+                      "padding": [
+                        5,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Ho0JY",
+                          "name": "Texto HUD Inferior Offline",
+                          "fill": "$brand-black",
+                          "content": "RECONEXIÓN AUTOMÁTICA AL DETECTAR SEÑAL",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700",
+                          "letterSpacing": 1
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "lOajQ",
+                  "name": "Tarjeta Mensaje y Cache Offline",
+                  "width": "fill_container",
+                  "fill": "$brand-graphite",
+                  "cornerRadius": 28,
+                  "stroke": "$brand-gray-mid",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 14,
+                  "padding": 20,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "daziT",
+                      "name": "Titulo Humano Offline",
+                      "fill": "$brand-surface",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Sin conexión a internet en este momento",
+                      "lineHeight": 1.15,
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 22,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "ioj1Y",
+                      "name": "Descripcion Humana Offline",
+                      "fill": "$brand-gray-light",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Verifica tu señal móvil o Wi-Fi en el patio. No cierres la aplicación: FlotaX sincronizará la disponibilidad en cuanto regrese la conexión.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "EVWKz",
+                      "name": "Panel Vistas Guardadas en Cache PWA",
+                      "width": "fill_container",
+                      "fill": "$brand-black",
+                      "cornerRadius": 16,
+                      "stroke": "$brand-gray-mid",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 12,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "wbBws",
+                          "name": "Titulo Vistas en Cache",
+                          "fill": "$brand-gray-light",
+                          "content": "VISTAS GUARDADAS EN ESTE DISPOSITIVO (CACHÉ LOCAL)",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 9,
+                          "fontWeight": "700",
+                          "letterSpacing": 0.8
+                        },
+                        {
+                          "type": "frame",
+                          "id": "R2QxBM",
+                          "name": "Fila Pildoras Cache Local",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "ijIVk",
+                              "name": "Pildora Cache /catalogo",
+                              "width": "fill_container",
+                              "fill": "$brand-graphite",
+                              "cornerRadius": 10,
+                              "stroke": "$brand-gray-mid",
+                              "strokeWidth": 1,
+                              "padding": [
+                                8,
+                                10
+                              ],
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "pRbKF",
+                                  "name": "Texto Pildora /catalogo",
+                                  "fill": "$brand-surface",
+                                  "content": "/catalogo",
+                                  "fontFamily": "JetBrains Mono",
+                                  "fontSize": 11,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "EfERt",
+                              "name": "Pildora Cache /reservas",
+                              "width": "fill_container",
+                              "fill": "$brand-graphite",
+                              "cornerRadius": 10,
+                              "stroke": "$brand-gray-mid",
+                              "strokeWidth": 1,
+                              "padding": [
+                                8,
+                                10
+                              ],
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "E9q6Qp",
+                                  "name": "Texto Pildora /reservas",
+                                  "fill": "$brand-surface",
+                                  "content": "/reservas",
+                                  "fontFamily": "JetBrains Mono",
+                                  "fontSize": 11,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Kyjcf",
+                              "name": "Pildora Cache /admin",
+                              "width": "fill_container",
+                              "fill": "$brand-graphite",
+                              "cornerRadius": 10,
+                              "stroke": "$brand-gray-mid",
+                              "strokeWidth": 1,
+                              "padding": [
+                                8,
+                                10
+                              ],
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "HLZ2S",
+                                  "name": "Texto Pildora /admin",
+                                  "fill": "$brand-surface",
+                                  "content": "/admin",
+                                  "fontFamily": "JetBrains Mono",
+                                  "fontSize": 11,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "aSqNX",
+                      "name": "CTA Primario Reintentar Conexion (48px Touch)",
+                      "width": "fill_container",
+                      "height": 48,
+                      "fill": "$brand-surface",
+                      "cornerRadius": 999,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "zHLW1",
+                          "name": "Label CTA Primario Offline",
+                          "fill": "$brand-black",
+                          "content": "Reintentar conexión ahora ↻",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "800"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "H6u0b",
+                      "name": "CTA Secundario Offline (48px Touch)",
+                      "width": "fill_container",
+                      "height": 46,
+                      "fill": "$brand-black",
+                      "cornerRadius": 999,
+                      "stroke": "$brand-gray-mid",
+                      "strokeWidth": 1,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "k5CoDA",
+                          "name": "Label CTA Secundario Offline",
+                          "fill": "$brand-surface",
+                          "content": "Abrir última vista guardada",
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Bt1t2",
+              "name": "iOS 03 — Error 500 / Contingencia Operativa del Servidor",
+              "width": 456,
+              "fill": "$brand-surface",
+              "cornerRadius": 44,
+              "stroke": "$brand-black",
+              "strokeWidth": 6,
+              "layout": "vertical",
+              "gap": 16,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Y4iLs7",
+                  "name": "Top App Bar 500",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "P870L",
+                      "name": "Pildora Estado Protegido 500",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 999,
+                      "stroke": "$brand-gray-light",
+                      "strokeWidth": 1,
+                      "padding": [
+                        8,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "D1Nxjh",
+                          "name": "Label Protegido 500",
+                          "fill": "$brand-black",
+                          "content": "DATOS DE PATIO SEGUROS",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Yk7kc",
+                      "name": "Badge Codigo 500",
+                      "fill": "$brand-graphite",
+                      "cornerRadius": 999,
+                      "padding": [
+                        6,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "yvmu4",
+                          "name": "Texto Badge 500",
+                          "fill": "$brand-surface",
+                          "content": "HTTP 500 · GUARDIA EDGE",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "qvGsf",
+                  "name": "Escenario Telemetria Contingencia 500",
+                  "clip": true,
+                  "width": "fill_container",
+                  "height": 228,
+                  "fill": "$brand-black",
+                  "cornerRadius": 28,
+                  "stroke": "$brand-graphite",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "padding": 18,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "t2NPza",
+                      "name": "HUD Superior 500",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "FTlb8",
+                          "name": "Tag Telemetria 500",
+                          "fill": "$brand-gray-light",
+                          "content": "EDGE ISOLATE · GUARDIA ACTIVA",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "mBUv5",
+                          "name": "Tag Estado 500",
+                          "fill": "$brand-surface",
+                          "content": "STANDBY PREVENTIVO",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "W89G5",
+                      "name": "Nucleo 500 + Escudo Operativo",
+                      "fill": "$brand-graphite",
+                      "cornerRadius": 22,
+                      "stroke": "$brand-gray-mid",
+                      "strokeWidth": 1.5,
+                      "gap": 16,
+                      "padding": [
+                        14,
+                        24
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "GHN2I",
+                          "name": "Icono Escudo Alerta 500",
+                          "width": 34,
+                          "height": 34,
+                          "icon": "shield-alert",
+                          "library": "lucide",
+                          "fill": "$brand-surface"
+                        },
+                        {
+                          "type": "text",
+                          "id": "gzLkA",
+                          "name": "Display 500",
+                          "fill": "$brand-surface",
+                          "content": "500",
+                          "fontFamily": "Space Grotesk",
+                          "fontSize": 44,
+                          "fontWeight": "700",
+                          "letterSpacing": -2
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "L9Cac",
+                      "name": "Tacometro 10 Celdas Standby",
+                      "gap": 6,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 2,
+                          "id": "drwbF",
+                          "name": "Celda Tacometro 1",
+                          "fill": "$brand-surface",
+                          "width": 22,
+                          "height": 8
+                        },
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 2,
+                          "id": "bE7T1",
+                          "name": "Celda Tacometro 2",
+                          "fill": "$brand-surface",
+                          "width": 22,
+                          "height": 8
+                        },
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 2,
+                          "id": "xgn4x",
+                          "name": "Celda Tacometro 3",
+                          "fill": "$brand-surface",
+                          "width": 22,
+                          "height": 8
+                        },
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 2,
+                          "id": "Dwd35",
+                          "name": "Celda Tacometro 4",
+                          "fill": "$brand-surface",
+                          "width": 22,
+                          "height": 8
+                        },
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 2,
+                          "id": "QbLsP",
+                          "name": "Celda Tacometro 5",
+                          "fill": "$brand-surface",
+                          "width": 22,
+                          "height": 8
+                        },
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 2,
+                          "id": "s3b94Q",
+                          "name": "Celda Tacometro 6",
+                          "fill": "$brand-surface",
+                          "width": 22,
+                          "height": 8
+                        },
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 2,
+                          "id": "LN5mR",
+                          "name": "Celda Tacometro 7",
+                          "fill": "$brand-gray-light",
+                          "width": 22,
+                          "height": 8
+                        },
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 2,
+                          "id": "fChhy",
+                          "name": "Celda Tacometro 8",
+                          "fill": "$brand-gray-light",
+                          "width": 22,
+                          "height": 8
+                        },
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 2,
+                          "id": "haavs",
+                          "name": "Celda Tacometro 9",
+                          "fill": "$brand-gray-mid",
+                          "width": 22,
+                          "height": 8
+                        },
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 2,
+                          "id": "DJDvy",
+                          "name": "Celda Tacometro 10",
+                          "fill": "$brand-gray-mid",
+                          "width": 22,
+                          "height": 8
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "n22zfM",
+                  "name": "Tarjeta Mensaje y Recuperacion 500",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 28,
+                  "stroke": "$brand-gray-light",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 14,
+                  "padding": 20,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "OnhTi",
+                      "name": "Titulo Humano 500",
+                      "fill": "$brand-black",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Interrupción temporal en el servicio",
+                      "lineHeight": 1.15,
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 22,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "JLhGe",
+                      "name": "Descripcion Humana 500",
+                      "fill": "$brand-gray-mid",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Ocurrió un inconveniente al procesar tu solicitud. Tus reservas, entregas y pagos están protegidos; intenta nuevamente en unos segundos.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "xoMpa",
+                      "name": "Caja Referencia Evento 500",
+                      "width": "fill_container",
+                      "fill": "$brand-surface",
+                      "cornerRadius": 14,
+                      "stroke": "$brand-gray-light",
+                      "strokeWidth": 1,
+                      "padding": [
+                        10,
+                        14
+                      ],
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Qd53r",
+                          "name": "Label Ref 500",
+                          "fill": "$brand-gray-mid",
+                          "content": "INTEGRIDAD DE SESIÓN",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "XD8pV",
+                          "name": "Valor Ref 500",
+                          "fill": "$brand-black",
+                          "content": "VERIFICADA · SIN PÉRDIDA",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 11,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "SdI5q",
+                      "name": "Fila Garantias Operativas 500",
+                      "width": "fill_container",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "z0cek",
+                          "name": "Garantia Reservas OK",
+                          "width": "fill_container",
+                          "fill": "$brand-surface",
+                          "cornerRadius": 12,
+                          "padding": [
+                            9,
+                            10
+                          ],
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "W5Qxr",
+                              "name": "Texto Garantia Reservas OK",
+                              "fill": "$brand-black",
+                              "content": "Reservas OK",
+                              "fontFamily": "Inter",
+                              "fontSize": 11,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Akrzx",
+                          "name": "Garantia Caja Intacta",
+                          "width": "fill_container",
+                          "fill": "$brand-surface",
+                          "cornerRadius": 12,
+                          "padding": [
+                            9,
+                            10
+                          ],
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "r4sxpS",
+                              "name": "Texto Garantia Caja Intacta",
+                              "fill": "$brand-black",
+                              "content": "Caja Intacta",
+                              "fontFamily": "Inter",
+                              "fontSize": 11,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "GpHhD",
+                          "name": "Garantia Sesión Activa",
+                          "width": "fill_container",
+                          "fill": "$brand-surface",
+                          "cornerRadius": 12,
+                          "padding": [
+                            9,
+                            10
+                          ],
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "FOYcy",
+                              "name": "Texto Garantia Sesión Activa",
+                              "fill": "$brand-black",
+                              "content": "Sesión Activa",
+                              "fontFamily": "Inter",
+                              "fontSize": 11,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Mu8ep",
+                      "name": "CTA Primario 500 (48px Touch)",
+                      "width": "fill_container",
+                      "height": 48,
+                      "fill": "$brand-black",
+                      "cornerRadius": 999,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "fTu3z",
+                          "name": "Label CTA Primario 500",
+                          "fill": "$brand-surface",
+                          "content": "Reintentar operación ahora ↻",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "k71zps",
+                      "name": "CTA Secundario 500 (48px Touch)",
+                      "width": "fill_container",
+                      "height": 46,
+                      "fill": "$brand-surface",
+                      "cornerRadius": 999,
+                      "stroke": "$brand-gray-light",
+                      "strokeWidth": 1,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "mvDHh",
+                          "name": "Label CTA Secundario 500",
+                          "fill": "$brand-black",
+                          "content": "Ir al inicio de FlotaX",
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "N7iGt",
+          "name": "Arquitectura de Resiliencia Perimetral & Offline-First",
+          "width": "fill_container",
+          "fill": "$brand-black",
+          "cornerRadius": 24,
+          "layout": "vertical",
+          "gap": 10,
+          "padding": 24,
+          "children": [
+            {
+              "type": "text",
+              "id": "VSsPa",
+              "name": "Titulo Arquitectura Resiliencia",
+              "fill": "$brand-surface",
+              "content": "ARQUITECTURA DE CONTINGENCIA MÓVIL (UNA SOLA MANO · CERO JERGA TÉCNICA · AUTO-RECONEXIÓN PWA)",
+              "fontFamily": "Inter",
+              "fontSize": 12,
+              "fontWeight": "700",
+              "letterSpacing": 1.2
+            },
+            {
+              "type": "text",
+              "id": "sOi1J",
+              "name": "Detalle Arquitectura Resiliencia",
+              "fill": "$brand-gray-light",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "1. Error 404 (/404): Escáner CAD de perímetro con ruta solicitada y chips de recuperación SPA con navigate()  ·  2. Modo Offline (/offline & sw.js): Sonar de portadora caída + auto-reconexión al detectar evento online + acceso a rutas cacheadas  ·  3. Error 500 (/500): Guardia operativa con confirmación de integridad de reservas y reintento seguro",
+              "lineHeight": 1.4,
+              "fontFamily": "Inter",
+              "fontSize": 11,
+              "fontWeight": "600"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "zdHQq",
+      "x": 9600,
+      "y": -1640,
+      "name": "Lamina 06 — Full-Screen Wizard: Entrega de Vehiculo y Evaluacion del Servicio (100dvh)",
+      "clip": true,
+      "width": 2016,
+      "fill": "$brand-surface",
+      "cornerRadius": 24,
+      "stroke": "$brand-gray-light",
+      "strokeWidth": 1,
+      "layout": "vertical",
+      "gap": 32,
+      "padding": 48,
+      "children": [
+        {
+          "type": "frame",
+          "id": "rC45s",
+          "name": "Header Editorial Entrega Wizard",
+          "width": "fill_container",
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "Q2Uqr",
+              "name": "HUD Left Entrega",
+              "fill": "$brand-black",
+              "content": "FLOTAX OS  ·  LÁMINA 06 — FULL-SCREEN STEP-BY-STEP WIZARD: ENTREGA DE VEHÍCULO & EVALUACIÓN DEL SERVICIO (100DVH)",
+              "fontFamily": "Inter",
+              "fontSize": 12,
+              "fontWeight": "700",
+              "letterSpacing": 1.4
+            },
+            {
+              "type": "text",
+              "id": "TyQwk",
+              "name": "HUD Right Entrega",
+              "fill": "$brand-gray-mid",
+              "content": "TYPEFORM-STYLE  ·  STORY BENTO WALKTHROUGH  ·  PAGE-FOLD SCROLLYTELLING  ·  SHADERS GLSL +62.3°",
+              "fontFamily": "JetBrains Mono",
+              "fontSize": 11,
+              "fontWeight": "600"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "k1zE0X",
+          "name": "Fila de 4 Dispositivos iOS — Full-Screen Step-by-Step (100dvh)",
+          "width": "fill_container",
+          "gap": 32,
+          "justifyContent": "space_between",
+          "children": [
+            {
+              "type": "frame",
+              "id": "sWzsl",
+              "name": "iOS 01 — Paso 01: Bienvenida Cinematica de Entrega (Ref 01)",
+              "clip": true,
+              "width": 456,
+              "height": 860,
+              "fill": {
+                "type": "shader",
+                "enabled": true,
+                "url": "flotax-entrega-aurora.glsl",
+                "uniforms": {
+                  "u_surface": "#EDEDED",
+                  "u_grayLight": "#9CA3AF",
+                  "u_grayMid": "#4B5563",
+                  "u_graphite": "#1F2937",
+                  "u_bg": "#111827"
+                }
+              },
+              "cornerRadius": 44,
+              "stroke": "$brand-black",
+              "strokeWidth": 6,
+              "layout": "vertical",
+              "padding": 24,
+              "justifyContent": "space_between",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "b9nA4Y",
+                  "name": "Header Minimalista Paso 01",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 14,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "c0d0fM",
+                      "name": "Story Progress Bar 01",
+                      "width": "fill_container",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "xjUwM",
+                          "name": "Story Segment 01",
+                          "width": "fill_container",
+                          "height": 4,
+                          "fill": "$brand-black",
+                          "cornerRadius": 999
+                        },
+                        {
+                          "type": "frame",
+                          "id": "BBtkx",
+                          "name": "Story Segment 02",
+                          "width": "fill_container",
+                          "height": 4,
+                          "fill": "$brand-gray-light",
+                          "cornerRadius": 999
+                        },
+                        {
+                          "type": "frame",
+                          "id": "WJuSi",
+                          "name": "Story Segment 03",
+                          "width": "fill_container",
+                          "height": 4,
+                          "fill": "$brand-gray-light",
+                          "cornerRadius": 999
+                        },
+                        {
+                          "type": "frame",
+                          "id": "M1XjB",
+                          "name": "Story Segment 04",
+                          "width": "fill_container",
+                          "height": 4,
+                          "fill": "$brand-gray-light",
+                          "cornerRadius": 999
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "k0oaR",
+                      "name": "Top Meta Row 01",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "ztcvQ",
+                          "name": "Badge Paso 01",
+                          "fill": "#FFFFFF",
+                          "cornerRadius": 999,
+                          "stroke": "$brand-gray-light",
+                          "strokeWidth": 1,
+                          "padding": [
+                            6,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Oldb8",
+                              "name": "Texto Badge Paso 01",
+                              "fill": "$brand-black",
+                              "content": "PASO 01 / 04 · CIERRE DE VIAJE",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 10,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "G6ED8",
+                          "name": "Boton Cerrar Wizard 01",
+                          "width": 36,
+                          "height": 36,
+                          "fill": "#FFFFFF",
+                          "cornerRadius": 999,
+                          "stroke": "$brand-gray-light",
+                          "strokeWidth": 1,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "qHeQd",
+                              "name": "Icono Cerrar 01",
+                              "fill": "$brand-black",
+                              "content": "✕",
+                              "fontFamily": "Inter",
+                              "fontSize": 13,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "xMcFs",
+                  "name": "Bloque Tipografico Editorial Welcome (Ref 01)",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 18,
+                  "padding": [
+                    28,
+                    8
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "q109c",
+                      "name": "Chip Vehiculo Entregado",
+                      "fill": "$brand-black",
+                      "cornerRadius": 999,
+                      "gap": 8,
+                      "padding": [
+                        6,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ANpvQ",
+                          "name": "Placa Chip 01",
+                          "fill": "#FFFFFF",
+                          "content": "FLX-801  ·  MERCEDES-BENZ EQB 350",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "h0V11O",
+                      "name": "Saludo Gigante Conductor",
+                      "fill": "$brand-black",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Bienvenido,\nAlejandro",
+                      "lineHeight": 1.04,
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 44,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "hTZqy",
+                      "name": "Subtitulo Conversacional Paso 01",
+                      "fill": "$brand-graphite",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Vamos a recibir tu vehículo y conocer cómo estuvo tu servicio en menos de 45 segundos. Sin filas ni formularios extensos.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "Inter",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "v7IYpK",
+                      "name": "Resumen Rapido Viaje Card",
+                      "width": "fill_container",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 22,
+                      "stroke": "$brand-gray-light",
+                      "strokeWidth": 1,
+                      "padding": [
+                        14,
+                        18
+                      ],
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "yilzt",
+                          "name": "Columna Sede Retorno",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "k8ifq",
+                              "name": "Label Sede Retorno",
+                              "fill": "$brand-gray-mid",
+                              "content": "PUNTO DE RECEPCIÓN",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 9,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "JggzG",
+                              "name": "Valor Sede Retorno",
+                              "fill": "$brand-black",
+                              "content": "Patio Principal · El Poblado",
+                              "fontFamily": "Space Grotesk",
+                              "fontSize": 13,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "LxQdx",
+                          "name": "Badge Garantia Custodia",
+                          "fill": "$brand-surface",
+                          "cornerRadius": 999,
+                          "padding": [
+                            6,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "MFRy8",
+                              "name": "Texto Garantia Custodia",
+                              "fill": "$brand-black",
+                              "content": "$750.000 en custodia",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 10,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Lk5Dw",
+                  "name": "Zona Pulgar Anillo Cinetico (Ref 01 Bottom Ring)",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 14,
+                  "padding": [
+                    12,
+                    0
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "FQhvP",
+                      "name": "Anillo Cinetico Interactivo",
+                      "width": 68,
+                      "height": 68,
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 999,
+                      "stroke": "$brand-black",
+                      "strokeWidth": 3,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "XW9Mk",
+                          "name": "Flecha Page Fold Down",
+                          "fill": "$brand-black",
+                          "content": "↓",
+                          "fontFamily": "Space Grotesk",
+                          "fontSize": 24,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "FWS3D",
+                      "name": "Hint Deslizar Iniciar",
+                      "fill": "#FFFFFF",
+                      "content": "TOCA EL ANILLO O DESLIZA PARA INICIAR ENTREGA",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 10,
+                      "fontWeight": "700",
+                      "letterSpacing": 1.1
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "ml00a",
+              "name": "iOS 02 — Paso 02: Llave Digital R2 y Checklist de Unidad (Ref 03)",
+              "clip": true,
+              "width": 456,
+              "height": 860,
+              "fill": "#FFFFFF",
+              "cornerRadius": 44,
+              "stroke": "$brand-black",
+              "strokeWidth": 6,
+              "layout": "vertical",
+              "padding": 20,
+              "justifyContent": "space_between",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ESORm",
+                  "name": "Cupula Atmosferica Shader Superior (Ref 03)",
+                  "clip": true,
+                  "width": "fill_container",
+                  "height": 300,
+                  "fill": {
+                    "type": "shader",
+                    "enabled": true,
+                    "url": "flotax-entrega-sintesis.glsl",
+                    "uniforms": {
+                      "u_surface": "#EDEDED",
+                      "u_grayLight": "#9CA3AF",
+                      "u_grayMid": "#4B5563",
+                      "u_graphite": "#1F2937",
+                      "u_bg": "#111827"
+                    }
+                  },
+                  "cornerRadius": 30,
+                  "layout": "vertical",
+                  "padding": 20,
+                  "justifyContent": "space_between",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "rqpnJ",
+                      "name": "Header Cupula Paso 02",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "iEvgZ",
+                          "name": "Story Progress Bar 02",
+                          "width": "fill_container",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "ty4QY",
+                              "name": "Story Seg 02-1",
+                              "width": "fill_container",
+                              "height": 4,
+                              "fill": "#FFFFFF",
+                              "cornerRadius": 999
+                            },
+                            {
+                              "type": "frame",
+                              "id": "n7kbR",
+                              "name": "Story Seg 02-2",
+                              "width": "fill_container",
+                              "height": 4,
+                              "fill": "#FFFFFF",
+                              "cornerRadius": 999
+                            },
+                            {
+                              "type": "frame",
+                              "id": "PuAUI",
+                              "name": "Story Seg 02-3",
+                              "width": "fill_container",
+                              "height": 4,
+                              "fill": "$brand-gray-mid",
+                              "cornerRadius": 999
+                            },
+                            {
+                              "type": "frame",
+                              "id": "dxNmz",
+                              "name": "Story Seg 02-4",
+                              "width": "fill_container",
+                              "height": 4,
+                              "fill": "$brand-gray-mid",
+                              "cornerRadius": 999
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "DR5QY",
+                          "name": "Top Row Cupula 02",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "ZA3MF",
+                              "name": "Titulo Mini Cupula (Secure your return)",
+                              "fill": "#FFFFFF",
+                              "content": "Entrega verificada\nen patio R2",
+                              "lineHeight": 1.2,
+                              "fontFamily": "Space Grotesk",
+                              "fontSize": 15,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "UvqE1",
+                              "name": "Boton Cerrar Cupula 02",
+                              "width": 32,
+                              "height": 32,
+                              "fill": "$brand-graphite",
+                              "cornerRadius": 999,
+                              "stroke": "$brand-gray-mid",
+                              "strokeWidth": 1,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "ZiTSE",
+                                  "name": "X Cupula 02",
+                                  "fill": "#FFFFFF",
+                                  "content": "✕",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 12,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "hOIc5",
+                      "name": "Nucleo Telemetria Retorno Card",
+                      "width": "fill_container",
+                      "fill": "$brand-black",
+                      "cornerRadius": 20,
+                      "stroke": "$brand-gray-mid",
+                      "strokeWidth": 1,
+                      "padding": [
+                        14,
+                        16
+                      ],
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "SXw6L",
+                          "name": "Odometro Retorno Info",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "i8YAC",
+                              "name": "Label Odometro Retorno",
+                              "fill": "$brand-gray-light",
+                              "content": "TELEMETRÍA DE RETORNO",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 9,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "wQ8ui",
+                              "name": "Valor Odometro Retorno",
+                              "fill": "#FFFFFF",
+                              "content": "14.620 km  ·  84% Batería",
+                              "fontFamily": "Space Grotesk",
+                              "fontSize": 16,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Rh305",
+                          "name": "Badge R2 Sync",
+                          "fill": "#FFFFFF",
+                          "cornerRadius": 999,
+                          "padding": [
+                            5,
+                            10
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Wll2T",
+                              "name": "Texto R2 Sync",
+                              "fill": "$brand-black",
+                              "content": "R2 SYNC ✓",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 10,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "WBy5Q",
+                  "name": "Cuerpo Device Key & Checklist (Ref 03 Lower)",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 14,
+                  "padding": [
+                    4,
+                    6
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "o84xge",
+                      "name": "Icono Escaneo Pericial R2",
+                      "width": 44,
+                      "height": 44,
+                      "fill": "$brand-surface",
+                      "cornerRadius": 14,
+                      "stroke": "$brand-black",
+                      "strokeWidth": 1.5,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "MGhpx",
+                          "name": "Simbolo Escaneo R2",
+                          "fill": "$brand-black",
+                          "content": "⛶",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 20,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "sdDf3",
+                      "name": "Titulo Llave de Entrega (Ref 03 Device Key)",
+                      "fill": "$brand-black",
+                      "content": "Llave de Entrega R2",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 28,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "IUKe9",
+                      "name": "Descripcion Llave de Entrega",
+                      "fill": "$brand-gray-mid",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Tu entrega está protegida por verificación pericial en Cloudflare R2. Confirma con un toque estos 3 puntos antes de calificar el servicio:",
+                      "lineHeight": 1.4,
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "avata",
+                      "name": "Lista Interactiva 3 Puntos Retorno",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "LIrFb",
+                          "name": "Item Checklist Entrega 01",
+                          "width": "fill_container",
+                          "fill": "$brand-surface",
+                          "cornerRadius": 18,
+                          "stroke": "$brand-black",
+                          "strokeWidth": 1.5,
+                          "padding": [
+                            12,
+                            14
+                          ],
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Ytbg3",
+                              "name": "Textos Item 01",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "x530p",
+                                  "name": "Titulo Item 01",
+                                  "fill": "$brand-black",
+                                  "content": "Cabina libre de objetos personales",
+                                  "fontFamily": "Space Grotesk",
+                                  "fontSize": 13,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "k96Efx",
+                                  "name": "Subtitulo Item 01",
+                                  "fill": "$brand-gray-mid",
+                                  "content": "Verificado por el conductor ✓",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 11,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "fIXcN",
+                              "name": "Check Circle 01",
+                              "width": 26,
+                              "height": 26,
+                              "fill": "$brand-black",
+                              "cornerRadius": 999,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "IilO1",
+                                  "name": "Check Mark 01",
+                                  "fill": "#FFFFFF",
+                                  "content": "✓",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 13,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "khSUr",
+                          "name": "Item Checklist Entrega 02",
+                          "width": "fill_container",
+                          "fill": "$brand-surface",
+                          "cornerRadius": 18,
+                          "stroke": "$brand-black",
+                          "strokeWidth": 1.5,
+                          "padding": [
+                            12,
+                            14
+                          ],
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "mSrme",
+                              "name": "Textos Item 02",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "D7s78",
+                                  "name": "Titulo Item 02",
+                                  "fill": "$brand-black",
+                                  "content": "Nivel de carga / combustible acordado",
+                                  "fontFamily": "Space Grotesk",
+                                  "fontSize": 13,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "d4oGyL",
+                                  "name": "Subtitulo Item 02",
+                                  "fill": "$brand-gray-mid",
+                                  "content": "84% registrado en odómetro ✓",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 11,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "HddbR",
+                              "name": "Check Circle 02",
+                              "width": 26,
+                              "height": 26,
+                              "fill": "$brand-black",
+                              "cornerRadius": 999,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "C3D4F",
+                                  "name": "Check Mark 02",
+                                  "fill": "#FFFFFF",
+                                  "content": "✓",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 13,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "cLOxn",
+                          "name": "Item Checklist Entrega 03",
+                          "width": "fill_container",
+                          "fill": "$brand-surface",
+                          "cornerRadius": 18,
+                          "stroke": "$brand-black",
+                          "strokeWidth": 1.5,
+                          "padding": [
+                            12,
+                            14
+                          ],
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "I33U98",
+                              "name": "Textos Item 03",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "w7OL5",
+                                  "name": "Titulo Item 03",
+                                  "fill": "$brand-black",
+                                  "content": "Llave física / Tarjeta NFC entregada",
+                                  "fontFamily": "Space Grotesk",
+                                  "fontSize": 13,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "ajWj7",
+                                  "name": "Subtitulo Item 03",
+                                  "fill": "$brand-gray-mid",
+                                  "content": "Recibida en Patio Principal ✓",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 11,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "fi2Fd",
+                              "name": "Check Circle 03",
+                              "width": 26,
+                              "height": 26,
+                              "fill": "$brand-black",
+                              "cornerRadius": 999,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "X7Vskm",
+                                  "name": "Check Mark 03",
+                                  "fill": "#FFFFFF",
+                                  "content": "✓",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 13,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Zibch",
+                  "name": "CTA Confirmar Llave Entrega (Ref 03 Pill Button)",
+                  "width": "fill_container",
+                  "height": 54,
+                  "fill": "$brand-graphite",
+                  "cornerRadius": 999,
+                  "gap": 10,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "BDSSL",
+                      "name": "Texto CTA Paso 02",
+                      "fill": "#FFFFFF",
+                      "content": "⛶  Confirmar entrega y evaluar servicio  →",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 14,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "D7owB",
+              "name": "iOS 03 — Paso 03: Evaluacion Conversacional Bento & Typeform",
+              "clip": true,
+              "width": 456,
+              "height": 860,
+              "fill": "$brand-surface",
+              "cornerRadius": 44,
+              "stroke": "$brand-black",
+              "strokeWidth": 6,
+              "layout": "vertical",
+              "padding": 22,
+              "justifyContent": "space_between",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ZqIP8",
+                  "name": "Header Minimalista Paso 03",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 14,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ZVmXr",
+                      "name": "Story Progress Bar 03",
+                      "width": "fill_container",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "mljMj",
+                          "name": "Story Segment 3-01",
+                          "width": "fill_container",
+                          "height": 4,
+                          "fill": "$brand-black",
+                          "cornerRadius": 999
+                        },
+                        {
+                          "type": "frame",
+                          "id": "CozMw",
+                          "name": "Story Segment 3-02",
+                          "width": "fill_container",
+                          "height": 4,
+                          "fill": "$brand-black",
+                          "cornerRadius": 999
+                        },
+                        {
+                          "type": "frame",
+                          "id": "MFDJt",
+                          "name": "Story Segment 3-03",
+                          "width": "fill_container",
+                          "height": 4,
+                          "fill": "$brand-black",
+                          "cornerRadius": 999
+                        },
+                        {
+                          "type": "frame",
+                          "id": "QZRF1",
+                          "name": "Story Segment 3-04",
+                          "width": "fill_container",
+                          "height": 4,
+                          "fill": "$brand-gray-light",
+                          "cornerRadius": 999
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "iOSxH",
+                      "name": "Top Meta Row 03",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "eEwQD",
+                          "name": "Badge Paso 03 Typeform",
+                          "fill": "$brand-black",
+                          "cornerRadius": 999,
+                          "padding": [
+                            6,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "uZjG4",
+                              "name": "Texto Badge Paso 03",
+                              "fill": "#FFFFFF",
+                              "content": "PASO 03 / 04 · EVALUACIÓN DEL SERVICIO",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 10,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "rgbdp",
+                          "name": "Indicador Auto-Avance",
+                          "fill": "$brand-gray-mid",
+                          "content": "AUTO-ADVANCE ACTIVO",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 9,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "pWKKk",
+                  "name": "Cuerpo Pregunta Unica Typeform + Bento Cards",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 14,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "hquE5",
+                      "name": "Pregunta Conversacional Typeform",
+                      "fill": "$brand-black",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "¿Cómo estuvo tu experiencia con el vehículo y la atención en patio?",
+                      "lineHeight": 1.12,
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 25,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "MHD4f",
+                      "name": "Subtitulo Typeform",
+                      "fill": "$brand-gray-mid",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Toca una tarjeta Bento para calificar y selecciona qué fue lo mejor del servicio:",
+                      "lineHeight": 1.35,
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "VxoP6",
+                      "name": "Grid 2x2 Large Interactive Bento Radio Cards",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "d7mjLz",
+                          "name": "Fila Bento Superior",
+                          "width": "fill_container",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "tGUZK",
+                              "name": "Bento Card 01 — Sobresaliente (Selected)",
+                              "width": "fill_container",
+                              "fill": "$brand-black",
+                              "cornerRadius": 22,
+                              "stroke": "$brand-black",
+                              "strokeWidth": 2,
+                              "layout": "vertical",
+                              "gap": 8,
+                              "padding": 16,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "WGPRG",
+                                  "name": "Top Bento 01",
+                                  "width": "fill_container",
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "M58YBl",
+                                      "name": "Score Bento 01",
+                                      "fill": "#FFFFFF",
+                                      "content": "5.0 ★",
+                                      "fontFamily": "JetBrains Mono",
+                                      "fontSize": 13,
+                                      "fontWeight": "700"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "U352tL",
+                                      "name": "Radio Check Bento 01",
+                                      "width": 22,
+                                      "height": 22,
+                                      "fill": "#FFFFFF",
+                                      "cornerRadius": 999,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "bI28S",
+                                          "name": "Check Bento 01",
+                                          "fill": "$brand-black",
+                                          "content": "✓",
+                                          "fontFamily": "Inter",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "X3A57",
+                                  "name": "Titulo Bento 01",
+                                  "fill": "#FFFFFF",
+                                  "content": "Sobresaliente",
+                                  "fontFamily": "Space Grotesk",
+                                  "fontSize": 16,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "rCrMK",
+                                  "name": "Desc Bento 01",
+                                  "fill": "$brand-gray-light",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Vehículo impecable y entrega ágil en patio",
+                                  "lineHeight": 1.3,
+                                  "fontFamily": "Inter",
+                                  "fontSize": 11,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "iZP56",
+                              "name": "Bento Card 02 — Muy Bueno",
+                              "width": "fill_container",
+                              "fill": "#FFFFFF",
+                              "cornerRadius": 22,
+                              "stroke": "$brand-gray-light",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "gap": 8,
+                              "padding": 16,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "qJfKC",
+                                  "name": "Top Bento 02",
+                                  "width": "fill_container",
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "sUNYu",
+                                      "name": "Score Bento 02",
+                                      "fill": "$brand-black",
+                                      "content": "4.0 ★",
+                                      "fontFamily": "JetBrains Mono",
+                                      "fontSize": 13,
+                                      "fontWeight": "700"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "JJKMs",
+                                      "name": "Radio Ring Bento 02",
+                                      "width": 22,
+                                      "height": 22,
+                                      "fill": "$brand-surface",
+                                      "cornerRadius": 999,
+                                      "stroke": "$brand-gray-light",
+                                      "strokeWidth": 1.5
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "DfNMK",
+                                  "name": "Titulo Bento 02",
+                                  "fill": "$brand-black",
+                                  "content": "Muy bueno",
+                                  "fontFamily": "Space Grotesk",
+                                  "fontSize": 16,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "VnvIG",
+                                  "name": "Desc Bento 02",
+                                  "fill": "$brand-gray-mid",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Todo funcionó según lo acordado en el contrato",
+                                  "lineHeight": 1.3,
+                                  "fontFamily": "Inter",
+                                  "fontSize": 11,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "IWUEK",
+                          "name": "Fila Bento Inferior",
+                          "width": "fill_container",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "TRI2k",
+                              "name": "Bento Card 03 — Regular",
+                              "width": "fill_container",
+                              "fill": "#FFFFFF",
+                              "cornerRadius": 22,
+                              "stroke": "$brand-gray-light",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "gap": 6,
+                              "padding": 14,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "isObf",
+                                  "name": "Score Bento 03",
+                                  "fill": "$brand-gray-mid",
+                                  "content": "3.0 ★  ·  POR MEJORAR",
+                                  "fontFamily": "JetBrains Mono",
+                                  "fontSize": 10,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "ATDqq",
+                                  "name": "Titulo Bento 03",
+                                  "fill": "$brand-black",
+                                  "content": "Regular",
+                                  "fontFamily": "Space Grotesk",
+                                  "fontSize": 15,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "wmBy7",
+                                  "name": "Desc Bento 03",
+                                  "fill": "$brand-gray-mid",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Demoras o detalles menores",
+                                  "lineHeight": 1.3,
+                                  "fontFamily": "Inter",
+                                  "fontSize": 11,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "icJ5J",
+                              "name": "Bento Card 04 — Reportar Novedad",
+                              "width": "fill_container",
+                              "fill": "#FFFFFF",
+                              "cornerRadius": 22,
+                              "stroke": "$brand-gray-light",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "gap": 6,
+                              "padding": 14,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "P4X27i",
+                                  "name": "Score Bento 04",
+                                  "fill": "$brand-gray-mid",
+                                  "content": "ALERTA  ·  SOPORTE",
+                                  "fontFamily": "JetBrains Mono",
+                                  "fontSize": 10,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "fUQRv",
+                                  "name": "Titulo Bento 04",
+                                  "fill": "$brand-black",
+                                  "content": "Tuve un problema",
+                                  "fontFamily": "Space Grotesk",
+                                  "fontSize": 15,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "n1dRST",
+                                  "name": "Desc Bento 04",
+                                  "fill": "$brand-gray-mid",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Reportar falla técnica o cobro",
+                                  "lineHeight": 1.3,
+                                  "fontFamily": "Inter",
+                                  "fontSize": 11,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "FDrpt",
+                      "name": "Seccion Pildoras Destacados del Servicio",
+                      "width": "fill_container",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 22,
+                      "stroke": "$brand-gray-light",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 10,
+                      "padding": 14,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "mJ0tu",
+                          "name": "Label Pildoras Servicio",
+                          "fill": "$brand-gray-mid",
+                          "content": "¿QUÉ DESTACAS DEL SERVICIO PRESTADO? (MULTI-SELECCIÓN)",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 9,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "piHWD",
+                          "name": "Fila Pildoras 01",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "HboEw",
+                              "name": "Tag Servicio A0",
+                              "fill": "$brand-black",
+                              "cornerRadius": 999,
+                              "padding": [
+                                8,
+                                14
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "N2guZG",
+                                  "name": "Txt Tag A0",
+                                  "fill": "#FFFFFF",
+                                  "content": "✓ Entrega sin filas",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 11,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "M60Vt",
+                              "name": "Tag Servicio A1",
+                              "fill": "$brand-black",
+                              "cornerRadius": 999,
+                              "padding": [
+                                8,
+                                14
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "XWNwW",
+                                  "name": "Txt Tag A1",
+                                  "fill": "#FFFFFF",
+                                  "content": "✓ Unidad impecable",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 11,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "sL1A6",
+                          "name": "Fila Pildoras 02",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "MetcT",
+                              "name": "Tag Servicio B0",
+                              "fill": "$brand-black",
+                              "cornerRadius": 999,
+                              "padding": [
+                                8,
+                                14
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "yid1N",
+                                  "name": "Txt Tag B0",
+                                  "fill": "#FFFFFF",
+                                  "content": "✓ Peritaje R2 transparente",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 11,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "s5yBc8",
+                              "name": "Tag Servicio B1",
+                              "fill": "$brand-surface",
+                              "cornerRadius": 999,
+                              "padding": [
+                                8,
+                                14
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "nG0nH",
+                                  "name": "Txt Tag B1",
+                                  "fill": "$brand-black",
+                                  "content": "Atención del anfitrión",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 11,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "GfW9z",
+                  "name": "CTA Enviar Evaluacion y Cerrar (Thumb Zone)",
+                  "width": "fill_container",
+                  "height": 54,
+                  "fill": "$brand-black",
+                  "cornerRadius": 999,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "d2kzO",
+                      "name": "Texto CTA Paso 03",
+                      "fill": "#FFFFFF",
+                      "content": "Finalizar entrega y liberar garantía  →",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 14,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "o0Q2oC",
+              "name": "iOS 04 — Paso 04: Sintesis 92%-100% y Liberacion de Garantia (Ref 02)",
+              "clip": true,
+              "width": 456,
+              "height": 860,
+              "fill": "#FFFFFF",
+              "cornerRadius": 44,
+              "stroke": "$brand-black",
+              "strokeWidth": 6,
+              "layout": "vertical",
+              "padding": 24,
+              "justifyContent": "space_between",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "xQHYl",
+                  "name": "Header Minimalista Paso 04",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 14,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "UYKSE",
+                      "name": "Story Progress Bar 04",
+                      "width": "fill_container",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "DHsVY",
+                          "name": "Story Segment 4-01",
+                          "width": "fill_container",
+                          "height": 4,
+                          "fill": "$brand-black",
+                          "cornerRadius": 999
+                        },
+                        {
+                          "type": "frame",
+                          "id": "muAy5",
+                          "name": "Story Segment 4-02",
+                          "width": "fill_container",
+                          "height": 4,
+                          "fill": "$brand-black",
+                          "cornerRadius": 999
+                        },
+                        {
+                          "type": "frame",
+                          "id": "P28wEE",
+                          "name": "Story Segment 4-03",
+                          "width": "fill_container",
+                          "height": 4,
+                          "fill": "$brand-black",
+                          "cornerRadius": 999
+                        },
+                        {
+                          "type": "frame",
+                          "id": "orQwM",
+                          "name": "Story Segment 4-04",
+                          "width": "fill_container",
+                          "height": 4,
+                          "fill": "$brand-black",
+                          "cornerRadius": 999
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ftaLG",
+                      "name": "Top Meta Row 04",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "KFnS5",
+                          "name": "Badge Paso 04 Sintesis",
+                          "fill": "$brand-surface",
+                          "cornerRadius": 999,
+                          "stroke": "$brand-gray-light",
+                          "strokeWidth": 1,
+                          "padding": [
+                            6,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "hdK8z",
+                              "name": "Texto Badge Paso 04",
+                              "fill": "$brand-black",
+                              "content": "PASO 04 / 04 · SÍNTESIS PERICIAL R2",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 10,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "NpSyL",
+                          "name": "Codigo Reserva Sintesis",
+                          "fill": "$brand-black",
+                          "content": "#FLX-2041",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 11,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Z39VQq",
+                  "name": "Bloque Central 92% Porcentaje y Barra (Ref 02 Hero)",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 14,
+                  "padding": [
+                    12,
+                    8
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "FjIZ2",
+                      "name": "Porcentaje Monumental 92%",
+                      "fill": "$brand-black",
+                      "content": "92%",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 68,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "fnn16",
+                      "name": "Titulo Sintesis (We are setting everything up)",
+                      "fill": "$brand-black",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Estamos cerrando tu entrega\ny liberando tu garantía",
+                      "lineHeight": 1.15,
+                      "textAlign": "center",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 23,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ZK8wP",
+                      "name": "Barra de Progreso Achurada +62.3 deg (Ref 02 Bar)",
+                      "clip": true,
+                      "width": "fill_container",
+                      "height": 12,
+                      "fill": "$brand-surface",
+                      "cornerRadius": 999,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "yvavV",
+                          "name": "Fill Progreso 92%",
+                          "width": 358,
+                          "height": 12,
+                          "fill": "$brand-black",
+                          "cornerRadius": 999
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "vr7Pb",
+                      "name": "Subtitulo Estado Progreso",
+                      "fill": "$brand-gray-mid",
+                      "content": "Consolidando acta R2 y evaluación del servicio...",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ELpCh",
+                  "name": "Tarjeta Checklist Secuencial en Vivo (Ref 02 Lower List)",
+                  "width": "fill_container",
+                  "fill": "$brand-surface",
+                  "cornerRadius": 26,
+                  "stroke": "$brand-gray-light",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 20,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "BTp2F",
+                      "name": "Header Checklist Secuencial",
+                      "fill": "$brand-black",
+                      "content": "Resumen de liquidación y servicio para #FLX-2041",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "POaWx",
+                      "name": "Fila Sintesis Check 01",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "UNBlx",
+                          "name": "Texto Sintesis Check 01",
+                          "fill": "$brand-black",
+                          "content": "·  Odómetro y telemetría (14.620 km)",
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Ze4fw",
+                          "name": "Icono Check Sintesis 01",
+                          "width": 24,
+                          "height": 24,
+                          "fill": "$brand-black",
+                          "cornerRadius": 999,
+                          "stroke": "$brand-black",
+                          "strokeWidth": 1.5,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Po7Dj",
+                              "name": "Simbolo Check Sintesis 01",
+                              "fill": "#FFFFFF",
+                              "content": "✓",
+                              "fontFamily": "Inter",
+                              "fontSize": 12,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "VEmI4",
+                      "name": "Fila Sintesis Check 02",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "R9s6a",
+                          "name": "Texto Sintesis Check 02",
+                          "fill": "$brand-black",
+                          "content": "·  Inspección pericial Cloudflare R2 sin cargos",
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "zzd9o",
+                          "name": "Icono Check Sintesis 02",
+                          "width": 24,
+                          "height": 24,
+                          "fill": "$brand-black",
+                          "cornerRadius": 999,
+                          "stroke": "$brand-black",
+                          "strokeWidth": 1.5,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "H59l3k",
+                              "name": "Simbolo Check Sintesis 02",
+                              "fill": "#FFFFFF",
+                              "content": "✓",
+                              "fontFamily": "Inter",
+                              "fontSize": 12,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "KMXFB",
+                      "name": "Fila Sintesis Check 03",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "XrPYE",
+                          "name": "Texto Sintesis Check 03",
+                          "fill": "$brand-black",
+                          "content": "·  Calificación del servicio (5.0 ★ Sobresaliente)",
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "kfDvd",
+                          "name": "Icono Check Sintesis 03",
+                          "width": 24,
+                          "height": 24,
+                          "fill": "$brand-black",
+                          "cornerRadius": 999,
+                          "stroke": "$brand-black",
+                          "strokeWidth": 1.5,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "B54712",
+                              "name": "Simbolo Check Sintesis 03",
+                              "fill": "#FFFFFF",
+                              "content": "✓",
+                              "fontFamily": "Inter",
+                              "fontSize": 12,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "SZ3iD",
+                      "name": "Fila Sintesis Check 04",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ao2BO",
+                          "name": "Texto Sintesis Check 04",
+                          "fill": "$brand-black",
+                          "content": "·  Liberación de garantía ($750.000 COP)",
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "J2H4G",
+                          "name": "Icono Check Sintesis 04",
+                          "width": 24,
+                          "height": 24,
+                          "fill": "$brand-black",
+                          "cornerRadius": 999,
+                          "stroke": "$brand-black",
+                          "strokeWidth": 1.5,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "SOUb5",
+                              "name": "Simbolo Check Sintesis 04",
+                              "fill": "#FFFFFF",
+                              "content": "✓",
+                              "fontFamily": "Inter",
+                              "fontSize": 12,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "zCdlO",
+                      "name": "Fila Sintesis Check 05",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "m5LVJ",
+                          "name": "Texto Sintesis Check 05",
+                          "fill": "$brand-gray-mid",
+                          "content": "·  Certificado de paz y salvo digital",
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "JSZAT",
+                          "name": "Icono Check Sintesis 05",
+                          "width": 24,
+                          "height": 24,
+                          "fill": "#FFFFFF",
+                          "cornerRadius": 999,
+                          "stroke": "$brand-gray-light",
+                          "strokeWidth": 1.5,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "rH6Ha",
+                              "name": "Simbolo Check Sintesis 05",
+                              "fill": "$brand-gray-mid",
+                              "content": "…",
+                              "fontFamily": "Inter",
+                              "fontSize": 12,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "XCP7f",
+                  "name": "CTA Descargar Paz y Salvo y Volver",
+                  "width": "fill_container",
+                  "height": 54,
+                  "fill": "$brand-black",
+                  "cornerRadius": 999,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "nujkH",
+                      "name": "Texto CTA Paso 04",
+                      "fill": "#FFFFFF",
+                      "content": "Ver comprobante de cierre y volver a mi reserva",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "qupUD",
+          "name": "Arquitectura UX Full-Screen Page-Fold & Scrollytelling",
+          "width": "fill_container",
+          "fill": "$brand-black",
+          "cornerRadius": 24,
+          "layout": "vertical",
+          "gap": 10,
+          "padding": 24,
+          "children": [
+            {
+              "type": "text",
+              "id": "Ah0wn",
+              "name": "Titulo Arquitectura Entrega",
+              "fill": "$brand-surface",
+              "content": "ARQUITECTURA FULL-SCREEN STEP-BY-STEP (100DVH · TYPEFORM AUTO-ADVANCE · STORY BENTO WALKTHROUGH · PAGE-FOLD SNAP)",
+              "fontFamily": "Inter",
+              "fontSize": 12,
+              "fontWeight": "700",
+              "letterSpacing": 1.2
+            },
+            {
+              "type": "text",
+              "id": "fHbec",
+              "name": "Detalle Arquitectura Entrega",
+              "fill": "$brand-gray-light",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "1. Paso 01 (/reservas/[codigo]/entrega): Bienvenida inmersiva sin barras inferiores con shader flotax-entrega-aurora.glsl y anillo cinético  ·  2. Paso 02: Cúpula atmosférica superior + Llave de Entrega R2 con checklist táctil de 1 toque  ·  3. Paso 03: Evaluación conversacional Typeform con Bento Radio Cards grandes (≥44px) y auto-avance suave  ·  4. Paso 04: Síntesis porcentual animada (0% → 92% → 100%) con checklist secuencial en vivo y liberación de depósito",
+              "lineHeight": 1.4,
               "fontFamily": "Inter",
               "fontSize": 11,
               "fontWeight": "600"

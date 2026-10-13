@@ -144,3 +144,49 @@ export const registrarCobroWaybillAction = defineAction({
     };
   },
 });
+
+/**
+ * Registra la entrega/devolución del vehículo desde el Full-Screen Wizard del cliente
+ * junto con la evaluación interactiva del servicio prestado.
+ */
+export const registrarEntregaEvaluacionAction = defineAction({
+  input: z.object({
+    codigo: z.string().min(1, { error: 'El código de reserva es obligatorio' }),
+    vehiculoId: z.string().min(1, { error: 'El ID del vehículo es obligatorio' }),
+    vehiculoNombre: z.string().min(1, { error: 'El nombre del vehículo es obligatorio' }),
+    calificacionGeneral: z.enum([
+      'SOBRESALIENTE',
+      'MUY_BUENO',
+      'REGULAR',
+      'ATENCION_REQUERIDA',
+    ]),
+    puntajeNumerico: z.number().min(1).max(5),
+    aspectosDestacados: z.array(z.string()),
+    desempenoVehiculo: z.enum(['IMPECABLE', 'OPTIMO', 'DETALLE_MENOR']),
+    comentarioOpcional: z.string().optional(),
+    cabinaSinObjetos: z.boolean(),
+    telemetriaVerificada: z.boolean(),
+    llavesEntregadas: z.boolean(),
+  }),
+  handler: async (input) => {
+    const db = env.DB ? getDb(env.DB) : undefined;
+    const requiereRevision =
+      input.calificacionGeneral === 'ATENCION_REQUERIDA' ||
+      input.desempenoVehiculo === 'DETALLE_MENOR';
+
+    await actualizarEstadoVehiculo(
+      input.vehiculoId,
+      requiereRevision ? 'MANTENIMIENTO' : 'DISPONIBLE',
+      db
+    );
+
+    return {
+      ok: true,
+      codigo: input.codigo,
+      estadoFinal: 'COMPLETADA' as const,
+      garantiaLiberada: !requiereRevision,
+      mensaje: `Entrega #${input.codigo} completada y evaluación (${input.puntajeNumerico}.0 ★) registrada.`,
+    };
+  },
+});
+

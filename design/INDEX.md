@@ -15,6 +15,8 @@
 | :--- | :--- | :--- | :--- |
 | [`design-export.html`](./design-export.html) | Module / Utility | - | - |
 | [`design.pen`](./design.pen) | Archivo Fuente Pencil | Sistema de diseño de interfaces, tokens y mockups completos | Pencil App |
+| [`flotax-entrega-aurora.glsl`](./flotax-entrega-aurora.glsl) | Shader Fragment WebGL 1.0 | Lámina 06: Horizonte volumétrico monocromo, arcos orbitales y achurado $+62.3^\circ$ para el Wizard 100dvh | `logo.pen` |
+| [`flotax-entrega-sintesis.glsl`](./flotax-entrega-sintesis.glsl) | Shader Fragment WebGL 1.0 | Lámina 06: Pulso de calibración y barrido especular $+62.3^\circ$ para cúpula R2 y síntesis porcentual | `logo.pen` |
 | [`flotax-error-404-radar.glsl`](./flotax-error-404-radar.glsl) | Shader Fragment WebGL 1.0 | Lámina 05: Escáner CAD de perímetro 404 con retícula milimétrica, barrido sectorial y achurado $+62.3^\circ$ | `logo.pen` |
 | [`flotax-error-offline-sonar.glsl`](./flotax-error-offline-sonar.glsl) | Shader Fragment WebGL 1.0 | Lámina 05: Sonar orbital de portadora interrumpida y modo autónomo offline con achurado $+62.3^\circ$ | `logo.pen` |
 | [`flotax-loader-bg.glsl`](./flotax-loader-bg.glsl) | Shader Fragment WebGL 1.0 | Animación 01: Fondo de telemetría perimetral, retícula orbital y guías láser ($+62.3^\circ$ / $-35.5^\circ$) | `logo.pen` |
@@ -25,7 +27,7 @@
 | [`flotax-metrics-wave.glsl`](./flotax-metrics-wave.glsl) | Shader Fragment WebGL 1.0 | Telemetría iOS: Doble onda líquida animada (estilo Bessonov) con achurado técnico $+62.3^\circ$ | `logo.pen` |
 | [`landing-export.html`](./landing-export.html) | Module / Utility | - | - |
 | [`landing.pen`](./landing.pen) | Module / Utility | - | - |
-| [`logo.pen`](./logo.pen) | Archivo Fuente Pencil | Identidad visual FlotaX y Láminas 01–05 (Carga Orbital, Escáner CAD, Métricas iOS, Admin Reservas y Contingencia 404/Offline/500) | Pencil App, [`flotax-loader-bg.glsl`](./flotax-loader-bg.glsl), [`flotax-error-404-radar.glsl`](./flotax-error-404-radar.glsl), [`flotax-error-offline-sonar.glsl`](./flotax-error-offline-sonar.glsl) |
+| [`logo.pen`](./logo.pen) | Archivo Fuente Pencil | Identidad visual FlotaX y Láminas 01–06 (Carga Orbital, Escáner CAD, Métricas iOS, Admin Reservas, Contingencia 404/Offline/500 y Wizard 100dvh de Entrega y Evaluación) | Pencil App, [`flotax-entrega-aurora.glsl`](./flotax-entrega-aurora.glsl), [`flotax-entrega-sintesis.glsl`](./flotax-entrega-sintesis.glsl) |
 
 ## Invariants & Directory Rules
 

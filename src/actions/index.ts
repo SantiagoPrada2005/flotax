@@ -23,6 +23,7 @@ import {
 import {
   cambiarEstadoReservaAction,
   registrarCobroWaybillAction,
+  registrarEntregaEvaluacionAction,
 } from './reservas';
 
 export const server = {
@@ -53,5 +54,7 @@ export const server = {
   reservas: {
     cambiarEstado: cambiarEstadoReservaAction,
     registrarCobroWaybill: registrarCobroWaybillAction,
+    registrarEntregaEvaluacion: registrarEntregaEvaluacionAction,
   },
 };
+

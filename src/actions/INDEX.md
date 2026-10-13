@@ -12,7 +12,7 @@
 | [`index.ts`](./index.ts) | Barrel Export / Server Actions Root | `server` | `./caja`, `./portal`, `./flota`, `./reservas` |
 | [`notificaciones.ts`](./notificaciones.ts) | TypeScript / JavaScript Module | - | - |
 | [`portal.ts`](./portal.ts) | Server Action / Casos de Uso | `cambiarModoPortal`, `conmutarLocalActivo`, `finalizarOnboardingOperativo`, `crearPatioOperativo` | `astro:actions`, `zod`, `cloudflare:workers`, `@/lib/auth` |
-| [`reservas.ts`](./reservas.ts) | Server Action / Operaciones de Reserva | `cambiarEstadoReservaAction`, `registrarCobroWaybillAction` | `astro:actions`, `zod`, `cloudflare:workers`, `@/lib/flota/repositorio`, `@/lib/notificaciones` |
+| [`reservas.ts`](./reservas.ts) | Server Action / Operaciones de Reserva | `cambiarEstadoReservaAction`, `registrarCobroWaybillAction`, `registrarEntregaEvaluacionAction` | `astro:actions`, `zod`, `cloudflare:workers`, `@/lib/flota/repositorio`, `@/lib/notificaciones` |
 
 ## Invariants & Directory Rules
 

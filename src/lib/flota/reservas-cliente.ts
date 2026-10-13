@@ -65,6 +65,29 @@ export interface RubroLiquidacionWaybill {
   porcentajeSobreTotal: number;
 }
 
+export type CalificacionServicioNivel =
+  | 'SOBRESALIENTE'
+  | 'MUY_BUENO'
+  | 'REGULAR'
+  | 'ATENCION_REQUERIDA';
+
+export interface ChecklistEntregaCliente {
+  cabinaSinObjetos: boolean;
+  telemetriaVerificada: boolean;
+  llavesEntregadas: boolean;
+  combustibleNivel: 'MISMO_NIVEL' | 'CARGA_COMPLETA' | 'RECARGA_PENDIENTE';
+}
+
+export interface EvaluacionEntregaServicio {
+  calificacionGeneral: CalificacionServicioNivel;
+  puntajeNumerico: 5 | 4 | 3 | 2;
+  aspectosDestacados: string[];
+  desempenoVehiculo: 'IMPECABLE' | 'OPTIMO' | 'DETALLE_MENOR';
+  comentarioOpcional?: string | undefined;
+  checklist: ChecklistEntregaCliente;
+  completadaEnISO: string;
+}
+
 export interface ReservaClienteItem {
   codigo: string;
   vehiculoId: string;
@@ -87,6 +110,7 @@ export interface ReservaClienteItem {
   requiereMantenimientoRetorno?: boolean | undefined;
   motivoRechazo?: string | undefined;
   puntosR2Custom?: PuntoInspeccionR2[] | undefined;
+  evaluacionEntrega?: EvaluacionEntregaServicio | undefined;
 }
 
 export interface NuevaReservaPatioInput {
@@ -590,6 +614,90 @@ function parsearPuntosR2Custom(raw: unknown): PuntoInspeccionR2[] | undefined {
   return resultado.length > 0 ? resultado : undefined;
 }
 
+function parsearEvaluacionEntrega(
+  raw: unknown
+): EvaluacionEntregaServicio | undefined {
+  if (!esObjetoRecord(raw)) return undefined;
+
+  const calRaw = raw.calificacionGeneral;
+  const calificacionGeneral: CalificacionServicioNivel =
+    calRaw === 'SOBRESALIENTE' ||
+    calRaw === 'MUY_BUENO' ||
+    calRaw === 'REGULAR' ||
+    calRaw === 'ATENCION_REQUERIDA'
+      ? calRaw
+      : 'SOBRESALIENTE';
+
+  const puntRaw = raw.puntajeNumerico;
+  const puntajeNumerico: 5 | 4 | 3 | 2 =
+    puntRaw === 5 || puntRaw === 4 || puntRaw === 3 || puntRaw === 2
+      ? puntRaw
+      : 5;
+
+  const aspectosDestacados: string[] = [];
+  if (Array.isArray(raw.aspectosDestacados)) {
+    for (const item of raw.aspectosDestacados) {
+      if (typeof item === 'string' && item.trim()) {
+        aspectosDestacados.push(item.trim());
+      }
+    }
+  }
+
+  const desRaw = raw.desempenoVehiculo;
+  const desempenoVehiculo: 'IMPECABLE' | 'OPTIMO' | 'DETALLE_MENOR' =
+    desRaw === 'IMPECABLE' || desRaw === 'OPTIMO' || desRaw === 'DETALLE_MENOR'
+      ? desRaw
+      : 'IMPECABLE';
+
+  const comentarioOpcional =
+    typeof raw.comentarioOpcional === 'string' && raw.comentarioOpcional.trim()
+      ? raw.comentarioOpcional.trim()
+      : undefined;
+
+  const chkRaw = esObjetoRecord(raw.checklist) ? raw.checklist : {};
+  const combRaw = chkRaw.combustibleNivel;
+  const combustibleNivel:
+    | 'MISMO_NIVEL'
+    | 'CARGA_COMPLETA'
+    | 'RECARGA_PENDIENTE' =
+    combRaw === 'MISMO_NIVEL' ||
+    combRaw === 'CARGA_COMPLETA' ||
+    combRaw === 'RECARGA_PENDIENTE'
+      ? combRaw
+      : 'MISMO_NIVEL';
+
+  const checklist: ChecklistEntregaCliente = {
+    cabinaSinObjetos:
+      typeof chkRaw.cabinaSinObjetos === 'boolean'
+        ? chkRaw.cabinaSinObjetos
+        : true,
+    telemetriaVerificada:
+      typeof chkRaw.telemetriaVerificada === 'boolean'
+        ? chkRaw.telemetriaVerificada
+        : true,
+    llavesEntregadas:
+      typeof chkRaw.llavesEntregadas === 'boolean'
+        ? chkRaw.llavesEntregadas
+        : true,
+    combustibleNivel,
+  };
+
+  const completadaEnISO =
+    typeof raw.completadaEnISO === 'string' && raw.completadaEnISO.trim()
+      ? raw.completadaEnISO.trim()
+      : new Date().toISOString();
+
+  return {
+    calificacionGeneral,
+    puntajeNumerico,
+    aspectosDestacados,
+    desempenoVehiculo,
+    comentarioOpcional,
+    checklist,
+    completadaEnISO,
+  };
+}
+
 /**
  * Hidrata de forma segura las solicitudes guardadas por `RentalWizardFlow` o
  * actualizadas por administración en `localStorage.getItem('flotax_reservas_cliente')`
@@ -754,6 +862,7 @@ export function hidratarReservasCliente(
             requiereMantenimientoRetorno,
             motivoRechazo,
             puntosR2Custom: parsearPuntosR2Custom(entry.puntosR2Custom),
+            evaluacionEntrega: parsearEvaluacionEntrega(entry.evaluacionEntrega),
           });
         }
       }
@@ -1069,3 +1178,33 @@ export function formatearRangoReservaHumano(
 ): string {
   return `${formatearFechaCorta(fechaInicio)} – ${formatearFechaCorta(fechaFin)}`;
 }
+
+/**
+ * Consolida la entrega/devolución del vehículo por parte del cliente junto con
+ * su evaluación interactiva del servicio prestado, marcando la reserva como
+ * `COMPLETADA` y liberando la garantía si no hay novedades críticas.
+ */
+export function registrarEntregaClienteConEvaluacion(
+  reserva: ReservaClienteItem,
+  evaluacion: EvaluacionEntregaServicio,
+  rawStorageActual: string | null,
+  hoyISO: string
+): ReservaClienteItem {
+  const tieneAlertaTecnica =
+    evaluacion.calificacionGeneral === 'ATENCION_REQUERIDA' ||
+    evaluacion.desempenoVehiculo === 'DETALLE_MENOR';
+
+  const actualizada: ReservaClienteItem = {
+    ...reserva,
+    estado: 'COMPLETADA',
+    montoReportado: reserva.totalAlquiler,
+    estadoGarantia: tieneAlertaTecnica ? 'CUSTODIA_ACTIVA' : 'LIBERADA',
+    kilometrajeRetorno: reserva.kilometrajeEntrega + reserva.diasAlquiler * 68,
+    requiereMantenimientoRetorno: tieneAlertaTecnica,
+    evaluacionEntrega: evaluacion,
+  };
+
+  persistirReservaActualizadaEnStorage(actualizada, rawStorageActual, hoyISO);
+  return actualizada;
+}
+

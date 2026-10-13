@@ -1,0 +1,32 @@
+---
+import LayoutApp from '@/layouts/LayoutApp.astro';
+import VehiculoEntregaWizard from '@/components/reservas/VehiculoEntregaWizard';
+import { obtenerReservaClientePorCodigo } from '@/lib/flota';
+import { resolveClientTimeContext } from '@/lib/time/client-time';
+
+const { codigo } = Astro.params;
+
+if (!codigo) {
+  return Astro.redirect('/reservas');
+}
+
+const { dateString: hoyISO } = resolveClientTimeContext(Astro.request);
+const reservaInicial = obtenerReservaClientePorCodigo(codigo, null, hoyISO);
+
+if (!reservaInicial) {
+  return Astro.redirect('/reservas');
+}
+---
+
+<LayoutApp
+  title={`Entrega y Evaluación #${codigo.toUpperCase()} — FlotaX`}
+  hideNav={true}
+  navVariant="client"
+>
+  <VehiculoEntregaWizard
+    client:load
+    codigo={codigo.toUpperCase()}
+    reservaInicial={reservaInicial}
+    hoyISO={hoyISO}
+  />
+</LayoutApp>
