@@ -1,0 +1,19 @@
+---
+import LayoutApp from '../layouts/LayoutApp.astro';
+import FlotaxErrorStateIsland from '../components/navigation/FlotaxErrorStateIsland';
+
+const requestedPath = Astro.url.pathname;
+const enableSimulator = Astro.url.searchParams.get('simulador') === '1';
+---
+
+<LayoutApp
+  title="404 — Ruta o unidad fuera de perímetro · FlotaX"
+  hideNav={true}
+>
+  <FlotaxErrorStateIsland
+    client:load
+    initialMode="404"
+    requestedPath={requestedPath}
+    enableSimulator={enableSimulator}
+  />
+</LayoutApp>

@@ -1,0 +1,19 @@
+---
+import LayoutApp from '../layouts/LayoutApp.astro';
+import FlotaxErrorStateIsland from '../components/navigation/FlotaxErrorStateIsland';
+
+const requestedPath = Astro.url.pathname;
+const enableSimulator = Astro.url.searchParams.get('simulador') === '1';
+---
+
+<LayoutApp
+  title="500 — Interrupción temporal en el servicio · FlotaX"
+  hideNav={true}
+>
+  <FlotaxErrorStateIsland
+    client:load
+    initialMode="500"
+    requestedPath={requestedPath}
+    enableSimulator={enableSimulator}
+  />
+</LayoutApp>

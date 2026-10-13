@@ -20,11 +20,14 @@
 
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
+| [`404.astro`](./404.astro) | Página Error `/404` | Vista de contingencia 404 (Ruta o unidad fuera de perímetro con escáner CAD) | `@/components/navigation/FlotaxErrorStateIsland` |
+| [`500.astro`](./500.astro) | Página Error `/500` | Vista de contingencia operativa 500 con confirmación de integridad de sesión | `@/components/navigation/FlotaxErrorStateIsland` |
 | [`animacion.astro`](./animacion.astro) | Vista dedicada `/animacion` | Visor y simulador interactivo de la animación de carga full-screen | `@/components/navigation/FlotaxLoaderPreviewIsland` |
 | [`error.astro`](./error.astro) | Fallback `/error` | Redirección defensiva hacia `/login` preservando query params | `Astro.redirect` |
 | [`home.astro`](./home.astro) | Router `/home` | Enrutador inteligente por rol hacia `/admin` o `/catalogo` | `Astro.locals.usuario` |
 | [`index.astro`](./index.astro) | Página raíz `/` | Onboarding y landing pública de FlotaX | `@/layouts/LayoutApp.astro` |
 | [`login.astro`](./login.astro) | Página `/login` | Flujo de acceso OTP / Google | `@/components/auth/LoginFlow` |
+| [`offline.astro`](./offline.astro) | Página `/offline` | Vista de modo autónomo sin conexión a internet con sonar, auto-ping y rutas en caché | `@/components/navigation/FlotaxErrorStateIsland` |
 | [`registro.astro`](./registro.astro) | Página `/registro` | Registro de nuevos usuarios clientes | `@/components/auth/LoginFlow` |
 
 ## Invariants & Directory Rules

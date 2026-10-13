@@ -18,6 +18,9 @@ const FULLSCREEN_NO_DOCK_PATHS: ReadonlyArray<string> = [
   '/',
   '/login',
   '/registro',
+  '/offline',
+  '/404',
+  '/500',
 ];
 
 function isDockHiddenOnPath(pathname: string): boolean {
@@ -34,6 +37,7 @@ function isDockHiddenOnPath(pathname: string): boolean {
  * 2. Captura global de beforeinstallprompt (Android/Desktop) e instalación de 1 toque.
  * 3. Asistente visual interactivo con recortes de video reales para iOS Safari.
  * 4. Pantalla de carga cinética a pantalla completa (FlotaxLoadingScreen).
+ * 5. Detector de conectividad en tiempo real (Modo Autónomo / Sin Internet).
  */
 export default function PwaRuntimeIsland() {
   const deferredPromptRef = useRef<BeforeInstallPromptEvent | null>(null);
@@ -48,6 +52,7 @@ export default function PwaRuntimeIsland() {
   const [isRouteLoading, setIsRouteLoading] = useState(false);
   const [loadingLabel, setLoadingLabel] = useState<string | undefined>(undefined);
   const [loadingVariant, setLoadingVariant] = useState<'orbital' | 'cad'>('orbital');
+  const [isOffline, setIsOffline] = useState(false);
 
   useEffect(() => {
     void registerPwaServiceWorker();
@@ -192,10 +197,22 @@ export default function PwaRuntimeIsland() {
       setIsRouteLoading(visible);
     };
 
+    setIsOffline(!navigator.onLine);
+
+    const handleOffline = () => {
+      setIsOffline(true);
+    };
+
+    const handleOnline = () => {
+      setIsOffline(false);
+    };
+
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
     window.addEventListener('flotax:open-install', handleOpenInstallRequest);
     window.addEventListener('flotax:loading', handleCustomLoading);
+    window.addEventListener('offline', handleOffline);
+    window.addEventListener('online', handleOnline);
     document.addEventListener('astro:page-load', handlePageLoad);
     document.addEventListener('click', handleDocumentClick);
 
@@ -207,6 +224,8 @@ export default function PwaRuntimeIsland() {
       window.removeEventListener('appinstalled', handleAppInstalled);
       window.removeEventListener('flotax:open-install', handleOpenInstallRequest);
       window.removeEventListener('flotax:loading', handleCustomLoading);
+      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('online', handleOnline);
       document.removeEventListener('astro:page-load', handlePageLoad);
       document.removeEventListener('click', handleDocumentClick);
     };
@@ -256,13 +275,43 @@ export default function PwaRuntimeIsland() {
     dismissInstallPromptForDays(7);
   };
 
+  const offlinePill =
+    isOffline && livePath !== '/offline' ? (
+      <div
+        role="status"
+        aria-live="assertive"
+        className="fixed top-3 inset-x-4 z-90 mx-auto max-w-md animate-fade-up"
+      >
+        <div className="flex items-center justify-between gap-2.5 rounded-full border border-[#4B5563] bg-[#111827]/95 px-4 py-2 text-[#EDEDED] shadow-lg backdrop-blur-md">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="h-2 w-2 shrink-0 rounded-full bg-[#EDEDED] animate-pulse" />
+            <span className="truncate font-mono text-[11px] font-bold tracking-wider text-[#EDEDED]">
+              SIN SEÑAL · MODO AUTÓNOMO
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              void navigate(`/offline?from=${encodeURIComponent(livePath)}`);
+            }}
+            className="ios-press-bounce shrink-0 rounded-full bg-[#EDEDED] px-3 py-1 font-body text-[11px] font-extrabold text-[#111827] cursor-pointer"
+          >
+            Diagnóstico
+          </button>
+        </div>
+      </div>
+    ) : null;
+
   if (isStandalone) {
     return (
-      <FlotaxLoadingScreen
-        isVisible={isRouteLoading}
-        variant={loadingVariant}
-        {...(loadingLabel !== undefined ? { statusLabel: loadingLabel } : {})}
-      />
+      <>
+        {offlinePill}
+        <FlotaxLoadingScreen
+          isVisible={isRouteLoading}
+          variant={loadingVariant}
+          {...(loadingLabel !== undefined ? { statusLabel: loadingLabel } : {})}
+        />
+      </>
     );
   }
 
@@ -275,6 +324,7 @@ export default function PwaRuntimeIsland() {
 
   return (
     <>
+      {offlinePill}
       <FlotaxLoadingScreen
         isVisible={isRouteLoading}
         variant={loadingVariant}

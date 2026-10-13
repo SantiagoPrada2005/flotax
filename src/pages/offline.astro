@@ -1,0 +1,18 @@
+---
+import LayoutApp from '../layouts/LayoutApp.astro';
+import FlotaxErrorStateIsland from '../components/navigation/FlotaxErrorStateIsland';
+
+const requestedPath = Astro.url.searchParams.get('from') ?? '/catalogo';
+---
+
+<LayoutApp
+  title="Sin conexión a internet — Modo Autónomo · FlotaX"
+  hideNav={true}
+>
+  <FlotaxErrorStateIsland
+    client:load
+    initialMode="offline"
+    requestedPath={requestedPath}
+    enableSimulator={true}
+  />
+</LayoutApp>

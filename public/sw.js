@@ -7,7 +7,7 @@
  * 3. NETWORK-FIRST: Navegaciones HTML SSR (garantiza sesión RBAC e inventario D1 en tiempo real).
  */
 
-const CACHE_VERSION = 'flotax-static-v1';
+const CACHE_VERSION = 'flotax-static-v2';
 
 const PRECACHE_ASSETS = [
   '/manifest.webmanifest',
@@ -16,6 +16,7 @@ const PRECACHE_ASSETS = [
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon-maskable-512.png',
+  '/offline',
 ];
 
 const OFFLINE_FALLBACK_HTML = `<!doctype html>
@@ -23,65 +24,303 @@ const OFFLINE_FALLBACK_HTML = `<!doctype html>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#EDEDED" />
-  <title>Sin conexión — FlotaX</title>
+  <meta name="theme-color" content="#111827" />
+  <title>Sin conexión a internet — Modo Autónomo · FlotaX</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body {
       min-height: 100dvh;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 24px;
-      background-color: #EDEDED;
+      padding: 20px 16px;
+      background-color: #111827;
+      color: #EDEDED;
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    }
+    .shell {
+      width: 100%;
+      max-width: 456px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .pill-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 36px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      background: #1F2937;
+      border: 1px solid #4B5563;
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #EDEDED;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #EDEDED;
+      animation: pulseDot 1.6s ease-in-out infinite;
+    }
+    .pill-ping {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      padding: 6px 12px;
+      border-radius: 9999px;
+      background: #1F2937;
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 10px;
+      font-weight: 700;
+      color: #9CA3AF;
+    }
+    .sonar-stage {
+      position: relative;
+      height: 220px;
+      width: 100%;
+      border-radius: 28px;
+      background: #111827;
+      border: 1px solid #4B5563;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+    .sonar-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .sonar-ring {
+      transform-origin: 228px 110px;
+      animation: sonarWave 2.6s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+    }
+    .hud-row {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .core-badge {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: #1F2937;
+      border: 1.5px solid #EDEDED;
+      border-radius: 22px;
+      padding: 14px 22px;
+    }
+    .core-title {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #EDEDED;
+    }
+    .core-sub {
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 9px;
+      font-weight: 700;
+      color: #9CA3AF;
+      margin-top: 2px;
+    }
+    .hud-bottom {
+      position: relative;
+      z-index: 2;
+      background: #EDEDED;
       color: #111827;
-      font-family: -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif;
+      border-radius: 8px;
+      padding: 5px 12px;
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
     }
     .card {
       width: 100%;
-      max-width: 380px;
-      background: #FFFFFF;
-      border: 1px solid #9CA3AF;
-      border-radius: 24px;
-      padding: 28px 24px;
-      text-align: center;
+      background: #1F2937;
+      border: 1px solid #4B5563;
+      border-radius: 28px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
     }
-    .badge {
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
-      background: #111827;
+    h1 {
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1.15;
       color: #EDEDED;
+    }
+    p {
+      font-size: 13px;
+      line-height: 1.45;
+      color: #9CA3AF;
+    }
+    .cache-box {
+      background: #111827;
+      border: 1px solid #4B5563;
+      border-radius: 16px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .cache-label {
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #9CA3AF;
+    }
+    .cache-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .cache-pill {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-weight: 800;
-      font-size: 20px;
-      margin-bottom: 16px;
+      min-height: 44px;
+      border-radius: 10px;
+      background: #1F2937;
+      border: 1px solid #4B5563;
+      color: #EDEDED;
+      text-decoration: none;
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 11px;
+      font-weight: 700;
     }
-    h1 { font-size: 20px; font-weight: 800; margin-bottom: 8px; color: #111827; }
-    p { font-size: 14px; line-height: 1.5; color: #4B5563; margin-bottom: 20px; }
-    button {
+    .btn-primary {
       width: 100%;
       min-height: 48px;
       border: none;
       border-radius: 9999px;
+      background: #EDEDED;
+      color: #111827;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .btn-secondary {
+      width: 100%;
+      min-height: 46px;
+      border: 1px solid #4B5563;
+      border-radius: 9999px;
       background: #111827;
       color: #EDEDED;
-      font-size: 16px;
+      font-size: 13px;
       font-weight: 700;
       cursor: pointer;
     }
-    button:active { background: #1F2937; }
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+    @keyframes sonarWave {
+      0% { transform: scale(0.65); opacity: 0.7; }
+      100% { transform: scale(1.35); opacity: 0; }
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="badge">F</div>
-    <h1>Sin conexión a internet</h1>
-    <p>Verifica tu señal móvil o Wi-Fi en el patio para sincronizar la disponibilidad de la flota en tiempo real.</p>
-    <button type="button" onclick="window.location.reload()">Reintentar conexión</button>
+  <div class="shell">
+    <div class="topbar">
+      <div class="pill-status">
+        <span class="dot"></span>
+        <span>SIN SEÑAL · MODO AUTÓNOMO</span>
+      </div>
+      <div class="pill-ping" id="ping-label">AUTO-PING · 5S</div>
+    </div>
+
+    <div class="sonar-stage">
+      <svg class="sonar-bg" viewBox="0 0 456 220" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <circle cx="228" cy="110" r="50" fill="none" stroke="#4B5563" stroke-width="1.2" />
+        <circle cx="228" cy="110" r="80" fill="none" stroke="#9CA3AF" stroke-width="1.5" class="sonar-ring" />
+        <circle cx="228" cy="110" r="106" fill="none" stroke="#4B5563" stroke-width="1" stroke-dasharray="6 6" />
+        <path d="M 12 110 Q 36 88, 60 110 T 108 110 T 142 110" fill="none" stroke="#EDEDED" stroke-width="2" stroke-opacity="0.75" />
+        <line x1="146" y1="110" x2="310" y2="110" stroke="#4B5563" stroke-width="1.5" stroke-dasharray="4 4" />
+        <path d="M 314 110 Q 338 88, 362 110 T 410 110 T 444 110" fill="none" stroke="#EDEDED" stroke-width="2" stroke-opacity="0.75" />
+      </svg>
+
+      <div class="hud-row">
+        <span style="color:#9CA3AF">CARRIER: 0.0 KB/S · LINK DOWN</span>
+        <span style="color:#EDEDED">SW CACHE: ACTIVO</span>
+      </div>
+
+      <div class="core-badge">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#EDEDED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="2" y1="2" x2="22" y2="22" />
+          <path d="M8.5 16.5a5 5 0 0 1 7 0" />
+          <path d="M2 8.82a15 15 0 0 1 4.17-2.65" />
+          <path d="M10.66 5c4.01-.36 8.14.9 11.34 3.76" />
+          <path d="M16.85 11.25a10 10 0 0 1 2.22 1.68" />
+          <path d="M5 12.859a10 10 0 0 1 5.17-2.69" />
+          <line x1="12" y1="20" x2="12.01" y2="20" />
+        </svg>
+        <div>
+          <div class="core-title">ENLACE CAÍDO</div>
+          <div class="core-sub">ESPERANDO RED MÓVIL / WI-FI</div>
+        </div>
+      </div>
+
+      <div class="hud-bottom">RECONEXIÓN AUTOMÁTICA AL DETECTAR SEÑAL</div>
+    </div>
+
+    <div class="card">
+      <h1>Sin conexión a internet en este momento</h1>
+      <p>Verifica tu señal móvil o Wi-Fi en el patio. No cierres la aplicación: FlotaX sincronizará la disponibilidad en cuanto regrese la conexión.</p>
+
+      <div class="cache-box">
+        <span class="cache-label">VISTAS GUARDADAS EN ESTE DISPOSITIVO (CACHÉ LOCAL)</span>
+        <div class="cache-grid">
+          <a class="cache-pill" href="/catalogo">/catalogo</a>
+          <a class="cache-pill" href="/reservas">/reservas</a>
+          <a class="cache-pill" href="/admin">/admin</a>
+        </div>
+      </div>
+
+      <button type="button" class="btn-primary" onclick="window.location.reload()">Reintentar conexión ahora ↻</button>
+      <button type="button" class="btn-secondary" onclick="window.history.length > 1 ? window.history.back() : (window.location.href = '/catalogo')">Abrir última vista guardada</button>
+    </div>
   </div>
+  <script>
+    window.addEventListener('online', function () {
+      window.location.reload();
+    });
+    var sec = 5;
+    var el = document.getElementById('ping-label');
+    setInterval(function () {
+      sec = sec <= 1 ? 5 : sec - 1;
+      if (el) el.textContent = 'AUTO-PING · ' + sec + 'S';
+      if (sec === 5 && navigator.onLine) {
+        window.location.reload();
+      }
+    }, 1000);
+  </script>
 </body>
 </html>`;
 
@@ -170,16 +409,30 @@ self.addEventListener('fetch', (event) => {
   const acceptHeader = request.headers.get('accept') || '';
   if (request.mode === 'navigate' || acceptHeader.includes('text/html')) {
     event.respondWith(
-      fetch(request).catch(async () => {
-        const cachedPage = await caches.match(request);
-        if (cachedPage) {
-          return cachedPage;
-        }
-        return new Response(OFFLINE_FALLBACK_HTML, {
-          status: 503,
-          headers: { 'Content-Type': 'text/html; charset=utf-8' },
-        });
-      })
+      fetch(request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200 && isSameOrigin) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_VERSION).then((cache) => {
+              cache.put(request, responseClone);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(async () => {
+          const cachedPage = await caches.match(request);
+          if (cachedPage) {
+            return cachedPage;
+          }
+          const offlineCachedRoute = await caches.match('/offline');
+          if (offlineCachedRoute) {
+            return offlineCachedRoute;
+          }
+          return new Response(OFFLINE_FALLBACK_HTML, {
+            status: 503,
+            headers: { 'Content-Type': 'text/html; charset=utf-8' },
+          });
+        })
     );
   }
 });
