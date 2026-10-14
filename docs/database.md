@@ -240,6 +240,123 @@ Suscripciones Web Push por dispositivo.
 
 ---
 
+### 6. Módulo de Caja, Finanzas y Arqueo Diario
+
+#### `cuentas_financieras`
+Catálogo administrable de cajas físicas de efectivo, cuentas bancarias y billeteras digitales del local.
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|---------------|-------------|
+| `id` | TEXT | PRIMARY KEY | Identificador único de la cuenta/caja. |
+| `local_id` | TEXT | NOT NULL, FK `locales_alquiler.id` (CASCADE) | Local propietario. |
+| `nombre` | TEXT | NOT NULL | Nombre comercial (ej. 'Caja Principal Efectivo', 'Bancolombia Operativo'). |
+| `tipo` | TEXT | NOT NULL | 'CAJA_EFECTIVO', 'BANCO', 'BILLETERA_DIGITAL'. |
+| `saldo_inicial` | INTEGER | NOT NULL, DEFAULT 0 | Saldo base inicial en COP. |
+| `activo` | INTEGER (boolean) | NOT NULL, DEFAULT true | Estado de habilitación. |
+| `creado_en` | TIMESTAMP | NOT NULL | Fecha de creación. |
+| `actualizado_en` | TIMESTAMP | NOT NULL | Fecha de última modificación. |
+
+#### `movimientos_caja`
+Libro diario de ingresos, egresos y transferencias internas con trazabilidad estricta.
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|---------------|-------------|
+| `id` | TEXT | PRIMARY KEY | Identificador único del movimiento. |
+| `local_id` | TEXT | NOT NULL, FK `locales_alquiler.id` (CASCADE) | Local asignado. |
+| `tipo` | TEXT | NOT NULL | 'INGRESO', 'EGRESO', 'TRANSFERENCIA'. |
+| `categoria` | TEXT | NOT NULL | Categoría canónica operativa. |
+| `concepto` | TEXT | NOT NULL | Concepto o justificación comercial. |
+| `monto` | INTEGER | NOT NULL | Importe en COP. |
+| `metodo_pago` | TEXT | NOT NULL | 'efectivo', 'transferencia', 'tarjeta', 'especie', 'otro'. |
+| `cuenta_id` | TEXT | NOT NULL, FK `cuentas_financieras.id` | Cuenta origen/recaudo. |
+| `cuenta_destino_id` | TEXT | NULLABLE, FK `cuentas_financieras.id` | Cuenta destino en transferencias internas. |
+| `contrato_id` | TEXT | NULLABLE | Código de reserva/contrato asociado. |
+| `cliente_id` | TEXT | NULLABLE, FK `user.id` | Cliente involucrado. |
+| `cliente_nombre` | TEXT | NULLABLE | Nombre del cliente registrado. |
+| `vehiculo_id` | TEXT | NULLABLE, FK `vehiculos.id` | Vehículo imputado al gasto/ingreso. |
+| `proveedor` | TEXT | NULLABLE | Proveedor o taller en egresos. |
+| `referencia` | TEXT | NULLABLE | Factura, voucher o comprobante. |
+| `soporte_url` | TEXT | NULLABLE | URL del comprobante en Cloudflare R2. |
+| `estado` | TEXT | NOT NULL, DEFAULT 'CONFIRMADO' | 'BORRADOR', 'PENDIENTE', 'CONFIRMADO', 'ANULADO'. |
+| `motivo_anulacion` | TEXT | NULLABLE | Causal obligatoria de anulación. |
+| `anulado_por_id` | TEXT | NULLABLE, FK `user.id` | Responsable de anulación. |
+| `anulado_en` | TIMESTAMP | NULLABLE | Fecha de anulación. |
+| `creado_por_id` | TEXT | NOT NULL, FK `user.id` | Operador que asentó el movimiento. |
+| `observaciones` | TEXT | NULLABLE | Notas operativas complementarias. |
+| `fecha_movimiento` | TIMESTAMP | NOT NULL | Fecha contable del hecho económico. |
+| `creado_en` | TIMESTAMP | NOT NULL | Timestamp de inserción. |
+| `actualizado_en` | TIMESTAMP | NOT NULL | Timestamp de actualización. |
+
+#### `sesiones_caja`
+Control de arqueo de caja física por turno u horario operativo.
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|---------------|-------------|
+| `id` | TEXT | PRIMARY KEY | Identificador de la sesión/arqueo. |
+| `local_id` | TEXT | NOT NULL, FK `locales_alquiler.id` (CASCADE) | Local. |
+| `cuenta_id` | TEXT | NOT NULL, FK `cuentas_financieras.id` | Caja física asignada al turno. |
+| `usuario_apertura_id` | TEXT | NOT NULL, FK `user.id` | Responsable de apertura. |
+| `fecha_apertura` | TIMESTAMP | NOT NULL | Apertura de turno. |
+| `saldo_inicial_contado` | INTEGER | NOT NULL | Dinero contado al abrir en COP. |
+| `estado` | TEXT | NOT NULL, DEFAULT 'ABIERTA' | 'ABIERTA', 'CERRADA'. |
+| `usuario_cierre_id` | TEXT | NULLABLE, FK `user.id` | Responsable de cierre. |
+| `fecha_cierre` | TIMESTAMP | NULLABLE | Cierre de turno. |
+| `saldo_esperado` | INTEGER | NULLABLE | Saldo matemático según movimientos. |
+| `saldo_real_contado` | INTEGER | NULLABLE | Efectivo contado en cierre. |
+| `diferencia` | INTEGER | NULLABLE | Faltante o sobrante (contado - esperado). |
+| `motivo_diferencia` | TEXT | NULLABLE | Justificación obligatoria de diferencia. |
+| `observaciones` | TEXT | NULLABLE | Observaciones de entrega de turno. |
+| `creado_en` | TIMESTAMP | NOT NULL | Fecha de creación. |
+| `actualizado_en` | TIMESTAMP | NOT NULL | Fecha de actualización. |
+
+#### `depositos_garantia`
+Control del pasivo transitorio de depósitos y fianzas por vehículo alquilado.
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|---------------|-------------|
+| `id` | TEXT | PRIMARY KEY | Identificador del depósito. |
+| `local_id` | TEXT | NOT NULL, FK `locales_alquiler.id` (CASCADE) | Local del contrato. |
+| `contrato_id` | TEXT | NOT NULL | Código de reserva/contrato (ej. 'FLX-309418'). |
+| `cliente_id` | TEXT | NULLABLE, FK `user.id` | Cliente titular. |
+| `cliente_nombre` | TEXT | NOT NULL | Nombre registrado del cliente. |
+| `vehiculo_id` | TEXT | NULLABLE, FK `vehiculos.id` | Unidad asegurada. |
+| `monto_esperado` | INTEGER | NOT NULL | Fianza contractual estipulada en COP. |
+| `monto_recibido` | INTEGER | NOT NULL, DEFAULT 0 | Importe efectivamente recibido. |
+| `monto_retenido` | INTEGER | NOT NULL, DEFAULT 0 | Deducibles por daños o infracciones. |
+| `monto_devuelto` | INTEGER | NOT NULL, DEFAULT 0 | Dinero devuelto al cliente. |
+| `saldo_comprometido` | INTEGER | NOT NULL | Pasivo pendiente de liquidación. |
+| `estado` | TEXT | NOT NULL | 'PENDIENTE_RECIBIR', 'RECIBIDO_CUSTODIA', 'EN_REVISION', 'PENDIENTE_DEVOLUCION', 'DEVUELTO_PARCIAL', 'DEVUELTO_TOTAL', 'APLICADO_CARGOS'. |
+| `cuenta_id` | TEXT | NULLABLE, FK `cuentas_financieras.id` | Cuenta donde reposa el depósito. |
+| `metodo_pago` | TEXT | NULLABLE | Medio de pago utilizado. |
+| `referencia_recepcion` | TEXT | NULLABLE | Referencia del cobro de garantía. |
+| `fecha_recepcion` | TIMESTAMP | NULLABLE | Fecha de recepción en caja. |
+| `fecha_devolucion_prevista` | TIMESTAMP | NULLABLE | Fecha estimada de devolución. |
+| `fecha_devolucion_real` | TIMESTAMP | NULLABLE | Fecha efectiva de restitución. |
+| `referencia_devolucion` | TEXT | NULLABLE | Comprobante de egreso por devolución. |
+| `motivo_retencion` | TEXT | NULLABLE | Soporte pericial del descuento. |
+| `observaciones` | TEXT | NULLABLE | Notas del inspector. |
+| `creado_en` | TIMESTAMP | NOT NULL | Fecha de creación. |
+| `actualizado_en` | TIMESTAMP | NOT NULL | Fecha de actualización. |
+
+#### `auditoria_financiera`
+Registro inmutable para operaciones sensibles, anulaciones, reversiones y arqueos.
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|---------------|-------------|
+| `id` | TEXT | PRIMARY KEY | Identificador de auditoría. |
+| `local_id` | TEXT | NOT NULL, FK `locales_alquiler.id` (CASCADE) | Local. |
+| `entidad` | TEXT | NOT NULL | 'MOVIMIENTO', 'SESION_CAJA', 'GARANTIA', 'CUENTA'. |
+| `entidad_id` | TEXT | NOT NULL | ID de la entidad auditada. |
+| `accion` | TEXT | NOT NULL | 'CREAR', 'MODIFICAR', 'ANULAR', 'REVERTIR', 'CERRAR_CAJA', 'DEVOLVER_GARANTIA', 'TRANSFERENCIA'. |
+| `monto_anterior` | INTEGER | NULLABLE | Valor previo a la mutación. |
+| `monto_nuevo` | INTEGER | NULLABLE | Valor posterior a la mutación. |
+| `motivo` | TEXT | NULLABLE | Causal justificada del cambio. |
+| `usuario_id` | TEXT | NOT NULL, FK `user.id` | Autor de la acción. |
+| `detalles_json` | TEXT | NULLABLE | Snapshot serializado del registro. |
+| `creado_en` | TIMESTAMP | NOT NULL | Marca de tiempo inmutable. |
+
+---
+
 ## Diagrama Entidad-Relación
 
 ```mermaid
@@ -260,6 +377,19 @@ erDiagram
     user ||--o{ notificaciones : "recibe"
     locales_alquiler ||--o{ notificaciones : "avisos del patio"
     user ||--o{ suscripciones_push : "dispositivos push"
+
+    locales_alquiler ||--o{ cuentas_financieras : "administra cuentas"
+    locales_alquiler ||--o{ movimientos_caja : "asienta movimientos"
+    locales_alquiler ||--o{ sesiones_caja : "arqueos de turno"
+    locales_alquiler ||--o{ depositos_garantia : "custodia garantias"
+    locales_alquiler ||--o{ auditoria_financiera : "trazabilidad financiera"
+
+    cuentas_financieras ||--o{ movimientos_caja : "canaliza"
+    cuentas_financieras ||--o{ sesiones_caja : "caja arqueada"
+    cuentas_financieras ||--o{ depositos_garantia : "resguarda"
+    user ||--o{ movimientos_caja : "asienta / anula"
+    user ||--o{ sesiones_caja : "abre / cierra"
+    user ||--o{ auditoria_financiera : "ejecuta cambio sensible"
 
     user {
         string id PK
@@ -431,5 +561,103 @@ erDiagram
         string auth
         string agente
         timestamp creada_en
+    }
+
+    cuentas_financieras {
+        string id PK
+        string local_id FK
+        string nombre
+        string tipo
+        integer saldo_inicial
+        boolean activo
+        timestamp creado_en
+        timestamp actualizado_en
+    }
+
+    movimientos_caja {
+        string id PK
+        string local_id FK
+        string tipo
+        string categoria
+        string concepto
+        integer monto
+        string metodo_pago
+        string cuenta_id FK
+        string cuenta_destino_id FK
+        string contrato_id
+        string cliente_id FK
+        string cliente_nombre
+        string vehiculo_id FK
+        string proveedor
+        string referencia
+        string soporte_url
+        string estado
+        string motivo_anulacion
+        string anulado_por_id FK
+        timestamp anulado_en
+        string creado_por_id FK
+        string observaciones
+        timestamp fecha_movimiento
+        timestamp creado_en
+        timestamp actualizado_en
+    }
+
+    sesiones_caja {
+        string id PK
+        string local_id FK
+        string cuenta_id FK
+        string usuario_apertura_id FK
+        timestamp fecha_apertura
+        integer saldo_inicial_contado
+        string estado
+        string usuario_cierre_id FK
+        timestamp fecha_cierre
+        integer saldo_esperado
+        integer saldo_real_contado
+        integer diferencia
+        string motivo_diferencia
+        string observaciones
+        timestamp creado_en
+        timestamp actualizado_en
+    }
+
+    depositos_garantia {
+        string id PK
+        string local_id FK
+        string contrato_id
+        string cliente_id FK
+        string cliente_nombre
+        string vehiculo_id FK
+        integer monto_esperado
+        integer monto_recibido
+        integer monto_retenido
+        integer monto_devuelto
+        integer saldo_comprometido
+        string estado
+        string cuenta_id FK
+        string metodo_pago
+        string referencia_recepcion
+        timestamp fecha_recepcion
+        timestamp fecha_devolucion_prevista
+        timestamp fecha_devolucion_real
+        string referencia_devolucion
+        string motivo_retencion
+        string observaciones
+        timestamp creado_en
+        timestamp actualizado_en
+    }
+
+    auditoria_financiera {
+        string id PK
+        string local_id FK
+        string entidad
+        string entidad_id
+        string accion
+        integer monto_anterior
+        integer monto_nuevo
+        string motivo
+        string usuario_id FK
+        string detalles_json
+        timestamp creado_en
     }
 ```

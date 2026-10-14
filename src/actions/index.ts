@@ -1,4 +1,13 @@
-import { registrarAbono } from './caja';
+import {
+  registrarAbonoAction,
+  registrarMovimientoAction,
+  anularMovimientoAction,
+  registrarTransferenciaAction,
+  aperturaCajaAction,
+  cierreCajaAction,
+  gestionarGarantiaAction,
+  crearCuentaAction,
+} from './caja';
 import {
   listarNotificaciones,
   contarNotificacionesNoLeidas,
@@ -37,7 +46,14 @@ export const server = {
     cancelarPush,
   },
   caja: {
-    registrarAbono,
+    registrarAbono: registrarAbonoAction,
+    registrarMovimiento: registrarMovimientoAction,
+    anularMovimiento: anularMovimientoAction,
+    registrarTransferencia: registrarTransferenciaAction,
+    aperturaCaja: aperturaCajaAction,
+    cierreCaja: cierreCajaAction,
+    gestionarGarantia: gestionarGarantiaAction,
+    crearCuenta: crearCuentaAction,
   },
   portal: {
     cambiarModoPortal,

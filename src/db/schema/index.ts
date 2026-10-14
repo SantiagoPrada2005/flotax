@@ -10,6 +10,7 @@ export * from './transferencias';
 export * from './incidentes';
 export * from './vehiculos';
 export * from './notificaciones';
+export * from './caja';
 
 // Backwards compatibility legacy exports
 export { usuarioAdmin, rolesValidos } from './usuarios_admin';
