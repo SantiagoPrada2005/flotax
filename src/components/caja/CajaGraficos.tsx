@@ -252,9 +252,7 @@ export function CajaGraficos({
                         onMouseEnter={() => setPuntoHoverIdx(i)}
                         onTouchStart={() => setPuntoHoverIdx(i)}
                       >
-                        <title>
-                          {puntosFlujo[i]?.etiqueta}: Egreso {formatearMonedaCOP(n.valor)}
-                        </title>
+                        <title>{`${puntosFlujo[i]?.etiqueta ?? ''}: Egreso ${formatearMonedaCOP(n.valor)}`}</title>
                       </circle>
                     ))}
                   </>
@@ -289,9 +287,7 @@ export function CajaGraficos({
                         onMouseEnter={() => setPuntoHoverIdx(i)}
                         onTouchStart={() => setPuntoHoverIdx(i)}
                       >
-                        <title>
-                          {puntosFlujo[i]?.etiqueta}: Ingreso {formatearMonedaCOP(n.valor)}
-                        </title>
+                        <title>{`${puntosFlujo[i]?.etiqueta ?? ''}: Ingreso ${formatearMonedaCOP(n.valor)}`}</title>
                       </circle>
                     ))}
                   </>
