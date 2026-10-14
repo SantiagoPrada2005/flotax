@@ -14,7 +14,7 @@ interface BrandItem {
 const BRANDS: BrandItem[] = [
   {
     id: 'ALL',
-    label: 'All Car',
+    label: 'Todos',
     logo: (active) => (
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={`h-3.5 w-3.5 ${active ? 'text-white' : 'text-[#111827]'}`}>
         <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2" />
@@ -26,7 +26,7 @@ const BRANDS: BrandItem[] = [
   },
   {
     id: 'BMW',
-    label: 'Bmw',
+    label: 'BMW',
     logo: () => (
       <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
         <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="1.8" />
@@ -41,8 +41,8 @@ const BRANDS: BrandItem[] = [
   {
     id: 'Mercedes-Benz',
     label: 'Mercedes',
-    logo: () => (
-      <svg viewBox="0 0 24 24" className="h-4 w-4 text-[#111827]" fill="currentColor">
+    logo: (active) => (
+      <svg viewBox="0 0 24 24" className={`h-4 w-4 ${active ? 'text-white' : 'text-[#111827]'}`} fill="currentColor">
         <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="1.5" />
         <path d="M12 2.5 L12 12 L4.2 16.5 L12 12 L19.8 16.5 Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" fill="none" />
         <circle cx="12" cy="12" r="1.5" fill="currentColor" />
@@ -52,18 +52,28 @@ const BRANDS: BrandItem[] = [
   {
     id: 'Mazda',
     label: 'Mazda',
-    logo: () => (
-      <svg viewBox="0 0 24 24" className="h-4 w-4 text-[#111827]" fill="none" stroke="currentColor" strokeWidth="1.6">
+    logo: (active) => (
+      <svg viewBox="0 0 24 24" className={`h-4 w-4 ${active ? 'text-white' : 'text-[#111827]'}`} fill="none" stroke="currentColor" strokeWidth="1.6">
         <ellipse cx="12" cy="12" rx="10" ry="7.5" />
         <path d="M4 12c3-4 6-4 8 0c2-4 5-4 8 0" />
       </svg>
     ),
   },
   {
+    id: 'Quantum',
+    label: 'Quantum',
+    logo: (active) => (
+      <svg viewBox="0 0 24 24" className={`h-4 w-4 ${active ? 'text-white' : 'text-[#111827]'}`} fill="none" stroke="currentColor" strokeWidth="1.8">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 7v10M8 12h8" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
     id: 'Yamaha',
     label: 'Motos',
-    logo: () => (
-      <svg viewBox="0 0 24 24" className="h-4 w-4 text-[#111827]" fill="none" stroke="currentColor" strokeWidth="1.8">
+    logo: (active) => (
+      <svg viewBox="0 0 24 24" className={`h-4 w-4 ${active ? 'text-white' : 'text-[#111827]'}`} fill="none" stroke="currentColor" strokeWidth="1.8">
         <circle cx="12" cy="12" r="10" strokeWidth="1.4" />
         <line x1="12" y1="3" x2="12" y2="21" />
         <line x1="4.2" y1="7.5" x2="19.8" y2="16.5" />
@@ -74,8 +84,8 @@ const BRANDS: BrandItem[] = [
   {
     id: 'Volt Striker',
     label: 'Volt',
-    logo: () => (
-      <svg viewBox="0 0 24 24" className="h-4 w-4 text-[#111827]" fill="currentColor">
+    logo: (active) => (
+      <svg viewBox="0 0 24 24" className={`h-4 w-4 ${active ? 'text-white' : 'text-[#111827]'}`} fill="currentColor">
         <path d="M13 2L4 14h7l-2 8 11-12h-7l2-8z" />
       </svg>
     ),
@@ -86,7 +96,8 @@ export default function BrandFilterBar({
   onSelectBrand,
   activeBrand = 'ALL',
 }: BrandFilterBarProps) {
-  const [selected, setSelected] = useState(activeBrand);
+  const [internalSelected, setInternalSelected] = useState(activeBrand);
+  const selected = activeBrand !== undefined ? activeBrand : internalSelected;
 
   const triggerHaptic = () => {
     if (typeof window !== 'undefined' && 'vibrate' in navigator) {
@@ -96,7 +107,7 @@ export default function BrandFilterBar({
 
   const handleSelect = (brandId: string) => {
     triggerHaptic();
-    setSelected(brandId);
+    setInternalSelected(brandId);
     if (onSelectBrand) {
       onSelectBrand(brandId);
     }
@@ -106,18 +117,18 @@ export default function BrandFilterBar({
     <div className="space-y-2.5">
       <div className="flex items-center justify-between px-0.5">
         <h3 className="font-display text-sm font-bold tracking-tight text-[#111827]">
-          Brand
+          Marcas
         </h3>
         <button
           type="button"
           onClick={() => handleSelect('ALL')}
           className="text-xs font-semibold text-[#71717A] hover:text-[#111827] transition cursor-pointer"
         >
-          See All
+          Ver todas
         </button>
       </div>
 
-      <div className="flex items-center gap-2.5 overflow-x-auto pb-1 no-scrollbar">
+      <div className="flex items-center gap-2.5 overflow-x-auto sm:flex-wrap pb-1 no-scrollbar">
         {BRANDS.map((b) => {
           const isActive = selected === b.id;
           return (

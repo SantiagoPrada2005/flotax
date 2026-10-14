@@ -9,6 +9,7 @@
 | :--- | :--- | :--- | :--- |
 | [`BrandFilterBar.tsx`](./BrandFilterBar.tsx) | Module / Utility | - | - |
 | [`CatalogSearchTrigger.tsx`](./CatalogSearchTrigger.tsx) | Module / Utility | - | - |
+| [`FleetCatalogList.tsx`](./FleetCatalogList.tsx) | Isla React 19: Catálogo con filtro de marcas y grid PC | Componente `<FleetCatalogList ... />` | [`BrandFilterBar.tsx`](./BrandFilterBar.tsx), [`VehicleCatalogCard.tsx`](./VehicleCatalogCard.tsx) |
 | [`FleetInventoryManager.tsx`](./FleetInventoryManager.tsx) | Module / Utility | - | - |
 | [`VehicleCatalogCard.tsx`](./VehicleCatalogCard.tsx) | Module / Utility | - | - |
 | [`VehicleFormIsland.tsx`](./VehicleFormIsland.tsx) | Module / Utility | - | - |
