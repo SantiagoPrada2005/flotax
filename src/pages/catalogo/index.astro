@@ -1,8 +1,7 @@
 ---
 import LayoutApp from '@/layouts/LayoutApp.astro';
 import CatalogSearchTrigger from '@/components/flota/CatalogSearchTrigger';
-import BrandFilterBar from '@/components/flota/BrandFilterBar';
-import VehicleCatalogCard from '@/components/flota/VehicleCatalogCard';
+import FleetCatalogList from '@/components/flota/FleetCatalogList';
 import { listarVehiculos } from '@/lib/flota';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
@@ -16,14 +15,14 @@ const vehiculos = await listarVehiculos(db);
   activeTab="home"
   navVariant="client"
 >
-  <div class="mx-auto w-full max-w-md sm:max-w-xl px-4 py-2 space-y-5 pb-24">
+  <div class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-6 sm:space-y-8 pb-28">
     {/* 1. Header: Saludo y Contexto de Reserva */}
-    <header class="space-y-2 pt-1">
+    <header class="space-y-3 pt-1">
       <div class="flex items-center justify-between">
-        <span class="text-[11px] font-bold uppercase tracking-wider text-[#71717A]">
+        <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#71717A]">
           FlotaX Patio Norte
         </span>
-        <div class="inline-flex items-center gap-1.5 rounded-full bg-white border border-[#E4E4E7] px-3 py-1 text-xs text-[#18181B] shadow-2xs">
+        <div class="inline-flex items-center gap-1.5 rounded-full bg-white border border-[#E4E4E7] px-3.5 py-1 text-xs text-[#18181B] shadow-2xs">
           <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
           <span class="font-semibold">10 Oct – 14 Oct</span>
           <span class="text-[#A1A1AA]">·</span>
@@ -31,36 +30,24 @@ const vehiculos = await listarVehiculos(db);
         </div>
       </div>
 
-      <h1 class="font-display text-2xl sm:text-3xl font-black tracking-tight text-[#18181B]">
-        Find Your Perfect Ride
-      </h1>
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 class="font-display text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[#18181B]">
+            Encuentra tu vehículo ideal
+          </h1>
+          <p class="text-xs sm:text-sm text-[#71717A] mt-1">
+            Explora nuestra flota de sedanes, SUVs, motos y vehículos eléctricos
+          </p>
+        </div>
+
+        {/* 2. Barra de Búsqueda Píldora + Filtro Sliders */}
+        <div class="w-full md:w-80 lg:w-96 shrink-0">
+          <CatalogSearchTrigger client:load />
+        </div>
+      </div>
     </header>
 
-    {/* 2. Barra de Búsqueda Píldora + Filtro Sliders (Screen 2) */}
-    <CatalogSearchTrigger client:load />
-
-    {/* 3. Carrusel de Marcas con Logos Vectoriales Reales (Screen 2) */}
-    <BrandFilterBar client:load />
-
-    {/* 4. Encabezado de la Sección 'Popular Cars' (Screen 1) */}
-    <div class="flex items-center justify-between pt-1 px-0.5">
-      <div>
-        <h2 class="font-display text-xl sm:text-2xl font-black tracking-tight text-[#18181B]">
-          Popular Cars
-        </h2>
-        <p class="text-xs text-[#71717A]">Listos para entrega inmediata</p>
-      </div>
-
-      <span class="font-mono text-xs font-semibold text-[#71717A] bg-white border border-[#E4E4E7] px-3 py-1 rounded-full shadow-2xs">
-        {vehiculos.length} unidades
-      </span>
-    </div>
-
-    {/* 5. Listado de Tarjetas Premium 'Popular Cars' (Screen 1) */}
-    <div class="space-y-4">
-      {vehiculos.map((vehiculo) => (
-        <VehicleCatalogCard client:visible vehiculo={vehiculo} />
-      ))}
-    </div>
+    {/* 3. Catálogo reactivo con filtro por marca y cuadrícula responsiva para PC */}
+    <FleetCatalogList client:load initialVehiculos={vehiculos} />
   </div>
 </LayoutApp>
