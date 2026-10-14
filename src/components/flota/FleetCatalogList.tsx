@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import type { VehiculoItem } from '@/lib/flota/types';
-import BrandFilterBar from './BrandFilterBar';
+import BrandFilterBar, { KNOWN_BRANDS } from './BrandFilterBar';
 import VehicleCatalogCard from './VehicleCatalogCard';
 
 export interface FleetCatalogListProps {
@@ -9,6 +9,17 @@ export interface FleetCatalogListProps {
 
 export default function FleetCatalogList({ initialVehiculos }: FleetCatalogListProps) {
   const [selectedBrand, setSelectedBrand] = useState('ALL');
+
+  // Extraer dinámicamente las marcas únicas presentes en los vehículos
+  const dynamicBrands = useMemo(() => {
+    const marcas = new Set<string>();
+    for (const v of initialVehiculos) {
+      if (v.marca && v.marca.trim()) {
+        marcas.add(v.marca.trim());
+      }
+    }
+    return Array.from(marcas);
+  }, [initialVehiculos]);
 
   const filteredVehiculos = useMemo(() => {
     if (!selectedBrand || selectedBrand === 'ALL') {
@@ -22,12 +33,12 @@ export default function FleetCatalogList({ initialVehiculos }: FleetCatalogListP
       const carCatNorm = (vehiculo.categoria || '').toLowerCase().trim();
 
       // Caso especial Motos / Yamaha
-      if (brandNorm === 'yamaha') {
+      if (brandNorm === 'yamaha' || brandNorm === 'motos') {
         return carMarcaNorm.includes('yamaha') || carCatNorm === 'moto';
       }
 
       // Caso especial Patinetas / Volt Striker
-      if (brandNorm === 'volt striker') {
+      if (brandNorm === 'volt striker' || brandNorm === 'volt') {
         return carMarcaNorm.includes('volt') || carCatNorm === 'patineta';
       }
 
@@ -40,24 +51,19 @@ export default function FleetCatalogList({ initialVehiculos }: FleetCatalogListP
     });
   }, [initialVehiculos, selectedBrand]);
 
-  const brandLabelMap: Record<string, string> = {
-    ALL: 'Todos',
-    BMW: 'BMW',
-    'Mercedes-Benz': 'Mercedes',
-    Mazda: 'Mazda',
-    Quantum: 'Quantum',
-    Yamaha: 'Motos',
-    'Volt Striker': 'Volt',
-  };
-
-  const currentLabel = brandLabelMap[selectedBrand] ?? selectedBrand;
+  const currentLabel = useMemo(() => {
+    if (selectedBrand === 'ALL') return 'Todos';
+    const known = KNOWN_BRANDS[selectedBrand];
+    return known?.label ?? selectedBrand;
+  }, [selectedBrand]);
 
   return (
     <div className="space-y-6">
-      {/* 1. Carrusel / Barra de Marcas con Logos Vectoriales */}
+      {/* 1. Carrusel / Barra de Marcas con Logos Vectoriales Dinámicos */}
       <BrandFilterBar
         activeBrand={selectedBrand}
         onSelectBrand={(brandId) => setSelectedBrand(brandId)}
+        availableBrands={dynamicBrands}
       />
 
       {/* 2. Encabezado de la Sección y Contador Reactivo */}
