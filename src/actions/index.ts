@@ -35,10 +35,20 @@ import {
   registrarEntregaEvaluacionAction,
 } from './reservas';
 import { actualizarPerfilAction } from './perfil';
+import {
+  subirFotoDocumentoAction,
+  finalizarVerificacionAction,
+  obtenerEstadoVerificacionAction,
+} from './verificacion';
 
 export const server = {
   perfil: {
     actualizar: actualizarPerfilAction,
+  },
+  verificacion: {
+    subirFoto: subirFotoDocumentoAction,
+    finalizar: finalizarVerificacionAction,
+    obtenerEstado: obtenerEstadoVerificacionAction,
   },
   notificaciones: {
     listar: listarNotificaciones,

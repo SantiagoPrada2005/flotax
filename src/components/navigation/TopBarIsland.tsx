@@ -10,6 +10,8 @@ export interface TopBarIslandProps {
   backHref?: string | undefined;
   className?: string | undefined;
   autenticado?: boolean | undefined;
+  usuarioImagen?: string | null | undefined;
+  usuarioNombre?: string | null | undefined;
   clavePublicaVapid?: string | undefined;
 }
 
@@ -19,11 +21,21 @@ export default function TopBarIsland({
   backHref = '/',
   className = '',
   autenticado = false,
+  usuarioImagen,
+  usuarioNombre,
   clavePublicaVapid,
 }: TopBarIslandProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isStandalone, setIsStandalone] = useState(true);
+  const [avatarError, setAvatarError] = useState(false);
+
+  const iniciales = (usuarioNombre || 'FX')
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase())
+    .join('');
 
   useEffect(() => {
     setIsStandalone(isStandalonePwa());
@@ -138,9 +150,19 @@ export default function TopBarIsland({
           href="/perfil"
           aria-label="Perfil de usuario"
           onPointerDown={triggerHaptic}
-          className={`ios-press-bounce flex h-11 w-11 items-center justify-center rounded-full bg-[#111827] text-white border-2 border-white shadow-[0_6px_16px_rgba(17,24,39,0.25)] text-xs font-bold transition-all duration-200 ${fadeClass}`}
+          className={`ios-press-bounce flex h-11 w-11 items-center justify-center rounded-full bg-[#111827] text-white border-2 border-white shadow-[0_6px_16px_rgba(17,24,39,0.25)] text-xs font-bold overflow-hidden transition-all duration-200 ${fadeClass}`}
         >
-          FX
+          {usuarioImagen && !avatarError ? (
+            <img
+              src={usuarioImagen}
+              alt={usuarioNombre || 'Perfil'}
+              referrerPolicy="no-referrer"
+              onError={() => setAvatarError(true)}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <span>{iniciales}</span>
+          )}
         </a>
       </div>
     </header>

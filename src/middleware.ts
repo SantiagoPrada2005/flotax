@@ -124,6 +124,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
           esSuperAdmin: Boolean(rawUser.esSuperAdmin),
           activo: rawUser.activo !== undefined ? Boolean(rawUser.activo) : true,
           localOrigenId: rawUser.localOrigenId ?? null,
+          imagen: rawUser.image ?? null,
           localActivo,
         };
 

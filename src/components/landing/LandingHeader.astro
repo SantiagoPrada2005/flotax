@@ -4,13 +4,15 @@ import FlotaxIsotype from '../ui/FlotaxIsotype.astro';
 interface Props {
   user?: {
     id: string;
-    email?: string | null;
-    name?: string | null;
-  } | null;
+    email?: string | null | undefined;
+    name?: string | null | undefined;
+    image?: string | null | undefined;
+  } | null | undefined;
   usuario?: {
-    nombre?: string | null;
-    rol?: string | null;
-  } | null;
+    nombre?: string | null | undefined;
+    rol?: string | null | undefined;
+    imagen?: string | null | undefined;
+  } | null | undefined;
 }
 
 const { user = null, usuario = null } = Astro.props;
@@ -104,19 +106,28 @@ const { user = null, usuario = null } = Astro.props;
         <a
           href={user ? "/home" : "/login"}
           data-pencil-name="ProfileBtn"
-          class="md:hidden w-8 h-8 flex items-center justify-center rounded-full bg-white/80 text-[#0C1120] border border-white/60 shadow-xs active:scale-95 transition-all"
+          class="md:hidden w-8 h-8 flex items-center justify-center rounded-full bg-white/80 text-[#0C1120] border border-white/60 shadow-xs overflow-hidden active:scale-95 transition-all"
           aria-label={user ? "Abrir panel" : "Iniciar sesión"}
         >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            class="w-3.5 h-3.5"
-          >
-            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
-          </svg>
+          {user && (usuario?.imagen || user.image) ? (
+            <img
+              src={usuario?.imagen || user.image!}
+              alt={usuario?.nombre || user.name || "Perfil"}
+              referrerpolicy="no-referrer"
+              class="w-full h-full object-cover"
+            />
+          ) : (
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              class="w-3.5 h-3.5"
+            >
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          )}
         </a>
       </div>
     </div>

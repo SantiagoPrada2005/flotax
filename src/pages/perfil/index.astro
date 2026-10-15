@@ -4,6 +4,8 @@ import PerfilEditorCard from '@/components/perfil/PerfilEditorCard';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
 import { obtenerLocalesMembresia, type MembresiaLocalResumen } from '@/lib/auth/session';
+import { verificacionesIdentidad } from '@/db/schema';
+import { eq, desc } from 'drizzle-orm';
 
 const usuario = Astro.locals.usuario;
 
@@ -12,10 +14,22 @@ if (!usuario) {
 }
 
 let membresias: MembresiaLocalResumen[] = [];
+let estadoVerificacion = 'PENDIENTE';
 
 if (env.DB) {
   const db = getDb(env.DB);
   membresias = await obtenerLocalesMembresia(db, usuario.id);
+
+  const verif = await db
+    .select({ estado: verificacionesIdentidad.estado })
+    .from(verificacionesIdentidad)
+    .where(eq(verificacionesIdentidad.usuarioId, usuario.id))
+    .orderBy(desc(verificacionesIdentidad.creadoEn))
+    .limit(1);
+
+  if (verif.length > 0 && verif[0]) {
+    estadoVerificacion = verif[0].estado;
+  }
 }
 
 const perfilData = {
@@ -26,6 +40,7 @@ const perfilData = {
   tipoDocumento: usuario.tipoDocumento,
   numeroDocumento: usuario.numeroDocumento,
   esSuperAdmin: usuario.esSuperAdmin,
+  imagen: usuario.imagen,
 };
 ---
 
@@ -37,6 +52,7 @@ const perfilData = {
       usuario={perfilData}
       membresias={membresias}
       localActivoNombre={usuario.localActivo?.nombre}
+      estadoVerificacion={estadoVerificacion}
     />
   </div>
 </LayoutApp>

@@ -19,6 +19,7 @@
 | [`react/`](./react/) | Directory `react` | *(No index)* |
 | [`reservas/`](./reservas/) | Componentes interactivos del portal de reservas del cliente (`/reservas` y `/reservas/[codigo]`), incluyendo el Calendario Editorial Suizo + Listado de Alquileres y la Vista Dedicada de Inspección R2, Waybill y Feature Highlights. | [INDEX.md](./reservas/INDEX.md) |
 | [`ui/`](./ui/) | Primitivas y componentes visuales agnósticos Tier 1 del sistema de diseño FlotaX. | [INDEX.md](./ui/INDEX.md) |
+| [`verificacion/`](./verificacion/) | Flujo multi-paso de verificación pericial KYC de identidad y licencias de conducir con integración a R2 y D1. | [INDEX.md](./verificacion/INDEX.md) |
 
 ## File Manifest
 

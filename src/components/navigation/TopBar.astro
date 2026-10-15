@@ -10,7 +10,10 @@ interface Props {
 }
 
 const { title = 'FlotaX', showBack = false, backHref = '/', class: className = '' } = Astro.props;
-const autenticado = Boolean(Astro.locals.usuario);
+const usuario = Astro.locals.usuario;
+const autenticado = Boolean(usuario);
+const usuarioImagen = usuario?.imagen ?? null;
+const usuarioNombre = usuario?.nombre ?? null;
 ---
 
 <TopBarIsland
@@ -20,5 +23,7 @@ const autenticado = Boolean(Astro.locals.usuario);
   backHref={backHref}
   className={className}
   autenticado={autenticado}
+  usuarioImagen={usuarioImagen}
+  usuarioNombre={usuarioNombre}
   clavePublicaVapid={env.VAPID_PUBLIC_KEY}
 />
