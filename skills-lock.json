@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "apple-design": {
+      "source": "dickwu/apple-design-skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "ec7b6e5ebf3477288ce547a1245e5b5234011ac6fa6dd25c2abdad0699dbd30b"
+    },
     "astro": {
       "source": "astrolicious/agent-skills",
       "sourceType": "github",

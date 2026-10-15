@@ -7,6 +7,7 @@
 
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
+| [`PerfilEditorCard.tsx`](./PerfilEditorCard.tsx) | Isla React 19: Editor de Perfil e Inset Grouped Form con Logout (Apple HIG) | Componente `<PerfilEditorCard ... />` | `astro:actions`, `astro:transitions/client`, `@/lib/auth/client` |
 | [`PortalSwitchCard.tsx`](./PortalSwitchCard.tsx) | Isla React 19: Conmutador de Portal Persistente | Componente `<PortalSwitchCard ... />` | `astro:actions`, `astro:transitions/client`, `@/lib/auth/session` |
 
 ## Invariants & Directory Rules
