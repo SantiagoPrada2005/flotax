@@ -351,7 +351,7 @@ export default function AlquilerDetalleView({
   };
 
   return (
-    <div className="flex min-h-[calc(100dvh-7.5rem)] flex-col justify-between px-5 pt-2 pb-3">
+    <div className="min-h-[calc(100dvh-7.5rem)] pb-8">
       {/* Toast Operativo */}
       {toastMensaje && (
         <div
@@ -363,10 +363,14 @@ export default function AlquilerDetalleView({
         </div>
       )}
 
-      {/* =====================================================================
-          ZONA 1: CABECERA EDITORIAL Y PÍLDORAS DIRECTAS SOBRE EL LIENZO MÓVIL
-          ===================================================================== */}
-      <header className="space-y-3">
+      {/* Grid Responsivo: 1 Columna en móvil, 2 Columnas Cockpit en Desktop */}
+      <div className="flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-8">
+        {/* Columna Izquierda (En PC): Cabecera + Escenario 3D de Inspección R2 */}
+        <div className="w-full lg:w-7/12 xl:w-3/5 space-y-5 lg:sticky lg:top-20">
+          {/* =====================================================================
+              ZONA 1: CABECERA EDITORIAL Y PÍLDORAS DIRECTAS SOBRE EL LIENZO MÓVIL
+              ===================================================================== */}
+          <header className="space-y-3">
         <div className="flex items-start justify-between gap-2">
           <h1 className="font-display text-[28px] sm:text-[32px] font-extrabold tracking-tight text-[#111827] leading-[1.08]">
             {vehiculo.marca}
@@ -589,14 +593,17 @@ export default function AlquilerDetalleView({
           </button>
         </div>
       </section>
+    </div>
 
-      {/* =====================================================================
-          ZONA 3: ÚNICA LÁMINA INFERIOR BLANCA + ESTACIÓN ACTIVA + CICLO DE VIDA
-          ===================================================================== */}
-      <section
-        aria-label="Panel inferior del alquiler"
-        className="rounded-[32px] bg-white p-5 shadow-[0_10px_30px_-15px_rgba(17,24,39,0.06)] space-y-4"
-      >
+    {/* Columna Derecha (En PC): Panel Blanco de Estaciones (Inspección, Waybill, Highlights) */}
+    <div className="w-full lg:w-5/12 xl:w-2/5">
+          {/* =====================================================================
+              ZONA 3: ÚNICA LÁMINA BLANCA + ESTACIÓN ACTIVA + CICLO DE VIDA
+              ===================================================================== */}
+          <section
+            aria-label="Panel inferior del alquiler"
+            className="rounded-[32px] bg-white p-5 sm:p-6 shadow-[0_10px_30px_-15px_rgba(17,24,39,0.06)] border border-[#E5E4DF]/70 space-y-4"
+          >
         {/* -------------------------------------------------------------------
             VISTA 1: INSPECCIÓN PERICIAL & BARRA DE CONFIANZA
             ------------------------------------------------------------------- */}
@@ -1409,7 +1416,9 @@ export default function AlquilerDetalleView({
             )}
           </div>
         )}
-      </section>
+          </section>
+        </div>
+      </div>
     </div>
   );
 }
