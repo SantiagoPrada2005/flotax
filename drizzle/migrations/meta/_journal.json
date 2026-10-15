@@ -43,6 +43,13 @@
       "when": 1791899878091,
       "tag": "0005_magenta_silk_fever",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1792095755708,
+      "tag": "0006_serious_shooting_star",
+      "breakpoints": true
     }
   ]
 }

@@ -12,18 +12,21 @@ export interface PerfilUsuarioData {
   tipoDocumento: string | null;
   numeroDocumento: string | null;
   esSuperAdmin: boolean;
+  imagen?: string | null;
 }
 
 export interface PerfilEditorCardProps {
   usuario: PerfilUsuarioData;
   membresias?: MembresiaLocalResumen[];
   localActivoNombre?: string | undefined;
+  estadoVerificacion?: string | undefined;
 }
 
 export default function PerfilEditorCard({
   usuario,
   membresias = [],
   localActivoNombre,
+  estadoVerificacion = 'PENDIENTE',
 }: PerfilEditorCardProps) {
   // Datos guardados
   const [datosGuardados, setDatosGuardados] = useState({
@@ -32,6 +35,8 @@ export default function PerfilEditorCard({
     tipoDocumento: usuario.tipoDocumento ?? 'CC',
     numeroDocumento: usuario.numeroDocumento ?? '',
   });
+
+  const [avatarError, setAvatarError] = useState(false);
 
   // Modal de edición de información
   const [showEditModal, setShowEditModal] = useState(false);
@@ -164,7 +169,17 @@ export default function PerfilEditorCard({
 
           {/* Círculo del Avatar */}
           <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-b from-[#1F2937] to-[#111827] text-white font-bold text-2xl shadow-xl ring-4 ring-white overflow-hidden">
-            <span>{iniciales}</span>
+            {usuario.imagen && !avatarError ? (
+              <img
+                src={usuario.imagen}
+                alt={datosGuardados.nombre || 'Perfil'}
+                referrerPolicy="no-referrer"
+                onError={() => setAvatarError(true)}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <span>{iniciales}</span>
+            )}
           </div>
 
           {/* Botón Flotante de Lápiz (Edit) */}
@@ -292,10 +307,16 @@ export default function PerfilEditorCard({
           </h3>
           <button
             type="button"
-            onClick={handleAbrirEdicion}
-            className="text-xs font-semibold text-[#4B5563] hover:text-[#111827] flex items-center gap-1"
+            onClick={() => navigate('/perfil/verificacion')}
+            className="text-xs font-semibold text-[#4B5563] hover:text-[#111827] flex items-center gap-1 active:scale-95 transition-all"
           >
-            <span>Verificar</span>
+            <span>
+              {estadoVerificacion === 'APROBADO'
+                ? 'Verificado'
+                : estadoVerificacion === 'EN_REVISION'
+                ? 'En revisión'
+                : 'Verificar ahora'}
+            </span>
             <svg className="h-3.5 w-3.5 text-[#9CA3AF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
@@ -304,7 +325,11 @@ export default function PerfilEditorCard({
 
         <div className="grid grid-cols-3 gap-3">
           {/* Tarjeta 1: Cédula / Identificación */}
-          <div className="rounded-2xl bg-white p-3.5 border border-gray-200/70 shadow-xs flex flex-col justify-between h-28">
+          <button
+            type="button"
+            onClick={() => navigate('/perfil/verificacion')}
+            className="rounded-2xl bg-white p-3.5 border border-gray-200/70 shadow-xs flex flex-col justify-between h-28 text-left hover:border-gray-400 active:scale-98 transition-all"
+          >
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gray-100 text-[#4B5563]">
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -318,10 +343,14 @@ export default function PerfilEditorCard({
                 {datosGuardados.numeroDocumento || 'Pendiente'}
               </p>
             </div>
-          </div>
+          </button>
 
           {/* Tarjeta 2: Licencia de Conducción */}
-          <div className="rounded-2xl bg-white p-3.5 border border-gray-200/70 shadow-xs flex flex-col justify-between h-28">
+          <button
+            type="button"
+            onClick={() => navigate('/perfil/verificacion')}
+            className="rounded-2xl bg-white p-3.5 border border-gray-200/70 shadow-xs flex flex-col justify-between h-28 text-left hover:border-gray-400 active:scale-98 transition-all"
+          >
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gray-100 text-[#4B5563]">
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
@@ -331,11 +360,23 @@ export default function PerfilEditorCard({
               <p className="text-xs font-bold text-[#111827] truncate">
                 Licencia
               </p>
-              <p className="text-[10px] text-amber-600 font-semibold truncate">
-                Por validar
+              <p
+                className={`text-[10px] font-semibold truncate ${
+                  estadoVerificacion === 'APROBADO'
+                    ? 'text-emerald-600'
+                    : estadoVerificacion === 'EN_REVISION'
+                    ? 'text-blue-600'
+                    : 'text-amber-600'
+                }`}
+              >
+                {estadoVerificacion === 'APROBADO'
+                  ? 'Aprobada'
+                  : estadoVerificacion === 'EN_REVISION'
+                  ? 'En revisión'
+                  : 'Por validar'}
               </p>
             </div>
-          </div>
+          </button>
 
           {/* Tarjeta 3: Contrato & Garantía */}
           <div className="rounded-2xl bg-white p-3.5 border border-gray-200/70 shadow-xs flex flex-col justify-between h-28">

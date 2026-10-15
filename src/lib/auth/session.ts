@@ -22,6 +22,7 @@ export interface UsuarioSesion {
   esSuperAdmin: boolean;
   activo: boolean;
   localOrigenId: string | null;
+  imagen: string | null;
 
   // Local en el que está interactuando en la sesión actual
   localActivo: LocalActivoSesion | null;

@@ -1,0 +1,53 @@
+---
+import LayoutApp from '@/layouts/LayoutApp.astro';
+import VerificacionMultistepIsland from '@/components/verificacion/VerificacionMultistepIsland';
+import { env } from 'cloudflare:workers';
+import { getDb } from '@/lib/db';
+import { verificacionesIdentidad } from '@/db/schema';
+import { eq, desc } from 'drizzle-orm';
+
+const usuario = Astro.locals.usuario;
+
+if (!usuario) {
+  return Astro.redirect('/login');
+}
+
+let verificacionPrevia = null;
+
+if (env.DB) {
+  const db = getDb(env.DB);
+  const registros = await db
+    .select()
+    .from(verificacionesIdentidad)
+    .where(eq(verificacionesIdentidad.usuarioId, usuario.id))
+    .orderBy(desc(verificacionesIdentidad.creadoEn))
+    .limit(1);
+
+  if (registros.length > 0 && registros[0]) {
+    const reg = registros[0];
+    verificacionPrevia = {
+      id: reg.id,
+      tipoDocumento: reg.tipoDocumento,
+      numeroDocumento: reg.numeroDocumento,
+      documentoFrenteKey: reg.documentoFrenteKey,
+      documentoDorsoKey: reg.documentoDorsoKey,
+      licenciaNumero: reg.licenciaNumero,
+      licenciaCategoria: reg.licenciaCategoria,
+      licenciaVencimiento: reg.licenciaVencimiento,
+      licenciaFrenteKey: reg.licenciaFrenteKey,
+      licenciaDorsoKey: reg.licenciaDorsoKey,
+      estado: reg.estado,
+    };
+  }
+}
+---
+
+<LayoutApp title="FlotaX — Verificación de Identidad" activeTab="profile" navVariant="client">
+  <VerificacionMultistepIsland
+    client:load
+    usuarioNombre={usuario.nombre}
+    usuarioCorreo={usuario.correo}
+    usuarioImagen={usuario.imagen}
+    verificacionPrevia={verificacionPrevia}
+  />
+</LayoutApp>

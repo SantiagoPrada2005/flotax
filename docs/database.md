@@ -357,6 +357,32 @@ Registro inmutable para operaciones sensibles, anulaciones, reversiones y arqueo
 
 ---
 
+### 6. Módulo Verificación de Identidad (KYC & Peritaje FlotaX)
+
+#### `verificaciones_identidad`
+Almacena el estado pericial y las evidencias fotográficas de Cédula/DNI y Licencia de Conducir alojadas en Cloudflare R2 (`BUCKET_MULTIMEDIA`).
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|---------------|-------------|
+| `id` | TEXT | PRIMARY KEY | Identificador único de la verificación. |
+| `usuario_id` | TEXT | NOT NULL, FK `user.id` (CASCADE) | Usuario titular que se verifica. |
+| `tipo_documento` | TEXT | NOT NULL | Tipo de documento ('CC', 'CE', 'PASAPORTE', 'NIT'). |
+| `numero_documento` | TEXT | NOT NULL | Número de identificación del documento. |
+| `documento_frente_key` | TEXT | NULLABLE | Clave del anverso del documento en Cloudflare R2. |
+| `documento_dorso_key` | TEXT | NULLABLE | Clave del reverso del documento en Cloudflare R2. |
+| `licencia_numero` | TEXT | NULLABLE | Número oficial de la licencia de conducción. |
+| `licencia_categoria` | TEXT | NULLABLE | Categoría ('A1', 'A2', 'B1', 'B2', 'C1'). |
+| `licencia_vencimiento` | TEXT | NULLABLE | Fecha de expiración de la licencia (YYYY-MM-DD). |
+| `licencia_frente_key` | TEXT | NULLABLE | Clave del anverso de la licencia en Cloudflare R2. |
+| `licencia_dorso_key` | TEXT | NULLABLE | Clave del reverso de la licencia en Cloudflare R2. |
+| `estado` | TEXT | NOT NULL, DEFAULT 'PENDIENTE' | Estado ('PENDIENTE', 'EN_REVISION', 'APROBADO', 'RECHAZADO'). |
+| `motivo_rechazo` | TEXT | NULLABLE | Causal en caso de no aprobación. |
+| `verificado_en` | TIMESTAMP | NULLABLE | Fecha de aprobación por auditor. |
+| `creado_en` | TIMESTAMP | NOT NULL | Fecha de creación del registro. |
+| `actualizado_en` | TIMESTAMP | NOT NULL | Fecha de última modificación. |
+
+---
+
 ## Diagrama Entidad-Relación
 
 ```mermaid
@@ -368,6 +394,7 @@ erDiagram
     user ||--o{ locales_alquiler : "es dueno de"
     user ||--o{ invitaciones_local : "invita trabajadores"
     user ||--o{ historial_transferencias_local : "participa en"
+    user ||--o{ verificaciones_identidad : "solicita verificacion KYC"
 
     locales_alquiler ||--o{ miembros_local : "tiene trabajadores y dueno"
     locales_alquiler ||--o{ clientes_local : "clientes captados"
@@ -659,6 +686,25 @@ erDiagram
         string usuario_id FK
         string detalles_json
         timestamp creado_en
+    }
+
+    verificaciones_identidad {
+        string id PK
+        string usuario_id FK
+        string tipo_documento
+        string numero_documento
+        string documento_frente_key
+        string documento_dorso_key
+        string licencia_numero
+        string licencia_categoria
+        string licencia_vencimiento
+        string licencia_frente_key
+        string licencia_dorso_key
+        string estado
+        string motivo_rechazo
+        timestamp verificado_en
+        timestamp creado_en
+        timestamp actualizado_en
     }
 ```
 
