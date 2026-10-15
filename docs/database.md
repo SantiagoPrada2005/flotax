@@ -661,3 +661,36 @@ erDiagram
         timestamp creado_en
     }
 ```
+
+---
+
+## 7. Entornos de Base de Datos y Operaciones (Runbook)
+
+### Entornos Configurados
+
+| Entorno | Nombre Base de Datos | Binding | Database ID | Propósito |
+| :--- | :--- | :--- | :--- | :--- |
+| **Producción** | `flotax-db` | `DB` | `27e3b8d1-c5f2-4a9c-a331-86dd3798b628` | Base de datos principal de clientes y operaciones de patio. |
+| **Preview** | `flotax-db-preview` | `DB` | `c0feb9a7-f5f2-4bf0-a894-65b05415b267` | Base de datos aislada para pruebas de pre-producción y validación de features. |
+
+### Gobernanza y Comandos de Migración
+
+1. **Generar nueva migración (Schema-First):**
+   ```bash
+   pnpm db:generate
+   ```
+2. **Probar y validar en entorno Preview:**
+   ```bash
+   pnpm db:migrate:preview
+   pnpm deploy:preview
+   ```
+3. **Aplicar a Producción de forma consciente:**
+   ```bash
+   pnpm db:migrate:prod
+   pnpm deploy:prod
+   ```
+4. **Respaldos y Point-in-Time Recovery (PITR):**
+   - **Historial de transacciones (Time Travel):** `pnpm db:timetravel:info`
+   - **Restauración ante contingencias:** `pnpm wrangler d1 time-travel restore flotax-db --timestamp="YYYY-MM-DDTHH:MM:SSZ"`
+   - **Backup lógico frío:** `pnpm db:backup:prod`
+
