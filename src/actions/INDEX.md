@@ -11,6 +11,7 @@
 | [`flota.ts`](./flota.ts) | Server Action / Flota y Unidades | `guardarVehiculoAction`, `cambiarEstadoVehiculoAction`, `eliminarVehiculoAction`, `obtenerVehiculoDetalleAction` | `astro:actions`, `zod`, `cloudflare:workers`, `@/lib/flota/repositorio` |
 | [`index.ts`](./index.ts) | Barrel Export / Server Actions Root | `server` | `./caja`, `./portal`, `./flota`, `./reservas` |
 | [`notificaciones.ts`](./notificaciones.ts) | TypeScript / JavaScript Module | - | - |
+| [`perfil.ts`](./perfil.ts) | Server Action / Perfil de Usuario | `actualizarPerfilAction` | `astro:actions`, `zod`, `cloudflare:workers`, `@/lib/db`, `@/lib/auth` |
 | [`portal.ts`](./portal.ts) | Server Action / Casos de Uso | `cambiarModoPortal`, `conmutarLocalActivo`, `finalizarOnboardingOperativo`, `crearPatioOperativo` | `astro:actions`, `zod`, `cloudflare:workers`, `@/lib/auth` |
 | [`reservas.ts`](./reservas.ts) | Server Action / Operaciones de Reserva | `cambiarEstadoReservaAction`, `registrarCobroWaybillAction`, `registrarEntregaEvaluacionAction` | `astro:actions`, `zod`, `cloudflare:workers`, `@/lib/flota/repositorio`, `@/lib/notificaciones` |
 

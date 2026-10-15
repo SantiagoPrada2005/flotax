@@ -34,8 +34,12 @@ import {
   registrarCobroWaybillAction,
   registrarEntregaEvaluacionAction,
 } from './reservas';
+import { actualizarPerfilAction } from './perfil';
 
 export const server = {
+  perfil: {
+    actualizar: actualizarPerfilAction,
+  },
   notificaciones: {
     listar: listarNotificaciones,
     contarNoLeidas: contarNotificacionesNoLeidas,
