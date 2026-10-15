@@ -254,12 +254,9 @@ export default function MisReservasHub({
     }
   };
 
-  const seleccionarAlquilerDeLista = (reserva: ReservaClienteItem) => {
+  const abrirDetalle = (reserva: ReservaClienteItem) => {
     setCodigoActivo(reserva.codigo);
-    setFiltroInicioISO(null);
-    setFiltroFinISO(null);
-    const [y = 2026, m = 10] = reserva.fechaInicio.split('-').map(Number);
-    setMesCursor({ anio: y, mesIndexCero: m - 1 });
+    navigate(rutaDetallePorCodigo(reserva.codigo));
   };
 
   const aprobarSolicitudRapida = async (item: ReservaClienteItem) => {
@@ -343,7 +340,7 @@ export default function MisReservasHub({
     esAdmin ? `/admin/reservas/${codigo}` : `/reservas/${codigo}`;
 
   return (
-    <div className="flex min-h-[calc(100dvh-7.5rem)] flex-col justify-between pb-4">
+    <div className="flex min-h-[calc(100dvh-7.5rem)] flex-col md:flex-row md:items-start gap-5 md:gap-7 pb-8">
       {/* Toast Operativo Flotante */}
       {toastOperativo && (
         <div
@@ -356,11 +353,11 @@ export default function MisReservasHub({
       )}
 
       {/* =====================================================================
-          SECCIÓN 1: SUPERFICIE SUPERIOR DE CALENDARIO EDITORIAL SUIZO
+          SECCIÓN 1: SUPERFICIE DE CALENDARIO EDITORIAL SUIZO (STICKY EN PC)
           ===================================================================== */}
       <section
         aria-label="Calendario de reservas"
-        className="rounded-b-[34px] sm:rounded-[34px] bg-white px-5 pt-3.5 pb-3.5 shadow-[0_10px_28px_-16px_rgba(17,24,39,0.06)]"
+        className="w-full max-w-[430px] mx-auto md:mx-0 md:w-[360px] lg:w-[410px] xl:w-[440px] shrink-0 rounded-[28px] sm:rounded-[34px] bg-white px-5 sm:px-6 pt-4 pb-4 shadow-[0_10px_28px_-16px_rgba(17,24,39,0.06)] border border-[#E5E4DF]/60 md:sticky md:top-20"
       >
         {/* Barra Superior: Píldora Suave de Mes + Acción Rápida Admin + Controles */}
         <div className="flex items-center justify-between gap-2">
@@ -573,22 +570,33 @@ export default function MisReservasHub({
             </span>
           </div>
 
-          <span className="text-[11px] font-semibold text-[#111827] tabular-nums">
-            {!filtroInicioISO
-              ? 'Toca inicio y fin para filtrar'
-              : !filtroFinISO
-                ? `Desde ${formatearFechaCorta(filtroInicioISO)} · Toca día final`
-                : `${formatearFechaCorta(filtroInicioISO)} – ${formatearFechaCorta(filtroFinISO)}`}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-semibold text-[#111827] tabular-nums">
+              {!filtroInicioISO
+                ? 'Toca inicio y fin para filtrar'
+                : !filtroFinISO
+                  ? `Desde ${formatearFechaCorta(filtroInicioISO)} · Toca día final`
+                  : `${formatearFechaCorta(filtroInicioISO)} – ${formatearFechaCorta(filtroFinISO)}`}
+            </span>
+            {hayFiltroActivo && (
+              <button
+                type="button"
+                onClick={limpiarFiltro}
+                className="ios-press-bounce text-[10px] font-bold text-[#111827] underline hover:text-[#4B5563] cursor-pointer"
+              >
+                Limpiar
+              </button>
+            )}
+          </div>
         </div>
       </section>
 
       {/* =====================================================================
-          SECCIÓN 2: AGENDA DE ALQUILERES SOBRE EL LIENZO MÓVIL
+          SECCIÓN 2: AGENDA DE ALQUILERES SOBRE EL LIENZO MÓVIL Y DESKTOP
           ===================================================================== */}
       <section
         aria-label="Listado de alquileres"
-        className="flex-1 px-5 pt-4 space-y-3.5"
+        className="flex-1 min-w-0 w-full px-2 sm:px-4 pt-1 md:pt-0 space-y-4"
       >
         {/* Píldoras de Triage Operativo (Solo en modo Admin) */}
         {esAdmin && (
@@ -708,9 +716,9 @@ export default function MisReservasHub({
           )}
         </div>
 
-        {/* Filas Planas de Alquiler (Sin bordes ni cajas anidadas) */}
+        {/* Grilla Responsiva de Alquileres (1 columna móvil, 2 en PC/tablet) */}
         {alquileresMostrados.length > 0 ? (
-          <div className="space-y-2.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-3.5">
             {alquileresMostrados.map((item) => {
               const esActiva = reservaActiva?.codigo === item.codigo;
               const pctAbono = Math.min(
@@ -723,111 +731,103 @@ export default function MisReservasHub({
               return (
                 <div
                   key={item.codigo}
-                  className={`w-full rounded-[22px] px-4 py-3.5 transition-colors flex flex-col gap-2.5 min-w-0 animate-fade-up ${
-                    esActiva ? 'bg-white shadow-xs' : 'bg-white/65 hover:bg-white'
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => abrirDetalle(item)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      abrirDetalle(item);
+                    }
+                  }}
+                  className={`group w-full rounded-[22px] p-4 transition-all duration-200 cursor-pointer animate-fade-up bg-white border ${
+                    esActiva
+                      ? 'border-[#111827]/15 shadow-sm ring-1 ring-[#111827]/10'
+                      : 'border-[#E5E4DF] hover:border-[#111827]/25 shadow-2xs hover:shadow-md'
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-2.5 min-w-0">
-                    {/* Selección de fila para enfocar días en el calendario */}
-                    <button
-                      type="button"
-                      onClick={() => seleccionarAlquilerDeLista(item)}
-                      className="flex flex-1 items-center justify-between gap-2 min-w-0 text-left cursor-pointer"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-medium text-[#4B5563]">
-                          <span className="tabular-nums">
-                            {formatearRangoReservaHumano(
-                              item.fechaInicio,
-                              item.fechaFin
-                            )}
-                          </span>
-                          <span>·</span>
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                              item.estado === 'PENDIENTE'
-                                ? 'bg-[#111827] text-white'
-                                : item.estado === 'EN_CURSO'
-                                  ? 'bg-[#1F2937] text-white'
-                                  : 'bg-[#EDEDED] text-[#111827]'
-                            }`}
-                          >
-                            {ETIQUETA_ESTADO[item.estado]}
-                          </span>
-                          {esAdmin && (
-                            <span className="font-mono text-[10px] text-[#4B5563]">
-                              #{item.codigo}
-                            </span>
+                  <div className="flex items-center gap-4 min-w-0">
+                    {/* Silueta vehicular sin recuadro ni relieve (fondo blanco puro 100% integrado) */}
+                    <div className="relative h-20 w-28 sm:h-22 sm:w-32 shrink-0 flex items-center justify-center">
+                      <img
+                        src={item.vehiculo.imagenUrl}
+                        alt={`${item.vehiculo.marca} ${item.vehiculo.modelo}`}
+                        className="h-full w-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                    </div>
+
+                    {/* Contenido e información de la reserva */}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-medium text-[#4B5563]">
+                        <span className="tabular-nums">
+                          {formatearRangoReservaHumano(
+                            item.fechaInicio,
+                            item.fechaFin
                           )}
-                        </div>
+                        </span>
+                        <span>·</span>
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                            item.estado === 'PENDIENTE'
+                              ? 'bg-[#111827] text-white'
+                              : item.estado === 'EN_CURSO'
+                                ? 'bg-[#1F2937] text-white'
+                                : 'bg-[#EDEDED] text-[#111827]'
+                          }`}
+                        >
+                          {ETIQUETA_ESTADO[item.estado]}
+                        </span>
+                        {esAdmin && (
+                          <span className="font-mono text-[10px] text-[#4B5563]">
+                            #{item.codigo}
+                          </span>
+                        )}
+                      </div>
 
-                        <h3 className="mt-1 font-display text-sm font-extrabold tracking-tight text-[#111827] uppercase truncate">
-                          {item.vehiculo.marca} {item.vehiculo.modelo}
-                        </h3>
+                      <h3 className="mt-1 font-display text-sm sm:text-base font-extrabold tracking-tight text-[#111827] uppercase truncate">
+                        {item.vehiculo.marca} {item.vehiculo.modelo}
+                      </h3>
 
-                        {esAdmin ? (
-                          <div className="mt-0.5 space-y-0.5">
-                            <p className="text-[11px] font-semibold text-[#1F2937] truncate">
-                              {item.conductor.nombreCompleto} ·{' '}
-                              <span className="font-normal text-[#4B5563]">
-                                {item.conductor.tipoDocumento}{' '}
-                                {item.conductor.numeroDocumento} · Lic.{' '}
-                                {item.conductor.categoriaLicencia}
-                              </span>
-                            </p>
+                      {esAdmin ? (
+                        <div className="mt-1 space-y-0.5">
+                          <p className="text-[11px] font-semibold text-[#1F2937] truncate">
+                            {item.conductor.nombreCompleto} ·{' '}
+                            <span className="font-normal text-[#4B5563]">
+                              {item.conductor.tipoDocumento}{' '}
+                              {item.conductor.numeroDocumento} · Lic.{' '}
+                              {item.conductor.categoriaLicencia}
+                            </span>
+                          </p>
+                          <div className="flex items-center justify-between gap-2">
                             <p className="text-[11px] text-[#4B5563] tabular-nums">
                               {item.vehiculo.placa} · Abonado {pctAbono}% ·{' '}
                               <span className="font-semibold text-[#111827]">
                                 {formatCop(item.totalAlquiler)}
                               </span>
                             </p>
+                            {item.estado === 'PENDIENTE' && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  aprobarSolicitudRapida(item);
+                                }}
+                                className="ios-press-bounce min-h-[32px] rounded-full bg-[#111827] px-3 py-1 text-[11px] font-bold text-white hover:bg-[#1F2937] cursor-pointer"
+                              >
+                                Aprobar
+                              </button>
+                            )}
                           </div>
-                        ) : (
-                          <p className="mt-0.5 text-[11px] text-[#4B5563] tabular-nums">
-                            {item.vehiculo.placa} ·{' '}
+                        </div>
+                      ) : (
+                        <p className="mt-1 text-[12px] text-[#4B5563] tabular-nums">
+                          {item.vehiculo.placa} ·{' '}
+                          <span className="font-bold text-[#111827]">
                             {formatCop(item.totalAlquiler)}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Silueta limpia sin recuadro gris anidado */}
-                      <img
-                        src={item.vehiculo.imagenUrl}
-                        alt={`${item.vehiculo.marca} ${item.vehiculo.modelo}`}
-                        className="h-11 w-16 shrink-0 object-contain"
-                      />
-                    </button>
-
-                    {/* Acciones Rápidas + Botón Circular Negro ↗ hacia Vista Dedicada */}
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      {esAdmin && item.estado === 'PENDIENTE' && (
-                        <button
-                          type="button"
-                          onClick={() => aprobarSolicitudRapida(item)}
-                          className="ios-press-bounce min-h-[40px] rounded-full bg-[#EDEDED] px-3 py-1.5 text-[11px] font-bold text-[#111827] hover:bg-[#9CA3AF]/40 cursor-pointer"
-                        >
-                          Aprobar
-                        </button>
+                          </span>
+                        </p>
                       )}
-
-                      <button
-                        type="button"
-                        onClick={() => navigate(rutaDetallePorCodigo(item.codigo))}
-                        aria-label={`Abrir detalle de reserva ${item.codigo}`}
-                        className="ios-press-bounce flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#111827] text-white hover:bg-[#1F2937] cursor-pointer"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2.2"
-                          className="h-4 w-4"
-                        >
-                          <path d="M7 17 17 7" />
-                          <path d="M7 7h10v10" />
-                        </svg>
-                      </button>
                     </div>
                   </div>
                 </div>
