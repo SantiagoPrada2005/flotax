@@ -313,8 +313,9 @@ Matriz de gobierno de accesos que dictamina la visibilidad y capacidad de acció
 | Módulo / Pantalla Canónica | Ruta Astro (`src/pages/...`) | Componentes de Dominio Clave | Nivel de Acceso Mínimo |
 | :--- | :--- | :--- | :--- |
 | **Inicio & Bienvenida** | `src/pages/index.astro` | `HeroBienvenida`, `CategoriasGlance` | Público / Visitante |
-| **Catálogo** | `src/pages/catalogo/index.astro` | `CatalogoFiltros`, `VehiculoGrid`, `VistaToggle` | Público / Visitante |
-| **Ficha del Vehículo** | `src/pages/vehiculos/[id].astro` | `GaleriaFotos`, `FichaTecnica`, `CalendarioDisponibilidad` | Público / Visitante |
+| **Catálogo Exclusivo de Local (Link Corto)** | `src/pages/c/[slug].astro` | `LocalCatalogShowcase` (Bento iOS + Hero Spotlight + Anti-Fuga) | Público (Fija Perímetro del Local) |
+| **Catálogo (General o Cautivo)** | `src/pages/catalogo/index.astro` | `LocalCatalogShowcase` | Público / Visitante |
+| **Ficha del Vehículo (Showcase 360°)** | `src/pages/vehiculos/[id].astro` | `VehicleStudioShowcase` (Pedestal 360°, Miniaturas, Planes 1D-30D) | Público / Visitante |
 | **Embudo: Fechas y Resumen** | `src/pages/alquilar/[id].astro` | `DateRangeSelector`, `ResumenCostos`, `TerminosLey1581` | Cliente Autenticado |
 | **Mis Reservas (Cliente)** | `src/pages/reservas/index.astro` | `ReservasActivasList`, `HistorialReservasTable` | Cliente Autenticado |
 | **Perfil del Cliente** | `src/pages/perfil/index.astro` | `DatosPersonalesForm`, `LicenciaUpload` | Cliente Autenticado |

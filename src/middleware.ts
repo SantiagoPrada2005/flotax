@@ -2,6 +2,11 @@ import { defineMiddleware } from 'astro:middleware';
 import { createAuth } from '@/lib/auth';
 import { getDb } from '@/lib/db';
 import { resolveLocalActivo } from '@/lib/auth/session';
+import {
+  COOKIE_LOCAL_CAPTACION,
+  obtenerLocalPorSlugOId,
+  registrarCaptacionClienteEnLocal,
+} from '@/lib/flota/locales-captacion';
 import { getLogger } from '@/lib/logger';
 import { env } from 'cloudflare:workers';
 
@@ -47,6 +52,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   context.locals.user = null;
   context.locals.session = null;
   context.locals.usuario = null;
+  context.locals.localCaptacion = null;
 
   // 2. Omitir peticiones de assets internos de Astro, favicons o artefactos estáticos de PWA
   if (
@@ -67,8 +73,19 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return await next();
   }
 
-  // 4. Si no hay binding de base de datos D1 en runtime, evaluar protección y continuar
+  // Resolver cookie de captación perimetral incluso si D1 no está presente (entorno memoria)
+  const cookieCaptacion = context.cookies.get(COOKIE_LOCAL_CAPTACION)?.value;
   const d1 = env.DB;
+  const dbInstance = d1 ? getDb(d1) : undefined;
+
+  if (cookieCaptacion) {
+    context.locals.localCaptacion = await obtenerLocalPorSlugOId(
+      cookieCaptacion,
+      dbInstance
+    );
+  }
+
+  // 4. Si no hay binding de base de datos D1 en runtime, evaluar protección y continuar
   if (!d1) {
     if (isProtectedRoute(context.url.pathname)) {
       return context.redirect('/login');
@@ -113,6 +130,24 @@ export const onRequest = defineMiddleware(async (context, next) => {
           localIdSolicitado
         );
 
+        // Si el cliente tiene local de captación por cookie, vincularlo en D1 (anti-fuga)
+        if (context.locals.localCaptacion) {
+          await registrarCaptacionClienteEnLocal(
+            db,
+            rawUser.id,
+            context.locals.localCaptacion.id
+          );
+        } else if (rawUser.localOrigenId) {
+          // Si no tenía la cookie pero ya fue captado antes en D1, restaurar su perímetro
+          const localOrigen = await obtenerLocalPorSlugOId(
+            rawUser.localOrigenId,
+            db
+          );
+          if (localOrigen) {
+            context.locals.localCaptacion = localOrigen;
+          }
+        }
+
         // 6. Hidratar modelo de dominio FlotaX en locals
         context.locals.usuario = {
           id: rawUser.id,
@@ -123,7 +158,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
           numeroDocumento: rawUser.numeroDocumento ?? null,
           esSuperAdmin: Boolean(rawUser.esSuperAdmin),
           activo: rawUser.activo !== undefined ? Boolean(rawUser.activo) : true,
-          localOrigenId: rawUser.localOrigenId ?? null,
+          localOrigenId:
+            rawUser.localOrigenId ?? context.locals.localCaptacion?.id ?? null,
           imagen: rawUser.image ?? null,
           localActivo,
         };
@@ -131,7 +167,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
         // 7. Enriquecer el logger de locals con el contexto del usuario autenticado
         context.locals.logger = baseLogger.withContext({
           userId: rawUser.id,
-          localId: localActivo?.id,
+          localId: localActivo?.id ?? context.locals.localCaptacion?.id,
         });
       }
     }

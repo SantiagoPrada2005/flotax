@@ -8,6 +8,8 @@ export interface VehicleSearchSpotlightProps {
   onClose: () => void;
   query?: string | undefined;
   onQueryChange?: ((q: string) => void) | undefined;
+  localId?: string | undefined;
+  localNombre?: string | undefined;
 }
 
 const CATEGORIAS: Array<{ id: CategoriaVehiculo | 'TODOS'; label: string }> = [
@@ -24,6 +26,8 @@ export default function VehicleSearchSpotlight({
   onClose,
   query: externalQuery,
   onQueryChange,
+  localId,
+  localNombre,
 }: VehicleSearchSpotlightProps) {
   const [internalQuery, setInternalQuery] = useState('');
   const activeQuery = externalQuery !== undefined ? externalQuery : internalQuery;
@@ -52,6 +56,7 @@ export default function VehicleSearchSpotlight({
     query: deferredQuery,
     categoria,
     soloDisponibles,
+    localId,
   });
 
   return (
@@ -96,9 +101,12 @@ export default function VehicleSearchSpotlight({
         {/* Encabezado contextual de resultados */}
         <div className="flex items-center justify-between py-2 shrink-0 border-b border-[#9CA3AF]/20">
           <p className="text-xs font-bold uppercase tracking-wider text-[#4B5563]">
-            {activeQuery.trim() ? `Resultados (${resultados.length})` : 'Flota Recomendada'}
+            {activeQuery.trim()
+              ? `Resultados (${resultados.length})`
+              : localNombre
+                ? `Flota Exclusiva • ${localNombre}`
+                : 'Flota Recomendada'}
           </p>
-
         </div>
 
         {/* Lista de Resultados con Scroll Fluido */}

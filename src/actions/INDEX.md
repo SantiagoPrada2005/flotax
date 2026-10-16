@@ -13,7 +13,7 @@
 | [`notificaciones.ts`](./notificaciones.ts) | TypeScript / JavaScript Module | - | - |
 | [`perfil.ts`](./perfil.ts) | Server Action / Perfil de Usuario | `actualizarPerfilAction` | `astro:actions`, `zod`, `cloudflare:workers`, `@/lib/db`, `@/lib/auth` |
 | [`verificacion.ts`](./verificacion.ts) | Server Action / KYC & Multimedia R2 | `subirFotoDocumentoAction`, `finalizarVerificacionAction`, `obtenerEstadoVerificacionAction` | `astro:actions`, `zod`, `cloudflare:workers`, `@/lib/db`, `@/lib/auth` |
-| [`portal.ts`](./portal.ts) | Server Action / Casos de Uso | `cambiarModoPortal`, `conmutarLocalActivo`, `finalizarOnboardingOperativo`, `crearPatioOperativo` | `astro:actions`, `zod`, `cloudflare:workers`, `@/lib/auth` |
+| [`portal.ts`](./portal.ts) | Server Action / Casos de Uso | `cambiarModoPortal`, `conmutarLocalActivo`, `finalizarOnboardingOperativo`, `crearPatioOperativo`, `actualizarPerfilCatalogoLocal` | `astro:actions`, `zod`, `cloudflare:workers`, `@/lib/auth`, `@/lib/flota/locales-captacion` |
 | [`reservas.ts`](./reservas.ts) | Server Action / Operaciones de Reserva | `cambiarEstadoReservaAction`, `registrarCobroWaybillAction`, `registrarEntregaEvaluacionAction` | `astro:actions`, `zod`, `cloudflare:workers`, `@/lib/flota/repositorio`, `@/lib/notificaciones` |
 
 ## Invariants & Directory Rules

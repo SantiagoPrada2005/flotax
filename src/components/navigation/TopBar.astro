@@ -14,11 +14,12 @@ const usuario = Astro.locals.usuario;
 const autenticado = Boolean(usuario);
 const usuarioImagen = usuario?.imagen ?? null;
 const usuarioNombre = usuario?.nombre ?? null;
+const localCaptacion = Astro.locals.localCaptacion;
 ---
 
 <TopBarIsland
   client:load
-  title={title}
+  title={localCaptacion ? localCaptacion.nombre : title}
   showBack={showBack}
   backHref={backHref}
   className={className}
@@ -26,4 +27,6 @@ const usuarioNombre = usuario?.nombre ?? null;
   usuarioImagen={usuarioImagen}
   usuarioNombre={usuarioNombre}
   clavePublicaVapid={env.VAPID_PUBLIC_KEY}
+  localCaptacionId={localCaptacion?.id}
+  localCaptacionNombre={localCaptacion?.nombre}
 />

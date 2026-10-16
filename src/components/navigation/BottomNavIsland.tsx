@@ -49,6 +49,7 @@ export default function BottomNavIsland({
   const isClientCatalog =
     effectiveTab === 'home' ||
     livePath === '/' ||
+    livePath.startsWith('/c/') ||
     livePath.startsWith('/catalogo') ||
     livePath.startsWith('/vehiculos');
   const isClientBookings =
@@ -275,7 +276,12 @@ export default function BottomNavIsland({
           return path === '/admin' || path === '/admin/';
         }
         if (i.href === '/catalogo') {
-          return path === '/' || path.startsWith('/catalogo') || path.startsWith('/vehiculos');
+          return (
+            path === '/' ||
+            path.startsWith('/c/') ||
+            path.startsWith('/catalogo') ||
+            path.startsWith('/vehiculos')
+          );
         }
         return path.startsWith(i.href);
       });

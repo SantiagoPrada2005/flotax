@@ -1,53 +1,30 @@
 ---
 import LayoutApp from '@/layouts/LayoutApp.astro';
-import CatalogSearchTrigger from '@/components/flota/CatalogSearchTrigger';
-import FleetCatalogList from '@/components/flota/FleetCatalogList';
-import { listarVehiculos } from '@/lib/flota';
+import LocalCatalogShowcase from '@/components/flota/LocalCatalogShowcase';
+import {
+  listarVehiculos,
+  obtenerLocalCatalogoPorDefecto,
+} from '@/lib/flota';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
 
 const db = env.DB ? getDb(env.DB) : undefined;
-const vehiculos = await listarVehiculos(db);
+const localCautivo = Astro.locals.localCaptacion;
+const local = localCautivo ?? (await obtenerLocalCatalogoPorDefecto(db));
+const vehiculos = await listarVehiculos(db, { localId: local.id });
 ---
 
 <LayoutApp
-  title="FlotaX — Catálogo de Vehículos"
+  title={`${local.nombre} — Catálogo de Vehículos`}
   activeTab="home"
   navVariant="client"
 >
-  <div class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-6 sm:space-y-8 pb-28">
-    {/* 1. Header: Saludo y Contexto de Reserva */}
-    <header class="space-y-3 pt-1">
-      <div class="flex items-center justify-between">
-        <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#71717A]">
-          FlotaX Patio Norte
-        </span>
-        <div class="inline-flex items-center gap-1.5 rounded-full bg-white border border-[#E4E4E7] px-3.5 py-1 text-xs text-[#18181B] shadow-2xs">
-          <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span class="font-semibold">10 Oct – 14 Oct</span>
-          <span class="text-[#A1A1AA]">·</span>
-          <span class="text-[#71717A]">4 días</span>
-        </div>
-      </div>
-
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 class="font-display text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[#18181B]">
-            Encuentra tu vehículo ideal
-          </h1>
-          <p class="text-xs sm:text-sm text-[#71717A] mt-1">
-            Explora nuestra flota de sedanes, SUVs, motos y vehículos eléctricos
-          </p>
-        </div>
-
-        {/* 2. Barra de Búsqueda Píldora + Filtro Sliders */}
-        <div class="w-full md:w-80 lg:w-96 shrink-0">
-          <CatalogSearchTrigger client:load />
-        </div>
-      </div>
-    </header>
-
-    {/* 3. Catálogo reactivo con filtro por marca y cuadrícula responsiva para PC */}
-    <FleetCatalogList client:load initialVehiculos={vehiculos} />
+  <div class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-3 sm:py-5 pb-28">
+    <LocalCatalogShowcase
+      client:load
+      local={local}
+      initialVehiculos={vehiculos}
+      esPerimetroCerrado={Boolean(localCautivo)}
+    />
   </div>
 </LayoutApp>

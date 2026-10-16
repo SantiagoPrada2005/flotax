@@ -50,6 +50,7 @@ export function createAuth(d1: D1Database, env?: AuthEnv, options?: CreateAuthOp
 
   const canonicalOrigins = [
     'https://flotax.innovaweb.pro',
+    'https://preview.flotax.innovaweb.pro',
     'https://*.innovaweb.pro',
     'https://*.pages.dev',
     'http://localhost:4321',

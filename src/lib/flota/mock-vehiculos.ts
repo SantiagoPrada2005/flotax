@@ -3,6 +3,8 @@ import type { VehiculoItem, FiltrosBusquedaVehiculo } from './types';
 export const FLOTA_CANONICA: VehiculoItem[] = [
   {
     id: 'veh-mercedes-eqb',
+    localId: 'local-patio-norte',
+    localSlug: 'patio-norte',
     marca: 'Mercedes-Benz',
     modelo: 'EQB 350 4MATIC Luxury',
     anio: 2024,
@@ -28,6 +30,8 @@ export const FLOTA_CANONICA: VehiculoItem[] = [
   },
   {
     id: 'veh-bmw-m2-coupe',
+    localId: 'local-patio-norte',
+    localSlug: 'patio-norte',
     marca: 'BMW',
     modelo: 'M2 Competition Coupe',
     anio: 2024,
@@ -52,6 +56,8 @@ export const FLOTA_CANONICA: VehiculoItem[] = [
   },
   {
     id: 'veh-mazda-cx30',
+    localId: 'local-patio-norte',
+    localSlug: 'patio-norte',
     marca: 'Mazda',
     modelo: 'CX-30 Grand Touring Soul',
     anio: 2024,
@@ -76,6 +82,8 @@ export const FLOTA_CANONICA: VehiculoItem[] = [
   },
   {
     id: 'veh-quantum-sedan',
+    localId: 'local-patio-norte',
+    localSlug: 'patio-norte',
     marca: 'Quantum',
     modelo: 'Premier EV Long Range',
     anio: 2024,
@@ -101,6 +109,8 @@ export const FLOTA_CANONICA: VehiculoItem[] = [
   },
   {
     id: 'veh-yamaha-mt03',
+    localId: 'local-patio-norte',
+    localSlug: 'patio-norte',
     marca: 'Yamaha',
     modelo: 'MT-03 ABS Hyper Naked',
     anio: 2024,
@@ -125,6 +135,8 @@ export const FLOTA_CANONICA: VehiculoItem[] = [
   },
   {
     id: 'veh-volt-scooter',
+    localId: 'local-patio-norte',
+    localSlug: 'patio-norte',
     marca: 'Volt Striker',
     modelo: 'Striker X Dual Motor',
     anio: 2024,
@@ -154,8 +166,18 @@ export function buscarVehiculos(filtros: FiltrosBusquedaVehiculo): VehiculoItem[
   const query = (filtros.query || '').trim().toLowerCase();
   const categoria = filtros.categoria || 'TODOS';
   const soloDisponibles = filtros.soloDisponibles ?? false;
+  const localId = filtros.localId?.trim();
+
+  // Si se solicita un localId específico y existen unidades propias de ese local, aislar estrictamente
+  const tieneUnidadesPropiasDelLocal = Boolean(
+    localId && FLOTA_CANONICA.some((v) => v.localId === localId)
+  );
 
   return FLOTA_CANONICA.filter((vehiculo) => {
+    if (localId && tieneUnidadesPropiasDelLocal && vehiculo.localId !== localId) {
+      return false;
+    }
+
     if (categoria !== 'TODOS' && vehiculo.categoria !== categoria) {
       return false;
     }

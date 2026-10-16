@@ -62,7 +62,12 @@
 	"env": {
 		"preview": {
 			"name": "flotax-preview",
-			"routes": [],
+			"routes": [
+				{
+					"pattern": "preview.flotax.innovaweb.pro",
+					"custom_domain": true
+				}
+			],
 			"d1_databases": [
 				{
 					"binding": "DB",
@@ -94,7 +99,7 @@
 				}
 			],
 			"vars": {
-				"BETTER_AUTH_URL": "https://flotax-preview.workers.dev",
+				"BETTER_AUTH_URL": "https://preview.flotax.innovaweb.pro",
 				"EMAIL_DEFAULT_FROM": "FlotaX Preview <notificaciones@flotax.innovaweb.pro>",
 				"EMAIL_AUTH_FROM": "FlotaX Seguridad <auth@flotax.innovaweb.pro>",
 				"EMAIL_ALERTS_FROM": "FlotaX Alertas <soporte@flotax.innovaweb.pro>",

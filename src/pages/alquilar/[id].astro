@@ -8,10 +8,13 @@ import { getDb } from '@/lib/db';
 
 const { id } = Astro.params;
 const db = env.DB ? getDb(env.DB) : undefined;
-const vehiculo = id ? await obtenerVehiculoAsync(id, db) : undefined;
+const localCautivo = Astro.locals.localCaptacion;
+const vehiculo = id
+  ? await obtenerVehiculoAsync(id, db, localCautivo?.id)
+  : undefined;
 
 if (!vehiculo) {
-  return Astro.redirect('/catalogo');
+  return Astro.redirect(localCautivo ? `/c/${localCautivo.slug}` : '/catalogo');
 }
 
 const { dateString: hoyISO } = resolveClientTimeContext(Astro.request);

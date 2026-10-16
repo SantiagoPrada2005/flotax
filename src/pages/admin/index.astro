@@ -4,10 +4,37 @@ import { resolveClientTimeContext } from '@/lib/time/client-time';
 import BentoHeroCard from '@/components/dashboard/BentoHeroCard.astro';
 import BentoMetricsGrid from '@/components/dashboard/BentoMetricsGrid.astro';
 import BentoOperationsCard from '@/components/dashboard/BentoOperationsCard.astro';
+import LocalCatalogShareCard from '@/components/flota/LocalCatalogShareCard';
+import {
+  listarVehiculos,
+  obtenerLocalPorSlugOId,
+  LOCAL_CANONICO_DEFECTO,
+} from '@/lib/flota';
+import { env } from 'cloudflare:workers';
+import { getDb } from '@/lib/db';
 
 const timeContext = resolveClientTimeContext(Astro.request);
 const usuario = Astro.locals.usuario;
 const operatorName = usuario?.nombre ?? 'David Operador';
+const db = env.DB ? getDb(env.DB) : undefined;
+
+const localActivoSesion = usuario?.localActivo;
+const localContexto =
+  (localActivoSesion
+    ? await obtenerLocalPorSlugOId(localActivoSesion.id, db)
+    : null) ??
+  (localActivoSesion
+    ? {
+        id: localActivoSesion.id,
+        nombre: localActivoSesion.nombre,
+        slug: localActivoSesion.slug,
+        ciudad: 'Medellín',
+        direccion: null,
+        telefono: null,
+      }
+    : LOCAL_CANONICO_DEFECTO);
+
+const vehiculosPatio = await listarVehiculos(db, { localId: localContexto.id });
 ---
 
 <LayoutAdmin title="FlotaX — Panel de Control" activeTab="home">
@@ -39,13 +66,21 @@ const operatorName = usuario?.nombre ?? 'David Operador';
       </div>
     </header>
 
+    <!-- Centro de Compartición de Catálogo Exclusivo del Local -->
+    <LocalCatalogShareCard
+      client:load
+      local={localContexto}
+      unidadesCount={vehiculosPatio.length}
+      compact={true}
+    />
+
     <!-- Bento Grid Section 1: Hero Progress Card -->
     <BentoHeroCard
       occupancyPercentage={84}
       dateLabel={timeContext.dateString}
       activeUnits={18}
       totalUnits={22}
-      yardName="Patio Norte"
+      yardName={localContexto.nombre}
     />
 
     <!-- Bento Grid Section 2: Split 2-Column Metrics with Sparkline -->

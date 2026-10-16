@@ -8,13 +8,14 @@
 | Subdirectory | Responsibility | Index |
 | :--- | :--- | :--- |
 | [`admin/`](./admin/) | Enrutamiento de páginas del entorno operativo y administración de FlotaX (Dashboard de patio, control de flota, operaciones, reservas y caja). | [INDEX.md](./admin/INDEX.md) |
-| [`alquilar/`](./alquilar/) | Directory `alquilar` | *(No index)* |
-| [`api/`](./api/) | Directory `api` | *(No index)* |
-| [`catalogo/`](./catalogo/) | Directory `catalogo` | *(No index)* |
-| [`notificaciones/`](./notificaciones/) | Directory `notificaciones` | *(No index)* |
-| [`perfil/`](./perfil/) | Directory `perfil` | *(No index)* |
-| [`reservas/`](./reservas/) | Directory `reservas` | *(No index)* |
-| [`vehiculos/`](./vehiculos/) | Directory `vehiculos` | *(No index)* |
+| [`alquilar/`](./alquilar/) | Embudo transaccional de fechas y reserva de vehículo. | *(No index)* |
+| [`api/`](./api/) | Endpoints REST perimetrales (Better Auth, media R2). | *(No index)* |
+| [`c/`](./c/) | Rutas cortas compartibles (`/c/[slug]`) para el Catálogo Exclusivo por Local con perímetro cerrado anti-fuga. | *(No index)* |
+| [`catalogo/`](./catalogo/) | Catálogo de vehículos (`/catalogo` y `/catalogo/[slug]`) con diseño iOS Editorial Showcase. | *(No index)* |
+| [`notificaciones/`](./notificaciones/) | Centro de notificaciones in-app. | *(No index)* |
+| [`perfil/`](./perfil/) | Perfil del cliente y conmutador de portal. | *(No index)* |
+| [`reservas/`](./reservas/) | Gestión de reservas del cliente y expediente R2. | *(No index)* |
+| [`vehiculos/`](./vehiculos/) | Ficha de detalle del vehículo (`/vehiculos/[id]`) tipo Estudio 360° iOS. | *(No index)* |
 
 ## File Manifest
 
