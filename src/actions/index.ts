@@ -22,6 +22,7 @@ import {
   conmutarLocalActivo,
   finalizarOnboardingOperativo,
   crearPatioOperativo,
+  actualizarPerfilCatalogoLocal,
 } from './portal';
 import {
   guardarVehiculoAction,
@@ -74,6 +75,7 @@ export const server = {
     conmutarLocalActivo,
     finalizarOnboardingOperativo,
     crearPatioOperativo,
+    actualizarPerfilCatalogoLocal,
   },
   flota: {
     guardarVehiculo: guardarVehiculoAction,

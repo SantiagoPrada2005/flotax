@@ -144,6 +144,11 @@ export const conmutarLocalActivo = defineAction({
 });
 
 import { localesAlquiler, miembrosLocal } from '@/db/schema';
+import {
+  registrarLocalEnMemoria,
+  actualizarConfigCatalogoLocal,
+  LOCAL_CANONICO_DEFECTO,
+} from '@/lib/flota/locales-captacion';
 
 function generarSlug(nombre: string): string {
   const base = nombre
@@ -232,6 +237,15 @@ export const crearPatioOperativo = defineAction({
       creadoEn: ahora,
     });
 
+    registrarLocalEnMemoria({
+      id: localId,
+      nombre: input.nombre.trim(),
+      slug,
+      ciudad: input.ciudad.trim(),
+      direccion: input.direccion?.trim() || null,
+      telefono: input.telefono?.trim() || null,
+    });
+
     // 3. Establecer cookies de sesión activas
     context.cookies.set('movix_portal_modo', 'ADMIN', COOKIE_OPTIONS);
     context.cookies.set('movix_local_activo', localId, COOKIE_OPTIONS);
@@ -239,8 +253,57 @@ export const crearPatioOperativo = defineAction({
     return {
       ok: true,
       localId,
+      slug,
       nombre: input.nombre.trim(),
       rutaDestino: '/admin',
     };
   },
 });
+
+/**
+ * Permite al dueño o administrador personalizar el enlace compartible (/c/[slug])
+ * y los datos de contacto directo de su catálogo exclusivo.
+ */
+export const actualizarPerfilCatalogoLocal = defineAction({
+  input: z.object({
+    slug: z
+      .string()
+      .min(3, { error: 'El identificador del enlace debe tener al menos 3 caracteres' })
+      .max(48, { error: 'El identificador no puede superar 48 caracteres' }),
+    nombre: z.string().optional(),
+    ciudad: z.string().optional(),
+    direccion: z.string().optional(),
+    telefono: z.string().optional(),
+  }),
+  handler: async (input, context) => {
+    const usuario = context.locals.usuario;
+    const localId = usuario?.localActivo?.id ?? LOCAL_CANONICO_DEFECTO.id;
+    const db = env.DB ? getDb(env.DB) : undefined;
+
+    const resultado = await actualizarConfigCatalogoLocal(
+      localId,
+      {
+        slug: input.slug,
+        nombre: input.nombre,
+        ciudad: input.ciudad,
+        direccion: input.direccion,
+        telefono: input.telefono,
+      },
+      db
+    );
+
+    if (!resultado.ok || !resultado.local) {
+      throw new ActionError({
+        code: 'BAD_REQUEST',
+        message: resultado.error || 'No se pudo actualizar el enlace del catálogo.',
+      });
+    }
+
+    return {
+      ok: true,
+      local: resultado.local,
+      mensaje: `Enlace del catálogo actualizado a /c/${resultado.local.slug}`,
+    };
+  },
+});
+

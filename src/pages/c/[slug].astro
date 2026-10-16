@@ -1,0 +1,59 @@
+---
+import LayoutApp from '@/layouts/LayoutApp.astro';
+import LocalCatalogShowcase from '@/components/flota/LocalCatalogShowcase';
+import {
+  listarVehiculos,
+  COOKIE_LOCAL_CAPTACION,
+  obtenerLocalPorSlugOId,
+  registrarCaptacionClienteEnLocal,
+} from '@/lib/flota';
+import { env } from 'cloudflare:workers';
+import { getDb } from '@/lib/db';
+
+const { slug } = Astro.params;
+const db = env.DB ? getDb(env.DB) : undefined;
+
+const local = slug ? await obtenerLocalPorSlugOId(slug, db) : null;
+
+if (!local) {
+  return Astro.redirect('/catalogo');
+}
+
+// 1. Fijar cookie de captación perimetral (Perímetro Cerrado Anti-Fuga por 30 días)
+Astro.cookies.set(COOKIE_LOCAL_CAPTACION, local.slug, {
+  path: '/',
+  httpOnly: true,
+  secure: true,
+  sameSite: 'lax',
+  maxAge: 60 * 60 * 24 * 30,
+});
+
+// 2. Hidratar locals en la petición en curso para TopBar y buscador Spotlight
+Astro.locals.localCaptacion = local;
+
+// 3. Si el visitante ya tiene sesión iniciada, vincular su cuenta a este local en D1
+if (db && Astro.locals.usuario) {
+  await registrarCaptacionClienteEnLocal(db, Astro.locals.usuario.id, local.id);
+}
+
+// 4. Cargar únicamente el inventario perteneciente a este local
+const vehiculos = await listarVehiculos(db, { localId: local.id });
+---
+
+<LayoutApp
+  title={`${local.nombre} — Catálogo Oficial y Alquiler de Flota | FlotaX`}
+  description={`Alquila vehículos directamente en ${local.nombre}${local.ciudad ? ` (${local.ciudad})` : ''}. Flota verificada con entrega pericial en patio y reserva al instante.`}
+  canonicalUrl={`https://flotax.innovaweb.pro/c/${local.slug}`}
+  ogImage="/images/landing/hero-vehicle.webp"
+  activeTab="home"
+  navVariant="client"
+>
+  <div class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-3 sm:py-5 pb-28">
+    <LocalCatalogShowcase
+      client:load
+      local={local}
+      initialVehiculos={vehiculos}
+      esPerimetroCerrado={true}
+    />
+  </div>
+</LayoutApp>

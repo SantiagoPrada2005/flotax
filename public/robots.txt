@@ -1,0 +1,22 @@
+# FlotaX — Políticas de Rastreo de Motores de Búsqueda (Robots.txt Canónico)
+User-agent: *
+Allow: /
+Allow: /catalogo
+Allow: /catalogo/
+Allow: /vehiculos/
+Allow: /c/
+
+# Exclusión de portales protegidos, APIs y áreas privadas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_actions/
+Disallow: /reservas/
+Disallow: /perfil/
+Disallow: /notificaciones/
+Disallow: /login
+Disallow: /registro
+Disallow: /offline
+Disallow: /error
+
+# Sitemap Maestro
+Sitemap: https://flotax.innovaweb.pro/sitemap.xml

@@ -6,6 +6,8 @@ export interface TopBarSearchProps {
   isOpen: boolean;
   onOpen: () => void;
   onClose: () => void;
+  localCaptacionId?: string | undefined;
+  localCaptacionNombre?: string | undefined;
 }
 
 export default function TopBarSearch({
@@ -13,6 +15,8 @@ export default function TopBarSearch({
   isOpen,
   onOpen,
   onClose,
+  localCaptacionId,
+  localCaptacionNombre,
 }: TopBarSearchProps) {
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -135,7 +139,11 @@ export default function TopBarSearch({
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar por auto, moto, placa o tipo..."
+              placeholder={
+                localCaptacionNombre
+                  ? `Buscar en ${localCaptacionNombre}...`
+                  : 'Buscar por auto, moto, placa o tipo...'
+              }
               className="flex-1 bg-transparent text-base text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none min-w-0"
             />
 
@@ -170,6 +178,8 @@ export default function TopBarSearch({
         onClose={handleClose}
         query={query}
         onQueryChange={setQuery}
+        localId={localCaptacionId}
+        localNombre={localCaptacionNombre}
       />
     </>
   );

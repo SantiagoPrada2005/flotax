@@ -198,6 +198,7 @@ Consulta siempre el archivo de regla correspondiente antes de realizar cambios e
 | **RUL-FLX-019** | [`drizzle-end-to-end-type-safety.md`](file:///Users/santiago/proyectos/movix/.agents/rules/drizzle-end-to-end-type-safety.md) | Tipado estricto E2E con Drizzle ORM, zero aserciones (`as`) e inferencia nativa. |
 | **RUL-FLX-020** | [`pwa-spa-governance.md`](file:///Users/santiago/proyectos/movix/.agents/rules/pwa-spa-governance.md) | Gobernanza PWA Standalone y navegación SPA con `<ClientRouter />` y `navigate()`. |
 | **RUL-FLX-021** | [`apple-design-governance.md`](file:///Users/santiago/proyectos/movix/.agents/rules/apple-design-governance.md) | Estética de software de Apple, fidelidad HIG (123 directivas), squircles, Liquid Glass y touch targets 44px. |
+| **RUL-FLX-022** | [`seo-governance.md`](file:///Users/santiago/proyectos/movix/.agents/rules/seo-governance.md) | SEO técnico, canonical URLs, Open Graph, Twitter Cards, Schema.org JSON-LD (AutoRental, Vehicle/Product) y sitemap. |
 | — | [`astro-check.md`](file:///Users/santiago/proyectos/movix/.agents/rules/astro-check.md) | Ejecución obligatoria de `pnpm check` (0 errores, 0 warnings, 0 hints). |
 | — | [`engines.md`](file:///Users/santiago/proyectos/movix/.agents/rules/engines.md) | Uso exclusivo de `pnpm` y TypeScript super estricto (cero `any`). |
 | — | [`cloudflare-runtime-bindings.md`](file:///Users/santiago/proyectos/movix/.agents/rules/cloudflare-runtime-bindings.md) | Acceso moderno a bindings vía `cloudflare:workers` (nunca `locals.runtime.env`). |

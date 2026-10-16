@@ -10,32 +10,32 @@ export interface VehicleFormIslandProps {
 const PRESET_IMAGENES = [
   {
     nombre: 'SUV Blanca (Mercedes EQB)',
-    url: '/images/vehiculos/white-suv.jpg',
+    url: '/images/vehiculos/white-suv.webp',
     categoria: 'SUV',
   },
   {
     nombre: 'Coupe Deportivo Oscuro (BMW M2)',
-    url: '/images/vehiculos/dark-coupe.jpg',
+    url: '/images/vehiculos/dark-coupe.webp',
     categoria: 'SEDAN',
   },
   {
     nombre: 'SUV Roja Soul (Mazda CX-30)',
-    url: '/images/vehiculos/mazda-cx30.png',
+    url: '/images/vehiculos/mazda-cx30.webp',
     categoria: 'SUV',
   },
   {
     nombre: 'Sedán Eléctrico Gris (Quantum Premier)',
-    url: '/images/vehiculos/sedan-premier.png',
+    url: '/images/vehiculos/sedan-premier.webp',
     categoria: 'SEDAN',
   },
   {
     nombre: 'Motocicleta Urbana (Yamaha MT-03)',
-    url: '/images/vehiculos/yamaha-mt03.png',
+    url: '/images/vehiculos/yamaha-mt03.webp',
     categoria: 'MOTO',
   },
   {
     nombre: 'Monopatín Eléctrico Pro (Volt Striker)',
-    url: '/images/vehiculos/scooter-pro.png',
+    url: '/images/vehiculos/scooter-pro.webp',
     categoria: 'PATINETA',
   },
 ];
@@ -255,6 +255,7 @@ export default function VehicleFormIsland({ vehiculoInicial }: VehicleFormIsland
                 src={imagenUrl}
                 alt="Vista previa unidad"
                 className="max-h-36 sm:max-h-40 w-full object-contain mx-auto transition-transform hover:scale-105 duration-300"
+                decoding="async"
               />
               <div className="h-3 w-3/5 mx-auto -mt-2 rounded-full bg-[radial-gradient(ellipse_at_center,_rgba(17,24,39,0.25)_0%,_transparent_75%)]"></div>
             </>
@@ -305,6 +306,8 @@ export default function VehicleFormIsland({ vehiculoInicial }: VehicleFormIsland
                   src={preset.url}
                   alt={preset.nombre}
                   className="h-12 w-full object-contain"
+                  loading="lazy"
+                  decoding="async"
                 />
                 <span className="text-[9px] font-semibold text-[#4B5563] truncate w-full text-center mt-1">
                   {preset.categoria}

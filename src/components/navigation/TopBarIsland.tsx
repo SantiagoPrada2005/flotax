@@ -13,6 +13,8 @@ export interface TopBarIslandProps {
   usuarioImagen?: string | null | undefined;
   usuarioNombre?: string | null | undefined;
   clavePublicaVapid?: string | undefined;
+  localCaptacionId?: string | undefined;
+  localCaptacionNombre?: string | undefined;
 }
 
 export default function TopBarIsland({
@@ -24,6 +26,8 @@ export default function TopBarIsland({
   usuarioImagen,
   usuarioNombre,
   clavePublicaVapid,
+  localCaptacionId,
+  localCaptacionNombre,
 }: TopBarIslandProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -136,6 +140,8 @@ export default function TopBarIsland({
           isOpen={isSearchOpen}
           onOpen={() => setIsSearchOpen(true)}
           onClose={() => setIsSearchOpen(false)}
+          localCaptacionId={localCaptacionId}
+          localCaptacionNombre={localCaptacionNombre}
         />
 
         <NotificacionesBell

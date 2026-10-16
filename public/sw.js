@@ -7,7 +7,7 @@
  * 3. NETWORK-FIRST: Navegaciones HTML SSR (garantiza sesión RBAC e inventario D1 en tiempo real).
  */
 
-const CACHE_VERSION = 'flotax-static-v2';
+const CACHE_VERSION = 'flotax-static-v3';
 
 const PRECACHE_ASSETS = [
   '/manifest.webmanifest',
@@ -16,6 +16,8 @@ const PRECACHE_ASSETS = [
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon-maskable-512.png',
+  '/fonts/inter-latin.woff2',
+  '/fonts/space-grotesk-latin.woff2',
   '/offline',
 ];
 
@@ -353,6 +355,7 @@ function isStaticAssetPathname(pathname) {
     pathname.startsWith('/_astro/') ||
     pathname.startsWith('/icons/') ||
     pathname.startsWith('/images/') ||
+    pathname.startsWith('/fonts/') ||
     pathname === '/favicon.svg' ||
     pathname === '/apple-touch-icon.png' ||
     pathname === '/manifest.webmanifest'
@@ -369,10 +372,8 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
   const isSameOrigin = url.origin === self.location.origin;
-  const isFontAsset =
-    url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';
 
-  if (!isSameOrigin && !isFontAsset) {
+  if (!isSameOrigin) {
     return;
   }
 
@@ -385,7 +386,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   // 3. Cache-First para assets estáticos inmutables y fuentes tipográficas
-  if ((isSameOrigin && isStaticAssetPathname(url.pathname)) || isFontAsset) {
+  if (isSameOrigin && isStaticAssetPathname(url.pathname)) {
     event.respondWith(
       caches.match(request).then((cachedResponse) => {
         if (cachedResponse) {

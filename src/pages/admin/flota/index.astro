@@ -1,12 +1,33 @@
 ---
 import LayoutAdmin from '@/layouts/LayoutAdmin.astro';
 import FleetInventoryManager from '@/components/flota/FleetInventoryManager';
-import { listarVehiculos } from '@/lib/flota';
+import LocalCatalogShareCard from '@/components/flota/LocalCatalogShareCard';
+import {
+  listarVehiculos,
+  obtenerLocalPorSlugOId,
+  LOCAL_CANONICO_DEFECTO,
+} from '@/lib/flota';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
 
 const db = env.DB ? getDb(env.DB) : undefined;
-const vehiculos = await listarVehiculos(db);
+const localActivoSesion = Astro.locals.usuario?.localActivo;
+const localContexto =
+  (localActivoSesion
+    ? await obtenerLocalPorSlugOId(localActivoSesion.id, db)
+    : null) ??
+  (localActivoSesion
+    ? {
+        id: localActivoSesion.id,
+        nombre: localActivoSesion.nombre,
+        slug: localActivoSesion.slug,
+        ciudad: 'Medellín',
+        direccion: null,
+        telefono: null,
+      }
+    : LOCAL_CANONICO_DEFECTO);
+
+const vehiculos = await listarVehiculos(db, { localId: localContexto.id });
 ---
 
 <LayoutAdmin title="FlotaX — Control de Flota" activeTab="fleet">
@@ -14,7 +35,7 @@ const vehiculos = await listarVehiculos(db);
     <!-- Header de Módulo -->
     <header class="pt-1 pb-1">
       <p class="text-xs font-semibold uppercase tracking-wider text-[#4B5563]">
-        Operaciones de Patio
+        Operaciones de Patio • {localContexto.nombre}
       </p>
       <div class="mt-0.5 flex items-baseline justify-between">
         <h1 class="font-display text-2xl font-black tracking-tight text-[#111827] sm:text-3xl">
@@ -32,6 +53,13 @@ const vehiculos = await listarVehiculos(db);
         </a>
       </div>
     </header>
+
+    <!-- Centro de Compartición del Catálogo Exclusivo del Local -->
+    <LocalCatalogShareCard
+      client:load
+      local={localContexto}
+      unidadesCount={vehiculos.length}
+    />
 
     <!-- Gestor Reactivo de Flota e Inventario -->
     <FleetInventoryManager initialVehiculos={vehiculos} client:load />

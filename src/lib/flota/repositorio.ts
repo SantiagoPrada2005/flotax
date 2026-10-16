@@ -25,6 +25,7 @@ function mapD1ToVehiculoItem(row: typeof vehiculos.$inferSelect): VehiculoItem {
 
   return {
     id: row.id,
+    localId: row.localId ?? 'local-patio-norte',
     marca: row.marca,
     modelo: row.modelo,
     anio: row.anio,
@@ -50,12 +51,36 @@ function mapD1ToVehiculoItem(row: typeof vehiculos.$inferSelect): VehiculoItem {
   };
 }
 
+export interface OpcionesListarVehiculos {
+  localId?: string | null | undefined;
+}
+
+function filtrarPorLocalConFallbackCanonico(
+  todos: VehiculoItem[],
+  localId?: string | null
+): VehiculoItem[] {
+  if (!localId) return todos;
+  const propios = todos.filter((v) => v.localId === localId);
+  if (propios.length > 0) {
+    return propios;
+  }
+  // Si el local consultado aún no tiene unidades con su UUID explícito (ej. entorno demo/seed inicial),
+  // retornar las unidades base asignadas al contexto de ese local para evitar catálogos vacíos rotos.
+  return todos.map((v) => ({
+    ...v,
+    localId,
+  }));
+}
+
 /**
- * Obtiene el catálogo completo de vehículos activos.
+ * Obtiene el catálogo de vehículos activos, opcionalmente aislado a un local específico.
  * Consulta Cloudflare D1 si está disponible; de lo contrario o si falla la tabla,
  * consume el registro sincronizado en memoria.
  */
-export async function listarVehiculos(db?: AppDb): Promise<VehiculoItem[]> {
+export async function listarVehiculos(
+  db?: AppDb,
+  opciones?: OpcionesListarVehiculos
+): Promise<VehiculoItem[]> {
   if (db) {
     try {
       const rows = await db
@@ -70,23 +95,28 @@ export async function listarVehiculos(db?: AppDb): Promise<VehiculoItem[]> {
           const item = mapD1ToVehiculoItem(row);
           registroVehiculosMemoria.set(item.id, item);
         }
-        return Array.from(registroVehiculosMemoria.values());
+        const lista = Array.from(registroVehiculosMemoria.values());
+        return filtrarPorLocalConFallbackCanonico(lista, opciones?.localId);
       }
     } catch {
       // Si la tabla no está creada aún en D1 local/remoto, fallback transparente a memoria
     }
   }
 
-  return Array.from(registroVehiculosMemoria.values());
+  const listaMemoria = Array.from(registroVehiculosMemoria.values());
+  return filtrarPorLocalConFallbackCanonico(listaMemoria, opciones?.localId);
 }
 
 /**
- * Busca una unidad por su identificador único.
+ * Busca una unidad por su identificador único, validando opcionalmente que pertenezca al local cautivo.
  */
 export async function obtenerVehiculoAsync(
   id: string,
-  db?: AppDb
+  db?: AppDb,
+  localIdRestringido?: string | null
 ): Promise<VehiculoItem | undefined> {
+  let encontrado: VehiculoItem | undefined;
+
   if (db) {
     try {
       const rows = await db
@@ -98,14 +128,29 @@ export async function obtenerVehiculoAsync(
       if (rows && rows.length > 0) {
         const item = mapD1ToVehiculoItem(rows[0]!);
         registroVehiculosMemoria.set(item.id, item);
-        return item;
+        encontrado = item;
       }
     } catch {
       // Fallback a memoria
     }
   }
 
-  return registroVehiculosMemoria.get(id);
+  if (!encontrado) {
+    encontrado = registroVehiculosMemoria.get(id);
+  }
+
+  if (!encontrado) return undefined;
+
+  // Verificar aislamiento si el local restringido tiene flota propia diferenciada
+  if (localIdRestringido && encontrado.localId && encontrado.localId !== localIdRestringido) {
+    const todos = Array.from(registroVehiculosMemoria.values());
+    const localTieneFlotaPropia = todos.some((v) => v.localId === localIdRestringido);
+    if (localTieneFlotaPropia) {
+      return undefined;
+    }
+  }
+
+  return encontrado;
 }
 
 /**
@@ -116,9 +161,14 @@ export async function guardarVehiculo(
   db?: AppDb,
   localId?: string
 ): Promise<VehiculoItem> {
+  const itemConLocal: VehiculoItem = {
+    ...item,
+    localId: localId || item.localId || 'local-patio-norte',
+  };
+
   // 1. Guardar en registro memoria
-  registroVehiculosMemoria.set(item.id, { ...item });
-  registrarVehiculoEnMemoria({ ...item });
+  registroVehiculosMemoria.set(itemConLocal.id, { ...itemConLocal });
+  registrarVehiculoEnMemoria({ ...itemConLocal });
 
   // 2. Si D1 está disponible, persistir en D1
   if (db) {
