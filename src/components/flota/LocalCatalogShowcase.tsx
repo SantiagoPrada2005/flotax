@@ -102,7 +102,7 @@ export default function LocalCatalogShowcase({
 }: LocalCatalogShowcaseProps) {
   const [categoriaActiva, setCategoriaActiva] = useState<FiltroCategoriaCircular>('TODOS');
   const [busqueda, setBusqueda] = useState('');
-  const [mostrarTodosGrid, setMostrarTodosGrid] = useState(false);
+  const [vista, setVista] = useState<'DESTACADOS' | 'TODOS'>('DESTACADOS');
   const [unidadSpotlightId, setUnidadSpotlightId] = useState<string>(
     initialVehiculos[0]?.id ?? ''
   );
@@ -171,12 +171,6 @@ export default function LocalCatalogShowcase({
     return otros.length > 0 ? otros : vehiculosFiltrados;
   }, [vehiculosFiltrados, unidadHero]);
 
-  const telefonoLimpio = local.telefono?.replace(/[^\d+]/g, '') ?? '';
-  const whatsappHref = telefonoLimpio
-    ? `https://wa.me/${telefonoLimpio.replace(/^\+/, '')}?text=${encodeURIComponent(
-        `Hola ${local.nombre}, estoy viendo su catálogo exclusivo en FlotaX y me gustaría reservar un vehículo.`
-      )}`
-    : null;
 
   return (
     <div className="mx-auto w-full max-w-md sm:max-w-2xl lg:max-w-6xl space-y-6 pb-8">
@@ -184,42 +178,6 @@ export default function LocalCatalogShowcase({
           CABECERA IDENTITARIA DEL LOCAL (PERÍMETRO EXCLUSIVO MOBILE-FIRST)
          ===================================================================== */}
       <section className="space-y-3.5 pt-1">
-        <div className="flex items-center justify-between gap-2">
-          <div className="inline-flex items-center gap-2 rounded-full bg-white border border-[#9CA3AF]/40 px-3 py-1 shadow-2xs">
-            <span className="h-2 w-2 rounded-full bg-[#111827] animate-pulse" />
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#111827]">
-              Catálogo Oficial
-            </span>
-            {local.ciudad && (
-              <>
-                <span className="text-[#9CA3AF]">•</span>
-                <span className="text-[11px] font-semibold text-[#4B5563]">
-                  {local.ciudad}
-                </span>
-              </>
-            )}
-          </div>
-
-          {whatsappHref ? (
-            <a
-              href={whatsappHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => triggerHaptic(8)}
-              className="ios-press-bounce inline-flex min-h-[38px] items-center gap-1.5 rounded-full bg-[#111827] px-3.5 py-1.5 text-[11px] font-bold text-[#EDEDED] shadow-xs hover:bg-[#1F2937] transition"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
-              </svg>
-              <span>Contacto directo</span>
-            </a>
-          ) : (
-            <span className="font-mono tabular-nums text-[11px] font-bold text-[#4B5563] bg-white border border-[#9CA3AF]/35 px-3 py-1 rounded-full">
-              {initialVehiculos.length} {initialVehiculos.length === 1 ? 'unidad' : 'unidades'}
-            </span>
-          )}
-        </div>
-
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
           <div>
             <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-[#111827] leading-tight">
@@ -306,20 +264,18 @@ export default function LocalCatalogShowcase({
                 className="ios-press-bounce group flex flex-col items-center gap-1.5 shrink-0 cursor-pointer focus:outline-none"
               >
                 <div
-                  className={`flex h-14 w-14 items-center justify-center rounded-full transition-all duration-200 ${
-                    isActive
-                      ? 'bg-[#111827] text-[#EDEDED] shadow-[0_10px_22px_-4px_rgba(17,24,39,0.38)] ring-2 ring-[#111827]/15 scale-105'
-                      : 'bg-white text-[#111827] border border-[#9CA3AF]/35 hover:border-[#4B5563]'
-                  }`}
+                  className={`flex h-14 w-14 items-center justify-center rounded-full transition-all duration-200 ${isActive
+                    ? 'bg-[#111827] text-[#EDEDED] shadow-[0_10px_22px_-4px_rgba(17,24,39,0.38)] ring-2 ring-[#111827]/15 scale-105'
+                    : 'bg-white text-[#111827] border border-[#9CA3AF]/35 hover:border-[#4B5563]'
+                    }`}
                 >
                   {cat.renderIcon(isActive)}
                 </div>
                 <span
-                  className={`text-[11px] tracking-tight transition-colors ${
-                    isActive
-                      ? 'font-extrabold text-[#111827]'
-                      : 'font-medium text-[#4B5563]'
-                  }`}
+                  className={`text-[11px] tracking-tight transition-colors ${isActive
+                    ? 'font-extrabold text-[#111827]'
+                    : 'font-medium text-[#4B5563]'
+                    }`}
                 >
                   {cat.label}
                 </span>
@@ -328,6 +284,62 @@ export default function LocalCatalogShowcase({
           })}
         </div>
       </section>
+
+      {/* =====================================================================
+          CONTROL DE VISTA MOBILE-FIRST: SEGMENTED CONTROL (APPLE HIG)
+         ===================================================================== */}
+      {vehiculosFiltrados.length > 0 && (
+        <div className="flex items-center justify-between gap-2 px-1 pt-0.5">
+          <h2 className="font-display text-sm sm:text-base font-extrabold tracking-tight text-[#111827]">
+            {busqueda
+              ? `Resultados (${vehiculosFiltrados.length})`
+              : vista === 'TODOS'
+              ? `Toda la flota (${vehiculosFiltrados.length})`
+              : 'Selección de Patio'}
+          </h2>
+
+          {!busqueda && (
+            <div
+              role="tablist"
+              aria-label="Modo de visualización"
+              className="inline-flex items-center rounded-full bg-[#EDEDED] p-1 border border-[#9CA3AF]/25 shadow-2xs"
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected={vista === 'DESTACADOS'}
+                onClick={() => {
+                  triggerHaptic(8);
+                  setVista('DESTACADOS');
+                }}
+                className={`ios-press-bounce min-h-[34px] px-3.5 py-1 text-xs font-bold rounded-full transition-all cursor-pointer ${
+                  vista === 'DESTACADOS'
+                    ? 'bg-[#111827] text-[#EDEDED] shadow-xs'
+                    : 'text-[#4B5563] hover:text-[#111827]'
+                }`}
+              >
+                Destacados
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={vista === 'TODOS'}
+                onClick={() => {
+                  triggerHaptic(8);
+                  setVista('TODOS');
+                }}
+                className={`ios-press-bounce min-h-[34px] px-3.5 py-1 text-xs font-bold rounded-full transition-all cursor-pointer ${
+                  vista === 'TODOS'
+                    ? 'bg-[#111827] text-[#EDEDED] shadow-xs'
+                    : 'text-[#4B5563] hover:text-[#111827]'
+                }`}
+              >
+                Ver todos ({vehiculosFiltrados.length})
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* =====================================================================
           ESTADO VACÍO SI EL FILTRO NO TIENE COINCIDENCIAS EN ESTE LOCAL
@@ -360,72 +372,127 @@ export default function LocalCatalogShowcase({
             Ver toda la flota del local
           </button>
         </div>
+      ) : vista === 'TODOS' || Boolean(busqueda) ? (
+        /* =====================================================================
+            VISTA COMPLETA: GRID COMPLETO DIRECTO CON FEEDBACK VISUAL INMEDIATO
+           ===================================================================== */
+        <section aria-label="Inventario Completo" className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            {vehiculosFiltrados.map((v) => (
+              <a
+                key={v.id}
+                href={`/vehiculos/${v.id}`}
+                onClick={() => triggerHaptic(8)}
+                className="group ios-press-bounce rounded-[26px] bg-white border border-[#9CA3AF]/30 p-4 shadow-2xs hover:border-[#111827]/40 transition flex items-center justify-between gap-3"
+              >
+                <div className="min-w-0 flex-1 space-y-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF]">
+                    {v.categoriaEtiqueta} · {v.anio}
+                  </span>
+                  <h3 className="font-display text-base font-extrabold text-[#111827] truncate">
+                    {v.marca} {v.modelo}
+                  </h3>
+                  <p className="text-[11px] text-[#4B5563]">
+                    {v.transmision} · {v.capacidadPasajeros} puestos
+                  </p>
+                  <p className="font-mono tabular-nums text-sm font-black text-[#111827] pt-0.5">
+                    {formatCop(v.precioDia)}
+                    <span className="font-sans text-[11px] font-normal text-[#4B5563]">
+                      {' '}
+                      / día
+                    </span>
+                  </p>
+                </div>
+
+                <div className="w-28 sm:w-32 shrink-0 flex items-center justify-center">
+                  <img
+                    src={v.imagenUrl}
+                    alt={`${v.marca} ${v.modelo}`}
+                    className="w-full max-h-24 object-contain group-hover:scale-105 transition-transform"
+                    loading="lazy"
+                  />
+                </div>
+              </a>
+            ))}
+          </div>
+
+          {!busqueda && (
+            <div className="pt-2 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  triggerHaptic(8);
+                  setVista('DESTACADOS');
+                }}
+                className="ios-press-bounce inline-flex min-h-[44px] items-center justify-center rounded-full bg-white border border-[#9CA3AF]/40 px-6 py-2.5 text-xs font-bold text-[#111827] hover:bg-[#EDEDED]/50 transition cursor-pointer"
+              >
+                ← Volver a Destacados
+              </button>
+            </div>
+          )}
+        </section>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* =================================================================
-              PANTALLA 1 (COLUMNA IZQUIERDA EN DESKTOP / PRIMERA SECCIÓN MÓVIL):
-              BENTO GRID ASIMÉTRICO DE UNIDADES DEL LOCAL
-             ================================================================= */}
-          <section
-            aria-label="Selección Bento de Flota"
-            className="lg:col-span-6 space-y-3.5"
-          >
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
-              {/* Columna Izquierda: Tarjeta Vertical Clara con botón '+' (Como "Pullover" en ref) */}
-              {bentoPrincipalIzq && (
-                <a
-                  href={`/vehiculos/${bentoPrincipalIzq.id}`}
-                  onClick={() => triggerHaptic(8)}
-                  className="group ios-press-bounce col-span-1 flex flex-col justify-between rounded-[26px] bg-white border border-[#9CA3AF]/30 p-4 sm:p-5 shadow-[0_10px_28px_-6px_rgba(17,24,39,0.06)] hover:border-[#4B5563]/50 transition relative overflow-hidden min-h-[250px] sm:min-h-[275px]"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <h2 className="font-display text-base sm:text-lg font-extrabold tracking-tight text-[#111827] leading-snug truncate">
-                        {bentoPrincipalIzq.marca}
-                      </h2>
-                      <p className="text-xs font-semibold text-[#4B5563] truncate">
-                        {bentoPrincipalIzq.modelo}
-                      </p>
-                      <p className="mt-1 font-mono tabular-nums text-xs font-bold text-[#111827]">
-                        {formatCop(bentoPrincipalIzq.precioDia)}
+        /* =====================================================================
+            VISTA DESTACADOS: BENTO GRID ASIMÉTRICO + HERO SPOTLIGHT EDITORIAL
+           ===================================================================== */
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Columna Izquierda en Desktop / Primera Sección Móvil: Bento Grid */}
+            <section
+              aria-label="Selección Bento de Flota"
+              className="lg:col-span-6 space-y-3.5"
+            >
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                {/* Columna Izquierda: Tarjeta Vertical Clara */}
+                {bentoPrincipalIzq && (
+                  <a
+                    href={`/vehiculos/${bentoPrincipalIzq.id}`}
+                    onClick={() => triggerHaptic(8)}
+                    className="group ios-press-bounce col-span-1 flex flex-col justify-between rounded-[26px] bg-white border border-[#9CA3AF]/30 p-4 sm:p-5 shadow-[0_10px_28px_-6px_rgba(17,24,39,0.06)] hover:border-[#4B5563]/50 transition relative overflow-hidden min-h-[250px] sm:min-h-[275px]"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <h2 className="font-display text-base sm:text-lg font-extrabold tracking-tight text-[#111827] leading-snug truncate">
+                          {bentoPrincipalIzq.marca}
+                        </h2>
+                        <p className="text-xs font-semibold text-[#4B5563] truncate">
+                          {bentoPrincipalIzq.modelo}
+                        </p>
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        <p className="font-mono tabular-nums text-xs sm:text-sm font-bold text-[#111827]">
+                          {formatCop(bentoPrincipalIzq.precioDia)}
+                        </p>
                         <span className="font-sans font-normal text-[10px] text-[#9CA3AF]">/día</span>
-                      </p>
+                      </div>
                     </div>
 
-                    <span
-                      aria-hidden="true"
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#EDEDED] text-[#111827] font-bold text-sm group-hover:bg-[#111827] group-hover:text-[#EDEDED] transition-colors"
-                    >
-                      +
-                    </span>
-                  </div>
+                    <div className="my-2 flex flex-1 flex-col items-center justify-center relative">
+                      <img
+                        src={bentoPrincipalIzq.imagenUrl}
+                        alt={`${bentoPrincipalIzq.marca} ${bentoPrincipalIzq.modelo}`}
+                        className="w-full max-h-32 sm:max-h-36 object-contain mx-auto transition-transform duration-300 group-hover:scale-105"
+                        loading="eager"
+                      />
+                      <div className="h-3 w-4/5 mx-auto -mt-2 rounded-full bg-[radial-gradient(ellipse_at_center,_rgba(17,24,39,0.22)_0%,_transparent_75%)]" />
+                    </div>
 
-                  <div className="my-2 flex flex-1 flex-col items-center justify-center relative">
-                    <img
-                      src={bentoPrincipalIzq.imagenUrl}
-                      alt={`${bentoPrincipalIzq.marca} ${bentoPrincipalIzq.modelo}`}
-                      className="w-full max-h-32 sm:max-h-36 object-contain mx-auto transition-transform duration-300 group-hover:scale-105"
-                      loading="eager"
-                    />
-                    <div className="h-3 w-4/5 mx-auto -mt-2 rounded-full bg-[radial-gradient(ellipse_at_center,_rgba(17,24,39,0.22)_0%,_transparent_75%)]" />
-                  </div>
+                    <div className="flex items-center justify-between text-[11px] text-[#4B5563] pt-1 border-t border-[#EDEDED]">
+                      <span>{bentoPrincipalIzq.transmision}</span>
+                      <span className="font-mono tabular-nums font-bold text-[#111827]">
+                        ★ {bentoPrincipalIzq.rating}
+                      </span>
+                    </div>
+                  </a>
+                )}
 
-                  <div className="flex items-center justify-between text-[11px] text-[#4B5563] pt-1 border-t border-[#EDEDED]">
-                    <span>{bentoPrincipalIzq.transmision}</span>
-                    <span className="font-mono tabular-nums font-bold text-[#111827]">
-                      ★ {bentoPrincipalIzq.rating}
-                    </span>
-                  </div>
-                </a>
-              )}
-
-              {/* Columna Derecha: Tarjeta Oscura de Contraste ("Rainbow" en ref) + Píldora "View All ->" */}
-              <div className="col-span-1 flex flex-col gap-3 sm:gap-4 h-full">
+                {/* Columna Derecha: Tarjeta Oscura de Contraste Simétrica */}
                 {bentoContrasteDer && (
                   <a
                     href={`/vehiculos/${bentoContrasteDer.id}`}
                     onClick={() => triggerHaptic(8)}
-                    className="group ios-press-bounce flex-1 flex flex-col justify-between rounded-[26px] bg-[#1F2937] text-[#EDEDED] p-4 sm:p-5 shadow-[0_14px_30px_-6px_rgba(17,24,39,0.28)] border border-white/10 relative overflow-hidden min-h-[190px]"
+                    className="group ios-press-bounce col-span-1 flex flex-col justify-between rounded-[26px] bg-[#1F2937] text-[#EDEDED] p-4 sm:p-5 shadow-[0_14px_30px_-6px_rgba(17,24,39,0.28)] border border-white/10 relative overflow-hidden min-h-[250px] sm:min-h-[275px]"
                   >
                     <div
                       className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-white/5 blur-xl"
@@ -452,33 +519,14 @@ export default function LocalCatalogShowcase({
                       />
                     </div>
 
-                    <div className="relative z-10 flex items-center justify-start pt-1">
-                      <span className="inline-flex items-center justify-center rounded-full bg-[#111827] border border-white/15 px-3.5 py-1.5 text-[11px] font-bold text-[#EDEDED] shadow-xs group-hover:bg-[#EDEDED] group-hover:text-[#111827] transition-colors">
-                        Alquilar
+                    <div className="relative z-10 flex items-center justify-between text-[11px] text-[#9CA3AF] pt-1 border-t border-white/10">
+                      <span>{bentoContrasteDer.transmision}</span>
+                      <span className="font-mono tabular-nums text-[#EDEDED] font-bold">
+                        ★ {bentoContrasteDer.rating}
                       </span>
                     </div>
                   </a>
                 )}
-
-                {/* Píldora "Ver Todos ->" (Como "View All ->" en Pantalla 1) */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    triggerHaptic(8);
-                    setMostrarTodosGrid((prev) => !prev);
-                  }}
-                  className="ios-press-bounce min-h-[48px] w-full rounded-[22px] bg-white border border-[#9CA3AF]/35 px-4 py-3 flex items-center justify-between text-xs font-extrabold text-[#111827] shadow-2xs hover:border-[#111827] transition cursor-pointer"
-                >
-                  <span>
-                    {mostrarTodosGrid
-                      ? 'Vista compacta'
-                      : `Ver todos (${vehiculosFiltrados.length})`}
-                  </span>
-                  <span aria-hidden="true" className="text-sm font-black">
-                    →
-                  </span>
-                </button>
-              </div>
 
               {/* Fila Inferior Full-Width: Tarjeta Horizontal Editorial ("Statue Print Ombre Hoodie" en ref) */}
               {bentoHorizontalAncho && (
@@ -489,10 +537,8 @@ export default function LocalCatalogShowcase({
                 >
                   <div className="flex flex-col justify-between space-y-2.5 min-w-0 flex-1">
                     <div>
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
-                        <span>{bentoHorizontalAncho.categoriaEtiqueta}</span>
-                        <span>•</span>
-                        <span>{bentoHorizontalAncho.anio}</span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF]">
+                        {bentoHorizontalAncho.categoriaEtiqueta} · {bentoHorizontalAncho.anio}
                       </span>
                       <h3 className="font-display text-base sm:text-xl font-black tracking-tight text-[#111827] leading-snug truncate mt-0.5">
                         {bentoHorizontalAncho.marca} {bentoHorizontalAncho.modelo}
@@ -502,13 +548,10 @@ export default function LocalCatalogShowcase({
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2.5 pt-1">
-                      <span className="inline-flex min-h-[38px] items-center justify-center rounded-full bg-[#111827] px-4 py-2 text-xs font-bold text-[#EDEDED] shadow-xs group-hover:bg-[#1F2937] transition">
-                        Reservar ya
-                      </span>
-                      <span className="font-mono tabular-nums text-xs sm:text-sm font-extrabold text-[#111827]">
+                    <div className="pt-1">
+                      <span className="font-mono tabular-nums text-sm sm:text-base font-extrabold text-[#111827]">
                         {formatCop(bentoHorizontalAncho.precioDia)}
-                        <span className="font-sans font-normal text-[10px] text-[#4B5563]">/día</span>
+                        <span className="font-sans font-normal text-[11px] text-[#4B5563]"> / día</span>
                       </span>
                     </div>
                   </div>
@@ -552,7 +595,7 @@ export default function LocalCatalogShowcase({
                     <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#EDEDED] backdrop-blur-md">
                       <span>★ {unidadHero.rating}</span>
                       <span>•</span>
-                      <span>Destacado del Patio</span>
+                      <span>Destacado</span>
                     </div>
 
                     <div>
@@ -572,14 +615,15 @@ export default function LocalCatalogShowcase({
                       </p>
                     </div>
 
-                    <div className="pt-1">
+                    <div className="pt-1 flex flex-wrap items-center gap-2.5">
                       <a
                         href={`/alquilar/${unidadHero.id}`}
                         onClick={() => triggerHaptic(10)}
-                        className="ios-press-bounce inline-flex min-h-[44px] items-center justify-center rounded-full bg-[#EDEDED] px-5 py-2.5 text-xs font-extrabold text-[#111827] shadow-md hover:bg-white transition"
+                        className="ios-press-bounce inline-flex min-h-[42px] items-center justify-center rounded-full bg-[#EDEDED] px-5 py-2 text-xs font-extrabold text-[#111827] shadow-md hover:bg-white transition"
                       >
                         Reservar ahora
                       </a>
+
                     </div>
                   </div>
 
@@ -600,62 +644,27 @@ export default function LocalCatalogShowcase({
                 </div>
               </div>
 
-              {/* 2. Trío de Bento Specs (Pantalla 2: 1 Oscura + 2 Claras) */}
-              <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
-                {/* Spec 1: Activa en Oscuro (#1F2937) */}
-                <div className="rounded-[22px] bg-[#1F2937] text-[#EDEDED] p-3.5 flex flex-col justify-between min-h-[108px] shadow-sm border border-white/10">
-                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#EDEDED]">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5 text-[#9CA3AF] shrink-0">
-                      <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
-                    </svg>
-                    <span className="truncate">Motor</span>
-                  </div>
-                  <div className="mt-2">
-                    <p className="font-display text-xs sm:text-sm font-extrabold text-[#EDEDED] leading-tight">
-                      {unidadHero.combustible}
-                    </p>
-                    <p className="text-[10px] text-[#9CA3AF] mt-0.5 leading-snug">
-                      Caja {unidadHero.transmision}
-                    </p>
-                  </div>
+              {/* 2. Trío de Especificaciones Clave */}
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                <div className="rounded-[20px] bg-[#1F2937] text-[#EDEDED] p-3 flex flex-col justify-center border border-white/10 shadow-xs">
+                  <span className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-wider">Combustible</span>
+                  <p className="font-display text-xs sm:text-sm font-bold text-[#EDEDED] truncate mt-0.5">
+                    {unidadHero.combustible}
+                  </p>
                 </div>
 
-                {/* Spec 2: Superficie Clara */}
-                <div className="rounded-[22px] bg-white text-[#111827] p-3.5 flex flex-col justify-between min-h-[108px] border border-[#9CA3AF]/30 shadow-2xs">
-                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#111827]">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5 text-[#4B5563] shrink-0">
-                      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                      <circle cx="9" cy="7" r="4" />
-                    </svg>
-                    <span className="truncate">Capacidad</span>
-                  </div>
-                  <div className="mt-2">
-                    <p className="font-display font-mono tabular-nums text-xs sm:text-sm font-extrabold text-[#111827] leading-tight">
-                      {unidadHero.capacidadPasajeros} Puestos
-                    </p>
-                    <p className="text-[10px] text-[#4B5563] mt-0.5 leading-snug">
-                      Clase {unidadHero.categoria}
-                    </p>
-                  </div>
+                <div className="rounded-[20px] bg-white text-[#111827] p-3 flex flex-col justify-center border border-[#9CA3AF]/30 shadow-2xs">
+                  <span className="text-[10px] font-semibold text-[#4B5563] uppercase tracking-wider">Transmisión</span>
+                  <p className="font-display text-xs sm:text-sm font-bold text-[#111827] truncate mt-0.5">
+                    {unidadHero.transmision}
+                  </p>
                 </div>
 
-                {/* Spec 3: Superficie Clara */}
-                <div className="rounded-[22px] bg-white text-[#111827] p-3.5 flex flex-col justify-between min-h-[108px] border border-[#9CA3AF]/30 shadow-2xs">
-                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#111827]">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5 text-[#4B5563] shrink-0">
-                      <path d="m12 14 4-4" />
-                      <path d="M3.34 19a10 10 0 1 1 17.32 0" />
-                    </svg>
-                    <span className="truncate">Rango</span>
-                  </div>
-                  <div className="mt-2">
-                    <p className="font-display font-mono tabular-nums text-xs sm:text-sm font-extrabold text-[#111827] leading-tight">
-                      {unidadHero.autonomiaOdo}
-                    </p>
-                    <p className="font-mono tabular-nums text-[10px] text-[#4B5563] mt-0.5 leading-snug">
-                      0-100 en {unidadHero.aceleracion}
-                    </p>
-                  </div>
+                <div className="rounded-[20px] bg-white text-[#111827] p-3 flex flex-col justify-center border border-[#9CA3AF]/30 shadow-2xs">
+                  <span className="text-[10px] font-semibold text-[#4B5563] uppercase tracking-wider">Capacidad</span>
+                  <p className="font-display font-mono tabular-nums text-xs sm:text-sm font-bold text-[#111827] truncate mt-0.5">
+                    {unidadHero.capacidadPasajeros} puestos
+                  </p>
                 </div>
               </div>
 
@@ -699,18 +708,16 @@ export default function LocalCatalogShowcase({
                           triggerHaptic(8);
                           setUnidadSpotlightId(item.id);
                         }}
-                        className={`ios-press-bounce text-left rounded-[22px] p-3.5 flex items-center justify-between gap-2 transition cursor-pointer border ${
-                          isDarkCard
-                            ? 'bg-[#1F2937] text-[#EDEDED] border-white/10 shadow-sm'
-                            : 'bg-white text-[#111827] border-[#9CA3AF]/30 shadow-2xs'
-                        }`}
+                        className={`ios-press-bounce text-left rounded-[22px] p-3.5 flex items-center justify-between gap-2 transition cursor-pointer border ${isDarkCard
+                          ? 'bg-[#1F2937] text-[#EDEDED] border-white/10 shadow-sm'
+                          : 'bg-white text-[#111827] border-[#9CA3AF]/30 shadow-2xs'
+                          }`}
                       >
                         <div className="min-w-0 flex-1 flex flex-col justify-between h-full space-y-2">
                           <div>
                             <p
-                              className={`text-[10px] font-semibold truncate ${
-                                isDarkCard ? 'text-[#9CA3AF]' : 'text-[#4B5563]'
-                              }`}
+                              className={`text-[10px] font-semibold truncate ${isDarkCard ? 'text-[#9CA3AF]' : 'text-[#4B5563]'
+                                }`}
                             >
                               {item.marca}
                             </p>
@@ -719,11 +726,10 @@ export default function LocalCatalogShowcase({
                             </p>
                           </div>
                           <span
-                            className={`inline-flex self-start font-mono tabular-nums text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                              isDarkCard
-                                ? 'bg-white/10 text-[#EDEDED]'
-                                : 'bg-[#EDEDED] text-[#111827]'
-                            }`}
+                            className={`inline-flex self-start font-mono tabular-nums text-[10px] font-bold px-2 py-0.5 rounded-full ${isDarkCard
+                              ? 'bg-white/10 text-[#EDEDED]'
+                              : 'bg-[#EDEDED] text-[#111827]'
+                              }`}
                           >
                             {formatCop(item.precioDia)}
                           </span>
@@ -739,94 +745,31 @@ export default function LocalCatalogShowcase({
                   })}
                 </div>
               </div>
-
-              {/* 4. Barra de Acción Dual Estilo Pantalla 2 ("Add to Cart" + "Buy Now") */}
-              <div className="rounded-[26px] bg-white border border-[#9CA3AF]/35 p-3 shadow-[0_12px_30px_-8px_rgba(17,24,39,0.12)] grid grid-cols-2 gap-2.5">
-                <a
-                  href={`/vehiculos/${unidadHero.id}`}
-                  onClick={() => triggerHaptic(8)}
-                  className="ios-press-bounce min-h-[46px] inline-flex items-center justify-center rounded-full bg-white border border-[#9CA3AF]/60 px-4 py-2.5 text-xs font-extrabold text-[#111827] hover:bg-[#EDEDED]/50 transition"
-                >
-                  Ver Ficha 360°
-                </a>
-                <a
-                  href={`/alquilar/${unidadHero.id}`}
-                  onClick={() => triggerHaptic(10)}
-                  className="ios-press-bounce min-h-[46px] inline-flex items-center justify-center rounded-full bg-[#111827] px-4 py-2.5 text-xs font-extrabold text-[#EDEDED] shadow-fab hover:bg-[#1F2937] transition"
-                >
-                  Alquilar Ahora
-                </a>
-              </div>
             </section>
           )}
         </div>
-      )}
 
-      {/* =====================================================================
-          INVENTARIO COMPLETO DEL LOCAL (SI TIENE > 3 UNIDADES O ACTIVA "VER TODOS")
-         ===================================================================== */}
-      {(mostrarTodosGrid || vehiculosFiltrados.length > 3) && (
-        <section className="space-y-3.5 pt-2">
-          <div className="flex items-center justify-between px-0.5">
-            <div>
-              <h2 className="font-display text-lg sm:text-xl font-black tracking-tight text-[#111827]">
-                Inventario completo en {local.nombre}
-              </h2>
-              <p className="text-xs text-[#4B5563]">
-                Unidades verificadas y exclusivas de esta sede
-              </p>
-            </div>
-            <span className="font-mono tabular-nums text-xs font-bold text-[#111827] bg-white border border-[#9CA3AF]/35 px-3 py-1 rounded-full">
-              {vehiculosFiltrados.length} unidades
+        {/* Banner Mobile para Explorar Toda la Flota desde el fin del Showcase */}
+        <div className="pt-2">
+          <button
+            type="button"
+            onClick={() => {
+              triggerHaptic(8);
+              setVista('TODOS');
+              if (typeof window !== 'undefined') {
+                window.scrollTo({ top: 140, behavior: 'smooth' });
+              }
+            }}
+            className="ios-press-bounce min-h-[48px] w-full rounded-2xl bg-white border border-[#9CA3AF]/35 px-4 py-3 flex items-center justify-between text-xs font-extrabold text-[#111827] shadow-2xs hover:border-[#111827] transition cursor-pointer"
+          >
+            <span>Explorar toda la flota de {local.nombre}</span>
+            <span className="font-mono text-[11px] font-bold bg-[#EDEDED] text-[#111827] px-2.5 py-0.5 rounded-full">
+              {vehiculosFiltrados.length} disponibles →
             </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-            {(mostrarTodosGrid
-              ? vehiculosFiltrados
-              : vehiculosFiltrados.slice(3)
-            ).map((v) => (
-              <a
-                key={v.id}
-                href={`/vehiculos/${v.id}`}
-                onClick={() => triggerHaptic(8)}
-                className="group ios-press-bounce rounded-[26px] bg-white border border-[#9CA3AF]/30 p-4 shadow-2xs hover:border-[#111827]/40 transition flex items-center justify-between gap-3"
-              >
-                <div className="min-w-0 flex-1 space-y-1.5">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#EDEDED] px-2.5 py-0.5 text-[10px] font-bold text-[#4B5563]">
-                    {v.categoriaEtiqueta}
-                  </span>
-                  <h3 className="font-display text-base font-extrabold text-[#111827] truncate">
-                    {v.marca} {v.modelo}
-                  </h3>
-                  <p className="text-[11px] text-[#4B5563]">
-                    {v.anio} · {v.transmision} · {v.capacidadPasajeros} puestos
-                  </p>
-                  <p className="font-mono tabular-nums text-sm font-black text-[#111827] pt-0.5">
-                    {formatCop(v.precioDia)}
-                    <span className="font-sans text-[11px] font-normal text-[#4B5563]">
-                      {' '}
-                      / día
-                    </span>
-                  </p>
-                </div>
-
-                <div className="w-28 sm:w-32 shrink-0 flex flex-col items-center">
-                  <img
-                    src={v.imagenUrl}
-                    alt={`${v.marca} ${v.modelo}`}
-                    className="w-full max-h-20 object-contain group-hover:scale-105 transition-transform"
-                    loading="lazy"
-                  />
-                  <span className="mt-2 inline-flex items-center justify-center rounded-full bg-[#111827] px-3 py-1 text-[10px] font-bold text-[#EDEDED]">
-                    Ver unidad
-                  </span>
-                </div>
-              </a>
-            ))}
-          </div>
-        </section>
-      )}
-    </div>
-  );
+          </button>
+        </div>
+      </div>
+    )}
+  </div>
+);
 }
