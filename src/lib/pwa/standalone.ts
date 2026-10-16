@@ -13,6 +13,7 @@ const NON_SPA_PATH_PREFIXES: ReadonlyArray<string> = [
   '/_astro/',
   '/icons/',
   '/images/',
+  '/fonts/',
 ];
 
 const NON_SPA_EXACT_PATHS: ReadonlyArray<string> = [
@@ -20,6 +21,8 @@ const NON_SPA_EXACT_PATHS: ReadonlyArray<string> = [
   '/sw.js',
   '/favicon.svg',
   '/apple-touch-icon.png',
+  '/robots.txt',
+  '/sitemap.xml',
 ];
 
 /**
@@ -32,10 +35,12 @@ export function isStandalonePwa(): boolean {
   }
 
   try {
-    const isMediaStandalone =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      window.matchMedia('(display-mode: minimal-ui)').matches ||
-      window.matchMedia('(display-mode: fullscreen)').matches;
+    // Detectar únicamente modo instalado PWA real:
+    // 1. display-mode: standalone (Android WebAPK, Chrome/Edge Desktop PWA)
+    // 2. navigator.standalone en iOS WebKit (Añadido a pantalla de inicio en iPhone/iPad)
+    // Evitamos deliberadamente 'display-mode: fullscreen' porque cualquier navegador web
+    // estándar puesto a pantalla completa (F11 o botón verde en macOS) activaba el flag erróneamente.
+    const isMediaStandalone = window.matchMedia('(display-mode: standalone)').matches;
 
     const nav = window.navigator as NavigatorWithStandalone;
     const isIosStandalone = nav.standalone === true;

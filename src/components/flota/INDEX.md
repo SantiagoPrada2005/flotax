@@ -17,7 +17,7 @@
 | [`VehicleFormIsland.tsx`](./VehicleFormIsland.tsx) | Isla React 19: Formulario Alta/Edición de Unidad | `VehicleFormIsland` | `astro:actions`, `@/lib/flota/types` |
 | [`VehicleSearchResultItem.tsx`](./VehicleSearchResultItem.tsx) | Componente Resultado Spotlight | `VehicleSearchResultItem` | `@/lib/flota/types` |
 | [`VehicleSearchSpotlight.tsx`](./VehicleSearchSpotlight.tsx) | Isla React 19: Buscador Spotlight con aislamiento por local | `VehicleSearchSpotlight` | `@/lib/flota/mock-vehiculos` |
-| [`VehicleStudioShowcase.tsx`](./VehicleStudioShowcase.tsx) | Isla React 19: Ficha de Vehículo Estudio 360° (Pantallas 3 y 4 iOS Editorial con pedestal y planes) | `VehicleStudioShowcase` | `@/lib/flota/types`, `@/lib/flota/disponibilidad` |
+| [`VehicleStudioShowcase.tsx`](./VehicleStudioShowcase.tsx) | Isla React 19: Ficha de Vehículo Estudio 360° (Pantallas 3 y 4 iOS Editorial con pedestal) | `VehicleStudioShowcase` | `@/lib/flota/types` |
 
 ## Invariants & Directory Rules
 

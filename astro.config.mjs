@@ -6,13 +6,14 @@ import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://flotax.innovaweb.pro',
   output: 'server',
   adapter: cloudflare(),
   integrations: [react()],
   vite: {
     plugins: [tailwindcss()],
     optimizeDeps: {
-      exclude: ['better-auth', 'zod', 'drizzle-orm', 'astro:actions'],
+      exclude: ['better-auth', 'zod', 'drizzle-orm', 'astro:actions', 'framer-motion'],
     },
   },
 });

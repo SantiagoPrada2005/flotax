@@ -1,14 +1,12 @@
 import { useState, useMemo } from 'react';
 import type { VehiculoItem } from '@/lib/flota/types';
 import type { LocalPublicoContexto } from '@/lib/flota/locales-captacion';
-import { sumarDiasISO } from '@/lib/flota/disponibilidad';
 
 export interface VehicleStudioShowcaseProps {
   vehiculoInicial: VehiculoItem;
   flotaLocal: VehiculoItem[];
   local: LocalPublicoContexto;
-  backHref: string;
-  hoyISO: string;
+  hoyISO?: string;
 }
 
 type StudioAngleId = 'estudio' | 'perfil' | 'cabina' | 'desempeno';
@@ -48,21 +46,6 @@ const STUDIO_ANGLES: StudioAngleOption[] = [
   },
 ];
 
-interface PlanDuracionItem {
-  dias: number;
-  etiquetaCorta: string;
-  etiquetaLarga: string;
-  descuentoPorcentaje: number;
-}
-
-const PLANES_DURACION: PlanDuracionItem[] = [
-  { dias: 1, etiquetaCorta: '1D', etiquetaLarga: '1 Día', descuentoPorcentaje: 0 },
-  { dias: 3, etiquetaCorta: '3D', etiquetaLarga: '3 Días', descuentoPorcentaje: 0 },
-  { dias: 7, etiquetaCorta: '7D', etiquetaLarga: 'Semanal (7 días)', descuentoPorcentaje: 5 },
-  { dias: 15, etiquetaCorta: '15D', etiquetaLarga: 'Quincenal (15 días)', descuentoPorcentaje: 10 },
-  { dias: 30, etiquetaCorta: '30D', etiquetaLarga: 'Mensual (30 días)', descuentoPorcentaje: 15 },
-];
-
 function formatCop(val: number): string {
   return new Intl.NumberFormat('es-CO', {
     style: 'currency',
@@ -75,8 +58,6 @@ export default function VehicleStudioShowcase({
   vehiculoInicial,
   flotaLocal,
   local,
-  backHref,
-  hoyISO,
 }: VehicleStudioShowcaseProps) {
   const listaUnidades = useMemo(() => {
     if (flotaLocal.length === 0) return [vehiculoInicial];
@@ -91,14 +72,10 @@ export default function VehicleStudioShowcase({
 
   const [unidadIndex, setUnidadIndex] = useState<number>(indiceInicial);
   const [angleIndex, setAngleIndex] = useState<number>(2); // Tercer thumbnail activo en oscuro como en Pantalla 3
-  const [planDias, setPlanDias] = useState<number>(3);
   const [activeTab, setActiveTab] = useState<ShowcaseTabId>('about');
-  const [acabadoDot, setAcabadoDot] = useState<number>(2);
 
   const vehiculo = listaUnidades[unidadIndex] ?? vehiculoInicial;
   const currentAngle = STUDIO_ANGLES[angleIndex] ?? STUDIO_ANGLES[0]!;
-  const planSeleccionado =
-    PLANES_DURACION.find((p) => p.dias === planDias) ?? PLANES_DURACION[1]!;
 
   const triggerHaptic = (ms = 8) => {
     if (typeof window !== 'undefined' && 'vibrate' in navigator) {
@@ -123,73 +100,10 @@ export default function VehicleStudioShowcase({
     setAngleIndex((prev) => (prev + 1) % STUDIO_ANGLES.length);
   };
 
-  // Cálculo de tarifa según el tramo de días elegido
-  const factorDescuento = 1 - planSeleccionado.descuentoPorcentaje / 100;
-  const precioDiaEfectivo = Math.round(vehiculo.precioDia * factorDescuento);
-  const totalEstimadoPlan = precioDiaEfectivo * planSeleccionado.dias;
-
-  // Fechas sugeridas para pasar directo al embudo de alquiler
-  const fechaDesde = hoyISO;
-  const fechaHasta = sumarDiasISO(hoyISO, Math.max(1, planSeleccionado.dias - 1));
-  const alquilarHref = `/alquilar/${vehiculo.id}?desde=${encodeURIComponent(
-    fechaDesde
-  )}&hasta=${encodeURIComponent(fechaHasta)}`;
-
   return (
     <div className="mx-auto w-full max-w-md sm:max-w-xl space-y-4 pb-10">
       {/* =====================================================================
-          1. BARRA SUPERIOR EDITORIAL (PANTALLAS 3 Y 4: "< Back" | "Products" | "Change Product")
-         ===================================================================== */}
-      <header className="space-y-2 pt-1">
-        <div className="flex items-center justify-between">
-          <a
-            href={backHref}
-            onClick={() => triggerHaptic(8)}
-            className="ios-press-bounce inline-flex min-h-[40px] items-center gap-1 text-xs font-semibold text-[#4B5563] hover:text-[#111827] transition"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-4 w-4"
-            >
-              <path d="m15 18-6-6 6-6" />
-            </svg>
-            <span>Volver a {local.nombre}</span>
-          </a>
-
-          {listaUnidades.length > 1 && (
-            <button
-              type="button"
-              onClick={() => cambiarUnidad(1)}
-              className="ios-press-bounce min-h-[40px] inline-flex items-center gap-1.5 rounded-full bg-white border border-[#9CA3AF]/40 px-3.5 py-1.5 text-xs font-extrabold text-[#111827] shadow-2xs hover:border-[#111827] transition cursor-pointer"
-            >
-              <span>Cambiar unidad</span>
-              <span className="font-mono tabular-nums text-[10px] text-[#4B5563]">
-                ({unidadIndex + 1}/{listaUnidades.length})
-              </span>
-            </button>
-          )}
-        </div>
-
-        <div className="flex items-baseline justify-between gap-2">
-          <div>
-            <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-[#111827] leading-tight">
-              {vehiculo.marca} {vehiculo.modelo}
-            </h1>
-            <p className="text-xs text-[#4B5563] mt-0.5">
-              {vehiculo.categoriaEtiqueta} • Año {vehiculo.anio} • Sede {local.nombre}
-            </p>
-          </div>
-        </div>
-      </header>
-
-      {/* =====================================================================
-          2. ESCENARIO STUDIO 360° CON PEDESTAL ELÍPTICO Y MINIATURAS (PANTALLAS 3 Y 4)
+          1. ESCENARIO STUDIO 360° CON PEDESTAL ELÍPTICO Y MINIATURAS (PANTALLAS 3 Y 4)
          ===================================================================== */}
       <section className="rounded-[32px] bg-white border border-[#9CA3AF]/30 p-4 sm:p-6 shadow-[0_16px_38px_-10px_rgba(17,24,39,0.08)] space-y-5 relative overflow-hidden">
         {/* Escenario Principal */}
@@ -240,11 +154,10 @@ export default function VehicleStudioShowcase({
                     setAngleIndex(idx);
                   }}
                   aria-label={`Ver perspectiva ${ang.label}`}
-                  className={`transition-all cursor-pointer flex items-center justify-center ${
-                    active
-                      ? 'h-5 w-5 rounded-full border border-[#111827] bg-white shadow-2xs'
-                      : 'h-2.5 w-2.5 rounded-full bg-[#9CA3AF]/50 hover:bg-[#4B5563]'
-                  }`}
+                  className={`transition-all cursor-pointer flex items-center justify-center ${active
+                    ? 'h-5 w-5 rounded-full border border-[#111827] bg-white shadow-2xs'
+                    : 'h-2.5 w-2.5 rounded-full bg-[#9CA3AF]/50 hover:bg-[#4B5563]'
+                    }`}
                 >
                   {active && (
                     <span className="h-2 w-2 rounded-full bg-[#111827]" />
@@ -316,11 +229,10 @@ export default function VehicleStudioShowcase({
                   triggerHaptic(8);
                   setAngleIndex(idx);
                 }}
-                className={`ios-press-bounce rounded-[18px] p-2.5 flex flex-col items-center justify-center gap-1.5 transition cursor-pointer border ${
-                  isSelected
-                    ? 'bg-[#1F2937] text-[#EDEDED] border-[#111827] shadow-md scale-[1.02]'
-                    : 'bg-[#EDEDED]/55 text-[#111827] border-[#9CA3AF]/25 hover:bg-[#EDEDED]'
-                }`}
+                className={`ios-press-bounce rounded-[18px] p-2.5 flex flex-col items-center justify-center gap-1.5 transition cursor-pointer border ${isSelected
+                  ? 'bg-[#1F2937] text-[#EDEDED] border-[#111827] shadow-md scale-[1.02]'
+                  : 'bg-[#EDEDED]/55 text-[#111827] border-[#9CA3AF]/25 hover:bg-[#EDEDED]'
+                  }`}
               >
                 <img
                   src={vehiculo.imagenUrl}
@@ -328,9 +240,8 @@ export default function VehicleStudioShowcase({
                   className={`h-10 w-full object-contain transition-transform ${ang.imageClass}`}
                 />
                 <span
-                  className={`text-[10px] font-bold truncate max-w-full ${
-                    isSelected ? 'text-[#EDEDED]' : 'text-[#4B5563]'
-                  }`}
+                  className={`text-[10px] font-bold truncate max-w-full ${isSelected ? 'text-[#EDEDED]' : 'text-[#4B5563]'
+                    }`}
                 >
                   {ang.label}
                 </span>
@@ -338,81 +249,8 @@ export default function VehicleStudioShowcase({
             );
           })}
         </div>
-
         {/* ===================================================================
-            3. SELECTOR DE PLAN DE DÍAS (ESTILO "S M L XL XXL" DE PANTALLA 4)
-           =================================================================== */}
-        <div className="pt-2 border-t border-[#EDEDED] flex items-center justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-3">
-              {PLANES_DURACION.map((plan) => {
-                const activo = plan.dias === planDias;
-                return (
-                  <button
-                    key={plan.dias}
-                    type="button"
-                    onClick={() => {
-                      triggerHaptic(8);
-                      setPlanDias(plan.dias);
-                    }}
-                    className={`ios-press-bounce font-mono tabular-nums text-sm sm:text-base transition cursor-pointer py-1 ${
-                      activo
-                        ? 'font-black text-[#111827] underline decoration-2 underline-offset-4'
-                        : 'font-semibold text-[#9CA3AF] hover:text-[#4B5563]'
-                    }`}
-                  >
-                    {plan.etiquetaCorta}
-                  </button>
-                );
-              })}
-            </div>
-            <p className="text-[11px] font-semibold text-[#4B5563] mt-0.5">
-              Plan {planSeleccionado.etiquetaLarga}:{' '}
-              <span className="font-mono tabular-nums font-extrabold text-[#111827]">
-                {formatCop(totalEstimadoPlan)}
-              </span>
-              {planSeleccionado.descuentoPorcentaje > 0 && (
-                <span className="ml-1.5 inline-flex rounded-full bg-[#111827] px-2 py-0.2 text-[10px] font-bold text-[#EDEDED]">
-                  -{planSeleccionado.descuentoPorcentaje}%
-                </span>
-              )}
-            </p>
-          </div>
-
-          {/* Indicadores Circulares Monocromáticos (Estilo "Colours" de Pantalla 4) */}
-          <div className="flex flex-col items-end">
-            <div className="flex items-center gap-1.5">
-              {[
-                { bg: 'bg-[#EDEDED]', label: 'Plata Estudio' },
-                { bg: 'bg-[#9CA3AF]', label: 'Gris Titanio' },
-                { bg: 'bg-[#4B5563]', label: 'Grafito' },
-                { bg: 'bg-[#111827]', label: 'Negro Obsidiana' },
-              ].map((dot, idx) => (
-                <button
-                  key={dot.label}
-                  type="button"
-                  onClick={() => {
-                    triggerHaptic(6);
-                    setAcabadoDot(idx);
-                  }}
-                  title={dot.label}
-                  aria-label={dot.label}
-                  className={`h-5 w-5 rounded-full ${dot.bg} border border-[#9CA3AF]/50 transition cursor-pointer ${
-                    acabadoDot === idx
-                      ? 'ring-2 ring-[#111827] ring-offset-1 scale-110'
-                      : 'opacity-75 hover:opacity-100'
-                  }`}
-                />
-              ))}
-            </div>
-            <span className="text-[11px] font-semibold text-[#4B5563] mt-1">
-              {formatCop(precioDiaEfectivo)}/día
-            </span>
-          </div>
-        </div>
-
-        {/* ===================================================================
-            4. PESTAÑAS SEGMENTADAS EDITORIALES (PANTALLA 3: "Closet | About | Reviews")
+            2. PESTAÑAS SEGMENTADAS EDITORIALES (PANTALLA 3: "Closet | About | Reviews")
            =================================================================== */}
         <div className="space-y-3 pt-1">
           <div
@@ -436,11 +274,10 @@ export default function VehicleStudioShowcase({
                     triggerHaptic(6);
                     setActiveTab(tab.id);
                   }}
-                  className={`pb-2.5 text-xs sm:text-sm font-bold transition relative cursor-pointer ${
-                    active
-                      ? 'text-[#111827]'
-                      : 'text-[#9CA3AF] hover:text-[#4B5563]'
-                  }`}
+                  className={`pb-2.5 text-xs sm:text-sm font-bold transition relative cursor-pointer ${active
+                    ? 'text-[#111827]'
+                    : 'text-[#9CA3AF] hover:text-[#4B5563]'
+                    }`}
                 >
                   {tab.label}
                   {active && (
@@ -534,9 +371,9 @@ export default function VehicleStudioShowcase({
         </div>
 
         {/* ===================================================================
-            5. DOBLE BOTÓN DE ACCIÓN INFERIOR (PANTALLAS 3 Y 4: "Add to Cart" + "Buy Now")
+            3. BOTÓN DE ACCIÓN INFERIOR (PANTALLAS 1 Y 2: "Add to Cart" + "Buy Now")
            =================================================================== */}
-        <div className="pt-2 grid grid-cols-2 gap-3">
+        <div className="pt-2 grid grid-cols-1 gap-3">
           <a
             href={`/alquilar/${vehiculo.id}`}
             onClick={() => triggerHaptic(8)}
@@ -544,13 +381,7 @@ export default function VehicleStudioShowcase({
           >
             Elegir fechas
           </a>
-          <a
-            href={alquilarHref}
-            onClick={() => triggerHaptic(10)}
-            className="ios-press-bounce min-h-[48px] inline-flex items-center justify-center rounded-full bg-[#111827] px-4 py-3 text-xs sm:text-sm font-extrabold text-[#EDEDED] shadow-fab hover:bg-[#1F2937] transition"
-          >
-            Reservar ({planSeleccionado.etiquetaCorta})
-          </a>
+
         </div>
       </section>
 
@@ -580,11 +411,10 @@ export default function VehicleStudioShowcase({
                     setUnidadIndex(idx);
                   }}
                   aria-label={`Ver ${item.marca} ${item.modelo}`}
-                  className={`rounded-full transition-all cursor-pointer ${
-                    active
-                      ? 'h-2 w-5 bg-[#EDEDED]'
-                      : 'h-2 w-2 bg-[#9CA3AF]/45 hover:bg-[#9CA3AF]'
-                  }`}
+                  className={`rounded-full transition-all cursor-pointer ${active
+                    ? 'h-2 w-5 bg-[#EDEDED]'
+                    : 'h-2 w-2 bg-[#9CA3AF]/45 hover:bg-[#9CA3AF]'
+                    }`}
                 />
               );
             })}

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./fonts.css";
 
 @theme {
   /* Canonical Palette: #EDEDED | #9CA3AF | #4B5563 | #1F2937 | #111827 */

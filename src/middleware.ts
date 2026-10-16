@@ -60,9 +60,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
     context.url.pathname.startsWith('/favicon') ||
     context.url.pathname.startsWith('/icons/') ||
     context.url.pathname.startsWith('/instructions/') ||
+    context.url.pathname.startsWith('/fonts/') ||
+    context.url.pathname.startsWith('/images/') ||
     context.url.pathname === '/manifest.webmanifest' ||
     context.url.pathname === '/sw.js' ||
-    context.url.pathname === '/apple-touch-icon.png'
+    context.url.pathname === '/apple-touch-icon.png' ||
+    context.url.pathname === '/robots.txt' ||
+    context.url.pathname === '/sitemap.xml'
   ) {
     return await next();
   }
@@ -95,10 +99,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   try {
     const originHeader = context.request.headers.get('origin');
-    const refererHeader = context.request.headers.get('referer');
     const requestOrigin =
-      originHeader ||
-      (refererHeader ? new URL(refererHeader).origin : undefined) ||
+      (originHeader && !originHeader.includes('google.com') ? originHeader : undefined) ||
       context.url.origin;
 
     const auth = createAuth(d1, env, {

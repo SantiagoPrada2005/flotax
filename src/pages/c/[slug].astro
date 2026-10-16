@@ -41,7 +41,10 @@ const vehiculos = await listarVehiculos(db, { localId: local.id });
 ---
 
 <LayoutApp
-  title={`${local.nombre} — Catálogo Oficial`}
+  title={`${local.nombre} — Catálogo Oficial y Alquiler de Flota | FlotaX`}
+  description={`Alquila vehículos directamente en ${local.nombre}${local.ciudad ? ` (${local.ciudad})` : ''}. Flota verificada con entrega pericial en patio y reserva al instante.`}
+  canonicalUrl={`https://flotax.innovaweb.pro/c/${local.slug}`}
+  ogImage="/images/landing/hero-vehicle.webp"
   activeTab="home"
   navVariant="client"
 >

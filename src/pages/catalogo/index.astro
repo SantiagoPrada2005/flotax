@@ -15,7 +15,10 @@ const vehiculos = await listarVehiculos(db, { localId: local.id });
 ---
 
 <LayoutApp
-  title={`${local.nombre} — Catálogo de Vehículos`}
+  title={`${local.nombre} — Catálogo de Vehículos en Alquiler | FlotaX`}
+  description={`Explora el inventario de vehículos disponibles en ${local.nombre}. Compara tarifas por día, modelos eléctricos, híbridos y reserva al instante en FlotaX.`}
+  canonicalUrl="https://flotax.innovaweb.pro/catalogo"
+  ogImage="/images/landing/hero-vehicle.webp"
   activeTab="home"
   navVariant="client"
 >

@@ -1,15 +1,16 @@
 ---
-import LayoutApp from '@/layouts/LayoutApp.astro';
-import VehicleStudioShowcase from '@/components/flota/VehicleStudioShowcase';
+import LayoutApp from "@/layouts/LayoutApp.astro";
+import VehicleStudioShowcase from "@/components/flota/VehicleStudioShowcase";
 import {
   obtenerVehiculoAsync,
   listarVehiculos,
   obtenerLocalPorSlugOId,
   obtenerLocalCatalogoPorDefecto,
-} from '@/lib/flota';
-import { resolveClientTimeContext } from '@/lib/time/client-time';
-import { env } from 'cloudflare:workers';
-import { getDb } from '@/lib/db';
+} from "@/lib/flota";
+import { resolveClientTimeContext } from "@/lib/time/client-time";
+import { buildVehicleProductSchema, buildBreadcrumbSchema } from "@/lib/seo";
+import { env } from "cloudflare:workers";
+import { getDb } from "@/lib/db";
 
 const { id } = Astro.params;
 const db = env.DB ? getDb(env.DB) : undefined;
@@ -21,7 +22,7 @@ const vehiculo = id
   : undefined;
 
 if (!vehiculo) {
-  return Astro.redirect(localCautivo ? `/c/${localCautivo.slug}` : '/catalogo');
+  return Astro.redirect(localCautivo ? `/c/${localCautivo.slug}` : "/catalogo");
 }
 
 const local =
@@ -33,11 +34,31 @@ const local =
 
 const flotaLocal = await listarVehiculos(db, { localId: local.id });
 const { dateString: hoyISO } = resolveClientTimeContext(Astro.request);
-const backHref = localCautivo ? `/c/${local.slug}` : '/catalogo';
+const backHref = localCautivo ? `/c/${local.slug}` : "/catalogo";
+
+const siteUrl = (Astro.site ? Astro.site.toString() : 'https://flotax.innovaweb.pro').replace(/\/$/, '');
+const vehicleSchema = buildVehicleProductSchema(vehiculo, siteUrl);
+const breadcrumbSchema = buildBreadcrumbSchema(
+  [
+    { name: 'Inicio', path: '/' },
+    { name: 'Catálogo', path: '/catalogo' },
+    { name: `${vehiculo.marca} ${vehiculo.modelo}`, path: `/vehiculos/${vehiculo.id}` },
+  ],
+  siteUrl
+);
+
+const seoTitle = `Alquiler de ${vehiculo.marca} ${vehiculo.modelo} (${vehiculo.anio}) — ${local.nombre} | FlotaX`;
+const seoDescription = `Alquila ${vehiculo.marca} ${vehiculo.modelo} (${vehiculo.categoriaEtiqueta}) desde $${vehiculo.precioDia.toLocaleString('es-CO')}/día en ${local.nombre}. Transmisión ${vehiculo.transmision}, ${vehiculo.combustible}. Entrega en 3 minutos.`;
+const canonicalUrl = `${siteUrl}/vehiculos/${vehiculo.id}`;
 ---
 
 <LayoutApp
-  title={`${vehiculo.marca} ${vehiculo.modelo} — ${local.nombre}`}
+  title={seoTitle}
+  description={seoDescription}
+  canonicalUrl={canonicalUrl}
+  ogImage={vehiculo.imagenUrl}
+  ogType="product"
+  structuredData={[vehicleSchema, breadcrumbSchema]}
   showBack={true}
   backHref={backHref}
   activeTab="home"
@@ -49,7 +70,6 @@ const backHref = localCautivo ? `/c/${local.slug}` : '/catalogo';
       vehiculoInicial={vehiculo}
       flotaLocal={flotaLocal}
       local={local}
-      backHref={backHref}
       hoyISO={hoyISO}
     />
   </div>

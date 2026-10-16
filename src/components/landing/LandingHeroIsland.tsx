@@ -364,6 +364,8 @@ export function LandingHeroIsland() {
           alt="FlotaX Automoción Cinematográfica"
           className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none transition-opacity duration-500"
           loading="eager"
+          fetchPriority="high"
+          decoding="async"
         />
 
         {/* Main Rendering Canvas */}
