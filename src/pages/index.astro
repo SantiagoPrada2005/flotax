@@ -16,7 +16,14 @@ const user = Astro.locals.user;
 const usuario = Astro.locals.usuario;
 ---
 
-<LayoutApp title="FlotaX — Alquiler de Vehículos en Tiempo Real" hideNav={true}>
+<LayoutApp
+  title="FlotaX — Alquiler de Vehículos en Tiempo Real | Autos, SUVs y Motos"
+  description="Alquila vehículos en tiempo real con entrega en 3 minutos. Catálogo de autos sedán, SUVs familiares, motos y patinetas eléctricas sin trámites ni papeleo."
+  canonicalUrl="https://flotax.innovaweb.pro/"
+  ogImage="/images/landing/hero-vehicle.webp"
+  ogType="website"
+  hideNav={true}
+>
   <div class="min-h-screen bg-white flex flex-col w-full antialiased selection:bg-[#2E4E8F] selection:text-white relative">
     <LandingHeader user={user} usuario={usuario} />
 

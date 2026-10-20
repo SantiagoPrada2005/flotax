@@ -22,13 +22,13 @@ importers:
         version: 7.3.5(@types/node@26.6.4)(jiti@2.7.0)(yaml@2.9.1)
       better-auth:
         specifier: ^1.7.7
-        version: 1.7.7(drizzle-kit@0.30.6)(drizzle-orm@0.45.3(@cloudflare/workers-types@5.20260930.2)(@libsql/client@0.18.0)(gel@2.2.1)(kysely@0.29.6))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        version: 1.7.7(drizzle-kit@0.30.6(supports-color@10.2.2))(drizzle-orm@0.45.3(@cloudflare/workers-types@5.20260930.2)(@libsql/client@0.18.0)(gel@2.2.1(supports-color@10.2.2))(kysely@0.29.6))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
       drizzle-orm:
         specifier: ^0.45.3
-        version: 0.45.3(@cloudflare/workers-types@5.20260930.2)(@libsql/client@0.18.0)(gel@2.2.1)(kysely@0.29.6)
+        version: 0.45.3(@cloudflare/workers-types@5.20260930.2)(@libsql/client@0.18.0)(gel@2.2.1(supports-color@10.2.2))(kysely@0.29.6)
       framer-motion:
         specifier: ^14.0.0
         version: 14.0.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -71,10 +71,13 @@ importers:
         version: 19.3.0(@types/react@19.3.0)
       drizzle-kit:
         specifier: ^0.30.6
-        version: 0.30.6
+        version: 0.30.6(supports-color@10.2.2)
       ffmpeg-static:
         specifier: ^5.3.0
-        version: 5.3.0
+        version: 5.3.0(supports-color@10.2.2)
+      sharp:
+        specifier: ^0.35.5
+        version: 0.35.5(@types/node@26.6.4)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -3508,12 +3511,12 @@ snapshots:
       nanostores: 1.5.4
       zod: 4.6.5
 
-  '@better-auth/drizzle-adapter@1.7.7(@better-auth/core@1.7.7(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.2)(better-call@1.4.0(zod@4.6.5))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.4))(@better-auth/utils@0.4.2)(drizzle-orm@0.45.3(@cloudflare/workers-types@5.20260930.2)(@libsql/client@0.18.0)(gel@2.2.1)(kysely@0.29.6))':
+  '@better-auth/drizzle-adapter@1.7.7(@better-auth/core@1.7.7(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.2)(better-call@1.4.0(zod@4.6.5))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.4))(@better-auth/utils@0.4.2)(drizzle-orm@0.45.3(@cloudflare/workers-types@5.20260930.2)(@libsql/client@0.18.0)(gel@2.2.1(supports-color@10.2.2))(kysely@0.29.6))':
     dependencies:
       '@better-auth/core': 1.7.7(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.2)(better-call@1.4.0(zod@4.6.5))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.4)
       '@better-auth/utils': 0.4.2
     optionalDependencies:
-      drizzle-orm: 0.45.3(@cloudflare/workers-types@5.20260930.2)(@libsql/client@0.18.0)(gel@2.2.1)(kysely@0.29.6)
+      drizzle-orm: 0.45.3(@cloudflare/workers-types@5.20260930.2)(@libsql/client@0.18.0)(gel@2.2.1(supports-color@10.2.2))(kysely@0.29.6)
 
   '@better-auth/kysely-adapter@1.7.7(@better-auth/core@1.7.7(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.2)(better-call@1.4.0(zod@4.6.5))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.4))(@better-auth/utils@0.4.2)(kysely@0.29.6)':
     dependencies:
@@ -4596,9 +4599,9 @@ snapshots:
 
   '@vscode/l10n@0.0.18': {}
 
-  agent-base@6.0.2:
+  agent-base@6.0.2(supports-color@10.2.2):
     dependencies:
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@10.2.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -4727,10 +4730,10 @@ snapshots:
 
   bail@2.0.2: {}
 
-  better-auth@1.7.7(drizzle-kit@0.30.6)(drizzle-orm@0.45.3(@cloudflare/workers-types@5.20260930.2)(@libsql/client@0.18.0)(gel@2.2.1)(kysely@0.29.6))(react-dom@19.3.0(react@19.3.0))(react@19.3.0):
+  better-auth@1.7.7(drizzle-kit@0.30.6(supports-color@10.2.2))(drizzle-orm@0.45.3(@cloudflare/workers-types@5.20260930.2)(@libsql/client@0.18.0)(gel@2.2.1(supports-color@10.2.2))(kysely@0.29.6))(react-dom@19.3.0(react@19.3.0))(react@19.3.0):
     dependencies:
       '@better-auth/core': 1.7.7(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.2)(better-call@1.4.0(zod@4.6.5))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.4)
-      '@better-auth/drizzle-adapter': 1.7.7(@better-auth/core@1.7.7(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.2)(better-call@1.4.0(zod@4.6.5))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.4))(@better-auth/utils@0.4.2)(drizzle-orm@0.45.3(@cloudflare/workers-types@5.20260930.2)(@libsql/client@0.18.0)(gel@2.2.1)(kysely@0.29.6))
+      '@better-auth/drizzle-adapter': 1.7.7(@better-auth/core@1.7.7(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.2)(better-call@1.4.0(zod@4.6.5))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.4))(@better-auth/utils@0.4.2)(drizzle-orm@0.45.3(@cloudflare/workers-types@5.20260930.2)(@libsql/client@0.18.0)(gel@2.2.1(supports-color@10.2.2))(kysely@0.29.6))
       '@better-auth/kysely-adapter': 1.7.7(@better-auth/core@1.7.7(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.2)(better-call@1.4.0(zod@4.6.5))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.4))(@better-auth/utils@0.4.2)(kysely@0.29.6)
       '@better-auth/memory-adapter': 1.7.7(@better-auth/core@1.7.7(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.2)(better-call@1.4.0(zod@4.6.5))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.4))(@better-auth/utils@0.4.2)
       '@better-auth/mongo-adapter': 1.7.7(@better-auth/core@1.7.7(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.2)(better-call@1.4.0(zod@4.6.5))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.4))(@better-auth/utils@0.4.2)
@@ -4747,8 +4750,8 @@ snapshots:
       nanostores: 1.5.4
       zod: 4.6.5
     optionalDependencies:
-      drizzle-kit: 0.30.6
-      drizzle-orm: 0.45.3(@cloudflare/workers-types@5.20260930.2)(@libsql/client@0.18.0)(gel@2.2.1)(kysely@0.29.6)
+      drizzle-kit: 0.30.6(supports-color@10.2.2)
+      drizzle-orm: 0.45.3(@cloudflare/workers-types@5.20260930.2)(@libsql/client@0.18.0)(gel@2.2.1(supports-color@10.2.2))(kysely@0.29.6)
       react: 19.3.0
       react-dom: 19.3.0(react@19.3.0)
     transitivePeerDependencies:
@@ -4844,9 +4847,11 @@ snapshots:
 
   csstype@3.2.3: {}
 
-  debug@4.4.3:
+  debug@4.4.3(supports-color@10.2.2):
     dependencies:
       ms: 2.1.3
+    optionalDependencies:
+      supports-color: 10.2.2
 
   defu@6.1.7: {}
 
@@ -4884,21 +4889,21 @@ snapshots:
       domelementtype: 2.3.0
       domhandler: 5.0.3
 
-  drizzle-kit@0.30.6:
+  drizzle-kit@0.30.6(supports-color@10.2.2):
     dependencies:
       '@drizzle-team/brocli': 0.10.2
       '@esbuild-kit/esm-loader': 2.6.5
       esbuild: 0.19.12
-      esbuild-register: 3.6.0(esbuild@0.19.12)
-      gel: 2.2.1
+      esbuild-register: 3.6.0(esbuild@0.19.12)(supports-color@10.2.2)
+      gel: 2.2.1(supports-color@10.2.2)
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.45.3(@cloudflare/workers-types@5.20260930.2)(@libsql/client@0.18.0)(gel@2.2.1)(kysely@0.29.6):
+  drizzle-orm@0.45.3(@cloudflare/workers-types@5.20260930.2)(@libsql/client@0.18.0)(gel@2.2.1(supports-color@10.2.2))(kysely@0.29.6):
     optionalDependencies:
       '@cloudflare/workers-types': 5.20260930.2
       '@libsql/client': 0.18.0
-      gel: 2.2.1
+      gel: 2.2.1(supports-color@10.2.2)
       kysely: 0.29.6
 
   dset@3.1.4: {}
@@ -4925,9 +4930,9 @@ snapshots:
 
   es-module-lexer@2.3.2: {}
 
-  esbuild-register@3.6.0(esbuild@0.19.12):
+  esbuild-register@3.6.0(esbuild@0.19.12)(supports-color@10.2.2):
     dependencies:
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@10.2.2)
       esbuild: 0.19.12
     transitivePeerDependencies:
       - supports-color
@@ -5065,11 +5070,11 @@ snapshots:
     optionalDependencies:
       picomatch: 4.0.7
 
-  ffmpeg-static@5.3.0:
+  ffmpeg-static@5.3.0(supports-color@10.2.2):
     dependencies:
       '@derhuerst/http-basic': 8.2.4
       env-paths: 2.2.1
-      https-proxy-agent: 5.0.1
+      https-proxy-agent: 5.0.1(supports-color@10.2.2)
       progress: 2.0.3
     transitivePeerDependencies:
       - supports-color
@@ -5098,10 +5103,10 @@ snapshots:
   fsevents@2.3.3:
     optional: true
 
-  gel@2.2.1:
+  gel@2.2.1(supports-color@10.2.2):
     dependencies:
       '@petamoriken/float16': 3.9.3
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@10.2.2)
       env-paths: 3.0.0
       semver: 7.8.5
       shell-quote: 1.11.0
@@ -5167,10 +5172,10 @@ snapshots:
     dependencies:
       '@types/node': 10.17.60
 
-  https-proxy-agent@5.0.1:
+  https-proxy-agent@5.0.1(supports-color@10.2.2):
     dependencies:
-      agent-base: 6.0.2
-      debug: 4.4.3
+      agent-base: 6.0.2(supports-color@10.2.2)
+      debug: 4.4.3(supports-color@10.2.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -5640,7 +5645,6 @@ snapshots:
       '@img/sharp-win32-ia32': 0.35.5
       '@img/sharp-win32-x64': 0.35.5
       '@types/node': 26.6.4
-    optional: true
 
   shell-quote@1.11.0: {}
 

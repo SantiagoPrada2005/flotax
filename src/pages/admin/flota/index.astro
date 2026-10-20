@@ -1,12 +1,33 @@
 ---
 import LayoutAdmin from '@/layouts/LayoutAdmin.astro';
 import FleetInventoryManager from '@/components/flota/FleetInventoryManager';
-import { listarVehiculos } from '@/lib/flota';
+import LocalCatalogShareCard from '@/components/flota/LocalCatalogShareCard';
+import {
+  listarVehiculos,
+  obtenerLocalPorSlugOId,
+  LOCAL_CANONICO_DEFECTO,
+} from '@/lib/flota';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
 
 const db = env.DB ? getDb(env.DB) : undefined;
-const vehiculos = await listarVehiculos(db);
+const localActivoSesion = Astro.locals.usuario?.localActivo;
+const localContexto =
+  (localActivoSesion
+    ? await obtenerLocalPorSlugOId(localActivoSesion.id, db)
+    : null) ??
+  (localActivoSesion
+    ? {
+        id: localActivoSesion.id,
+        nombre: localActivoSesion.nombre,
+        slug: localActivoSesion.slug,
+        ciudad: 'Medellín',
+        direccion: null,
+        telefono: null,
+      }
+    : LOCAL_CANONICO_DEFECTO);
+
+const vehiculos = await listarVehiculos(db, { localId: localContexto.id });
 ---
 
 <LayoutAdmin title="FlotaX — Control de Flota" activeTab="fleet">
@@ -14,13 +35,10 @@ const vehiculos = await listarVehiculos(db);
     <!-- Header de Módulo -->
     <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-1 pb-1">
       <div>
-        <div class="flex items-center gap-2">
-          <span class="h-2 w-2 rounded-full bg-[#111827]"></span>
-          <p class="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
-            Operaciones de Patio · FlotaX Core
-          </p>
-        </div>
-        <h1 class="mt-1 font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#111827]">
+        <p class="text-xs font-semibold uppercase tracking-wider text-[#4B5563]">
+          Operaciones de Patio • {localContexto.nombre}
+        </p>
+        <h1 class="mt-1 font-display text-2xl font-black tracking-tight text-[#111827] sm:text-3xl">
           Flota de Vehículos
         </h1>
         <p class="mt-1 text-xs font-medium text-[#4B5563]">
@@ -48,6 +66,13 @@ const vehiculos = await listarVehiculos(db);
         </a>
       </div>
     </header>
+
+    <!-- Centro de Compartición del Catálogo Exclusivo del Local -->
+    <LocalCatalogShareCard
+      client:load
+      local={localContexto}
+      unidadesCount={vehiculos.length}
+    />
 
     <!-- Gestor Reactivo de Flota e Inventario -->
     <FleetInventoryManager initialVehiculos={vehiculos} client:load />

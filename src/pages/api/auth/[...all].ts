@@ -5,11 +5,11 @@ import { env } from 'cloudflare:workers';
 import { ensureD1Schema } from '@/lib/db/bootstrap';
 
 export const ALL: APIRoute = async (context) => {
+  // Priorizar el host/origen de la petición actual (context.url.origin) o originHeader válido.
+  // NUNCA usar referer externo (como https://accounts.google.com/) porque corrompe el baseURL y el chequeo de state de Better Auth.
   const originHeader = context.request.headers.get('origin');
-  const refererHeader = context.request.headers.get('referer');
   const requestOrigin =
-    originHeader ||
-    (refererHeader ? new URL(refererHeader).origin : undefined) ||
+    (originHeader && !originHeader.includes('google.com') ? originHeader : undefined) ||
     context.url.origin;
 
   const isOAuthCallback = context.url.pathname.includes('/callback');

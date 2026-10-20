@@ -31,7 +31,7 @@ const IOS_INSTALL_STEPS: readonly [
     shortTabLabel: 'Menú y Share',
     badgeText: 'Paso 1 de 3 · En la barra de abajo',
     videoSrc: '/instructions/ios-step-1-share.mp4',
-    posterSrc: '/instructions/ios-step-1-poster.jpg',
+    posterSrc: '/instructions/ios-step-1-poster.webp',
     titleEsEn: 'Toca [≡] abajo y elige Compartir (Share)',
     instructionText:
       'En la barra inferior de Safari, toca el ícono de menú [≡] y luego toca "Share" o "Compartir".',
@@ -43,7 +43,7 @@ const IOS_INSTALL_STEPS: readonly [
     shortTabLabel: 'Agregar a inicio',
     badgeText: 'Paso 2 de 3 · En la hoja de compartir',
     videoSrc: '/instructions/ios-step-2-home.mp4',
-    posterSrc: '/instructions/ios-step-2-poster.jpg',
+    posterSrc: '/instructions/ios-step-2-poster.webp',
     titleEsEn: 'Toca Ver más (∨) y Agregar a inicio',
     instructionText:
       'Toca el círculo "View More / Ver más" (∨) o desliza hacia arriba y selecciona "[+] Add to Home Screen / Agregar a inicio".',
@@ -55,7 +55,7 @@ const IOS_INSTALL_STEPS: readonly [
     shortTabLabel: 'Tocar Add',
     badgeText: 'Paso 3 de 3 · Confirmar arriba',
     videoSrc: '/instructions/ios-step-3-add.mp4',
-    posterSrc: '/instructions/ios-step-3-poster.jpg',
+    posterSrc: '/instructions/ios-step-3-poster.webp',
     titleEsEn: 'Toca Agregar (Add) arriba a la derecha',
     instructionText:
       'Presiona el botón "Add / Agregar" en la esquina superior derecha. ¡FlotaX quedará instalada en tu pantalla de inicio!',

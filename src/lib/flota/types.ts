@@ -4,6 +4,8 @@ export type EstadoVehiculo = 'DISPONIBLE' | 'RESERVADO' | 'MANTENIMIENTO' | 'FUE
 
 export interface VehiculoItem {
   id: string;
+  localId?: string | undefined;
+  localSlug?: string | undefined;
   marca: string;
   modelo: string;
   anio: number;
@@ -34,6 +36,7 @@ export interface FiltrosBusquedaVehiculo {
   query?: string | undefined;
   categoria?: CategoriaVehiculo | 'TODOS' | undefined;
   soloDisponibles?: boolean | undefined;
+  localId?: string | undefined;
 }
 
 export type MotivoBloqueoDisponibilidad = 'RESERVADO' | 'MANTENIMIENTO';

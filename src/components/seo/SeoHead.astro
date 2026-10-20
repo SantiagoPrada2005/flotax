@@ -1,0 +1,91 @@
+---
+import { buildAutoRentalSchema } from '@/lib/seo/schema';
+
+interface Props {
+  title?: string | undefined;
+  description?: string | undefined;
+  canonicalUrl?: string | undefined;
+  ogImage?: string | undefined;
+  ogType?: 'website' | 'article' | 'product' | undefined;
+  noindex?: boolean | undefined;
+  structuredData?: Record<string, unknown> | Array<Record<string, unknown>> | undefined;
+}
+
+const {
+  title,
+  description,
+  canonicalUrl,
+  ogImage = '/images/landing/hero-vehicle.webp',
+  ogType = 'website',
+  noindex = false,
+  structuredData,
+} = Astro.props;
+
+const siteUrl = (Astro.site ? Astro.site.toString() : 'https://flotax.innovaweb.pro').replace(/\/$/, '');
+
+const resolvedTitle = title
+  ? (title.includes('FlotaX') ? title : `${title} · FlotaX`)
+  : 'FlotaX — Alquiler y Gestión de Flota de Vehículos en Tiempo Real';
+
+const resolvedDescription = description
+  ? description.trim()
+  : 'Plataforma integral y móvil de alquiler y gestión perimetral de vehículos. Reserva autos, SUVs, motos y patinetas con entrega en 3 minutos sin trámites.';
+
+const resolvedCanonical = canonicalUrl
+  ? canonicalUrl
+  : new URL(Astro.url.pathname, siteUrl).href;
+
+const absoluteOgImage = ogImage.startsWith('http')
+  ? ogImage
+  : `${siteUrl}${ogImage.startsWith('/') ? '' : '/'}${ogImage}`;
+
+// Procesamiento de datos estructurados Schema.org JSON-LD
+const schemas: Array<Record<string, unknown>> = [];
+if (structuredData) {
+  if (Array.isArray(structuredData)) {
+    schemas.push(...structuredData);
+  } else {
+    schemas.push(structuredData);
+  }
+} else if (!noindex && (Astro.url.pathname === '/' || Astro.url.pathname === '/catalogo')) {
+  schemas.push(buildAutoRentalSchema(siteUrl));
+}
+---
+
+<!-- Metadatos Primarios de Indexación -->
+<title>{resolvedTitle}</title>
+<meta name="description" content={resolvedDescription} />
+<link rel="canonical" href={resolvedCanonical} />
+
+<!-- Directivas de Rastreo para Motores de Búsqueda -->
+{noindex ? (
+  <meta name="robots" content="noindex, nofollow" />
+) : (
+  <meta
+    name="robots"
+    content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+  />
+)}
+
+<!-- Open Graph / Redes Sociales (Facebook, LinkedIn, WhatsApp) -->
+<meta property="og:site_name" content="FlotaX" />
+<meta property="og:title" content={resolvedTitle} />
+<meta property="og:description" content={resolvedDescription} />
+<meta property="og:url" content={resolvedCanonical} />
+<meta property="og:type" content={ogType} />
+<meta property="og:image" content={absoluteOgImage} />
+<meta property="og:image:alt" content={resolvedTitle} />
+<meta property="og:locale" content="es_CO" />
+
+<!-- Twitter / X Cards -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content="@flotax" />
+<meta name="twitter:creator" content="@flotax" />
+<meta name="twitter:title" content={resolvedTitle} />
+<meta name="twitter:description" content={resolvedDescription} />
+<meta name="twitter:image" content={absoluteOgImage} />
+
+<!-- Datos Estructurados Schema.org (JSON-LD) -->
+{schemas.map((schema) => (
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+))}

@@ -76,7 +76,7 @@ const DEFAULT_PREVIEW_VEHICLES: VehiculoItem[] = [
     capacidadPasajeros: 7,
     autonomiaKm: 420,
     kilometraje: 9400,
-    imagenUrl: '/images/vehiculos/white-suv.jpg',
+    imagenUrl: '/images/vehiculos/white-suv.webp',
     destacado: true,
     aceleracion: '3.8 s',
     velocidadMaxima: '210 km/h',
@@ -100,7 +100,7 @@ const DEFAULT_PREVIEW_VEHICLES: VehiculoItem[] = [
     combustible: 'Gasolina',
     capacidadPasajeros: 4,
     kilometraje: 14200,
-    imagenUrl: '/images/vehiculos/dark-coupe.jpg',
+    imagenUrl: '/images/vehiculos/dark-coupe.webp',
     destacado: true,
     aceleracion: '4.2 s',
     velocidadMaxima: '250 km/h',
@@ -124,7 +124,7 @@ const DEFAULT_PREVIEW_VEHICLES: VehiculoItem[] = [
     combustible: 'Gasolina',
     capacidadPasajeros: 5,
     kilometraje: 21500,
-    imagenUrl: '/images/vehiculos/mazda-cx30.png',
+    imagenUrl: '/images/vehiculos/mazda-cx30.webp',
     destacado: true,
     aceleracion: '7.8 s',
     velocidadMaxima: '198 km/h',
@@ -335,6 +335,7 @@ export default function LandingFleetShowcaseIsland({
                     alt={`${v.marca} ${v.modelo}`}
                     className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
+                    decoding="async"
                   />
 
                   {/* Sombra de estudio */}

@@ -23,7 +23,7 @@ const featuredVehicles: Vehicle[] = [
     users: "4 pas",
     trans: "Automático",
     fuel: "Gasolina",
-    image: "/images/landing/feat-toyota-corolla.jpg",
+    image: "/images/landing/feat-toyota-corolla.webp",
     isPopular: true
   },
   {
@@ -35,7 +35,7 @@ const featuredVehicles: Vehicle[] = [
     users: "2 pas",
     trans: "Manual 6v",
     fuel: "Gasolina",
-    image: "/images/landing/feat-honda-cb650r.jpg",
+    image: "/images/landing/feat-honda-cb650r.webp",
     isPopular: true
   },
   {
@@ -47,7 +47,7 @@ const featuredVehicles: Vehicle[] = [
     users: "5 pas",
     trans: "Automático",
     fuel: "Híbrido",
-    image: "/images/landing/feat-kia-sportage.jpg",
+    image: "/images/landing/feat-kia-sportage.webp",
     isPopular: true
   }
 ];
@@ -98,6 +98,7 @@ const featuredVehicles: Vehicle[] = [
               alt={v.name}
               class="w-full h-full object-cover rounded-2xl group-hover:scale-105 transition-transform duration-500"
               loading="lazy"
+              decoding="async"
             />
 
             <!-- Top Left Status Badge -->
