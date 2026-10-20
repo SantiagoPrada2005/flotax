@@ -12,9 +12,10 @@
 | [`FleetCatalogList.tsx`](./FleetCatalogList.tsx) | Isla React 19: Catálogo con filtro de marcas y grid PC | Componente `<FleetCatalogList ... />` | [`BrandFilterBar.tsx`](./BrandFilterBar.tsx), [`VehicleCatalogCard.tsx`](./VehicleCatalogCard.tsx) |
 | [`FleetInventoryManager.tsx`](./FleetInventoryManager.tsx) | Module / Utility | - | - |
 | [`VehicleCatalogCard.tsx`](./VehicleCatalogCard.tsx) | Module / Utility | - | - |
-| [`VehicleFormIsland.tsx`](./VehicleFormIsland.tsx) | Module / Utility | - | - |
+| [`VehicleFormIsland.tsx`](./VehicleFormIsland.tsx) | Wrapper Isla React 19: Asistente guiado paso a paso para flota | `VehicleFormIsland`, `VehicleFormIslandProps` | [`./wizard/VehicleWizardIsland.tsx`](./wizard/VehicleWizardIsland.tsx) |
 | [`VehicleSearchResultItem.tsx`](./VehicleSearchResultItem.tsx) | Module / Utility | - | - |
 | [`VehicleSearchSpotlight.tsx`](./VehicleSearchSpotlight.tsx) | Module / Utility | - | - |
+| [`wizard/`](./wizard/INDEX.md) | Sub-módulo: Componentes atómicos del asistente multi-paso (Stepper, Steps 1-6) | - | - |
 
 ## Invariants & Directory Rules
 

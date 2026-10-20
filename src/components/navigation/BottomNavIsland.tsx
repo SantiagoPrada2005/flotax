@@ -419,6 +419,18 @@ export default function BottomNavIsland({
 
   const activePosition = isDragging ? dragOffset : selectedIndex * ITEM_STEP;
 
+  // Ocultar la barra de navegación flotante inferior en páginas de formularios y wizards
+  // para evitar superposiciones con los botones de acción inferior ("Continuar" / "Anterior")
+  const isFormPage =
+    livePath.startsWith('/admin/flota/nuevo') ||
+    (livePath.startsWith('/admin/flota/') && livePath.includes('/editar')) ||
+    livePath.startsWith('/alquilar') ||
+    livePath.includes('/entrega');
+
+  if (isFormPage) {
+    return null;
+  }
+
   return (
     <nav
       aria-label="Navegación principal móvil"
