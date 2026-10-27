@@ -11,6 +11,35 @@ El sistema utiliza **Cloudflare D1 (SQLite en el Edge)** gestionado mediante **D
 
 ---
 
+## Dominios canónicos (enums)
+
+Los dominios cerrados viven **en el schema Drizzle**, no en los módulos de consumo. Cada columna se declara con `text('columna', { enum: [...] })`, de modo que `$inferSelect` devuelve la unión literal y los tipos fluyen sin aserciones (`as`) hacia Zod, repositorios y UI.
+
+| Archivo | Constante | Columna |
+| :--- | :--- | :--- |
+| `src/db/schema/vehiculos.ts` | `categoriasVehiculo` | `vehiculos.categoria` |
+| | `estadosVehiculo` | `vehiculos.estado` |
+| | `transmisionesVehiculo` | `vehiculos.transmision` |
+| | `combustiblesVehiculo` | `vehiculos.combustible` |
+| `src/db/schema/caja.ts` | `tiposCuentaFinanciera` | `cuentas_financieras.tipo` |
+| | `tiposMovimientoCaja` | `movimientos_caja.tipo` |
+| | `categoriasIngreso` + `categoriasEgreso` + `TRANSFERENCIA_INTERNA` (`categoriasMovimiento`) | `movimientos_caja.categoria` |
+| | `metodosPagoFinanciero` | `movimientos_caja.metodo_pago`, `depositos_garantia.metodo_pago` |
+| | `estadosMovimientoCaja` | `movimientos_caja.estado` |
+| | `estadosSesionCaja` | `sesiones_caja.estado` |
+| | `estadosDepositoGarantia` | `depositos_garantia.estado` |
+| | `entidadesAuditoria` / `accionesAuditoria` | `auditoria_financiera.entidad` / `.accion` |
+| `src/db/schema/notificaciones.ts` | `tiposNotificacion` | `notificaciones.tipo` |
+| | `alcancesNotificacion` / `prioridadesNotificacion` | `notificaciones.alcance` / `.prioridad` |
+| `src/db/schema/verificaciones.ts` | `tiposDocumentoIdentidad` | `verificaciones_identidad.tipo_documento` |
+| | `estadosVerificacion` | `verificaciones_identidad.estado` |
+| `src/db/schema/incidentes.ts` | `nivelesIncidente` | `incidentes_sistema.nivel` |
+| | `estadosIncidente` | `incidentes_sistema.estado` |
+
+> Los enums son **solo de tipado**: no alteran el DDL. `pnpm db:generate` no produce migraciones por añadirlos.
+
+---
+
 ## Esquema Módulos & Entidades
 
 ### 1. Módulo Autenticación (Better Auth)
@@ -347,7 +376,7 @@ Registro inmutable para operaciones sensibles, anulaciones, reversiones y arqueo
 | `local_id` | TEXT | NOT NULL, FK `locales_alquiler.id` (CASCADE) | Local. |
 | `entidad` | TEXT | NOT NULL | 'MOVIMIENTO', 'SESION_CAJA', 'GARANTIA', 'CUENTA'. |
 | `entidad_id` | TEXT | NOT NULL | ID de la entidad auditada. |
-| `accion` | TEXT | NOT NULL | 'CREAR', 'MODIFICAR', 'ANULAR', 'REVERTIR', 'CERRAR_CAJA', 'DEVOLVER_GARANTIA', 'TRANSFERENCIA'. |
+| `accion` | TEXT | NOT NULL | 'CREAR', 'MODIFICAR', 'ANULAR', 'REVERTIR', 'CERRAR_CAJA', 'DEVOLVER_GARANTIA', 'TRANSFERENCIA', 'RECIBIR'. |
 | `monto_anterior` | INTEGER | NULLABLE | Valor previo a la mutación. |
 | `monto_nuevo` | INTEGER | NULLABLE | Valor posterior a la mutación. |
 | `motivo` | TEXT | NULLABLE | Causal justificada del cambio. |

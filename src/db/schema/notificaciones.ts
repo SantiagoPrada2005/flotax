@@ -8,6 +8,20 @@ export type PrioridadNotificacion = (typeof prioridadesNotificacion)[number];
 export const alcancesNotificacion = ['USUARIO', 'LOCAL', 'LOCAL_ROLES', 'PLATAFORMA'] as const;
 export type AlcanceNotificacion = (typeof alcancesNotificacion)[number];
 
+/** Catálogo cerrado de eventos que pueden generar una notificación. */
+export const tiposNotificacion = [
+  'SOLICITUD_NUEVA',
+  'RESERVA_CONFIRMADA',
+  'RESERVA_RECHAZADA',
+  'ABONO_REGISTRADO',
+  'ENTREGA_PROGRAMADA',
+  'DEVOLUCION_PROXIMA',
+  'DOCUMENTO_POR_VENCER',
+  'INVITACION_RECIBIDA',
+  'ANUNCIO_PLATAFORMA',
+] as const;
+export type TipoNotificacion = (typeof tiposNotificacion)[number];
+
 /**
  * Bandeja de notificaciones in-app (fan-out on write: una fila por destinatario).
  * `localId = null` => aviso personal (modo cliente); con valor => aviso del patio (modo operador).
@@ -21,7 +35,7 @@ export const notificaciones = sqliteTable(
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
     localId: text('local_id').references(() => localesAlquiler.id, { onDelete: 'cascade' }),
-    tipo: text('tipo').notNull(),
+    tipo: text('tipo', { enum: tiposNotificacion }).notNull(),
     alcance: text('alcance', { enum: alcancesNotificacion }).notNull(),
     prioridad: text('prioridad', { enum: prioridadesNotificacion }).notNull().default('NORMAL'),
     titulo: text('titulo').notNull(),

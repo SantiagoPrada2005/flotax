@@ -10,17 +10,27 @@ import {
   cierreCajaRepo,
   gestionarGarantiaRepo,
   crearCuentaRepo,
-  type MetodoPagoFinanciero,
-  type CategoriaMovimiento,
 } from '@/lib/caja';
 import { crearServicioNotificaciones } from '@/lib/notificaciones';
+import { requireLocalAuth, PERMISOS } from '@/lib/auth';
+import {
+  metodosPagoFinanciero,
+  categoriasMovimiento,
+  tiposCuentaFinanciera,
+} from '@/db/schema';
 
-const metodoPagoSchema = z.enum(['efectivo', 'transferencia', 'tarjeta', 'especie', 'otro']);
+const metodoPagoSchema = z.enum(metodosPagoFinanciero);
+
+/** Subconjunto operable del formulario: las transferencias tienen su propia acción. */
+const tiposMovimientoRegistrable = ['INGRESO', 'EGRESO'] as const;
+
+/** Estados asignables al crear: `ANULADO` lo produce la anulación, no el alta. */
+const estadosMovimientoRegistrable = ['CONFIRMADO', 'PENDIENTE'] as const;
 
 export const registrarMovimientoAction = defineAction({
   input: z.object({
-    tipo: z.enum(['INGRESO', 'EGRESO']),
-    categoria: z.string().min(1, { error: 'La categoría es obligatoria' }),
+    tipo: z.enum(tiposMovimientoRegistrable),
+    categoria: z.enum(categoriasMovimiento, { error: 'La categoría no es válida' }),
     concepto: z.string().min(3, { error: 'El concepto debe tener al menos 3 caracteres' }),
     monto: z.number().positive({ error: 'El monto debe ser un valor positivo en COP' }),
     metodoPago: metodoPagoSchema,
@@ -31,20 +41,25 @@ export const registrarMovimientoAction = defineAction({
     proveedor: z.string().optional(),
     referencia: z.string().optional(),
     observaciones: z.string().optional(),
-    estado: z.enum(['CONFIRMADO', 'PENDIENTE']).optional(),
+    estado: z.enum(estadosMovimientoRegistrable).optional(),
   }),
   handler: async (input, context) => {
-    const usuario = context.locals.usuario;
-    const localId = usuario?.localActivo?.id ?? 'local-medellin-principal';
+    const usuario = requireLocalAuth(
+      context,
+      input.tipo === 'INGRESO'
+        ? PERMISOS.CAJA_ABONOS_REGISTRAR
+        : PERMISOS.CAJA_GASTOS_REGISTRAR
+    );
+    const localId = usuario.localActivo.id;
     const db = env.DB ? getDb(env.DB) : undefined;
 
     const movimiento = await registrarMovimientoRepo({
       localId,
       tipo: input.tipo,
-      categoria: input.categoria as CategoriaMovimiento,
+      categoria: input.categoria,
       concepto: input.concepto,
       monto: input.monto,
-      metodoPago: input.metodoPago as MetodoPagoFinanciero,
+      metodoPago: input.metodoPago,
       cuentaId: input.cuentaId,
       contratoId: input.contratoId,
       clienteNombre: input.clienteNombre,
@@ -53,11 +68,11 @@ export const registrarMovimientoAction = defineAction({
       referencia: input.referencia,
       observaciones: input.observaciones,
       estado: input.estado,
-      usuarioId: usuario?.id ?? 'usr-admin-flotax',
+      usuarioId: usuario.id,
       db,
     });
 
-    if (env.DB && localId && usuario) {
+    if (env.DB) {
       try {
         await crearServicioNotificaciones(env, context.locals.logger).notificar({
           tipo: input.tipo === 'INGRESO' ? 'ABONO_REGISTRADO' : 'SOLICITUD_NUEVA',
@@ -97,14 +112,14 @@ export const anularMovimientoAction = defineAction({
     motivo: z.string().min(5, { error: 'El motivo de anulación debe tener al menos 5 caracteres' }),
   }),
   handler: async (input, context) => {
-    const usuario = context.locals.usuario;
-    const localId = usuario?.localActivo?.id ?? 'local-medellin-principal';
+    const usuario = requireLocalAuth(context, PERMISOS.CAJA_GASTOS_REGISTRAR);
+    const localId = usuario.localActivo.id;
     const db = env.DB ? getDb(env.DB) : undefined;
 
     const movimiento = await anularMovimientoRepo({
       movimientoId: input.movimientoId,
       motivo: input.motivo,
-      usuarioId: usuario?.id ?? 'usr-admin-flotax',
+      usuarioId: usuario.id,
       localId,
       db,
     });
@@ -126,8 +141,8 @@ export const registrarTransferenciaAction = defineAction({
     referencia: z.string().optional(),
   }),
   handler: async (input, context) => {
-    const usuario = context.locals.usuario;
-    const localId = usuario?.localActivo?.id ?? 'local-medellin-principal';
+    const usuario = requireLocalAuth(context, PERMISOS.CAJA_GASTOS_REGISTRAR);
+    const localId = usuario.localActivo.id;
     const db = env.DB ? getDb(env.DB) : undefined;
 
     const movimiento = await registrarTransferenciaInternaRepo({
@@ -136,7 +151,7 @@ export const registrarTransferenciaAction = defineAction({
       monto: input.monto,
       concepto: input.concepto,
       referencia: input.referencia,
-      usuarioId: usuario?.id ?? 'usr-admin-flotax',
+      usuarioId: usuario.id,
       localId,
       db,
     });
@@ -156,15 +171,15 @@ export const aperturaCajaAction = defineAction({
     observaciones: z.string().optional(),
   }),
   handler: async (input, context) => {
-    const usuario = context.locals.usuario;
-    const localId = usuario?.localActivo?.id ?? 'local-medellin-principal';
+    const usuario = requireLocalAuth(context, PERMISOS.CAJA_ABONOS_REGISTRAR);
+    const localId = usuario.localActivo.id;
     const db = env.DB ? getDb(env.DB) : undefined;
 
     const sesion = await aperturaCajaRepo({
       cuentaId: input.cuentaId,
       saldoInicialContado: input.saldoInicialContado,
       observaciones: input.observaciones,
-      usuarioId: usuario?.id ?? 'usr-admin-flotax',
+      usuarioId: usuario.id,
       localId,
       db,
     });
@@ -185,8 +200,8 @@ export const cierreCajaAction = defineAction({
     observaciones: z.string().optional(),
   }),
   handler: async (input, context) => {
-    const usuario = context.locals.usuario;
-    const localId = usuario?.localActivo?.id ?? 'local-medellin-principal';
+    const usuario = requireLocalAuth(context, PERMISOS.CAJA_ARQUEO_CERRAR);
+    const localId = usuario.localActivo.id;
     const db = env.DB ? getDb(env.DB) : undefined;
 
     const sesion = await cierreCajaRepo({
@@ -194,7 +209,7 @@ export const cierreCajaAction = defineAction({
       saldoRealContado: input.saldoRealContado,
       motivoDiferencia: input.motivoDiferencia,
       observaciones: input.observaciones,
-      usuarioId: usuario?.id ?? 'usr-admin-flotax',
+      usuarioId: usuario.id,
       localId,
       db,
     });
@@ -217,8 +232,8 @@ export const registrarAbonoAction = defineAction({
     notas: z.string().optional(),
   }),
   handler: async (input, context) => {
-    const usuario = context.locals.usuario;
-    const localId = usuario?.localActivo?.id ?? 'local-medellin-principal';
+    const usuario = requireLocalAuth(context, PERMISOS.CAJA_ABONOS_REGISTRAR);
+    const localId = usuario.localActivo.id;
     const db = env.DB ? getDb(env.DB) : undefined;
 
     const cuentaId =
@@ -233,16 +248,16 @@ export const registrarAbonoAction = defineAction({
       categoria: 'ABONO_CONTRATO',
       concepto: `Abono a contrato #${input.contratoId}`,
       monto: input.monto,
-      metodoPago: input.metodoPago as MetodoPagoFinanciero,
+      metodoPago: input.metodoPago,
       cuentaId,
       contratoId: input.contratoId,
       referencia: input.referencia,
       observaciones: input.notas,
-      usuarioId: usuario?.id ?? 'usr-admin-flotax',
+      usuarioId: usuario.id,
       db,
     });
 
-    if (env.DB && localId && usuario) {
+    if (env.DB) {
       try {
         await crearServicioNotificaciones(env, context.locals.logger).notificar({
           tipo: 'ABONO_REGISTRADO',
@@ -287,8 +302,8 @@ export const gestionarGarantiaAction = defineAction({
     motivo: z.string().optional(),
   }),
   handler: async (input, context) => {
-    const usuario = context.locals.usuario;
-    const localId = usuario?.localActivo?.id ?? 'local-medellin-principal';
+    const usuario = requireLocalAuth(context, PERMISOS.CAJA_ABONOS_REGISTRAR);
+    const localId = usuario.localActivo.id;
     const db = env.DB ? getDb(env.DB) : undefined;
 
     const garantia = await gestionarGarantiaRepo({
@@ -296,10 +311,10 @@ export const gestionarGarantiaAction = defineAction({
       accion: input.accion,
       monto: input.monto,
       cuentaId: input.cuentaId,
-      metodoPago: input.metodoPago as MetodoPagoFinanciero | undefined,
+      metodoPago: input.metodoPago,
       referencia: input.referencia,
       motivo: input.motivo,
-      usuarioId: usuario?.id ?? 'usr-admin-flotax',
+      usuarioId: usuario.id,
       localId,
       db,
     });
@@ -322,12 +337,12 @@ export const gestionarGarantiaAction = defineAction({
 export const crearCuentaAction = defineAction({
   input: z.object({
     nombre: z.string().min(2, { error: 'El nombre de la cuenta debe tener al menos 2 caracteres' }),
-    tipo: z.enum(['CAJA_EFECTIVO', 'BANCO', 'BILLETERA_DIGITAL']),
+    tipo: z.enum(tiposCuentaFinanciera),
     saldoInicial: z.number().min(0, { error: 'El saldo inicial no puede ser negativo' }),
   }),
   handler: async (input, context) => {
-    const usuario = context.locals.usuario;
-    const localId = usuario?.localActivo?.id ?? 'local-medellin-principal';
+    const usuario = requireLocalAuth(context, PERMISOS.LOCAL_GESTIONAR);
+    const localId = usuario.localActivo.id;
     const db = env.DB ? getDb(env.DB) : undefined;
 
     const cuenta = await crearCuentaRepo({
@@ -335,7 +350,7 @@ export const crearCuentaAction = defineAction({
       tipo: input.tipo,
       saldoInicial: input.saldoInicial,
       localId,
-      usuarioId: usuario?.id ?? 'usr-admin-flotax',
+      usuarioId: usuario.id,
       db,
     });
 

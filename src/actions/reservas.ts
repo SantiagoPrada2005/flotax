@@ -4,6 +4,7 @@ import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
 import { actualizarEstadoVehiculo } from '@/lib/flota/repositorio';
 import { crearServicioNotificaciones } from '@/lib/notificaciones';
+import { requireAuth, requireLocalAuth, PERMISOS } from '@/lib/auth';
 
 const estadoReservaSchema = z.enum([
   'PENDIENTE',
@@ -29,8 +30,8 @@ export const cambiarEstadoReservaAction = defineAction({
   }),
   handler: async (input, context) => {
     const db = env.DB ? getDb(env.DB) : undefined;
-    const usuario = context.locals.usuario;
-    const localId = usuario?.localActivo?.id;
+    const usuario = requireAuth(context);
+    const localId = usuario.localActivo?.id;
 
     // Sincronizar estado de la unidad física en flota según la etapa del ciclo
     if (input.nuevoEstado === 'EN_CURSO') {
@@ -45,7 +46,7 @@ export const cambiarEstadoReservaAction = defineAction({
     }
 
     // Emitir notificación in-app si hay sesión y base de datos activa
-    if (env.DB && localId && usuario) {
+    if (env.DB && localId) {
       try {
         const servicioNotif = crearServicioNotificaciones(
           env,
@@ -106,10 +107,10 @@ export const registrarCobroWaybillAction = defineAction({
     metodoPago: z.enum(['efectivo', 'transferencia', 'tarjeta']),
   }),
   handler: async (input, context) => {
-    const usuario = context.locals.usuario;
-    const localId = usuario?.localActivo?.id;
+    const usuario = requireLocalAuth(context, PERMISOS.CAJA_ABONOS_REGISTRAR);
+    const localId = usuario.localActivo.id;
 
-    if (env.DB && localId && usuario && input.monto > 0) {
+    if (env.DB && input.monto > 0) {
       try {
         await crearServicioNotificaciones(env, context.locals.logger).notificar({
           tipo: 'ABONO_REGISTRADO',
@@ -168,7 +169,8 @@ export const registrarEntregaEvaluacionAction = defineAction({
     telemetriaVerificada: z.boolean(),
     llavesEntregadas: z.boolean(),
   }),
-  handler: async (input) => {
+  handler: async (input, context) => {
+    requireAuth(context);
     const db = env.DB ? getDb(env.DB) : undefined;
     const requiereRevision =
       input.calificacionGeneral === 'ATENCION_REQUERIDA' ||

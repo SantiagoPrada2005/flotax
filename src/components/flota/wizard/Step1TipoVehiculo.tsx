@@ -1,4 +1,8 @@
-import type { CategoriaVehiculo } from '@/lib/flota/types';
+import type {
+  CategoriaVehiculo,
+  TransmisionVehiculo,
+  CombustibleVehiculo,
+} from '@/lib/flota/types';
 import type { VehiculoWizardData } from './types';
 
 export interface Step1TipoVehiculoProps {
@@ -12,8 +16,8 @@ interface CategoriaCardOption {
   subtitulo: string;
   marcasSugeridas: string[];
   defaultPasajeros: number;
-  defaultTransmision: 'Automática' | 'Manual' | 'Eléctrica';
-  defaultCombustible: 'Gasolina' | 'Diésel' | 'Eléctrico' | 'Híbrido';
+  defaultTransmision: TransmisionVehiculo;
+  defaultCombustible: CombustibleVehiculo;
   defaultPrecioDia: number;
   defaultGarantia: number;
   iconoSvg: string;

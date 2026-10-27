@@ -5,6 +5,7 @@ import { getDb } from '@/lib/db';
 import {
   requireAuth,
   requireLocalAuth,
+  PERMISOS,
 } from '@/lib/auth';
 import {
   obtenerLocalesMembresia,
@@ -147,7 +148,6 @@ import { localesAlquiler, miembrosLocal } from '@/db/schema';
 import {
   registrarLocalEnMemoria,
   actualizarConfigCatalogoLocal,
-  LOCAL_CANONICO_DEFECTO,
 } from '@/lib/flota/locales-captacion';
 
 function generarSlug(nombre: string): string {
@@ -276,8 +276,8 @@ export const actualizarPerfilCatalogoLocal = defineAction({
     telefono: z.string().optional(),
   }),
   handler: async (input, context) => {
-    const usuario = context.locals.usuario;
-    const localId = usuario?.localActivo?.id ?? LOCAL_CANONICO_DEFECTO.id;
+    const usuario = requireLocalAuth(context, PERMISOS.LOCAL_GESTIONAR);
+    const localId = usuario.localActivo.id;
     const db = env.DB ? getDb(env.DB) : undefined;
 
     const resultado = await actualizarConfigCatalogoLocal(

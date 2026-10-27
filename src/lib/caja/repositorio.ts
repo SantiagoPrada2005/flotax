@@ -1,4 +1,5 @@
 import type { AppDb } from '@/lib/db';
+import { logFalloD1 } from '@/lib/db/diagnostics';
 import {
   cuentasFinancieras,
   movimientosCaja,
@@ -34,6 +35,7 @@ import type {
   MetodoPagoFinanciero,
   CategoriaMovimiento,
   TipoMovimientoCaja,
+  TipoCuentaFinanciera,
 } from './tipos';
 
 // Cache en memoria para reactividad y tolerancia en entornos offline o preview
@@ -156,8 +158,9 @@ export async function obtenerEstadoFinancieroCompleto(params: {
       if (dbGarantias.length > 0) {
         garantiasList = dbGarantias;
       }
-    } catch {
+    } catch (error) {
       // Si las tablas aún no están migradas en el isolate local, continúa con memoria
+      logFalloD1('caja.resumen.select', error, {});
     }
   }
 
@@ -353,8 +356,9 @@ export async function registrarMovimientoRepo(params: {
         detallesJson: JSON.stringify({ tipo: params.tipo, categoria: params.categoria }),
         creadoEn: ahora,
       });
-    } catch {
+    } catch (error) {
       // Fallback memoria asegurado
+      logFalloD1('caja.movimiento.insert', error, { movimientoId: id });
     }
   }
 
@@ -429,8 +433,9 @@ export async function anularMovimientoRepo(params: {
         detallesJson: JSON.stringify({ motivo: params.motivo, fechaAnulacion: ahora }),
         creadoEn: ahora,
       });
-    } catch {
-      // Ignorar fallback
+    } catch (error) {
+      // Fallback: la anulación ya quedó aplicada en memoria
+      logFalloD1('caja.movimiento.anular', error, { movimientoId: params.movimientoId });
     }
   }
 
@@ -534,8 +539,9 @@ export async function registrarTransferenciaInternaRepo(params: {
         detallesJson: JSON.stringify({ origen: params.cuentaOrigenId, destino: params.cuentaDestinoId }),
         creadoEn: ahora,
       });
-    } catch {
-      // Ignorar fallback
+    } catch (error) {
+      // Fallback: la transferencia ya quedó aplicada en memoria
+      logFalloD1('caja.transferencia.insert', error, { movimientoId: id });
     }
   }
 
@@ -599,8 +605,9 @@ export async function aperturaCajaRepo(params: {
         creadoEn: nuevaSesion.creadoEn,
         actualizadoEn: nuevaSesion.actualizadoEn,
       });
-    } catch {
-      // Ignorar fallback
+    } catch (error) {
+      // Fallback: la apertura ya quedó aplicada en memoria
+      logFalloD1('caja.apertura.insert', error, { sesionId: nuevaSesion.id });
     }
   }
 
@@ -698,8 +705,9 @@ export async function cierreCajaRepo(params: {
         detallesJson: JSON.stringify({ diferencia, saldoEsperado, saldoContado: params.saldoRealContado }),
         creadoEn: ahora,
       });
-    } catch {
+    } catch (error) {
       // Fallback memoria
+      logFalloD1('caja.cierre.update', error, { sesionId: params.sesionId });
     }
   }
 
@@ -745,7 +753,7 @@ export async function gestionarGarantiaRepo(params: {
       categoria: 'DEPOSITO_GARANTIA',
       concepto: `Recepción de depósito de garantía contrato #${dep.contratoId} (${dep.clienteNombre})`,
       monto: params.monto,
-      metodoPago: dep.metodoPago as MetodoPagoFinanciero,
+      metodoPago: dep.metodoPago ?? 'transferencia',
       cuentaId: dep.cuentaId,
       contratoId: dep.contratoId,
       clienteNombre: dep.clienteNombre,
@@ -802,7 +810,7 @@ export async function gestionarGarantiaRepo(params: {
       categoria: 'COBRO_DANOS_MULTAS',
       concepto: `Aplicación de garantía a cargos autorizados contrato #${dep.contratoId}: ${params.motivo}`,
       monto: params.monto,
-      metodoPago: (dep.metodoPago as MetodoPagoFinanciero) || 'transferencia',
+      metodoPago: dep.metodoPago ?? 'transferencia',
       cuentaId: dep.cuentaId || 'cta-bancolombia-ope',
       contratoId: dep.contratoId,
       clienteNombre: dep.clienteNombre,
@@ -834,8 +842,9 @@ export async function gestionarGarantiaRepo(params: {
           actualizadoEn: ahora,
         })
         .where(eq(depositosGarantia.id, params.garantiaId));
-    } catch {
-      // Ignorar fallback
+    } catch (error) {
+      // Fallback: la garantía ya quedó actualizada en memoria
+      logFalloD1('caja.garantia.update', error, { garantiaId: params.garantiaId });
     }
   }
 
@@ -847,7 +856,7 @@ export async function gestionarGarantiaRepo(params: {
  */
 export async function crearCuentaRepo(params: {
   nombre: string;
-  tipo: 'CAJA_EFECTIVO' | 'BANCO' | 'BILLETERA_DIGITAL';
+  tipo: TipoCuentaFinanciera;
   saldoInicial: number;
   localId: string;
   usuarioId: string;
@@ -895,8 +904,9 @@ export async function crearCuentaRepo(params: {
         detallesJson: JSON.stringify({ nombre: params.nombre, tipo: params.tipo }),
         creadoEn: ahora,
       });
-    } catch {
-      // Ignorar fallback
+    } catch (error) {
+      // Fallback: la cuenta ya quedó creada en memoria
+      logFalloD1('caja.cuenta.insert', error, { cuentaId: id });
     }
   }
 

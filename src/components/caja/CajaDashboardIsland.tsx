@@ -13,6 +13,7 @@ import {
   type DepositoGarantiaSelect,
   type ContratoCarteraItem,
   type TipoMovimientoCaja,
+  type TipoCuentaFinanciera,
 } from '@/lib/caja';
 import {
   CajaBentoHeroCard,
@@ -74,7 +75,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
   // Modal para crear nueva cuenta
   const [modalNuevaCuentaAbierto, setModalNuevaCuentaAbierto] = useState(false);
   const [nombreNuevaCuenta, setNombreNuevaCuenta] = useState('');
-  const [tipoNuevaCuenta, setTipoNuevaCuenta] = useState<'CAJA_EFECTIVO' | 'BANCO' | 'BILLETERA_DIGITAL'>('BANCO');
+  const [tipoNuevaCuenta, setTipoNuevaCuenta] = useState<TipoCuentaFinanciera>('BANCO');
   const [saldoInicialNuevaCuenta, setSaldoInicialNuevaCuenta] = useState('0');
 
   // Filtros de Movimientos
@@ -1374,7 +1375,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                   <div>
                     <div className="flex items-center justify-between">
                       <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#EDEDED] text-[#111827]">
-                        {c.tipo === 'EFECTIVO' ? (
+                        {c.tipo === 'CAJA_EFECTIVO' ? (
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
                             <rect width="20" height="12" x="2" y="6" rx="2" />
                             <circle cx="12" cy="12" r="2" />

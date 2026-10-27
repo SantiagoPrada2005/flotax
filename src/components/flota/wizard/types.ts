@@ -1,4 +1,9 @@
-import type { CategoriaVehiculo, EstadoVehiculo } from '@/lib/flota/types';
+import type {
+  CategoriaVehiculo,
+  EstadoVehiculo,
+  TransmisionVehiculo,
+  CombustibleVehiculo,
+} from '@/lib/flota/types';
 
 export type WizardStepId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
@@ -20,8 +25,8 @@ export interface VehiculoWizardData {
   estado: EstadoVehiculo;
   precioDia: number | '';
   depositoGarantia: number | '';
-  transmision: 'Automática' | 'Manual' | 'Eléctrica';
-  combustible: 'Gasolina' | 'Diésel' | 'Eléctrico' | 'Híbrido';
+  transmision: TransmisionVehiculo;
+  combustible: CombustibleVehiculo;
   capacidadPasajeros: number;
   autonomiaKm: number | '';
   kilometraje: number | '';

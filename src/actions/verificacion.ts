@@ -2,7 +2,7 @@ import { defineAction, ActionError } from 'astro:actions';
 import { z } from 'zod';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
-import { verificacionesIdentidad, user } from '@/db/schema';
+import { verificacionesIdentidad, user, tiposDocumentoIdentidad } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { requireAuth } from '@/lib/auth';
 
@@ -91,7 +91,7 @@ export const subirFotoDocumentoAction = defineAction({
  */
 export const finalizarVerificacionAction = defineAction({
   input: z.object({
-    tipoDocumento: z.enum(['CC', 'CE', 'PASAPORTE', 'NIT'], {
+    tipoDocumento: z.enum(tiposDocumentoIdentidad, {
       error: 'Tipo de documento no válido',
     }),
     numeroDocumento: z
