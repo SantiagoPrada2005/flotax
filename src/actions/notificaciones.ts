@@ -106,3 +106,21 @@ export const cancelarPush = defineAction({
     return { ok: true };
   },
 });
+
+export const enviarPruebaPush = defineAction({
+  handler: async (_input, context) => {
+    const { servicio, usuarioId } = resolverServicio(context);
+    const entregadas = await servicio.notificar({
+      tipo: 'ANUNCIO_PLATAFORMA',
+      payload: {
+        titulo: '¡Prueba de Notificación FlotaX!',
+        mensaje: 'Las notificaciones push están operativas y sincronizadas con tu dispositivo.',
+      },
+      destino: {
+        alcance: 'USUARIO',
+        usuarioIds: [usuarioId],
+      },
+    });
+    return { ok: true, entregadas };
+  },
+});
