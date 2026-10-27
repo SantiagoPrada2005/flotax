@@ -30,6 +30,7 @@
 | [`login.astro`](./login.astro) | Página `/login` | Flujo de acceso OTP / Google | `@/components/auth/LoginFlow` |
 | [`offline.astro`](./offline.astro) | Página `/offline` | Vista de modo autónomo sin conexión a internet con sonar, auto-ping y rutas en caché | `@/components/navigation/FlotaxErrorStateIsland` |
 | [`registro.astro`](./registro.astro) | Página `/registro` | Registro de nuevos usuarios clientes | `@/components/auth/LoginFlow` |
+| [`sitemap.xml.ts`](./sitemap.xml.ts) | Endpoint Dinámico `/sitemap.xml` | Generador de mapa de sitio XML para SEO técnico y rastreo de vehículos | `cloudflare:workers`, `@/lib/db`, `@/lib/seo` |
 
 ## Invariants & Directory Rules
 

@@ -3,6 +3,12 @@
 **Responsibility**: Componentes interactivos del dominio de Flota: Catálogo Exclusivo iOS Editorial Showcase por Local, Ficha 360° de Estudio, Centro de Compartición de Enlace Anti-Fuga y Gestor de Inventario.
 **Architectural Layer**: Presentation Layer (Tier 2 Domain Modules)
 
+## Subdirectories & Child Modules
+
+| Subdirectory | Responsibility | Index |
+| :--- | :--- | :--- |
+| [`wizard/`](./wizard/) | Componentes atómicos del asistente multi-paso de creación/edición de vehículos (Stepper, Steps 1-8). | [INDEX.md](./wizard/INDEX.md) |
+
 ## File Manifest
 
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
@@ -18,7 +24,6 @@
 | [`VehicleSearchResultItem.tsx`](./VehicleSearchResultItem.tsx) | Componente Resultado Spotlight | `VehicleSearchResultItem` | `@/lib/flota/types` |
 | [`VehicleSearchSpotlight.tsx`](./VehicleSearchSpotlight.tsx) | Isla React 19: Buscador Spotlight con aislamiento por local | `VehicleSearchSpotlight` | `@/lib/flota/mock-vehiculos` |
 | [`VehicleStudioShowcase.tsx`](./VehicleStudioShowcase.tsx) | Isla React 19: Ficha de Vehículo Estudio 360° (Pantallas 3 y 4 iOS Editorial con pedestal) | `VehicleStudioShowcase` | `@/lib/flota/types` |
-| [`wizard/`](./wizard/INDEX.md) | Sub-módulo: Componentes atómicos del asistente multi-paso (Stepper, Steps 1-8) | - | - |
 
 ## Invariants & Directory Rules
 

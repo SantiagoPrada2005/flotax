@@ -35,7 +35,11 @@ IGNORED_DIRS = {
     "bin",
     "obj",
     "design-assets",
-    "exports"
+    "landing-assets",
+    "exports",
+    "public",
+    "drizzle",
+    "migrations"
 }
 
 IGNORED_FILES = {
@@ -50,7 +54,8 @@ IGNORED_FILES = {
     ".gitignore",
     ".env",
     ".env.local",
-    ".env.example"
+    ".env.example",
+    "report.json"
 }
 
 # Recognized code/asset extensions

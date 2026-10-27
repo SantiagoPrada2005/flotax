@@ -7,7 +7,7 @@
 
 | Subdirectory | Responsibility | Index |
 | :--- | :--- | :--- |
-| [`templates/`](./templates/) | Directory `templates` | *(No index)* |
+| [`templates/`](./templates/) | Plantillas HTML transaccionales con tokens canónicos (OTP, reservas, inspecciones). | [INDEX.md](./templates/INDEX.md) |
 
 ## File Manifest
 
