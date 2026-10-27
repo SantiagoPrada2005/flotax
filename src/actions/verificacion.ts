@@ -1,4 +1,5 @@
 import { defineAction, ActionError } from 'astro:actions';
+import { marcarRevisionNavegacion } from '@/lib/pwa/revision';
 import { z } from 'zod';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
@@ -21,6 +22,7 @@ export const subirFotoDocumentoAction = defineAction({
     mimeType: z.string().default('image/jpeg'),
   }),
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const usuario = requireAuth(context);
 
     const bucket = env.BUCKET_MULTIMEDIA;
@@ -117,6 +119,7 @@ export const finalizarVerificacionAction = defineAction({
     licenciaDorsoKey: z.string().optional().nullable(),
   }),
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const usuario = requireAuth(context);
 
     if (!env.DB) {

@@ -108,6 +108,15 @@ Cualquier nuevo archivo estático vinculado al manifiesto o Service Worker debe 
 - `/apple-touch-icon.png`
 - `/icons/*`
 
+### 3.5 Caché de navegación, prefetch e invalidación
+
+La navegación instantánea depende de tres invariantes que ningún cambio nuevo debe romper (ver [`docs/ADR_navegacion_instantanea.md`](../../docs/ADR_navegacion_instantanea.md)):
+
+1. **HTML autenticado siempre privado.** Las respuestas HTML se cachean únicamente con `Cache-Control: private, max-age=<ttl>, stale-while-revalidate=<swr>` y `Vary: Cookie`, resueltas en [`src/lib/pwa/cache-policy.ts`](../../src/lib/pwa/cache-policy.ts). Prohibido `public` o cacheo CDN para HTML con shell personalizada.
+2. **Toda acción mutante renueva la revisión.** Cada handler que escriba datos de dominio debe llamar `marcarRevisionNavegacion(context.cookies)` de [`src/lib/pwa/revision.ts`](../../src/lib/pwa/revision.ts). Sin esto, la siguiente navegación puede mostrar datos viejos.
+3. **El SW nunca cachea HTML privado.** En [`public/sw.js`](../../public/sw.js) solo se cachean `/catalogo`, `/c/`, `/vehiculos/` y `/offline`. Admin, reservas, perfil, notificaciones y login quedan fuera.
+4. **Prefetch solo de navegación segura.** `data-astro-prefetch` se aplica a enlaces GET same-origin; nunca a acciones destructivas, cierre de sesión o enlaces externos. El calentamiento respeta `saveData`, 2G y `document.prerendering`.
+
 ---
 
 ## 4. Checklist de Verificación Pre-Merge
@@ -119,3 +128,5 @@ Antes de dar por finalizada cualquier nueva funcionalidad de UI, ruta o flujo de
 3. [ ] ¿Ningún enlace interno (`same-origin`) tiene `target="_blank"` ni `data-astro-reload`?
 4. [ ] Si el componente usa `transition:persist`, ¿actualiza su estado reactivamente con `astro:page-load` en lugar de depender de props congeladas?
 5. [ ] ¿Pasan satisfactoriamente `pnpm check` (0 errores, 0 warnings, 0 hints) y `pnpm build`?
+6. [ ] Si la ruta debe ser instantánea, ¿está registrada en `cache-policy.ts` con su TTL?
+7. [ ] Si la funcionalidad muta datos, ¿el handler llama `marcarRevisionNavegacion(context.cookies)`?

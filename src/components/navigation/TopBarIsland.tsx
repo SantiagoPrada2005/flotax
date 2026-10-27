@@ -154,6 +154,7 @@ export default function TopBarIsland({
 
         <a
           href="/perfil"
+          data-astro-prefetch="tap"
           aria-label="Perfil de usuario"
           onPointerDown={triggerHaptic}
           className={`ios-press-bounce flex h-11 w-11 items-center justify-center rounded-full bg-[#111827] text-white border-2 border-white shadow-[0_6px_16px_rgba(17,24,39,0.25)] text-xs font-bold overflow-hidden transition-all duration-200 ${fadeClass}`}

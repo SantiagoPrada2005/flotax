@@ -9,6 +9,7 @@
 | :--- | :--- | :--- | :--- |
 | [`ADR_arquitectura_estilos_tailwind_v4_vite.md`](./ADR_arquitectura_estilos_tailwind_v4_vite.md) | ADR | Decisión de diseño: Tailwind v4 + Vite en Astro | Tailwind CSS v4, Vite |
 | [`ADR_arquitectura_pwa_spa_client_router.md`](./ADR_arquitectura_pwa_spa_client_router.md) | ADR | Arquitectura PWA Standalone y Single Page App (SPA) con Astro 7 ClientRouter | `astro:transitions`, Service Worker, Web App Manifest |
+| [`ADR_navegacion_instantanea.md`](./ADR_navegacion_instantanea.md) | ADR | Caché HTTP privada, prefetch, invalidación por revisión y transición perceptiva | `Cache-Control`, `Vary: Cookie`, `<ClientRouter />`, Service Worker |
 | [`FlotaX_Notificaciones_v2.pdf`](./FlotaX_Notificaciones_v2.pdf) | Diagrama / Wireframe PDF | Especificación visual del sistema integral de notificaciones v2 | PDF |
 | [`FlotaX_User_Flow.pdf`](./FlotaX_User_Flow.pdf) | Diagrama / Wireframe PDF | Mapa visual de flujos de usuario y rutas operativas de FlotaX | PDF |
 | [`PRJ_arquitectura_y_stack_tecnico_alquiler_vehiculos.md`](./PRJ_arquitectura_y_stack_tecnico_alquiler_vehiculos.md) | Blueprint del Proyecto | Arquitectura global, Cloudflare D1, Astro, Better Auth y RBAC | Cloudflare D1, Better Auth |

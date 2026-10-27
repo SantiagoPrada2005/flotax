@@ -1,4 +1,5 @@
 import { defineAction } from 'astro:actions';
+import { marcarRevisionNavegacion } from '@/lib/pwa/revision';
 import { z } from 'zod';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
@@ -44,6 +45,7 @@ export const registrarMovimientoAction = defineAction({
     estado: z.enum(estadosMovimientoRegistrable).optional(),
   }),
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const usuario = requireLocalAuth(
       context,
       input.tipo === 'INGRESO'
@@ -112,6 +114,7 @@ export const anularMovimientoAction = defineAction({
     motivo: z.string().min(5, { error: 'El motivo de anulación debe tener al menos 5 caracteres' }),
   }),
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const usuario = requireLocalAuth(context, PERMISOS.CAJA_GASTOS_REGISTRAR);
     const localId = usuario.localActivo.id;
     const db = env.DB ? getDb(env.DB) : undefined;
@@ -141,6 +144,7 @@ export const registrarTransferenciaAction = defineAction({
     referencia: z.string().optional(),
   }),
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const usuario = requireLocalAuth(context, PERMISOS.CAJA_GASTOS_REGISTRAR);
     const localId = usuario.localActivo.id;
     const db = env.DB ? getDb(env.DB) : undefined;
@@ -171,6 +175,7 @@ export const aperturaCajaAction = defineAction({
     observaciones: z.string().optional(),
   }),
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const usuario = requireLocalAuth(context, PERMISOS.CAJA_ABONOS_REGISTRAR);
     const localId = usuario.localActivo.id;
     const db = env.DB ? getDb(env.DB) : undefined;
@@ -200,6 +205,7 @@ export const cierreCajaAction = defineAction({
     observaciones: z.string().optional(),
   }),
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const usuario = requireLocalAuth(context, PERMISOS.CAJA_ARQUEO_CERRAR);
     const localId = usuario.localActivo.id;
     const db = env.DB ? getDb(env.DB) : undefined;
@@ -232,6 +238,7 @@ export const registrarAbonoAction = defineAction({
     notas: z.string().optional(),
   }),
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const usuario = requireLocalAuth(context, PERMISOS.CAJA_ABONOS_REGISTRAR);
     const localId = usuario.localActivo.id;
     const db = env.DB ? getDb(env.DB) : undefined;
@@ -302,6 +309,7 @@ export const gestionarGarantiaAction = defineAction({
     motivo: z.string().optional(),
   }),
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const usuario = requireLocalAuth(context, PERMISOS.CAJA_ABONOS_REGISTRAR);
     const localId = usuario.localActivo.id;
     const db = env.DB ? getDb(env.DB) : undefined;
@@ -341,6 +349,7 @@ export const crearCuentaAction = defineAction({
     saldoInicial: z.number().min(0, { error: 'El saldo inicial no puede ser negativo' }),
   }),
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const usuario = requireLocalAuth(context, PERMISOS.LOCAL_GESTIONAR);
     const localId = usuario.localActivo.id;
     const db = env.DB ? getDb(env.DB) : undefined;

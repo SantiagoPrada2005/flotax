@@ -324,6 +324,8 @@ Web.dev advierte que `skipWaiting()` puede dejar páginas cargadas con una versi
 
 **Recomendación P0:** allowlist explícita de HTML cacheable (por ejemplo `/catalogo`, `/vehiculos/*`, `/offline`; excluir `/home`, `/admin`, `/reservas`, `/perfil`, `/notificaciones`, `/login` y `/registro`), nunca cachear respuestas con `Cache-Control: no-store` o `private`, y emitir `no-store` en el SSR privado. Si una ruta privada no tiene caché, el fallback es `/offline`, no una página de otro usuario.
 
+**Navegación instantánea (implementación vigente, 2026-10-27).** La recomendación anterior aplica a **Cache Storage del Service Worker**, que es compartido entre usuarios. La caché **HTTP privada del navegador** sí se usa: el middleware emite `Cache-Control: private, max-age=<ttl>, stale-while-revalidate=<swr>` y `Vary: Cookie` para HTML, y cada acción mutante renueva la cookie `flotax_rev` para invalidar. El `fetch` de `<ClientRouter />` se sirve desde esa caché durante 5–30 s según la ruta, y un calentamiento autenticado precarga las pestañas troncales. El SW solo cachea HTML público de catálogo. Detalle completo, matriz de TTL y verificación en [`ADR_navegacion_instantanea.md`](./ADR_navegacion_instantanea.md).
+
 ### 5.4 Datos offline
 
 Hoy no existe una capa de datos offline. `Cache Storage` guarda respuestas, no intenciones: no hay forma de registrar "el operario verificó esta entrega" y reintentarlo después. Tampoco se solicita almacenamiento persistente, así que el navegador puede desalojar la caché bajo presión de cuota.

@@ -56,7 +56,11 @@ const resolvedNoIndex = noindex !== undefined ? noindex : isPrivateArea;
 ---
 
 <!doctype html>
-<html lang="es" class="h-full bg-surface-canvas text-brand-primary antialiased">
+<html
+  lang="es"
+  class="h-full bg-surface-canvas text-brand-primary antialiased"
+  data-autenticado={Astro.locals.usuario ? 'true' : 'false'}
+>
   <head>
     <meta charset="UTF-8" />
     <meta

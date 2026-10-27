@@ -144,6 +144,12 @@ select {
   mix-blend-mode: normal !important;
 }
 
+/* Navegación percibida como instantánea: acorta el crossfade raíz del navegador. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 120ms !important;
+}
+
 /* Standalone Installed PWA Ergonomics (Prevent whole-window rubber-banding & browser tap flash) */
 html[data-pwa-standalone="true"],
 html[data-pwa-standalone="true"] body {

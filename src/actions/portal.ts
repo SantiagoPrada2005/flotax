@@ -1,4 +1,5 @@
 import { defineAction, ActionError } from 'astro:actions';
+import { marcarRevisionNavegacion } from '@/lib/pwa/revision';
 import { z } from 'zod';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
@@ -29,6 +30,7 @@ export const cambiarModoPortal = defineAction({
     modo: z.enum(['CLIENTE', 'ADMIN']),
   }),
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const usuario = requireAuth(context);
 
     if (input.modo === 'CLIENTE') {
@@ -105,6 +107,7 @@ export const conmutarLocalActivo = defineAction({
     localId: z.string().min(1, { error: 'El identificador del local es obligatorio' }),
   }),
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const usuario = requireAuth(context);
 
     if (!env.DB) {
@@ -167,6 +170,7 @@ function generarSlug(nombre: string): string {
  */
 export const finalizarOnboardingOperativo = defineAction({
   handler: async (_input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const usuario = requireLocalAuth(context);
 
     if (!env.DB) {
@@ -198,6 +202,7 @@ export const crearPatioOperativo = defineAction({
     telefono: z.string().optional(),
   }),
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const usuario = requireAuth(context);
 
     if (!env.DB) {
@@ -276,6 +281,7 @@ export const actualizarPerfilCatalogoLocal = defineAction({
     telefono: z.string().optional(),
   }),
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const usuario = requireLocalAuth(context, PERMISOS.LOCAL_GESTIONAR);
     const localId = usuario.localActivo.id;
     const db = env.DB ? getDb(env.DB) : undefined;

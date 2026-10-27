@@ -382,6 +382,7 @@ export default function LocalCatalogShowcase({
               <a
                 key={v.id}
                 href={`/vehiculos/${v.id}`}
+                data-astro-prefetch="tap"
                 onClick={() => triggerHaptic(8)}
                 className="group ios-press-bounce rounded-[26px] bg-white border border-[#9CA3AF]/30 p-4 shadow-2xs hover:border-[#111827]/40 transition flex items-center justify-between gap-3"
               >
@@ -447,6 +448,7 @@ export default function LocalCatalogShowcase({
                 {bentoPrincipalIzq && (
                   <a
                     href={`/vehiculos/${bentoPrincipalIzq.id}`}
+                    data-astro-prefetch="tap"
                     onClick={() => triggerHaptic(8)}
                     className="group ios-press-bounce col-span-1 flex flex-col justify-between rounded-[26px] bg-white border border-[#9CA3AF]/30 p-4 sm:p-5 shadow-[0_10px_28px_-6px_rgba(17,24,39,0.06)] hover:border-[#4B5563]/50 transition relative overflow-hidden min-h-[250px] sm:min-h-[275px]"
                   >
@@ -491,6 +493,7 @@ export default function LocalCatalogShowcase({
                 {bentoContrasteDer && (
                   <a
                     href={`/vehiculos/${bentoContrasteDer.id}`}
+                    data-astro-prefetch="tap"
                     onClick={() => triggerHaptic(8)}
                     className="group ios-press-bounce col-span-1 flex flex-col justify-between rounded-[26px] bg-[#1F2937] text-[#EDEDED] p-4 sm:p-5 shadow-[0_14px_30px_-6px_rgba(17,24,39,0.28)] border border-white/10 relative overflow-hidden min-h-[250px] sm:min-h-[275px]"
                   >
@@ -532,6 +535,7 @@ export default function LocalCatalogShowcase({
               {bentoHorizontalAncho && (
                 <a
                   href={`/vehiculos/${bentoHorizontalAncho.id}`}
+                  data-astro-prefetch="tap"
                   onClick={() => triggerHaptic(8)}
                   className="group ios-press-bounce col-span-2 rounded-[28px] bg-white border border-[#9CA3AF]/30 p-4 sm:p-5 shadow-[0_10px_28px_-6px_rgba(17,24,39,0.06)] hover:border-[#4B5563]/50 transition flex items-center justify-between gap-3 overflow-hidden"
                 >
@@ -618,6 +622,7 @@ export default function LocalCatalogShowcase({
                     <div className="pt-1 flex flex-wrap items-center gap-2.5">
                       <a
                         href={`/alquilar/${unidadHero.id}`}
+                        data-astro-prefetch="tap"
                         onClick={() => triggerHaptic(10)}
                         className="ios-press-bounce inline-flex min-h-[42px] items-center justify-center rounded-full bg-[#EDEDED] px-5 py-2 text-xs font-extrabold text-[#111827] shadow-md hover:bg-white transition"
                       >
@@ -630,6 +635,7 @@ export default function LocalCatalogShowcase({
                   <div className="col-span-5 flex flex-col items-center justify-center">
                     <a
                       href={`/vehiculos/${unidadHero.id}`}
+                      data-astro-prefetch="tap"
                       onClick={() => triggerHaptic(8)}
                       className="block w-full focus:outline-none"
                       aria-label={`Ver ficha de ${unidadHero.marca} ${unidadHero.modelo}`}

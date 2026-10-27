@@ -1,4 +1,5 @@
 import { defineAction, ActionError } from 'astro:actions';
+import { marcarRevisionNavegacion } from '@/lib/pwa/revision';
 import { z } from 'zod';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
@@ -65,6 +66,7 @@ const vehiculoFormSchema = z.object({
 export const guardarVehiculoAction = defineAction({
   input: vehiculoFormSchema,
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const esEdicion = Boolean(input.id && input.id.trim().length > 0);
     const usuario = requireLocalAuth(
       context,
@@ -140,6 +142,7 @@ export const cambiarEstadoVehiculoAction = defineAction({
     estado: z.enum(estadosVehiculo),
   }),
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     requireLocalAuth(context, PERMISOS.FLOTA_CAMBIAR_ESTADO);
     const db = env.DB ? getDb(env.DB) : undefined;
     const actualizado = await actualizarEstadoVehiculo(input.id, input.estado, db);
@@ -167,6 +170,7 @@ export const eliminarVehiculoAction = defineAction({
     id: z.string().min(1, { error: 'ID de unidad requerido' }),
   }),
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     requireLocalAuth(context, PERMISOS.FLOTA_ELIMINAR);
     const db = env.DB ? getDb(env.DB) : undefined;
     const eliminado = await darDeBajaVehiculo(input.id, db);

@@ -1,4 +1,5 @@
 import { defineAction } from 'astro:actions';
+import { marcarRevisionNavegacion } from '@/lib/pwa/revision';
 import { z } from 'zod';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
@@ -29,6 +30,7 @@ export const cambiarEstadoReservaAction = defineAction({
     requiereMantenimiento: z.boolean().optional(),
   }),
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const db = env.DB ? getDb(env.DB) : undefined;
     const usuario = requireAuth(context);
     const localId = usuario.localActivo?.id;
@@ -107,6 +109,7 @@ export const registrarCobroWaybillAction = defineAction({
     metodoPago: z.enum(['efectivo', 'transferencia', 'tarjeta']),
   }),
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const usuario = requireLocalAuth(context, PERMISOS.CAJA_ABONOS_REGISTRAR);
     const localId = usuario.localActivo.id;
 
@@ -170,6 +173,7 @@ export const registrarEntregaEvaluacionAction = defineAction({
     llavesEntregadas: z.boolean(),
   }),
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     requireAuth(context);
     const db = env.DB ? getDb(env.DB) : undefined;
     const requiereRevision =
