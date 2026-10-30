@@ -111,20 +111,12 @@ export function CajaBentoHeroCard({
   depositosRetenidos,
   yardName = 'Patio Central',
   dateLabel = 'Tesorería en Tiempo Real',
-  puntosHistoricos = [],
+  puntosHistoricos: _puntosHistoricos = [],
   onClick,
 }: CajaBentoHeroCardProps) {
   const totalCuentas = Math.max(1, saldoEfectivo + saldoBancos);
   const pctEfectivo = Math.round((saldoEfectivo / totalCuentas) * 100);
   const pctBancos = Math.max(0, 100 - pctEfectivo);
-
-  // Valores reales para la micro-curva de tesorería en azul canónico FlotaX
-  const valoresCurva =
-    puntosHistoricos.length > 0
-      ? puntosHistoricos.map((p) => Math.max(0, p.flujoNeto))
-      : [saldoEfectivo * 0.7, saldoBancos * 0.5, montoDisponible * 0.85, montoDisponible];
-
-  const spline = calcularPathSplineReal(valoresCurva, 160, 46, 6, 8);
 
   return (
     <article
