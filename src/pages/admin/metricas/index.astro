@@ -1,5 +1,9 @@
 ---
+import { env } from 'cloudflare:workers';
 import LayoutAdmin from '@/layouts/LayoutAdmin.astro';
+import { getDb } from '@/lib/db';
+import { obtenerEstadoFinancieroCompleto } from '@/lib/caja';
+import { listarVehiculos } from '@/lib/flota';
 import { resolveClientTimeContext } from '@/lib/time/client-time';
 import { getYardMetricsSnapshot } from '@/lib/metricas';
 import MetricsInteractiveHub from '@/components/dashboard/MetricsInteractiveHub';
@@ -7,39 +11,48 @@ import MetricsInteractiveHub from '@/components/dashboard/MetricsInteractiveHub'
 const timeContext = resolveClientTimeContext(Astro.request);
 const usuario = Astro.locals.usuario;
 
-const operatorName = usuario?.nombre ?? 'David Operador';
-const yardName = usuario?.localActivo?.nombre ?? 'Patio Norte';
-const operatorRole = usuario?.localActivo?.rol ?? 'DUEÑO';
+const operatorName = usuario?.nombre ?? 'Operador';
+const localId = usuario?.localActivo?.id;
+const yardName = usuario?.localActivo?.nombre ?? 'Patio Principal';
+const db = env.DB ? getDb(env.DB) : undefined;
+
+const [vehiculos, estadoFinanciero] = await Promise.all([
+  listarVehiculos(db, localId ? { localId } : {}),
+  obtenerEstadoFinancieroCompleto({
+    localId,
+    periodo: 'ESTE_MES',
+    db,
+  }),
+]);
 
 const snapshot = getYardMetricsSnapshot({
   yardName,
   operatorName,
-  operatorRole,
   timezone: timeContext.timezone,
   dateLabel: timeContext.dateString,
+  vehiculos,
+  estadoFinanciero,
 });
 ---
 
 <LayoutAdmin title="FlotaX — Métricas y Telemetría" activeTab="metrics">
-  <div class="mx-auto w-full max-w-md sm:max-w-xl px-4 py-3 space-y-4">
-    <!-- Greeting & Status Header (Matching Reference 1 iOS App Header) -->
-    <header class="pt-1 pb-0.5 flex items-center justify-between border-b border-[#9CA3AF]/30">
-      <div>
-        <p class="text-[11px] font-semibold uppercase tracking-wider text-[#4B5563]">
-          {yardName} • {timeContext.timezone}
+  <div class="mx-auto w-full max-w-5xl px-4 sm:px-6 py-4 space-y-5">
+    <header class="flex flex-wrap items-center justify-between gap-3 border-b border-[#9CA3AF]/35 pb-3.5">
+      <div class="min-w-0">
+        <p class="text-xs sm:text-sm font-semibold uppercase tracking-wider text-[#4B5563] truncate">
+          {yardName} • {timeContext.dateString}
         </p>
-        <h1 class="mt-0.5 font-display text-xl font-black tracking-tight text-[#111827] sm:text-2xl">
-          Hola, {operatorName.split(' ')[0]}!
+        <h1 class="mt-0.5 font-display text-2xl sm:text-3xl font-black tracking-tight text-[#111827]">
+          Métricas y telemetría
         </h1>
       </div>
 
-      <span class="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-[#111827] shadow-2xs border border-[#9CA3AF]/35">
-        <span class="h-2 w-2 rounded-full bg-emerald-600 animate-pulse"></span>
-        Telemetría Viva
+      <span class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#111827] px-3.5 py-2 text-xs font-bold text-white shadow-xs">
+        <span class="h-2 w-2 rounded-full bg-status-success"></span>
+        <span>Patio en línea</span>
       </span>
     </header>
 
-    <!-- Interactive 3-Level Progressive Disclosure Metrics Hub -->
-    <MetricsInteractiveHub client:load snapshot={snapshot} initialLens="BENTO" />
+    <MetricsInteractiveHub client:load snapshot={snapshot} />
   </div>
 </LayoutAdmin>
