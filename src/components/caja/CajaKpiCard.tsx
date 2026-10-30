@@ -101,8 +101,6 @@ export interface CajaBentoHeroCardProps {
   yardName?: string | undefined;
   dateLabel?: string | undefined;
   puntosHistoricos?: PuntoGraficoFlujo[] | undefined;
-  onRegistrarPago?: (() => void) | undefined;
-  onTransferir?: (() => void) | undefined;
   onClick?: (() => void) | undefined;
 }
 
@@ -114,8 +112,6 @@ export function CajaBentoHeroCard({
   yardName = 'Patio Central',
   dateLabel = 'Tesorería en Tiempo Real',
   puntosHistoricos = [],
-  onRegistrarPago,
-  onTransferir,
   onClick,
 }: CajaBentoHeroCardProps) {
   const totalCuentas = Math.max(1, saldoEfectivo + saldoBancos);
@@ -183,46 +179,14 @@ export function CajaBentoHeroCard({
             </p>
           </div>
 
-          {/* Botones de Acción Funcionales con Estilo FlotaX */}
-          <div className="flex flex-wrap items-center gap-2 pt-1">
-            {onRegistrarPago && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onRegistrarPago();
-                }}
-                className="ios-press-bounce inline-flex min-h-[36px] sm:min-h-[38px] items-center gap-1.5 rounded-full bg-[#2D6BFF] hover:bg-[#1D4ED8] text-white px-3.5 py-1.5 text-xs font-bold shadow-md transition-all cursor-pointer"
-              >
-                <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
-                  <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
-                </svg>
-                <span>Registrar Pago</span>
-              </button>
-            )}
-
-            {onTransferir && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onTransferir();
-                }}
-                className="ios-press-bounce inline-flex min-h-[36px] sm:min-h-[38px] items-center gap-1.5 rounded-full bg-[#1F2937] hover:bg-[#374151] border border-white/10 text-white px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer"
-              >
-                <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5 text-[#9CA3AF]">
-                  <path
-                    fillRule="evenodd"
-                    d="M13.2 2.24a.75.75 0 00.04 1.06l2.1 1.95H6.75a.75.75 0 000 1.5h8.59l-2.1 1.95a.75.75 0 101.02 1.1l3.5-3.25a.75.75 0 000-1.1l-3.5-3.25a.75.75 0 00-1.06.04zm-6.4 8a.75.75 0 00-1.06-.04l-3.5 3.25a.75.75 0 000 1.1l3.5 3.25a.75.75 0 101.02-1.1l-2.1-1.95h8.59a.75.75 0 000-1.5H4.66l2.1-1.95a.75.75 0 00.04-1.06z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <span>Transferir</span>
-              </button>
-            )}
-
-            <span className="text-[10px] font-mono text-[#9CA3AF] ml-auto hidden sm:inline">
-              Turno Activo
+          {/* Pie informativo sutil sin duplicar botones de cabecera */}
+          <div className="flex items-center gap-2 pt-1 text-xs text-[#9CA3AF]">
+            <span className="font-mono text-[10px] text-white/70">
+              Turno Operativo Activo
+            </span>
+            <span className="text-[#9CA3AF]/60">•</span>
+            <span className="text-[11px] text-[#9CA3AF] group-hover:text-blue-300 transition-colors">
+              Clic para ver detalle de cuentas →
             </span>
           </div>
         </div>
@@ -241,84 +205,27 @@ export function CajaBentoHeroCard({
           </div>
 
           {/* Desglose de Cuentas */}
-          <div className="my-2 space-y-1 text-xs">
+          <div className="my-2 space-y-2 text-xs">
             <div className="flex items-center justify-between">
               <span className="text-[#4B5563] flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-[#111827]" />
                 Gaveta (Efectivo):
               </span>
               <span className="font-mono font-bold text-[#111827]">
-                {formatearMonedaCOP(saldoEfectivo)}
+                {formatearMonedaCOP(saldoEfectivo)}{' '}
+                <span className="text-[10px] text-[#4B5563] font-normal">({pctEfectivo}%)</span>
               </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-[#4B5563] flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-[#111827]" />
+                <span className="h-2 w-2 rounded-full bg-[#4B5563]" />
                 Bancos & Billeteras:
               </span>
               <span className="font-mono font-bold text-[#111827]">
-                {formatearMonedaCOP(saldoBancos)}
+                {formatearMonedaCOP(saldoBancos)}{' '}
+                <span className="text-[10px] text-[#4B5563] font-normal">({pctBancos}%)</span>
               </span>
             </div>
-          </div>
-
-          {/* Micro-Curva Real de Flujo con Acento #2D6BFF */}
-          <div className="my-1 h-7 w-full overflow-hidden">
-            <svg
-              viewBox="0 0 160 46"
-              className="h-full w-full overflow-visible"
-              preserveAspectRatio="none"
-            >
-              <defs>
-                <linearGradient id="heroCurveBlue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#2D6BFF" stopOpacity="0.3" />
-                  <stop offset="100%" stopColor="#2D6BFF" stopOpacity="0.0" />
-                </linearGradient>
-              </defs>
-              {spline.areaPath && <path d={spline.areaPath} fill="url(#heroCurveBlue)" />}
-              {spline.lineaPath && (
-                <path
-                  d={spline.lineaPath}
-                  fill="none"
-                  stroke="#2D6BFF"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              )}
-              {spline.nodos.map((n, i) => (
-                <circle
-                  key={i}
-                  cx={n.x}
-                  cy={n.y}
-                  r={i === spline.nodos.length - 1 ? '3.5' : '2'}
-                  fill={i === spline.nodos.length - 1 ? '#2D6BFF' : '#1F2937'}
-                  stroke="#ffffff"
-                  strokeWidth="1"
-                >
-                  <title>{formatearMonedaCOP(n.valor)}</title>
-                </circle>
-              ))}
-            </svg>
-          </div>
-
-          {/* Barra de Proporción Bitono */}
-          <div className="flex items-center gap-1.5 pt-1.5 border-t border-[#9CA3AF]/20">
-            <div className="flex h-2 flex-1 overflow-hidden rounded-full bg-[#EDEDED] border border-[#9CA3AF]/30">
-              <div
-                style={{ width: `${pctEfectivo}%` }}
-                className="h-full bg-[#111827] transition-all duration-500"
-                title={`Efectivo: ${pctEfectivo}%`}
-              />
-              <div
-                style={{ width: `${pctBancos}%` }}
-                className="h-full bg-[#111827] transition-all duration-500"
-                title={`Bancos: ${pctBancos}%`}
-              />
-            </div>
-            <span className="font-mono text-[9px] font-bold text-[#4B5563]">
-              {pctEfectivo}% Efec.
-            </span>
           </div>
         </div>
       </div>
@@ -347,109 +254,40 @@ export function CajaBentoSparklineCard({
   monto,
   subtitulo,
   trendBadge,
-  puntosHistoricos = [],
   onClick,
 }: CajaBentoSparklineCardProps) {
   if (tipo === 'INGRESO') {
-    const valoresReales =
-      puntosHistoricos.length > 0
-        ? puntosHistoricos.map((p) => p.ingresos)
-        : [monto * 0.6, monto * 0.75, monto * 0.7, monto * 0.9, monto];
-
-    const spline = calcularPathSplineReal(valoresReales, 120, 36, 6, 6);
     return (
       <article
         onClick={onClick}
         role={onClick ? 'button' : undefined}
         tabIndex={onClick ? 0 : undefined}
-        className={`ios-press-bounce group relative flex flex-col justify-between overflow-hidden rounded-[20px] sm:rounded-[26px] bg-white p-3.5 sm:p-5 text-[#111827] shadow-md border border-[#9CA3AF]/30 transition-all duration-200 hover:shadow-lg col-span-1 lg:col-span-2 ${onClick ? 'cursor-pointer' : ''
-          }`}
+        className={`ios-press-bounce group relative flex flex-col justify-between rounded-[20px] sm:rounded-[24px] bg-white p-3.5 sm:p-5 text-[#111827] shadow-xs border border-[#9CA3AF]/30 transition-all duration-200 hover:shadow-md col-span-1 h-full min-h-[115px] sm:min-h-[130px] ${
+          onClick ? 'cursor-pointer' : ''
+        }`}
       >
-        <div className="flex items-center justify-between gap-1.5">
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <div className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-lg sm:rounded-full bg-[#2D6BFF]/10 text-[#2D6BFF]">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-3 w-3 sm:h-3.5 sm:w-3.5"
-              >
-                <line x1="12" x2="12" y1="19" y2="5" />
-                <polyline points="5 12 12 5 19 12" />
-              </svg>
+        <div className="flex items-center justify-between gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <div className="flex h-6 w-6 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700 font-black text-xs sm:text-sm border border-emerald-200/60">
+              +
             </div>
-            <span className="text-[11px] sm:text-xs font-semibold text-[#4B5563] truncate">
+            <span className="text-xs sm:text-sm font-semibold text-[#4B5563] truncate">
               {titulo}
             </span>
           </div>
 
-          <span className="inline-flex items-center gap-0.5 text-[9px] sm:text-[11px] font-bold text-[#2D6BFF] shrink-0">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-2.5 w-2.5 sm:h-3 sm:w-3"
-            >
-              <path d="m18 15-6-6-6 6" />
-            </svg>
-            {trendBadge}
-          </span>
+          {trendBadge && (
+            <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] sm:text-xs font-bold text-emerald-700 shrink-0">
+              {trendBadge}
+            </span>
+          )}
         </div>
 
-        {/* Micro Sparkline Waveform REAL con Acento Azul Canónico #2D6BFF */}
-        <div className="my-1.5 sm:my-2.5 h-7 sm:h-9 w-full overflow-visible py-0.5">
-          <svg
-            viewBox="0 0 120 36"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-full w-full overflow-visible"
-            preserveAspectRatio="none"
-          >
-            <defs>
-              <linearGradient id="ingresoSparkBlue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#2D6BFF" stopOpacity="0.25" />
-                <stop offset="100%" stopColor="#2D6BFF" stopOpacity="0.0" />
-              </linearGradient>
-            </defs>
-            {spline.areaPath && <path d={spline.areaPath} fill="url(#ingresoSparkBlue)" />}
-            {spline.lineaPath && (
-              <path
-                d={spline.lineaPath}
-                stroke="#2D6BFF"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            )}
-            {spline.nodos.map((n, i) => (
-              <circle
-                key={i}
-                cx={n.x}
-                cy={n.y}
-                r={i === spline.nodos.length - 1 ? '3' : '1.8'}
-                fill="#2D6BFF"
-                stroke="#ffffff"
-                strokeWidth="1.2"
-              >
-                <title>{formatearMonedaCOP(n.valor)}</title>
-              </circle>
-            ))}
-          </svg>
-        </div>
-
-        <div>
-          <p className="font-display text-lg sm:text-2xl font-black tracking-tight text-[#111827] truncate">
+        <div className="mt-3 sm:mt-4">
+          <p className="font-display text-lg sm:text-2xl lg:text-3xl font-black tracking-tight text-[#111827] tabular-nums truncate">
             {formatearMonedaCOP(monto)}
           </p>
-          <p className="mt-0.5 text-[9px] sm:text-[10px] font-medium text-[#4B5563] truncate">
+          <p className="mt-0.5 sm:mt-1 text-[11px] sm:text-xs font-medium text-[#4B5563] truncate">
             {subtitulo}
           </p>
         </div>
@@ -457,59 +295,38 @@ export function CajaBentoSparklineCard({
     );
   }
 
-  // Variante: EGRESO (Fondo blanco, sin gráfica, según requerimiento de diseño limpio)
+  // Variante: EGRESO (Estructura idéntica y simétrica a ingresos)
   return (
     <article
       onClick={onClick}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
-      className={`ios-press-bounce group relative flex min-h-[110px] sm:min-h-[126px] flex-col justify-between overflow-hidden rounded-[20px] sm:rounded-[26px] bg-white p-3.5 sm:p-5 text-[#111827] shadow-md border border-[#9CA3AF]/30 transition-all duration-200 hover:shadow-lg col-span-1 lg:col-span-2 ${onClick ? 'cursor-pointer' : ''
-        }`}
+      className={`ios-press-bounce group relative flex flex-col justify-between rounded-[20px] sm:rounded-[24px] bg-white p-3.5 sm:p-5 text-[#111827] shadow-xs border border-[#9CA3AF]/30 transition-all duration-200 hover:shadow-md col-span-1 h-full min-h-[115px] sm:min-h-[130px] ${
+        onClick ? 'cursor-pointer' : ''
+      }`}
     >
-      <div className="flex items-center justify-between gap-1.5">
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-lg sm:rounded-full bg-rose-50 text-rose-600 border border-rose-200/50">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-3 w-3 sm:h-3.5 sm:w-3.5"
-            >
-              <line x1="12" x2="12" y1="5" y2="19" />
-              <polyline points="19 12 12 19 5 12" />
-            </svg>
+      <div className="flex items-center justify-between gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+          <div className="flex h-6 w-6 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-700 font-black text-xs sm:text-sm border border-rose-200/60">
+            −
           </div>
-          <span className="text-[11px] sm:text-xs font-semibold text-[#4B5563] truncate">
+          <span className="text-xs sm:text-sm font-semibold text-[#4B5563] truncate">
             {titulo}
           </span>
         </div>
 
-        <span className="inline-flex items-center gap-0.5 text-[9px] sm:text-[11px] font-bold text-rose-600 shrink-0">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-2.5 w-2.5 sm:h-3 sm:w-3"
-          >
-            <path d="m6 9 6 6 6-6" />
-          </svg>
-          {trendBadge}
-        </span>
+        {trendBadge && (
+          <span className="inline-flex items-center rounded-full bg-rose-50 px-2 py-0.5 text-[10px] sm:text-xs font-bold text-rose-700 shrink-0">
+            {trendBadge}
+          </span>
+        )}
       </div>
 
-      <div className="mt-2 sm:mt-3">
-        <p className="font-display text-lg sm:text-2xl font-black tracking-tight text-[#111827] truncate">
+      <div className="mt-3 sm:mt-4">
+        <p className="font-display text-lg sm:text-2xl lg:text-3xl font-black tracking-tight text-[#111827] tabular-nums truncate">
           {formatearMonedaCOP(monto)}
         </p>
-        <p className="mt-0.5 text-[9px] sm:text-[10px] font-medium text-[#4B5563] truncate">
+        <p className="mt-0.5 sm:mt-1 text-[11px] sm:text-xs font-medium text-[#4B5563] truncate">
           {subtitulo}
         </p>
       </div>
@@ -529,6 +346,7 @@ export interface CajaBentoPillCardProps {
   etiquetaBadge?: string | undefined;
   indicadorExtra?: string | undefined;
   porcentajeBarra?: number | undefined;
+  className?: string | undefined;
   onClick?: (() => void) | undefined;
 }
 
@@ -540,6 +358,7 @@ export function CajaBentoPillCard({
   etiquetaBadge,
   indicadorExtra,
   porcentajeBarra = 65,
+  className,
   onClick,
 }: CajaBentoPillCardProps) {
   if (variante === 'CARTERA') {
@@ -644,36 +463,59 @@ export function CajaBentoPillCard({
     );
   }
 
-  // Variante: BALANCE (Resultado Operativo del Negocio con fondo canónico #111827)
+  // Variante: BALANCE (Margen Operativo: Fondo azul oscuro canónico #111827, horizontal y compacta)
   const esPositivo = monto >= 0;
   return (
     <button
       type="button"
       onClick={onClick}
-      className="ios-press-bounce group flex flex-col justify-between rounded-[20px] sm:rounded-[22px] bg-[#111827] p-3 sm:p-4 text-left border border-white/10 shadow-xs transition-all hover:border-white/20 hover:shadow-md cursor-pointer col-span-1"
+      className={`ios-press-bounce group flex flex-row items-center justify-between gap-2.5 sm:gap-4 rounded-[18px] sm:rounded-[22px] bg-[#111827] px-3.5 py-2.5 sm:px-5 sm:py-3 text-left border border-white/10 shadow-md hover:border-white/25 hover:shadow-lg transition-all cursor-pointer col-span-2 w-full ${
+        className || ''
+      }`}
     >
-      <div className="flex w-full items-center justify-between text-[11px] sm:text-xs font-semibold text-blue-200/90">
-        <span className="truncate pr-1">{titulo}</span>
-        <span
-          className={`inline-flex items-center rounded-full px-1.5 py-0.2 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider ${esPositivo
-            ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-500/30'
-            : 'bg-rose-950/60 text-rose-300 border border-rose-500/30'
-            }`}
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+        <div
+          className={`flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm border ${
+            esPositivo
+              ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40'
+              : 'bg-rose-950/80 text-rose-300 border border-rose-500/40'
+          }`}
         >
-          {etiquetaBadge || (esPositivo ? 'Superávit' : 'Déficit')}
-        </span>
+          {esPositivo ? '↗' : '↘'}
+        </div>
+
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <span className="text-xs sm:text-sm font-bold text-white truncate">
+              {titulo}
+            </span>
+            <span
+              className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+                esPositivo
+                  ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/30'
+                  : 'bg-rose-950/80 text-rose-300 border border-rose-500/30'
+              }`}
+            >
+              {etiquetaBadge || (esPositivo ? 'Superávit' : 'Déficit')}
+            </span>
+          </div>
+          <p className="text-[10px] sm:text-xs text-[#9CA3AF] truncate hidden sm:block">
+            {subtitulo}
+          </p>
+        </div>
       </div>
 
-      <p
-        className={`mt-1.5 sm:mt-2 font-display text-base sm:text-xl font-extrabold tracking-tight truncate ${esPositivo ? 'text-white' : 'text-rose-400'
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        <p
+          className={`font-display text-base sm:text-xl lg:text-2xl font-black tracking-tight tabular-nums ${
+            esPositivo ? 'text-emerald-400' : 'text-rose-400'
           }`}
-      >
-        {formatearMonedaCOP(monto)}
-      </p>
-
-      <div className="mt-1.5 sm:mt-2 flex items-center justify-between text-[9px] sm:text-[10px] font-medium text-[#9CA3AF] pt-1 border-t border-white/10">
-        <span className="truncate">{subtitulo}</span>
-        <span className="font-mono font-bold text-blue-300 ml-1">EBITDA</span>
+        >
+          {formatearMonedaCOP(monto)}
+        </p>
+        <span className="text-[#9CA3AF] group-hover:text-white transition-colors text-xs sm:text-sm shrink-0">
+          →
+        </span>
       </div>
     </button>
   );

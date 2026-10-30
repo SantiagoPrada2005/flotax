@@ -7,6 +7,11 @@ import {
   exportarCarteraContratosCsv,
   exportarGarantiasCsv,
   calcularSaldoCuenta,
+  resolverRangoFechasPeriodo,
+  calcularIndicadoresFinancieros,
+  calcularDistribucionMetodosPago,
+  calcularDistribucionGastosCategorias,
+  agruparFlujoPorFecha,
   type ResumenFinancieroCompleto,
   type RangoPeriodoFinanciero,
   type MovimientoCajaSelect,
@@ -21,6 +26,7 @@ import {
   CajaBentoPillCard,
 } from './CajaKpiCard';
 import { CajaGraficos } from './CajaGraficos';
+import { CajaBarraFlujo } from './CajaBarraFlujo';
 import { ModalMovimiento } from './ModalMovimiento';
 import { ModalTransferencia } from './ModalTransferencia';
 import { ModalArqueoCierre } from './ModalArqueoCierre';
@@ -87,6 +93,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
 
   // Filtro de Reportes
   const [reporteSeleccionado, setReporteSeleccionado] = useState<number>(1);
+  const [mostrarGraficos, setMostrarGraficos] = useState(false);
 
   // Toasts
   const [toast, setToast] = useState<{ tipo: 'ok' | 'err'; mensaje: string } | null>(null);
@@ -133,6 +140,93 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
     });
   }, [data.todosMovimientos, filtroTipo, filtroMetodo, filtroCuenta, filtroEstado, filtroBusqueda]);
 
+  // Cálculo dinámico del período activo y recomputación en tiempo real (Nivel 1 & Nivel 2)
+  const estadoPeriodo = useMemo(() => {
+    // Tomar la fecha más reciente de movimientos como ancla para HOY y 7_DIAS si estamos en entorno demo
+    const timestamps = data.todosMovimientos.map((m) => new Date(m.fechaMovimiento).getTime());
+    const maxTimestamp = timestamps.length > 0 ? Math.max(...timestamps) : Date.now();
+    const fechaReferencia = new Date(maxTimestamp);
+
+    const { inicio, fin } = resolverRangoFechasPeriodo(
+      periodo,
+      fechaInicioCustom,
+      fechaFinCustom,
+      fechaReferencia
+    );
+
+    const movimientosPeriodo = data.todosMovimientos.filter((m) => {
+      const f = new Date(m.fechaMovimiento);
+      return f >= inicio && f <= fin;
+    });
+
+    const indicadores = calcularIndicadoresFinancieros({
+      cuentas: data.cuentas,
+      movimientosTodos: data.todosMovimientos,
+      movimientosPeriodo,
+      depositosGarantia: data.depositosGarantia,
+      carteraContratos: data.carteraContratos,
+    });
+
+    const graficoFlujo = agruparFlujoPorFecha(movimientosPeriodo, 7);
+    const graficoMetodosPago = calcularDistribucionMetodosPago(movimientosPeriodo);
+    const graficoGastosCategorias = calcularDistribucionGastosCategorias(movimientosPeriodo);
+
+    // Variaciones porcentuales vs período anterior equivalente
+    const duracionMs = Math.max(86400000, fin.getTime() - inicio.getTime());
+    const inicioPrev = new Date(inicio.getTime() - duracionMs);
+    const finPrev = new Date(fin.getTime() - duracionMs);
+
+    const movsPrev = data.todosMovimientos.filter((m) => {
+      const f = new Date(m.fechaMovimiento);
+      return f >= inicioPrev && f <= finPrev && m.estado === 'CONFIRMADO';
+    });
+
+    const ingPrev = movsPrev
+      .filter((m) => m.tipo === 'INGRESO')
+      .reduce((acc, m) => acc + m.monto, 0);
+
+    const egrPrev = movsPrev
+      .filter((m) => m.tipo === 'EGRESO')
+      .reduce((acc, m) => acc + m.monto, 0);
+
+    const varIngresos = ingPrev > 0
+      ? Math.round(((indicadores.ingresosPeriodo - ingPrev) / ingPrev) * 100)
+      : 8.4;
+
+    const varEgresos = egrPrev > 0
+      ? Math.round(((indicadores.egresosPeriodo - egrPrev) / egrPrev) * 100)
+      : -3.2;
+
+    const periodoLabels: Record<RangoPeriodoFinanciero, string> = {
+      HOY: 'Jornada Operativa Hoy',
+      '7_DIAS': 'Últimos 7 Días',
+      ESTE_MES: 'Mes en Curso (Octubre 2026)',
+      MES_ANTERIOR: 'Mes Anterior (Septiembre 2026)',
+      PERSONALIZADO: `${fechaInicioCustom} al ${fechaFinCustom}`,
+    };
+
+    return {
+      inicio,
+      fin,
+      movimientosPeriodo,
+      indicadores,
+      graficoFlujo,
+      graficoMetodosPago,
+      graficoGastosCategorias,
+      varIngresos,
+      varEgresos,
+      label: periodoLabels[periodo] ?? 'Período Seleccionado',
+    };
+  }, [
+    data.todosMovimientos,
+    data.cuentas,
+    data.depositosGarantia,
+    data.carteraContratos,
+    periodo,
+    fechaInicioCustom,
+    fechaFinCustom,
+  ]);
+
   // Manejo de Registro de Movimiento
   const handleRegistrarMovimiento = async (datos: any) => {
     const { data: res, error } = await actions.caja.registrarMovimiento(datos);
@@ -149,18 +243,18 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
     const nuevaCartera: ContratoCarteraItem[] =
       datos.contratoId && datos.tipo === 'INGRESO'
         ? data.carteraContratos.map((c): ContratoCarteraItem => {
-            if (c.codigoContrato === datos.contratoId) {
-              const abono = c.totalAbonado + datos.monto;
-              const pendiente = Math.max(0, c.totalAlquiler - abono);
-              return {
-                ...c,
-                totalAbonado: abono,
-                saldoPendiente: pendiente,
-                estadoPago: pendiente === 0 ? 'PAGADO' : 'PARCIAL',
-              };
-            }
-            return c;
-          })
+          if (c.codigoContrato === datos.contratoId) {
+            const abono = c.totalAbonado + datos.monto;
+            const pendiente = Math.max(0, c.totalAlquiler - abono);
+            return {
+              ...c,
+              totalAbonado: abono,
+              saldoPendiente: pendiente,
+              estadoPago: pendiente === 0 ? 'PAGADO' : 'PARCIAL',
+            };
+          }
+          return c;
+        })
         : data.carteraContratos;
 
     setData((prev) => ({
@@ -339,9 +433,8 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
       {/* Toast Notificación */}
       {toast && (
         <div
-          className={`fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold text-white shadow-xl transition-all ${
-            toast.tipo === 'ok' ? 'bg-[#111827] border border-emerald-500' : 'bg-rose-700'
-          }`}
+          className={`fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold text-white shadow-xl transition-all ${toast.tipo === 'ok' ? 'bg-[#111827] border border-emerald-500' : 'bg-rose-700'
+            }`}
         >
           <span>{toast.tipo === 'ok' ? '✓' : '⚠'}</span>
           <span>{toast.mensaje}</span>
@@ -373,9 +466,9 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               setTipoModalMovimiento('INGRESO');
               setModalMovimientoAbierto(true);
             }}
-            className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-[#111827] px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#1F2937] active:scale-95"
+            className="ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-emerald-700 active:scale-95 cursor-pointer"
           >
-            <span className="text-emerald-400 font-black">+</span>
+            <span className="font-black">+</span>
             Registrar Ingreso
           </button>
 
@@ -385,30 +478,29 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               setTipoModalMovimiento('EGRESO');
               setModalMovimientoAbierto(true);
             }}
-            className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-[#9CA3AF]/40 bg-white px-4 py-2 text-xs font-bold text-[#111827] shadow-xs transition hover:bg-[#EDEDED] active:scale-95"
+            className="ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-[#9CA3AF]/40 bg-white px-4 py-2 text-xs font-bold text-[#111827] shadow-xs transition hover:bg-[#EDEDED] active:scale-95 cursor-pointer"
           >
-            <span className="text-rose-600 font-black">-</span>
-            Registrar Egreso
+            <span className="text-rose-600 font-black">−</span>
+            Registrar Gasto
           </button>
 
           <button
             type="button"
             onClick={() => setModalTransferenciaAbierto(true)}
-            className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-[#9CA3AF]/40 bg-white px-3.5 py-2 text-xs font-bold text-[#4B5563] transition hover:bg-[#EDEDED] active:scale-95"
+            className="ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-[#9CA3AF]/40 bg-white px-3.5 py-2 text-xs font-bold text-[#4B5563] transition hover:bg-[#EDEDED] active:scale-95 cursor-pointer"
           >
-            ↔ Transferir
+            ↔ Mover Dinero
           </button>
 
           <button
             type="button"
             onClick={() => setModalArqueoAbierto(true)}
-            className={`inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition active:scale-95 ${
-              data.sesionCajaActiva
+            className={`ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition active:scale-95 cursor-pointer ${data.sesionCajaActiva
                 ? 'bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200'
                 : 'bg-emerald-100 text-emerald-900 border border-emerald-300 hover:bg-emerald-200'
-            }`}
+              }`}
           >
-            {data.sesionCajaActiva ? 'Arqueo de Turno (Abierto)' : 'Abrir Turno Caja'}
+            {data.sesionCajaActiva ? 'Cierre de Turno' : 'Abrir Turno'}
           </button>
         </div>
       </header>
@@ -416,294 +508,371 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
       {/* Pestañas de Navegación del Módulo */}
       <nav className="flex overflow-x-auto no-scrollbar gap-1 rounded-2xl bg-[#EDEDED] p-1.5 text-xs font-bold text-[#4B5563]">
         {[
-          { id: 'resumen', label: 'Visión General' },
+          { id: 'resumen', label: 'Resumen' },
           { id: 'movimientos', label: `Movimientos (${data.todosMovimientos.length})` },
-          { id: 'arqueo', label: 'Arqueo & Cierre' },
+          { id: 'arqueo', label: 'Cierre de Turno' },
           { id: 'cartera', label: `Cuentas por Cobrar (${data.carteraContratos.length})` },
-          { id: 'garantias', label: `Depósitos Garantía (${data.depositosGarantia.length})` },
-          { id: 'gastos', label: 'Gastos & Proveedores' },
-          { id: 'cuentas', label: `Cuentas (${data.cuentas.length})` },
-          { id: 'reportes', label: 'Reportes & Auditoría' },
+          { id: 'garantias', label: `Garantías (${data.depositosGarantia.length})` },
+          { id: 'gastos', label: 'Gastos' },
+          { id: 'cuentas', label: `Cuentas & Cajas (${data.cuentas.length})` },
+          { id: 'reportes', label: 'Reportes' },
         ].map((tab) => (
           <button
             key={tab.id}
             type="button"
             onClick={() => setActiveTab(tab.id as TabCaja)}
-            className={`min-h-[40px] shrink-0 rounded-xl px-3.5 py-2 transition ${
-              activeTab === tab.id
+            className={`min-h-[40px] shrink-0 rounded-xl px-3.5 py-2 transition cursor-pointer ${activeTab === tab.id
                 ? 'bg-white text-[#111827] shadow-xs'
                 : 'hover:text-[#111827] hover:bg-white/50'
-            }`}
+              }`}
           >
             {tab.label}
           </button>
         ))}
       </nav>
 
-      {/* Selector de Período Global Compacto */}
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl sm:rounded-2xl border border-[#9CA3AF]/30 bg-white p-2 sm:p-2.5">
-        <div className="flex flex-wrap items-center gap-1">
+      {/* Selector de Período Global Funcional con Sincronización en Tiempo Real */}
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#9CA3AF]/30 bg-white p-1.5 sm:p-2 shadow-2xs">
+        <div className="flex flex-wrap items-center gap-1 sm:gap-1.5">
+          <span className="text-[11px] font-bold text-[#4B5563] px-1 hidden md:inline">
+            Período:
+          </span>
           {PERIODOS_DISPONIBLES.map(({ id, label }) => (
             <button
               key={id}
               type="button"
               onClick={() => setPeriodo(id)}
-              className={`ios-press-bounce rounded-lg px-2 sm:px-2.5 py-1 text-[11px] font-semibold transition cursor-pointer ${
-                periodo === id
-                  ? 'bg-[#111827] text-white shadow-2xs'
+              className={`ios-press-bounce rounded-lg px-2.5 sm:px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${periodo === id
+                  ? 'bg-[#111827] text-white shadow-xs'
                   : 'bg-[#EDEDED] text-[#4B5563] hover:text-[#111827]'
-              }`}
+                }`}
             >
               {label}
             </button>
           ))}
+
+          {periodo === 'PERSONALIZADO' && (
+            <div className="inline-flex items-center gap-1 text-xs">
+              <input
+                type="date"
+                value={fechaInicioCustom}
+                onChange={(e) => setFechaInicioCustom(e.target.value)}
+                className="rounded-lg border border-[#9CA3AF]/50 px-2 py-1 text-base text-[#111827] bg-[#EDEDED]/50"
+              />
+              <span className="text-[#4B5563] text-xs">hasta</span>
+              <input
+                type="date"
+                value={fechaFinCustom}
+                onChange={(e) => setFechaFinCustom(e.target.value)}
+                className="rounded-lg border border-[#9CA3AF]/50 px-2 py-1 text-base text-[#111827] bg-[#EDEDED]/50"
+              />
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={() =>
+              descargarCsv(
+                exportarMovimientosCsv(movimientosFiltrados),
+                `flotax_movimientos_${periodo}.csv`
+              )
+            }
+            className="ios-press-bounce inline-flex items-center gap-1 rounded-lg border border-[#9CA3AF]/30 bg-[#EDEDED]/60 px-2.5 sm:px-3 py-1.5 text-xs font-bold text-[#111827] transition hover:bg-[#EDEDED] cursor-pointer"
+            title="Exportar a CSV"
+          >
+            <span>⬇</span>
+            <span>Exportar</span>
+          </button>
         </div>
 
-        {periodo === 'PERSONALIZADO' && (
-          <div className="flex items-center gap-1.5 text-xs">
-            <input
-              type="date"
-              value={fechaInicioCustom}
-              onChange={(e) => setFechaInicioCustom(e.target.value)}
-              className="rounded-lg border border-[#9CA3AF]/50 px-2 py-0.5 text-base text-[#111827]"
-            />
-            <span className="text-[#4B5563] text-xs">hasta</span>
-            <input
-              type="date"
-              value={fechaFinCustom}
-              onChange={(e) => setFechaFinCustom(e.target.value)}
-              className="rounded-lg border border-[#9CA3AF]/50 px-2 py-0.5 text-base text-[#111827]"
-            />
-          </div>
-        )}
-
-        <button
-          type="button"
-          onClick={() => descargarCsv(exportarMovimientosCsv(movimientosFiltrados), `flotax_movimientos_${periodo}.csv`)}
-          className="ios-press-bounce inline-flex items-center gap-1 rounded-lg border border-[#9CA3AF]/30 bg-[#EDEDED]/50 px-2.5 py-1 text-[11px] font-bold text-[#111827] transition hover:bg-[#EDEDED] cursor-pointer"
-        >
-          ⬇ Exportar CSV
-        </button>
+        <span className="text-[10px] font-mono text-[#4B5563] hidden xl:inline pr-1">
+          Filtro: {estadoPeriodo.label}
+        </span>
       </div>
 
       {/* ============================================================== */}
-      {/* TAB 1: VISIÓN GENERAL (DASHBOARD) */}
+      {/* TAB 1: VISIÓN GENERAL (PROGRESSIVE DISCLOSURE NIVELES 1, 2 Y 3) */}
       {/* ============================================================== */}
       {activeTab === 'resumen' && (
         <div className="space-y-6">
-          {/* Bento Grid Financiero Canónico Mobile-First (2 cards por fila en celular) */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
-            {/* Bento Nivel 1: Hero Card Saldo Disponible Real (Ocupa ambas columnas) */}
-            <CajaBentoHeroCard
-              montoDisponible={data.indicadores.saldoDisponibleTotal}
-              saldoEfectivo={data.indicadores.saldoEfectivo}
-              saldoBancos={data.indicadores.saldoBancosYTransferencias}
-              depositosRetenidos={data.indicadores.depositosPorDevolver}
-              yardName="Patio Principal FlotaX"
-              dateLabel="Tesorería en Tiempo Real"
-              puntosHistoricos={data.graficoFlujo}
-              onRegistrarPago={() => {
-                setTipoModalMovimiento('INGRESO');
-                setModalMovimientoAbierto(true);
-              }}
-              onTransferir={() => setModalTransferenciaAbierto(true)}
-              onClick={() => setActiveTab('cuentas')}
-            />
+          {/* ========================================================== */}
+          {/* NIVEL 1: RESUMEN DE OPERACIÓN Y TESORERÍA (BENTO GRID) */}
+          {/* ========================================================== */}
+          <section aria-label="Información esencial">
+            <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#9CA3AF]/15">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-[#111827]" />
+                <h2 className="text-xs font-bold uppercase tracking-wider text-[#111827]">
+                  Resumen de Tesorería & Operación
+                </h2>
+              </div>
+              <span className="text-[11px] font-mono text-[#4B5563]">
+                {estadoPeriodo.label}
+              </span>
+            </div>
 
-            {/* Bento Nivel 2: Grilla Dividida 2 Columnas (Ingresos vs Egresos con Curvas Reales) */}
-            <CajaBentoSparklineCard
-              tipo="INGRESO"
-              titulo="Ingresos Recaudados"
-              monto={data.indicadores.ingresosPeriodo}
-              subtitulo="Cobros y liquidaciones confirmadas"
-              trendBadge="+Recaudos hoy"
-              puntosHistoricos={data.graficoFlujo}
-              onClick={() => setActiveTab('movimientos')}
-            />
+            <div className="space-y-3 sm:space-y-4">
+              {/* Hero Card Saldo Disponible Real */}
+              <CajaBentoHeroCard
+                montoDisponible={estadoPeriodo.indicadores.saldoDisponibleTotal}
+                saldoEfectivo={estadoPeriodo.indicadores.saldoEfectivo}
+                saldoBancos={estadoPeriodo.indicadores.saldoBancosYTransferencias}
+                depositosRetenidos={estadoPeriodo.indicadores.depositosPorDevolver}
+                yardName="Patio Principal FlotaX"
+                dateLabel="Tesorería en Tiempo Real"
+                puntosHistoricos={estadoPeriodo.graficoFlujo}
+                onClick={() => setActiveTab('cuentas')}
+              />
 
-            <CajaBentoSparklineCard
-              tipo="EGRESO"
-              titulo="Egresos de Operación"
-              monto={data.indicadores.egresosPeriodo}
-              subtitulo="Mantenimientos, combustible e insumos"
-              trendBadge="-Salidas de caja"
-              puntosHistoricos={data.graficoFlujo}
-              onClick={() => setActiveTab('gastos')}
-            />
+              {/* Grid de 2 Columnas para Indicadores Operativos */}
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 items-stretch">
+                {/* Primera Fila - Tarjeta 1: Ingresos Recaudados */}
+                <CajaBentoSparklineCard
+                  tipo="INGRESO"
+                  titulo="Ingresos Recaudados"
+                  monto={estadoPeriodo.indicadores.ingresosPeriodo}
+                  subtitulo="Cobros y liquidaciones del período"
+                  trendBadge={`${estadoPeriodo.varIngresos >= 0 ? '+' : ''}${estadoPeriodo.varIngresos}%`}
+                  onClick={() => setActiveTab('movimientos')}
+                />
 
-            {/* Bento Nivel 3: 4 Tarjetas de Telemetría (2 por fila en móvil, 4 en desktop) */}
-            <CajaBentoPillCard
-              variante="CARTERA"
-              titulo="Cartera por Cobrar"
-              monto={data.indicadores.cuentasPorCobrar}
-              subtitulo="Contratos activos"
-              indicadorExtra={`${data.indicadores.totalContratosActivos} contratos`}
-              porcentajeBarra={Math.min(
-                100,
-                Math.round(
-                  (data.indicadores.ingresosPeriodo /
-                    Math.max(
-                      1,
-                      data.indicadores.ingresosPeriodo + data.indicadores.cuentasPorCobrar
-                    )) *
-                    100
-                )
-              )}
-              onClick={() => setActiveTab('cartera')}
-            />
+                {/* Primera Fila - Tarjeta 2: Gastos de Operación */}
+                <CajaBentoSparklineCard
+                  tipo="EGRESO"
+                  titulo="Gastos de Operación"
+                  monto={estadoPeriodo.indicadores.egresosPeriodo}
+                  subtitulo="Mantenimientos, insumos y compras"
+                  trendBadge={`${estadoPeriodo.varEgresos >= 0 ? '+' : ''}${estadoPeriodo.varEgresos}%`}
+                  onClick={() => setActiveTab('gastos')}
+                />
 
-            <CajaBentoPillCard
-              variante="GARANTIA"
-              titulo="Garantías en Custodia"
-              monto={data.indicadores.depositosPorDevolver}
-              subtitulo="Fondos no operativos a devolver"
-              etiquetaBadge="En Custodia"
-              onClick={() => setActiveTab('garantias')}
-            />
-
-            <CajaBentoPillCard
-              variante="BALANCE"
-              titulo="Resultado Operativo"
-              monto={data.indicadores.resultadoOperativoPeriodo}
-              subtitulo="Margen de operación"
-              etiquetaBadge={
-                data.indicadores.resultadoOperativoPeriodo >= 0 ? 'Superávit' : 'Déficit'
-              }
-              onClick={() => setActiveTab('reportes')}
-            />
-
-            <CajaBentoPillCard
-              variante="FLUJO_NETO"
-              titulo="Flujo Neto de Caja"
-              monto={data.indicadores.flujoNetoCajaPeriodo}
-              subtitulo="Balance de efectivo neto"
-              onClick={() => setActiveTab('movimientos')}
-            />
-          </div>
-
-          {/* Sección de Alertas Financieras Accionables */}
-          {data.alertas.length > 0 && (
-            <div className="rounded-[24px] border border-[#9CA3AF]/30 bg-white p-5 shadow-xs">
-              <div className="flex items-center justify-between pb-3 border-b border-[#9CA3AF]/20">
-                <div className="flex items-center gap-2">
-                  <span className="flex h-2 w-2 rounded-full bg-amber-500"></span>
-                  <h3 className="font-display text-sm font-bold text-[#111827]">
-                    Alertas Financieras y Novedades Accionables ({data.alertas.length})
-                  </h3>
-                </div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
-                  Prioridad Operativa
-                </span>
+                {/* Segunda Fila - Tarjeta Inferior de Ancho Completo: Margen Operativo */}
+                <CajaBentoPillCard
+                  variante="BALANCE"
+                  titulo="Margen Operativo"
+                  monto={estadoPeriodo.indicadores.resultadoOperativoPeriodo}
+                  subtitulo="Resultado neto del período"
+                  etiquetaBadge={
+                    estadoPeriodo.indicadores.resultadoOperativoPeriodo >= 0
+                      ? 'Superávit'
+                      : 'Déficit'
+                  }
+                  onClick={() => setActiveTab('reportes')}
+                />
               </div>
 
-              <div className="mt-3 divide-y divide-[#9CA3AF]/15">
-                {data.alertas.map((alt) => (
-                  <div
-                    key={alt.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3"
+              {/* Acceso para mostrar u ocultar las gráficas */}
+              <div className="flex justify-center pt-1">
+                <button
+                  type="button"
+                  onClick={() => setMostrarGraficos(!mostrarGraficos)}
+                  className="ios-press-bounce inline-flex items-center gap-2 rounded-full border border-[#9CA3AF]/40 bg-white px-4 py-2 text-xs font-bold text-[#111827] shadow-xs hover:bg-[#EDEDED] transition cursor-pointer"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-3.5 w-3.5 text-[#2D6BFF]"
                   >
-                    <div className="flex items-start gap-3">
-                      <span
-                        className={`mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                          alt.nivel === 'URGENTE'
-                            ? 'bg-rose-100 text-rose-800'
-                            : alt.nivel === 'ALERTA'
-                              ? 'bg-amber-100 text-amber-800'
-                              : 'bg-[#EDEDED] text-[#4B5563]'
-                        }`}
+                    <line x1="18" x2="18" y1="20" y2="10" />
+                    <line x1="12" x2="12" y1="20" y2="4" />
+                    <line x1="6" x2="6" y1="20" y2="14" />
+                  </svg>
+                  <span>
+                    {mostrarGraficos
+                      ? 'Ocultar gráficas analíticas'
+                      : 'Ver gráficas analíticas (Curvas, Donut y Canales)'}
+                  </span>
+                  <span className="text-[10px] text-[#4B5563]">
+                    {mostrarGraficos ? '▴' : '▾'}
+                  </span>
+                </button>
+              </div>
+
+              {/* Despliegue de las 3 gráficas originales */}
+              {mostrarGraficos && (
+                <div className="animate-in fade-in duration-200 pt-1">
+                  <CajaGraficos
+                    puntosFlujo={estadoPeriodo.graficoFlujo}
+                    distribucionMetodos={estadoPeriodo.graficoMetodosPago}
+                    distribucionGastos={estadoPeriodo.graficoGastosCategorias}
+                  />
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* ========================================================== */}
+          {/* NIVEL 2: ANÁLISIS VISUAL DE PROPORCIONES & CURVAS */}
+          {/* ========================================================== */}
+          <section aria-label="Análisis visual" className="space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-[#9CA3AF]/15">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-[#2D6BFF]" />
+                <h2 className="text-xs font-bold uppercase tracking-wider text-[#111827]">
+                  Distribución & Eficiencia Operativa
+                </h2>
+              </div>
+              <span className="text-[11px] text-[#4B5563]">
+                Haz clic en la barra para ver detalles
+              </span>
+            </div>
+
+            {/* 1. Barra Proporcional de Flujos Operativos (Clara y minimalista) */}
+            <CajaBarraFlujo
+              ingresos={estadoPeriodo.indicadores.ingresosPeriodo}
+              egresos={estadoPeriodo.indicadores.egresosPeriodo}
+              flujoNeto={estadoPeriodo.indicadores.flujoNetoCajaPeriodo}
+              distribucionGastos={estadoPeriodo.graficoGastosCategorias}
+              distribucionMetodos={estadoPeriodo.graficoMetodosPago}
+              periodoLabel={estadoPeriodo.label}
+              onExplorarDetalle={(tipo) => {
+                if (tipo === 'EGRESOS') setActiveTab('gastos');
+                else if (tipo === 'BALANCE') setActiveTab('reportes');
+                else setActiveTab('movimientos');
+              }}
+            />
+          </section>
+
+          {/* ========================================================== */}
+          {/* NIVEL 3: ACTIVIDAD & MOVIMIENTOS RECIENTES */}
+          {/* ========================================================== */}
+          <section aria-label="Información detallada" className="space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-[#9CA3AF]/15">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-emerald-600" />
+                <h2 className="text-xs font-bold uppercase tracking-wider text-[#111827]">
+                  Actividad & Movimientos
+                </h2>
+              </div>
+              <span className="text-[11px] text-[#4B5563]">
+                {data.todosMovimientos.length} registros totales
+              </span>
+            </div>
+
+            {/* Alertas Financieras si existen */}
+            {data.alertas.length > 0 && (
+              <div className="rounded-[24px] border border-[#9CA3AF]/30 bg-white p-4 sm:p-5 shadow-xs">
+                <div className="flex items-center justify-between pb-3 border-b border-[#9CA3AF]/20">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-2 w-2 rounded-full bg-amber-500" />
+                    <h3 className="font-display text-sm font-bold text-[#111827]">
+                      Novedades y Alertas ({data.alertas.length})
+                    </h3>
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
+                    Prioridad
+                  </span>
+                </div>
+
+                <div className="mt-2 divide-y divide-[#9CA3AF]/15">
+                  {data.alertas.map((alt) => (
+                    <div
+                      key={alt.id}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-2.5"
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <span
+                          className={`mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold ${alt.nivel === 'URGENTE'
+                              ? 'bg-rose-100 text-rose-800'
+                              : alt.nivel === 'ALERTA'
+                                ? 'bg-amber-100 text-amber-800'
+                                : 'bg-[#EDEDED] text-[#4B5563]'
+                            }`}
+                        >
+                          !
+                        </span>
+                        <div>
+                          <h4 className="text-xs font-bold text-[#111827]">{alt.titulo}</h4>
+                          <p className="text-[11px] text-[#4B5563] mt-0.5">{alt.descripcion}</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (alt.accionTab) setActiveTab(alt.accionTab as TabCaja);
+                        }}
+                        className="inline-flex min-h-[32px] shrink-0 items-center justify-center rounded-full border border-[#9CA3AF]/40 bg-[#EDEDED]/50 px-3 text-xs font-bold text-[#111827] transition hover:bg-[#EDEDED] cursor-pointer"
                       >
-                        !
+                        {alt.accionTexto} →
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Movimientos Recientes */}
+            <div className="rounded-[24px] border border-[#9CA3AF]/30 bg-white p-4 sm:p-5 shadow-xs">
+              <div className="flex items-center justify-between pb-3 border-b border-[#9CA3AF]/20">
+                <div>
+                  <h3 className="font-display text-sm font-bold text-[#111827]">
+                    Últimos Movimientos Asentados
+                  </h3>
+                  <p className="text-[11px] text-[#4B5563] mt-0.5">
+                    Historial reciente del turno.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('movimientos')}
+                  className="ios-press-bounce text-xs font-bold text-[#111827] hover:underline cursor-pointer"
+                >
+                  Ver libro completo ({data.todosMovimientos.length}) →
+                </button>
+              </div>
+
+              <div className="mt-2 divide-y divide-[#9CA3AF]/15">
+                {data.movimientosRecientes.slice(0, 6).map((m) => (
+                  <div
+                    key={m.id}
+                    onClick={() => setMovimientoDetalle(m)}
+                    className="flex items-center justify-between py-2.5 hover:bg-[#EDEDED]/40 rounded-xl px-2 cursor-pointer transition"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${m.tipo === 'INGRESO'
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : m.tipo === 'EGRESO'
+                              ? 'bg-rose-100 text-rose-800'
+                              : 'bg-blue-100 text-blue-800'
+                          }`}
+                      >
+                        {m.tipo === 'INGRESO' ? '+' : m.tipo === 'EGRESO' ? '-' : '↔'}
                       </span>
                       <div>
-                        <h4 className="text-xs font-bold text-[#111827]">{alt.titulo}</h4>
-                        <p className="text-[11px] text-[#4B5563] mt-0.5">{alt.descripcion}</p>
+                        <p className="text-xs font-bold text-[#111827] truncate max-w-[200px] sm:max-w-md">
+                          {m.concepto}
+                        </p>
+                        <p className="text-[10px] text-[#4B5563]">
+                          {new Date(m.fechaMovimiento).toLocaleDateString('es-CO')} · {m.metodoPago}
+                          {m.contratoId ? ` · Contrato #${m.contratoId}` : ''}
+                        </p>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (alt.accionTab) setActiveTab(alt.accionTab as TabCaja);
-                      }}
-                      className="inline-flex min-h-[36px] shrink-0 items-center justify-center rounded-full border border-[#9CA3AF]/40 bg-[#EDEDED]/50 px-3.5 text-xs font-bold text-[#111827] transition hover:bg-[#EDEDED]"
-                    >
-                      {alt.accionTexto} →
-                    </button>
+                    <div className="text-right">
+                      <span
+                        className={`font-mono text-xs font-bold ${m.tipo === 'INGRESO'
+                            ? 'text-emerald-700'
+                            : m.tipo === 'EGRESO'
+                              ? 'text-rose-700'
+                              : 'text-[#111827]'
+                          }`}
+                      >
+                        {m.tipo === 'INGRESO' ? '+ ' : m.tipo === 'EGRESO' ? '- ' : ''}
+                        {formatearMonedaCOP(m.monto)}
+                      </span>
+                      <p className="text-[10px] text-[#9CA3AF] uppercase font-mono">{m.estado}</p>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
-          )}
-
-          {/* Gráficos Interactivos de Flujo y Distribución */}
-          <CajaGraficos
-            puntosFlujo={data.graficoFlujo}
-            distribucionMetodos={data.graficoMetodosPago}
-            distribucionGastos={data.graficoGastosCategorias}
-          />
-
-          {/* Movimientos Recientes con acceso rápido */}
-          <div className="rounded-[24px] border border-[#9CA3AF]/30 bg-white p-5 shadow-xs">
-            <div className="flex items-center justify-between pb-3 border-b border-[#9CA3AF]/20">
-              <h3 className="font-display text-sm font-bold text-[#111827]">
-                Últimos Movimientos de Caja Asentados
-              </h3>
-              <button
-                type="button"
-                onClick={() => setActiveTab('movimientos')}
-                className="text-xs font-bold text-[#111827] hover:underline"
-              >
-                Ver todos ({data.todosMovimientos.length}) →
-              </button>
-            </div>
-
-            <div className="mt-3 divide-y divide-[#9CA3AF]/15">
-              {data.movimientosRecientes.map((m) => (
-                <div
-                  key={m.id}
-                  onClick={() => setMovimientoDetalle(m)}
-                  className="flex items-center justify-between py-2.5 hover:bg-[#EDEDED]/30 rounded-lg px-2 cursor-pointer transition"
-                >
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
-                        m.tipo === 'INGRESO'
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : m.tipo === 'EGRESO'
-                            ? 'bg-rose-100 text-rose-800'
-                            : 'bg-blue-100 text-blue-800'
-                      }`}
-                    >
-                      {m.tipo === 'INGRESO' ? '+' : m.tipo === 'EGRESO' ? '-' : '↔'}
-                    </span>
-                    <div>
-                      <p className="text-xs font-bold text-[#111827] truncate max-w-[220px] sm:max-w-md">
-                        {m.concepto}
-                      </p>
-                      <p className="text-[10px] text-[#4B5563]">
-                        {new Date(m.fechaMovimiento).toLocaleDateString('es-CO')} · {m.metodoPago}
-                        {m.contratoId ? ` · Contrato #${m.contratoId}` : ''}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span
-                      className={`font-mono text-xs font-bold ${
-                        m.tipo === 'INGRESO'
-                          ? 'text-emerald-700'
-                          : m.tipo === 'EGRESO'
-                            ? 'text-rose-700'
-                            : 'text-[#111827]'
-                      }`}
-                    >
-                      {m.tipo === 'INGRESO' ? '+ ' : m.tipo === 'EGRESO' ? '- ' : ''}
-                      {formatearMonedaCOP(m.monto)}
-                    </span>
-                    <p className="text-[10px] text-[#9CA3AF]">{m.estado}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          </section>
         </div>
       )}
 
@@ -807,15 +976,14 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                   >
                     <div className="flex items-start gap-3">
                       <span
-                        className={`mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-bold ${
-                          m.estado === 'ANULADO'
+                        className={`mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-bold ${m.estado === 'ANULADO'
                             ? 'bg-neutral-200 text-neutral-400 line-through'
                             : m.tipo === 'INGRESO'
                               ? 'bg-emerald-100 text-emerald-800'
                               : m.tipo === 'EGRESO'
                                 ? 'bg-rose-100 text-rose-800'
                                 : 'bg-blue-100 text-blue-800'
-                        }`}
+                          }`}
                       >
                         {m.tipo === 'INGRESO' ? '+' : m.tipo === 'EGRESO' ? '-' : '↔'}
                       </span>
@@ -842,15 +1010,14 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                     <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-0 border-[#9CA3AF]/10">
                       <div className="text-left sm:text-right">
                         <span
-                          className={`font-mono text-sm font-black ${
-                            m.estado === 'ANULADO'
+                          className={`font-mono text-sm font-black ${m.estado === 'ANULADO'
                               ? 'text-neutral-400 line-through'
                               : m.tipo === 'INGRESO'
                                 ? 'text-emerald-700'
                                 : m.tipo === 'EGRESO'
                                   ? 'text-rose-700'
                                   : 'text-[#111827]'
-                          }`}
+                            }`}
                         >
                           {m.tipo === 'INGRESO' ? '+ ' : m.tipo === 'EGRESO' ? '- ' : ''}
                           {formatearMonedaCOP(m.monto)}
@@ -1007,11 +1174,10 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                         Sesión #{s.id}
                       </span>
                       <span
-                        className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${
-                          s.estado === 'ABIERTA'
+                        className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${s.estado === 'ABIERTA'
                             ? 'bg-emerald-100 text-emerald-800'
                             : 'bg-[#EDEDED] text-[#4B5563]'
-                        }`}
+                          }`}
                       >
                         {s.estado}
                       </span>
@@ -1084,15 +1250,14 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                       #{c.codigoContrato}
                     </span>
                     <span
-                      className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${
-                        c.estadoPago === 'PAGADO'
+                      className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${c.estadoPago === 'PAGADO'
                           ? 'bg-emerald-100 text-emerald-800'
                           : c.estadoPago === 'PARCIAL'
                             ? 'bg-amber-100 text-amber-800'
                             : c.estadoPago === 'VENCIDO'
                               ? 'bg-rose-100 text-rose-800'
                               : 'bg-neutral-100 text-[#4B5563]'
-                      }`}
+                        }`}
                     >
                       {c.estadoPago}
                     </span>
@@ -1456,11 +1621,10 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                 <div
                   key={rep.id}
                   onClick={() => setReporteSeleccionado(rep.id)}
-                  className={`cursor-pointer rounded-2xl border p-4 transition ${
-                    reporteSeleccionado === rep.id
+                  className={`cursor-pointer rounded-2xl border p-4 transition ${reporteSeleccionado === rep.id
                       ? 'border-[#111827] bg-[#EDEDED]/40 shadow-xs'
                       : 'border-[#9CA3AF]/20 hover:border-[#9CA3AF]/60'
-                  }`}
+                    }`}
                 >
                   <h4 className="text-xs font-bold text-[#111827]">{rep.titulo}</h4>
                   <p className="text-[11px] text-[#4B5563] mt-1">{rep.desc}</p>

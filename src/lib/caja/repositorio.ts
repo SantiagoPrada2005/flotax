@@ -63,9 +63,10 @@ inicializarCacheMemoria();
 export function resolverRangoFechasPeriodo(
   periodo: RangoPeriodoFinanciero,
   fechaInicioCustom?: string,
-  fechaFinCustom?: string
+  fechaFinCustom?: string,
+  fechaReferencia?: Date | string
 ): { inicio: Date; fin: Date } {
-  const ahora = new Date();
+  const ahora = fechaReferencia ? new Date(fechaReferencia) : new Date();
   const fin = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate(), 23, 59, 59, 999);
 
   if (periodo === 'HOY') {
