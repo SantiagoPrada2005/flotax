@@ -15,7 +15,7 @@
 | :--- | :--- | :--- | :--- |
 | [`CajaBarraFlujo.tsx`](./CajaBarraFlujo.tsx) | Componente: Barra Proporcional de Flujos Financieros | `CajaBarraFlujo` | `@/lib/caja` |
 | [`CajaDashboardIsland.tsx`](./CajaDashboardIsland.tsx) | Isla React 19: Dashboard de Caja | `CajaDashboardIsland` | `astro:actions`, `@/lib/caja` |
-| [`CajaGraficos.tsx`](./CajaGraficos.tsx) | Componente: Visualización de Flujos | `CajaGraficos` | `framer-motion`, `@/lib/caja` |
+| [`CajaGraficos.tsx`](./CajaGraficos.tsx) | Componente: Visualización de Gastos y Canales de Pago | `CajaGraficos` | `@/lib/caja` |
 | [`CajaKpiCard.tsx`](./CajaKpiCard.tsx) | Componente: Tarjeta KPI de Balance | `CajaKpiCard` | `lucide-react` |
 | [`ModalArqueoCierre.tsx`](./ModalArqueoCierre.tsx) | Modal: Arqueo y Cierre de Caja | `ModalArqueoCierre` | `astro:actions`, `@/lib/caja` |
 | [`ModalComprobante.tsx`](./ModalComprobante.tsx) | Modal: Visor de Comprobante Digital | `ModalComprobante` | `lucide-react` |

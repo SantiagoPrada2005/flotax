@@ -66,12 +66,11 @@ const vehiculosPatio = await listarVehiculos(db, { localId: localContexto.id });
       </div>
     </header>
 
-    <!-- Centro de Compartición de Catálogo Exclusivo del Local -->
+    <!-- Centro de Compartición de Catálogo Exclusivo del Local (Opción Principal) -->
     <LocalCatalogShareCard
       client:load
       local={localContexto}
       unidadesCount={vehiculosPatio.length}
-      compact={true}
     />
 
     <!-- Bento Grid Section 1: Hero Progress Card -->

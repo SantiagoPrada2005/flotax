@@ -451,10 +451,10 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
             </p>
           </div>
           <h1 className="font-display text-2xl font-black tracking-tight text-[#111827] sm:text-3xl">
-            Caja y Finanzas
+            Finanzas y Pagos
           </h1>
           <p className="text-xs text-[#4B5563] mt-0.5">
-            Liquidaciones de alquiler, control de garantías, egresos de flota y flujo de caja en tiempo real.
+            Gestión de tesorería, saldos de caja, depósitos de garantía, cuentas por cobrar y gastos operativos.
           </p>
         </div>
 
@@ -603,7 +603,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-[#111827]" />
                 <h2 className="text-xs font-bold uppercase tracking-wider text-[#111827]">
-                  Resumen de Tesorería & Operación
+                  Resumen de Tesorería & Balance
                 </h2>
               </div>
               <span className="text-[11px] font-mono text-[#4B5563]">
@@ -636,20 +636,20 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                   onClick={() => setActiveTab('movimientos')}
                 />
 
-                {/* Primera Fila - Tarjeta 2: Gastos de Operación */}
+                {/* Primera Fila - Tarjeta 2: Gastos Operativos */}
                 <CajaBentoSparklineCard
                   tipo="EGRESO"
-                  titulo="Gastos de Operación"
+                  titulo="Gastos Operativos"
                   monto={estadoPeriodo.indicadores.egresosPeriodo}
                   subtitulo="Mantenimientos, insumos y compras"
                   trendBadge={`${estadoPeriodo.varEgresos >= 0 ? '+' : ''}${estadoPeriodo.varEgresos}%`}
                   onClick={() => setActiveTab('gastos')}
                 />
 
-                {/* Segunda Fila - Tarjeta Inferior de Ancho Completo: Margen Operativo */}
+                {/* Segunda Fila - Tarjeta Inferior de Ancho Completo: Balance Financiero */}
                 <CajaBentoPillCard
                   variante="BALANCE"
-                  titulo="Margen Operativo"
+                  titulo="Balance Financiero Neto"
                   monto={estadoPeriodo.indicadores.resultadoOperativoPeriodo}
                   subtitulo="Resultado neto del período"
                   etiquetaBadge={
@@ -684,8 +684,8 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                   </svg>
                   <span>
                     {mostrarGraficos
-                      ? 'Ocultar gráficas analíticas'
-                      : 'Ver gráficas analíticas (Curvas, Donut y Canales)'}
+                      ? 'Ocultar distribución financiera'
+                      : 'Ver distribución financiera (Gastos y Canales de Pago)'}
                   </span>
                   <span className="text-[10px] text-[#4B5563]">
                     {mostrarGraficos ? '▴' : '▾'}
@@ -693,11 +693,10 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                 </button>
               </div>
 
-              {/* Despliegue de las 3 gráficas originales */}
+              {/* Despliegue de las gráficas financieras */}
               {mostrarGraficos && (
                 <div className="animate-in fade-in duration-200 pt-1">
                   <CajaGraficos
-                    puntosFlujo={estadoPeriodo.graficoFlujo}
                     distribucionMetodos={estadoPeriodo.graficoMetodosPago}
                     distribucionGastos={estadoPeriodo.graficoGastosCategorias}
                   />
@@ -714,11 +713,11 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-[#2D6BFF]" />
                 <h2 className="text-xs font-bold uppercase tracking-wider text-[#111827]">
-                  Distribución & Eficiencia Operativa
+                  Distribución del Flujo Financiero
                 </h2>
               </div>
               <span className="text-[11px] text-[#4B5563]">
-                Haz clic en la barra para ver detalles
+                Estructura entre recaudos y gastos operativos
               </span>
             </div>
 
@@ -1609,12 +1608,12 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-3">
               {[
                 { id: 1, titulo: '1. Ingresos y Egresos del Período', desc: 'Resumen consolidado de entradas y salidas' },
-                { id: 2, titulo: '2. Flujo Neto de Caja', desc: 'Evolución diaria de recaudos vs pagos' },
+                { id: 2, titulo: '2. Flujo Neto de Caja', desc: 'Consolidado de ingresos vs egresos de tesorería' },
                 { id: 3, titulo: '3. Saldos por Caja y Cuenta', desc: 'Conciliación por cuenta financiera' },
                 { id: 4, titulo: '4. Cuentas por Cobrar & Vencimientos', desc: 'Saldos de alquileres pendientes' },
                 { id: 5, titulo: '5. Garantías en Custodia', desc: 'Pasivos comprometidos por devolver' },
                 { id: 6, titulo: '6. Gastos por Categoría', desc: 'Mantenimiento, combustible, seguros' },
-                { id: 7, titulo: '7. Costos por Vehículo de Flota', desc: 'Gastos imputados a cada unidad' },
+                { id: 7, titulo: '7. Gastos por Factura y Proveedor', desc: 'Comprobantes y egresos imputados a proveedores' },
                 { id: 8, titulo: '8. Pagos por Método Recaudado', desc: 'Efectivo, transferencias y tarjetas' },
                 { id: 9, titulo: '9. Cierres de Caja y Arqueos', desc: 'Diferencias y faltantes de turno' },
               ].map((rep) => (
