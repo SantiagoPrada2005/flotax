@@ -5,7 +5,8 @@ import {
 } from './mock-vehiculos';
 import type { VehiculoItem, EstadoVehiculo } from './types';
 import type { AppDb } from '@/lib/db';
-import { vehiculos } from '@/db/schema/vehiculos';
+import { logFalloD1 } from '@/lib/db/diagnostics';
+import { vehiculos, type VehiculoSelect } from '@/db/schema/vehiculos';
 import { eq, desc } from 'drizzle-orm';
 
 // Registro dinámico en memoria para asegurar reactividad inmediata durante la sesión
@@ -16,12 +17,8 @@ for (const v of FLOTA_CANONICA) {
   registroVehiculosMemoria.set(v.id, { ...v });
 }
 
-function mapD1ToVehiculoItem(row: typeof vehiculos.$inferSelect): VehiculoItem {
-  const categoria = (row.categoria as VehiculoItem['categoria']) || 'SEDAN';
-  const estado = (row.estado as EstadoVehiculo) || 'DISPONIBLE';
-  const transmision = (row.transmision as VehiculoItem['transmision']) || 'Automática';
-  const combustible = (row.combustible as VehiculoItem['combustible']) || 'Gasolina';
-  const isElectrico = combustible === 'Eléctrico' || combustible === 'Híbrido';
+function mapD1ToVehiculoItem(row: VehiculoSelect): VehiculoItem {
+  const isElectrico = row.combustible === 'Eléctrico' || row.combustible === 'Híbrido';
 
   return {
     id: row.id,
@@ -29,14 +26,14 @@ function mapD1ToVehiculoItem(row: typeof vehiculos.$inferSelect): VehiculoItem {
     marca: row.marca,
     modelo: row.modelo,
     anio: row.anio,
-    categoria,
+    categoria: row.categoria,
     categoriaEtiqueta: row.categoriaEtiqueta,
     placa: row.placa,
-    estado,
+    estado: row.estado,
     precioDia: row.precioDia,
     depositoGarantia: row.depositoGarantia,
-    transmision,
-    combustible,
+    transmision: row.transmision,
+    combustible: row.combustible,
     capacidadPasajeros: row.capacidadPasajeros,
     autonomiaKm: row.autonomiaKm ?? undefined,
     kilometraje: row.kilometraje,
@@ -98,8 +95,9 @@ export async function listarVehiculos(
         const lista = Array.from(registroVehiculosMemoria.values());
         return filtrarPorLocalConFallbackCanonico(lista, opciones?.localId);
       }
-    } catch {
+    } catch (error) {
       // Si la tabla no está creada aún en D1 local/remoto, fallback transparente a memoria
+      logFalloD1('vehiculos.listar', error, { localId: opciones?.localId ?? null });
     }
   }
 
@@ -130,8 +128,9 @@ export async function obtenerVehiculoAsync(
         registroVehiculosMemoria.set(item.id, item);
         encontrado = item;
       }
-    } catch {
+    } catch (error) {
       // Fallback a memoria
+      logFalloD1('vehiculos.obtener', error, { vehiculoId: id });
     }
   }
 
@@ -231,8 +230,9 @@ export async function guardarVehiculo(
             actualizadoEn: ahora,
           },
         });
-    } catch {
+    } catch (error) {
       // Si la tabla aún no existe en D1, la operación en memoria ya surtió efecto
+      logFalloD1('vehiculos.guardar', error, { vehiculoId: item.id, localId });
     }
   }
 
@@ -266,8 +266,9 @@ export async function actualizarEstadoVehiculo(
           actualizadoEn: new Date(),
         })
         .where(eq(vehiculos.id, id));
-    } catch {
-      // Fallback
+    } catch (error) {
+      // Fallback: el estado ya quedó aplicado en memoria
+      logFalloD1('vehiculos.cambiarEstado', error, { vehiculoId: id, estado: nuevoEstado });
     }
   }
 
@@ -297,8 +298,9 @@ export async function darDeBajaVehiculo(
           actualizadoEn: new Date(),
         })
         .where(eq(vehiculos.id, id));
-    } catch {
-      // Fallback
+    } catch (error) {
+      // Fallback: la baja ya quedó aplicada en memoria
+      logFalloD1('vehiculos.darDeBaja', error, { vehiculoId: id });
     }
   }
 

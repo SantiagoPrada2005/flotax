@@ -1,4 +1,5 @@
 import { defineAction, ActionError } from 'astro:actions';
+import { marcarRevisionNavegacion } from '@/lib/pwa/revision';
 import { z } from 'zod';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
@@ -41,6 +42,7 @@ const actualizarPerfilSchema = z.object({
 export const actualizarPerfilAction = defineAction({
   input: actualizarPerfilSchema,
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     // 1. Validar que la petición provenga de un usuario con sesión activa
     const usuario = requireAuth(context);
 

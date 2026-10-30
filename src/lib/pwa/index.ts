@@ -24,3 +24,9 @@ export {
   obtenerSuscripcionPush,
   suscribirDispositivoPush,
 } from './push';
+
+export {
+  prefetchHtml,
+  prefetchRutasCalientes,
+  rutasCalientes,
+} from './navigation-cache';

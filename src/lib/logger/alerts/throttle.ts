@@ -1,8 +1,17 @@
 import type { D1Database } from '@cloudflare/workers-types';
-import type { LogEntry, AlertThrottleConfig } from '../types';
+import type { LogEntry, LogLevel, AlertThrottleConfig } from '../types';
 import { getDb } from '@/lib/db';
-import { incidentesSistema } from '@/db/schema/incidentes';
+import { incidentesSistema, type NivelIncidente } from '@/db/schema/incidentes';
 import { eq } from 'drizzle-orm';
+
+/** Traducción explícita (sin casts) del nivel de log al dominio de `incidentes_sistema`. */
+const NIVEL_INCIDENTE_POR_LOG = {
+  debug: 'DEBUG',
+  info: 'INFO',
+  warn: 'WARN',
+  error: 'ERROR',
+  fatal: 'FATAL',
+} as const satisfies Record<LogLevel, NivelIncidente>;
 
 export interface ThrottleDecision {
   shouldDispatch: boolean;
@@ -121,7 +130,7 @@ export async function evaluateIncidentThrottle(
         await db.insert(incidentesSistema).values({
           id: incidentId,
           fingerprint,
-          nivel: entry.level.toUpperCase(),
+          nivel: NIVEL_INCIDENTE_POR_LOG[entry.level],
           mensaje: entry.error?.message || entry.message,
           modulo: entry.context.module || entry.context.action || 'core',
           ocurrencias: 1,

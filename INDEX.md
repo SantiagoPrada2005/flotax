@@ -24,6 +24,7 @@
 | [`pnpm-workspace.yaml`](./pnpm-workspace.yaml) | Configuración de Monorepo / Workspace | Gestión de paquetes pnpm | pnpm |
 | [`skills-lock.json`](./skills-lock.json) | Bloqueo de Skills | Registro de versiones de skills instaladas en el repositorio | Antigravity Skills |
 | [`tsconfig.json`](./tsconfig.json) | Configuración TypeScript | Paths (`@/*`), opciones estrictas de compilación | TypeScript |
+| [`worker-configuration.d.ts`](./worker-configuration.d.ts) | Tipos de Cloudflare Workers | Declaraciones de tipos generadas para bindings de Workers (`env`) | Cloudflare Workers |
 | [`wrangler.jsonc`](./wrangler.jsonc) | Configuración de Infraestructura | Configuración de Cloudflare Workers, bindings D1 y variables | Cloudflare Workers |
 
 ## Invariants & Directory Rules

@@ -16,6 +16,7 @@ import {
   deshacerNotificacionesLeidas,
   suscribirPush,
   cancelarPush,
+  enviarPruebaPush,
 } from './notificaciones';
 import {
   cambiarModoPortal,
@@ -59,6 +60,7 @@ export const server = {
     deshacerLeidas: deshacerNotificacionesLeidas,
     suscribirPush,
     cancelarPush,
+    enviarPrueba: enviarPruebaPush,
   },
   caja: {
     registrarAbono: registrarAbonoAction,

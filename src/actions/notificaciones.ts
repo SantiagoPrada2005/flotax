@@ -1,4 +1,5 @@
 import { defineAction, ActionError } from 'astro:actions';
+import { marcarRevisionNavegacion } from '@/lib/pwa/revision';
 import { env } from 'cloudflare:workers';
 import { z } from 'zod';
 import { requireAuth, type ContextWithLocals } from '@/lib/auth';
@@ -57,6 +58,7 @@ export const contarNotificacionesNoLeidas = defineAction({
 export const marcarNotificacionesLeidas = defineAction({
   input: z.object({ ids: idsSchema }),
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const { servicio, ambito } = resolverServicio(context);
     await servicio.marcarLeida(ambito, input.ids);
     return { ok: true };
@@ -65,6 +67,7 @@ export const marcarNotificacionesLeidas = defineAction({
 
 export const marcarTodasNotificacionesLeidas = defineAction({
   handler: async (_input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const { servicio, ambito } = resolverServicio(context);
     return { ids: await servicio.marcarTodasLeidas(ambito) };
   },
@@ -73,6 +76,7 @@ export const marcarTodasNotificacionesLeidas = defineAction({
 export const deshacerNotificacionesLeidas = defineAction({
   input: z.object({ ids: idsSchema }),
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const { servicio, ambito } = resolverServicio(context);
     await servicio.marcarNoLeidas(ambito, input.ids);
     return { ok: true };
@@ -86,6 +90,7 @@ export const suscribirPush = defineAction({
     auth: z.string().min(1),
   }),
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const { servicio, usuarioId } = resolverServicio(context);
     await servicio.guardarSuscripcionPush({
       usuarioId,
@@ -101,8 +106,27 @@ export const suscribirPush = defineAction({
 export const cancelarPush = defineAction({
   input: z.object({ endpoint: z.url({ error: 'Suscripción no válida' }) }),
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const { servicio, usuarioId } = resolverServicio(context);
     await servicio.eliminarSuscripcionPush(usuarioId, input.endpoint);
     return { ok: true };
+  },
+});
+
+export const enviarPruebaPush = defineAction({
+  handler: async (_input, context) => {
+    const { servicio, usuarioId } = resolverServicio(context);
+    const entregadas = await servicio.notificar({
+      tipo: 'ANUNCIO_PLATAFORMA',
+      payload: {
+        titulo: '¡Prueba de Notificación FlotaX!',
+        mensaje: 'Las notificaciones push están operativas y sincronizadas con tu dispositivo.',
+      },
+      destino: {
+        alcance: 'USUARIO',
+        usuarioIds: [usuarioId],
+      },
+    });
+    return { ok: true, entregadas };
   },
 });

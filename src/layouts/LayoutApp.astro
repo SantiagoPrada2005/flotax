@@ -20,6 +20,7 @@ interface Props {
   showBack?: boolean | undefined;
   backHref?: string | undefined;
   hideNav?: boolean | undefined;
+  hideBottomNav?: boolean | undefined;
   navVariant?: 'admin' | 'client' | undefined;
 }
 
@@ -35,6 +36,7 @@ const {
   showBack = false,
   backHref = '/catalogo',
   hideNav = false,
+  hideBottomNav = false,
   navVariant = 'client',
 } = Astro.props;
 
@@ -54,7 +56,11 @@ const resolvedNoIndex = noindex !== undefined ? noindex : isPrivateArea;
 ---
 
 <!doctype html>
-<html lang="es" class="h-full bg-surface-canvas text-brand-primary antialiased">
+<html
+  lang="es"
+  class="h-full bg-surface-canvas text-brand-primary antialiased"
+  data-autenticado={Astro.locals.usuario ? 'true' : 'false'}
+>
   <head>
     <meta charset="UTF-8" />
     <meta
@@ -108,7 +114,7 @@ const resolvedNoIndex = noindex !== undefined ? noindex : isPrivateArea;
         <!-- Content Area: padded for floating TopBar (pt-16), floating dock on mobile (pb-32) and standard on desktop (pb-8) -->
         <main class:list={[
           "flex-1 w-full",
-          !hideNav ? "pt-16 pb-32 md:pb-8" : ""
+          !hideNav ? (hideBottomNav ? "pt-16 pb-8" : "pt-16 pb-32 md:pb-8") : ""
         ]}>
           <slot />
         </main>
@@ -116,6 +122,6 @@ const resolvedNoIndex = noindex !== undefined ? noindex : isPrivateArea;
     </div>
 
     <!-- Mobile Bottom Navigation (Floating Island) -->
-    {!hideNav && <BottomNav activeTab={activeTab} variant={navVariant} />}
+    {!hideNav && !hideBottomNav && <BottomNav activeTab={activeTab} variant={navVariant} />}
   </body>
 </html>

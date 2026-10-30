@@ -4,10 +4,13 @@
  * Estrategia de Caché Diferenciada:
  * 1. BYPASS ESTRICTO: Peticiones no-GET, /api/* (Better Auth / Webhooks) y /_actions/* (Astro Actions).
  * 2. CACHE-FIRST: Assets estáticos inmutables (/_astro/*, /icons/*, /images/*, fuentes).
- * 3. NETWORK-FIRST: Navegaciones HTML SSR (garantiza sesión RBAC e inventario D1 en tiempo real).
+ * 3. NETWORK-FIRST: Navegaciones HTML SSR. Solo se guarda HTML público de catálogo
+ *    (/catalogo, /c/, /vehiculos/, /offline); el HTML privado nunca entra en Cache Storage.
+ *    La velocidad de navegación la resuelve la caché HTTP privada del navegador.
+ * 4. NAVIGATION PRELOAD: reduce la latencia de las navegaciones completas.
  */
 
-const CACHE_VERSION = 'flotax-static-v3';
+const CACHE_VERSION = 'flotax-static-v4';
 
 const PRECACHE_ASSETS = [
   '/manifest.webmanifest',
@@ -337,18 +340,30 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches
-      .keys()
-      .then((keys) =>
-        Promise.all(
-          keys
-            .filter((key) => key !== CACHE_VERSION)
-            .map((staleKey) => caches.delete(staleKey))
-        )
-      )
-      .then(() => self.clients.claim())
+    Promise.all([
+      caches
+        .keys()
+        .then((keys) =>
+          Promise.all(
+            keys
+              .filter((key) => key !== CACHE_VERSION)
+              .map((staleKey) => caches.delete(staleKey))
+          )
+        ),
+      self.registration.navigationPreload?.enable().catch(() => undefined),
+    ]).then(() => self.clients.claim())
   );
 });
+
+function esHtmlPublicoCacheable(pathname) {
+  return (
+    pathname === '/catalogo' ||
+    pathname.startsWith('/catalogo/') ||
+    pathname.startsWith('/c/') ||
+    pathname.startsWith('/vehiculos/') ||
+    pathname === '/offline'
+  );
+}
 
 function isStaticAssetPathname(pathname) {
   return (
@@ -406,34 +421,51 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 4. Network-First para documentos HTML y transiciones de ClientRouter
+  // 4. Network-First para documentos HTML. Solo se cachea HTML público de catálogo:
+  // las páginas privadas (admin, reservas, perfil) nunca se guardan en Cache Storage.
   const acceptHeader = request.headers.get('accept') || '';
   if (request.mode === 'navigate' || acceptHeader.includes('text/html')) {
     event.respondWith(
-      fetch(request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200 && isSameOrigin) {
-            const responseClone = networkResponse.clone();
-            caches.open(CACHE_VERSION).then((cache) => {
-              cache.put(request, responseClone);
-            });
+      (async () => {
+        let preloadResponse;
+
+        if (request.mode === 'navigate') {
+          try {
+            preloadResponse = await event.preloadResponse;
+          } catch {
+            preloadResponse = undefined;
           }
-          return networkResponse;
-        })
-        .catch(async () => {
-          const cachedPage = await caches.match(request);
-          if (cachedPage) {
-            return cachedPage;
-          }
-          const offlineCachedRoute = await caches.match('/offline');
-          if (offlineCachedRoute) {
-            return offlineCachedRoute;
-          }
-          return new Response(OFFLINE_FALLBACK_HTML, {
-            status: 503,
-            headers: { 'Content-Type': 'text/html; charset=utf-8' },
+        }
+
+        const networkResponse = preloadResponse || (await fetch(request));
+
+        if (
+          networkResponse &&
+          networkResponse.status === 200 &&
+          !networkResponse.redirected &&
+          esHtmlPublicoCacheable(url.pathname)
+        ) {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_VERSION).then((cache) => {
+            cache.put(request, responseClone);
           });
-        })
+        }
+
+        return networkResponse;
+      })().catch(async () => {
+        const cachedPage = await caches.match(request);
+        if (cachedPage) {
+          return cachedPage;
+        }
+        const offlineCachedRoute = await caches.match('/offline');
+        if (offlineCachedRoute) {
+          return offlineCachedRoute;
+        }
+        return new Response(OFFLINE_FALLBACK_HTML, {
+          status: 503,
+          headers: { 'Content-Type': 'text/html; charset=utf-8' },
+        });
+      })
     );
   }
 });

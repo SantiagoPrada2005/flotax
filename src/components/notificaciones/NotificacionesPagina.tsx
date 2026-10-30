@@ -1,11 +1,16 @@
 import { useCallback, useState } from 'react';
 import { navigate } from 'astro:transitions/client';
 import type { NotificacionSelect } from '@/db/schema';
+import ActivarPush from './ActivarPush';
 import ListaNotificaciones from './ListaNotificaciones';
 import { useContadorNotificaciones, useListaNotificaciones, type FiltroNotificaciones } from './useNotificaciones';
 
+interface NotificacionesPaginaProps {
+  clavePublicaVapid?: string | undefined;
+}
+
 /** Historial completo de notificaciones (página `/notificaciones`). */
-export default function NotificacionesPagina() {
+export default function NotificacionesPagina({ clavePublicaVapid }: NotificacionesPaginaProps) {
   const [filtro, setFiltro] = useState<FiltroNotificaciones>('todas');
   const { contador, setContador, refrescar } = useContadorNotificaciones(true);
   const lista = useListaNotificaciones({
@@ -38,6 +43,10 @@ export default function NotificacionesPagina() {
         >
           Marcar todas
         </button>
+      </div>
+
+      <div className="-mx-4 mb-3">
+        <ActivarPush clavePublicaVapid={clavePublicaVapid} />
       </div>
 
       <div className="mb-3 flex gap-2" role="group" aria-label="Filtrar notificaciones">

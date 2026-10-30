@@ -8,6 +8,7 @@ import {
   registrarCaptacionClienteEnLocal,
 } from '@/lib/flota/locales-captacion';
 import { getLogger } from '@/lib/logger';
+import { aplicarPoliticaCacheHtml } from '@/lib/pwa/cache-policy';
 import { env } from 'cloudflare:workers';
 
 const ADMIN_PREFIX = '/admin';
@@ -54,6 +55,22 @@ export const onRequest = defineMiddleware(async (context, next) => {
   context.locals.usuario = null;
   context.locals.localCaptacion = null;
 
+  const redirigir = (destino: string): Response => {
+    const response = context.redirect(destino);
+    response.headers.set('Cache-Control', 'no-store');
+    return response;
+  };
+
+  const servir = async (): Promise<Response> => {
+    const response = await next();
+    aplicarPoliticaCacheHtml(
+      response,
+      context.url.pathname,
+      import.meta.env.PROD ? 'produccion' : 'desarrollo'
+    );
+    return response;
+  };
+
   // 2. Omitir peticiones de assets internos de Astro, favicons o artefactos estáticos de PWA
   if (
     context.url.pathname.startsWith('/_astro') ||
@@ -92,9 +109,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // 4. Si no hay binding de base de datos D1 en runtime, evaluar protección y continuar
   if (!d1) {
     if (isProtectedRoute(context.url.pathname)) {
-      return context.redirect('/login');
+      return redirigir('/login');
     }
-    return await next();
+    return await servir();
   }
 
   try {
@@ -190,14 +207,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // Acceso sin autenticación a cualquier ruta protegida
   if (isProtectedRoute(pathname) && !user) {
     const returnTo = encodeURIComponent(pathname + context.url.search);
-    return context.redirect(`/login?redirect=${returnTo}`);
+    return redirigir(`/login?redirect=${returnTo}`);
   }
 
   // Protección RBAC estricta para el entorno operativo (/admin/**)
   if (isAdminRoute(pathname)) {
     if (!usuario) {
       const returnTo = encodeURIComponent(pathname + context.url.search);
-      return context.redirect(`/login?redirect=${returnTo}`);
+      return redirigir(`/login?redirect=${returnTo}`);
     }
 
     const esPersonal =
@@ -207,14 +224,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
     if (!esPersonal) {
       // Permitir acceso si se encuentra en onboarding para crear su propio patio o unirse con código
       if (pathname.startsWith('/admin/onboarding')) {
-        return await next();
+        return await servir();
       }
 
       context.locals.logger.warn(
         'Intento de acceso a ruta administrativa por usuario sin rol de patio',
         { userId: usuario.id, path: pathname }
       );
-      return context.redirect('/catalogo');
+      return redirigir('/catalogo');
     }
 
     // Si tiene inducción pendiente en este local, forzar paso por /admin/onboarding
@@ -224,7 +241,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       !usuario.localActivo.onboardingCompletado;
 
     if (requiereOnboarding && !pathname.startsWith('/admin/onboarding')) {
-      return context.redirect('/admin/onboarding');
+      return redirigir('/admin/onboarding');
     }
 
     if (
@@ -232,7 +249,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       pathname.startsWith('/admin/onboarding') &&
       context.url.searchParams.get('modo') !== 'crear'
     ) {
-      return context.redirect('/admin');
+      return redirigir('/admin');
     }
   }
 
@@ -241,11 +258,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
     const esPersonal =
       usuario?.esSuperAdmin ||
       (usuario?.localActivo && usuario.localActivo.rol !== 'USUARIO');
-    return context.redirect(esPersonal ? '/admin' : '/catalogo');
+    return redirigir(esPersonal ? '/admin' : '/catalogo');
   }
 
   try {
-    return await next();
+    return await servir();
   } catch (pipelineError) {
     await context.locals.logger.fatal(
       'Falla no controlada en el pipeline de ejecución de la petición',

@@ -1,4 +1,5 @@
 import type { D1Database } from '@cloudflare/workers-types';
+import { logFalloD1 } from './diagnostics';
 
 let isBootstrapped = false;
 
@@ -130,7 +131,8 @@ export async function ensureD1Schema(d1: D1Database): Promise<void> {
       await d1.exec(BOOTSTRAP_SQL);
     }
     isBootstrapped = true;
-  } catch {
+  } catch (error) {
     // Si d1 no soporta sqlite_master o falla en dev, continuar defensivamente
+    logFalloD1('ensureD1Schema.exec', error);
   }
 }

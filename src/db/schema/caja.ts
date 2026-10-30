@@ -3,6 +3,99 @@ import { localesAlquiler } from './locales';
 import { user } from './auth';
 import { vehiculos } from './vehiculos';
 
+/** Dominios canónicos de caja y finanzas. Única fuente de verdad para columnas, Zod y UI. */
+export const tiposCuentaFinanciera = [
+  'CAJA_EFECTIVO',
+  'BANCO',
+  'BILLETERA_DIGITAL',
+] as const;
+export type TipoCuentaFinanciera = (typeof tiposCuentaFinanciera)[number];
+
+export const tiposMovimientoCaja = ['INGRESO', 'EGRESO', 'TRANSFERENCIA'] as const;
+export type TipoMovimientoCaja = (typeof tiposMovimientoCaja)[number];
+
+export const categoriasIngreso = [
+  'PAGO_ALQUILER',
+  'ABONO_CONTRATO',
+  'EXTENSION_ALQUILER',
+  'SERVICIOS_ADICIONALES',
+  'COBRO_DANOS_MULTAS',
+  'DEPOSITO_GARANTIA',
+  'INGRESO_EXTRAORDINARIO',
+  'OTRO_INGRESO',
+] as const;
+export type CategoriaIngreso = (typeof categoriasIngreso)[number];
+
+export const categoriasEgreso = [
+  'MANTENIMIENTO_REPARACION',
+  'COMBUSTIBLE_OPERACION',
+  'LIMPIEZA_ALISTAMIENTO',
+  'SEGUROS_IMPUESTOS',
+  'COMISIONES_BANCARIAS',
+  'REEMBOLSO_GARANTIA',
+  'COMPRAS_ADMINISTRATIVAS',
+  'OTRO_EGRESO',
+] as const;
+export type CategoriaEgreso = (typeof categoriasEgreso)[number];
+
+export const categoriasMovimiento = [
+  ...categoriasIngreso,
+  ...categoriasEgreso,
+  'TRANSFERENCIA_INTERNA',
+] as const;
+export type CategoriaMovimiento = (typeof categoriasMovimiento)[number];
+
+export const metodosPagoFinanciero = [
+  'efectivo',
+  'transferencia',
+  'tarjeta',
+  'especie',
+  'otro',
+] as const;
+export type MetodoPagoFinanciero = (typeof metodosPagoFinanciero)[number];
+
+export const estadosMovimientoCaja = [
+  'BORRADOR',
+  'PENDIENTE',
+  'CONFIRMADO',
+  'ANULADO',
+] as const;
+export type EstadoMovimiento = (typeof estadosMovimientoCaja)[number];
+
+export const estadosSesionCaja = ['ABIERTA', 'CERRADA'] as const;
+export type EstadoSesionCaja = (typeof estadosSesionCaja)[number];
+
+export const estadosDepositoGarantia = [
+  'PENDIENTE_RECIBIR',
+  'RECIBIDO_CUSTODIA',
+  'EN_REVISION',
+  'PENDIENTE_DEVOLUCION',
+  'DEVUELTO_PARCIAL',
+  'DEVUELTO_TOTAL',
+  'APLICADO_CARGOS',
+] as const;
+export type EstadoDepositoGarantia = (typeof estadosDepositoGarantia)[number];
+
+export const entidadesAuditoria = [
+  'MOVIMIENTO',
+  'SESION_CAJA',
+  'GARANTIA',
+  'CUENTA',
+] as const;
+export type EntidadAuditoria = (typeof entidadesAuditoria)[number];
+
+export const accionesAuditoria = [
+  'CREAR',
+  'MODIFICAR',
+  'ANULAR',
+  'REVERTIR',
+  'CERRAR_CAJA',
+  'DEVOLVER_GARANTIA',
+  'TRANSFERENCIA',
+  'RECIBIR',
+] as const;
+export type AccionAuditoria = (typeof accionesAuditoria)[number];
+
 /**
  * Cuentas Financieras (Cajas físicas de efectivo, cuentas bancarias, billeteras digitales).
  */
@@ -12,7 +105,7 @@ export const cuentasFinancieras = sqliteTable('cuentas_financieras', {
     .notNull()
     .references(() => localesAlquiler.id, { onDelete: 'cascade' }),
   nombre: text('nombre').notNull(),
-  tipo: text('tipo').notNull(), // 'CAJA_EFECTIVO' | 'BANCO' | 'BILLETERA_DIGITAL'
+  tipo: text('tipo', { enum: tiposCuentaFinanciera }).notNull(),
   saldoInicial: integer('saldo_inicial').notNull().default(0), // en COP
   activo: integer('activo', { mode: 'boolean' }).notNull().default(true),
   creadoEn: integer('creado_en', { mode: 'timestamp' }).notNull(),
@@ -30,11 +123,11 @@ export const movimientosCaja = sqliteTable('movimientos_caja', {
   localId: text('local_id')
     .notNull()
     .references(() => localesAlquiler.id, { onDelete: 'cascade' }),
-  tipo: text('tipo').notNull(), // 'INGRESO' | 'EGRESO' | 'TRANSFERENCIA'
-  categoria: text('categoria').notNull(),
+  tipo: text('tipo', { enum: tiposMovimientoCaja }).notNull(),
+  categoria: text('categoria', { enum: categoriasMovimiento }).notNull(),
   concepto: text('concepto').notNull(),
   monto: integer('monto').notNull(), // en COP
-  metodoPago: text('metodo_pago').notNull(), // 'efectivo' | 'transferencia' | 'tarjeta' | 'especie' | 'otro'
+  metodoPago: text('metodo_pago', { enum: metodosPagoFinanciero }).notNull(),
   cuentaId: text('cuenta_id')
     .notNull()
     .references(() => cuentasFinancieras.id),
@@ -49,7 +142,7 @@ export const movimientosCaja = sqliteTable('movimientos_caja', {
   proveedor: text('proveedor'), // Para egresos/gastos
   referencia: text('referencia'), // Factura, voucher o comprobante bancario
   soporteUrl: text('soporte_url'),
-  estado: text('estado').notNull().default('CONFIRMADO'), // 'BORRADOR' | 'PENDIENTE' | 'CONFIRMADO' | 'ANULADO'
+  estado: text('estado', { enum: estadosMovimientoCaja }).notNull().default('CONFIRMADO'),
   motivoAnulacion: text('motivo_anulacion'),
   anuladoPorId: text('anulado_por_id')
     .references(() => user.id),
@@ -82,7 +175,7 @@ export const sesionesCaja = sqliteTable('sesiones_caja', {
     .references(() => user.id),
   fechaApertura: integer('fecha_apertura', { mode: 'timestamp' }).notNull(),
   saldoInicialContado: integer('saldo_inicial_contado').notNull(),
-  estado: text('estado').notNull().default('ABIERTA'), // 'ABIERTA' | 'CERRADA'
+  estado: text('estado', { enum: estadosSesionCaja }).notNull().default('ABIERTA'),
   usuarioCierreId: text('usuario_cierre_id')
     .references(() => user.id),
   fechaCierre: integer('fecha_cierre', { mode: 'timestamp' }),
@@ -119,10 +212,10 @@ export const depositosGarantia = sqliteTable('depositos_garantia', {
   montoRetenido: integer('monto_retenido').notNull().default(0), // Daños, deducibles o multas autorizadas
   montoDevuelto: integer('monto_devuelto').notNull().default(0),
   saldoComprometido: integer('saldo_comprometido').notNull(), // montoRecibido - montoRetenido - montoDevuelto
-  estado: text('estado').notNull(), // 'PENDIENTE_RECIBIR' | 'RECIBIDO_CUSTODIA' | 'EN_REVISION' | 'PENDIENTE_DEVOLUCION' | 'DEVUELTO_PARCIAL' | 'DEVUELTO_TOTAL' | 'APLICADO_CARGOS'
+  estado: text('estado', { enum: estadosDepositoGarantia }).notNull(),
   cuentaId: text('cuenta_id')
     .references(() => cuentasFinancieras.id),
-  metodoPago: text('metodo_pago'),
+  metodoPago: text('metodo_pago', { enum: metodosPagoFinanciero }),
   referenciaRecepcion: text('referencia_recepcion'),
   fechaRecepcion: integer('fecha_recepcion', { mode: 'timestamp' }),
   fechaDevolucionPrevista: integer('fecha_devolucion_prevista', { mode: 'timestamp' }),
@@ -146,9 +239,9 @@ export const auditoriaFinanciera = sqliteTable('auditoria_financiera', {
   localId: text('local_id')
     .notNull()
     .references(() => localesAlquiler.id, { onDelete: 'cascade' }),
-  entidad: text('entidad').notNull(), // 'MOVIMIENTO' | 'SESION_CAJA' | 'GARANTIA' | 'CUENTA'
+  entidad: text('entidad', { enum: entidadesAuditoria }).notNull(),
   entidadId: text('entidad_id').notNull(),
-  accion: text('accion').notNull(), // 'CREAR' | 'MODIFICAR' | 'ANULAR' | 'REVERTIR' | 'CERRAR_CAJA' | 'DEVOLVER_GARANTIA' | 'TRANSFERENCIA'
+  accion: text('accion', { enum: accionesAuditoria }).notNull(),
   montoAnterior: integer('monto_anterior'),
   montoNuevo: integer('monto_nuevo'),
   motivo: text('motivo'),

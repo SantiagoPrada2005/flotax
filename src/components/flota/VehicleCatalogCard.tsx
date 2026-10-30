@@ -30,6 +30,7 @@ export default function VehicleCatalogCard({ vehiculo }: VehicleCatalogCardProps
   return (
     <a
       href={`/vehiculos/${vehiculo.id}`}
+      data-astro-prefetch="tap"
       className="group ios-press-bounce flex flex-col justify-between h-full rounded-[28px] bg-white border border-[#E4E4E7]/70 p-5 sm:p-6 shadow-[0_10px_30px_-5px_rgba(24,24,27,0.06)] hover:shadow-[0_18px_38px_-6px_rgba(24,24,27,0.12)] hover:border-[#A1A1AA]/50 transition-all cursor-pointer relative"
     >
       {/* 1. Cabecera de la Tarjeta (Nombre, Año + Icono Combustible, Tarifa) */}

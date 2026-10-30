@@ -1,0 +1,22 @@
+---
+/**
+ * @component AuthBlueprintBackground
+ * @description Fondo arquitectónico automotriz puro vectorial SVG (sin textos de UI ni botones) para vistas estáticas SSR.
+ * @see design/logo.pen -> Lamina 07 (Sección 03)
+ */
+import AuthVectorBackground from './AuthVectorBackground';
+import type { AuthBackgroundVariant } from './AuthVectorBackground';
+
+interface Props {
+  variant?: AuthBackgroundVariant;
+  class?: string;
+}
+
+const { variant = 'blueprint', class: className = '' } = Astro.props;
+---
+
+<div class:list={['absolute inset-0 pointer-events-none overflow-hidden select-none z-0 bg-[#111827]', className]}>
+  <div class="absolute top-0 inset-x-0 w-full max-w-[456px] mx-auto h-[48vh] min-h-[360px] max-h-[480px]">
+    <AuthVectorBackground activeVariant={variant} />
+  </div>
+</div>

@@ -10,6 +10,10 @@ export default defineConfig({
   output: 'server',
   adapter: cloudflare(),
   integrations: [react()],
+  prefetch: {
+    prefetchAll: false,
+    defaultStrategy: 'hover',
+  },
   vite: {
     plugins: [tailwindcss()],
     optimizeDeps: {

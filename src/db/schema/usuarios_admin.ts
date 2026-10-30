@@ -7,13 +7,14 @@ export const rolesValidos = [
   'AUDITOR_FINANCIERO',
 ] as const;
 
-export type RolUsuario = (typeof rolesValidos)[number];
+export type RolUsuarioAdmin = (typeof rolesValidos)[number];
 
 /**
- * Administradores del sistema. La columna `rol` es la autoridad canónica del
- * rol del usuario; la matriz de permisos vive en `src/lib/auth/rbac.ts`.
- * El hash de la contraseña NUNCA se expone al cliente: usar `UsuarioAdminPublico`
- * (derivado de `usuarioAdminSelect`) para proyecciones seguras.
+ * Administradores históricos del sistema. La autoridad de roles vigente vive en
+ * `src/lib/auth/rbac.ts` (`rolesSistema`); esta tabla se conserva por
+ * compatibilidad del esquema D1 y no tiene consumidores en la aplicación.
+ * El hash de la contraseña NUNCA se expone al cliente: usar
+ * `UsuarioAdminPublico` para proyecciones seguras.
  */
 export const usuarioAdmin = sqliteTable('usuarios_admin', {
   id: text('id').primaryKey(),
@@ -35,8 +36,11 @@ export type UsuarioAdminInsert = typeof usuarioAdmin.$inferInsert;
 /**
  * Proyección segura: la porción de `UsuarioAdminSelect` que es segura exponer al
  * cliente o a componentes de UI. Omite el hash de la contraseña.
+ *
+ * Nota: no confundir con `lib/auth/session.ts#UsuarioAutenticado`, que describe
+ * la sesión Better Auth vigente.
  */
-export type UsuarioAutenticado = Pick<
+export type UsuarioAdminPublico = Pick<
   UsuarioAdminSelect,
   'id' | 'nombre' | 'correo' | 'rol' | 'activo'
 >;

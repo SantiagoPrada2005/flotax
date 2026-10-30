@@ -9,8 +9,8 @@
 | :--- | :--- | :--- | :--- |
 | [`caja.ts`](./caja.ts) | Server Action / Caso de Uso | `registrarAbono` | `astro:actions`, `zod`, `@/lib/auth` |
 | [`flota.ts`](./flota.ts) | Server Action / Flota y Unidades | `guardarVehiculoAction`, `cambiarEstadoVehiculoAction`, `eliminarVehiculoAction`, `obtenerVehiculoDetalleAction` | `astro:actions`, `zod`, `cloudflare:workers`, `@/lib/flota/repositorio` |
-| [`index.ts`](./index.ts) | Barrel Export / Server Actions Root | `server` | `./caja`, `./portal`, `./flota`, `./reservas` |
-| [`notificaciones.ts`](./notificaciones.ts) | TypeScript / JavaScript Module | - | - |
+| [`index.ts`](./index.ts) | Barrel Export / Server Actions Root | `server` | `./caja`, `./portal`, `./flota`, `./reservas`, `./notificaciones` |
+| [`notificaciones.ts`](./notificaciones.ts) | Server Action / Notificaciones & Web Push | `listarNotificaciones`, `contarNotificacionesNoLeidas`, `marcarNotificacionesLeidas`, `marcarTodasNotificacionesLeidas`, `deshacerNotificacionesLeidas`, `suscribirPush`, `cancelarPush`, `enviarPruebaPush` | `astro:actions`, `zod`, `cloudflare:workers`, `@/lib/auth`, `@/lib/notificaciones` |
 | [`perfil.ts`](./perfil.ts) | Server Action / Perfil de Usuario | `actualizarPerfilAction` | `astro:actions`, `zod`, `cloudflare:workers`, `@/lib/db`, `@/lib/auth` |
 | [`verificacion.ts`](./verificacion.ts) | Server Action / KYC & Multimedia R2 | `subirFotoDocumentoAction`, `finalizarVerificacionAction`, `obtenerEstadoVerificacionAction` | `astro:actions`, `zod`, `cloudflare:workers`, `@/lib/db`, `@/lib/auth` |
 | [`portal.ts`](./portal.ts) | Server Action / Casos de Uso | `cambiarModoPortal`, `conmutarLocalActivo`, `finalizarOnboardingOperativo`, `crearPatioOperativo`, `actualizarPerfilCatalogoLocal` | `astro:actions`, `zod`, `cloudflare:workers`, `@/lib/auth`, `@/lib/flota/locales-captacion` |

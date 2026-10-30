@@ -1,4 +1,5 @@
 import { defineAction, ActionError } from 'astro:actions';
+import { marcarRevisionNavegacion } from '@/lib/pwa/revision';
 import { z } from 'zod';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
@@ -9,6 +10,13 @@ import {
   obtenerVehiculoAsync,
 } from '@/lib/flota/repositorio';
 import type { VehiculoItem, CategoriaVehiculo } from '@/lib/flota/types';
+import {
+  categoriasVehiculo,
+  estadosVehiculo,
+  transmisionesVehiculo,
+  combustiblesVehiculo,
+} from '@/db/schema';
+import { requireLocalAuth, PERMISOS } from '@/lib/auth';
 
 const CATEGORIA_ETIQUETAS: Record<CategoriaVehiculo, string> = {
   SEDAN: 'Sedán Ejecutivo',
@@ -32,14 +40,14 @@ const vehiculoFormSchema = z.object({
   marca: z.string().min(1, { error: 'La marca es obligatoria' }),
   modelo: z.string().min(1, { error: 'El modelo es obligatorio' }),
   anio: z.number().int().min(1990).max(2035),
-  categoria: z.enum(['SEDAN', 'SUV', 'MOTO', 'PATINETA', 'UTILITARIO']),
+  categoria: z.enum(categoriasVehiculo),
   categoriaEtiqueta: z.string().optional(),
   placa: z.string().min(3, { error: 'La placa es obligatoria' }),
-  estado: z.enum(['DISPONIBLE', 'RESERVADO', 'MANTENIMIENTO', 'FUERA_SERVICIO']),
+  estado: z.enum(estadosVehiculo),
   precioDia: z.number().min(0, { error: 'El precio por día debe ser mayor o igual a 0' }),
   depositoGarantia: z.number().min(0, { error: 'El depósito de garantía es obligatorio' }),
-  transmision: z.enum(['Automática', 'Manual', 'Eléctrica']),
-  combustible: z.enum(['Gasolina', 'Diésel', 'Eléctrico', 'Híbrido']),
+  transmision: z.enum(transmisionesVehiculo),
+  combustible: z.enum(combustiblesVehiculo),
   capacidadPasajeros: z.number().int().min(1),
   autonomiaKm: z.number().optional(),
   kilometraje: z.number().min(0),
@@ -58,12 +66,16 @@ const vehiculoFormSchema = z.object({
 export const guardarVehiculoAction = defineAction({
   input: vehiculoFormSchema,
   handler: async (input, context) => {
-    const usuario = context.locals.usuario;
-    const localId = usuario?.localActivo?.id;
+    marcarRevisionNavegacion(context.cookies);
+    const esEdicion = Boolean(input.id && input.id.trim().length > 0);
+    const usuario = requireLocalAuth(
+      context,
+      esEdicion ? PERMISOS.FLOTA_ACTUALIZAR : PERMISOS.FLOTA_CREAR
+    );
+    const localId = usuario.localActivo.id;
 
     const db = env.DB ? getDb(env.DB) : undefined;
 
-    const esEdicion = Boolean(input.id && input.id.trim().length > 0);
     const id = esEdicion
       ? input.id!.trim()
       : `veh-${slugify(input.marca)}-${slugify(input.modelo)}-${crypto.randomUUID().slice(0, 6)}`;
@@ -127,9 +139,11 @@ export const guardarVehiculoAction = defineAction({
 export const cambiarEstadoVehiculoAction = defineAction({
   input: z.object({
     id: z.string().min(1, { error: 'ID de unidad requerido' }),
-    estado: z.enum(['DISPONIBLE', 'RESERVADO', 'MANTENIMIENTO', 'FUERA_SERVICIO']),
+    estado: z.enum(estadosVehiculo),
   }),
-  handler: async (input) => {
+  handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
+    requireLocalAuth(context, PERMISOS.FLOTA_CAMBIAR_ESTADO);
     const db = env.DB ? getDb(env.DB) : undefined;
     const actualizado = await actualizarEstadoVehiculo(input.id, input.estado, db);
 
@@ -155,7 +169,9 @@ export const eliminarVehiculoAction = defineAction({
   input: z.object({
     id: z.string().min(1, { error: 'ID de unidad requerido' }),
   }),
-  handler: async (input) => {
+  handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
+    requireLocalAuth(context, PERMISOS.FLOTA_ELIMINAR);
     const db = env.DB ? getDb(env.DB) : undefined;
     const eliminado = await darDeBajaVehiculo(input.id, db);
 
@@ -181,7 +197,8 @@ export const obtenerVehiculoDetalleAction = defineAction({
   input: z.object({
     id: z.string().min(1, { error: 'ID de unidad requerido' }),
   }),
-  handler: async (input) => {
+  handler: async (input, context) => {
+    requireLocalAuth(context, PERMISOS.FLOTA_LEER);
     const db = env.DB ? getDb(env.DB) : undefined;
     const vehiculo = await obtenerVehiculoAsync(input.id, db);
 
