@@ -75,7 +75,7 @@ export function CajaBarraFlujo({
               esSuperavit ? 'bg-emerald-500' : 'bg-rose-500'
             }`}
           />
-          {esSuperavit ? `Margen Operativo: ${pctNeto}%` : 'Déficit Operativo'}
+          {esSuperavit ? `Margen Financiero: ${pctNeto}%` : 'Déficit Financiero'}
         </span>
       </div>
 
@@ -188,7 +188,7 @@ export function CajaBarraFlujo({
           <div className="flex items-center justify-between pb-2 border-b border-[#9CA3AF]/20">
             <span className="text-xs font-bold text-[#111827]">
               {segmentoActivo === 'EGRESOS' && 'Composición de Gastos Operativos'}
-              {segmentoActivo === 'BALANCE' && 'Rendimiento y Cobertura'}
+              {segmentoActivo === 'BALANCE' && 'Balance Financiero y Cobertura'}
               {segmentoActivo === 'METODOS' && 'Distribución por Medio de Pago'}
             </span>
 

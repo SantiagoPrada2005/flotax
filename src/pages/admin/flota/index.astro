@@ -1,7 +1,6 @@
 ---
 import LayoutAdmin from '@/layouts/LayoutAdmin.astro';
 import FleetInventoryManager from '@/components/flota/FleetInventoryManager';
-import LocalCatalogShareCard from '@/components/flota/LocalCatalogShareCard';
 import {
   listarVehiculos,
   obtenerLocalPorSlugOId,
@@ -33,17 +32,11 @@ const vehiculos = await listarVehiculos(db, { localId: localContexto.id });
 <LayoutAdmin title="FlotaX — Control de Flota" activeTab="fleet">
   <div class="mx-auto w-full max-w-5xl px-4 sm:px-6 py-4 space-y-6">
     <!-- Header de Módulo -->
-    <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-1 pb-1">
+    <header class="flex items-center justify-between gap-4 pt-1 pb-1">
       <div>
-        <p class="text-xs font-semibold uppercase tracking-wider text-[#4B5563]">
-          Operaciones de Patio • {localContexto.nombre}
-        </p>
-        <h1 class="mt-1 font-display text-2xl font-black tracking-tight text-[#111827] sm:text-3xl">
-          Flota de Vehículos
+        <h1 class="font-display text-2xl font-black tracking-tight text-[#111827] sm:text-3xl">
+          Flota
         </h1>
-        <p class="mt-1 text-xs font-medium text-[#4B5563]">
-          Control perimetral de inventario, disponibilidad operativa y mantenimiento en patio.
-        </p>
       </div>
 
       <div class="flex items-center gap-2 shrink-0">
@@ -66,13 +59,6 @@ const vehiculos = await listarVehiculos(db, { localId: localContexto.id });
         </a>
       </div>
     </header>
-
-    <!-- Centro de Compartición del Catálogo Exclusivo del Local -->
-    <LocalCatalogShareCard
-      client:load
-      local={localContexto}
-      unidadesCount={vehiculos.length}
-    />
 
     <!-- Gestor Reactivo de Flota e Inventario -->
     <FleetInventoryManager initialVehiculos={vehiculos} client:load />

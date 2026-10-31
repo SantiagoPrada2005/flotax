@@ -10,7 +10,6 @@ export interface VehicleStudioShowcaseProps {
 }
 
 type StudioAngleId = 'estudio' | 'perfil' | 'cabina' | 'desempeno';
-type ShowcaseTabId = 'about' | 'specs' | 'requisitos';
 
 interface StudioAngleOption {
   id: StudioAngleId;
@@ -72,7 +71,6 @@ export default function VehicleStudioShowcase({
 
   const [unidadIndex, setUnidadIndex] = useState<number>(indiceInicial);
   const [angleIndex, setAngleIndex] = useState<number>(2); // Tercer thumbnail activo en oscuro como en Pantalla 3
-  const [activeTab, setActiveTab] = useState<ShowcaseTabId>('about');
 
   const vehiculo = listaUnidades[unidadIndex] ?? vehiculoInicial;
   const currentAngle = STUDIO_ANGLES[angleIndex] ?? STUDIO_ANGLES[0]!;
@@ -250,124 +248,67 @@ export default function VehicleStudioShowcase({
           })}
         </div>
         {/* ===================================================================
-            2. PESTAÑAS SEGMENTADAS EDITORIALES (PANTALLA 3: "Closet | About | Reviews")
+            2. INFORMACIÓN PRINCIPAL: FICHA TÉCNICA Y REQUISITOS (EN UN SOLO LUGAR)
            =================================================================== */}
-        <div className="space-y-3 pt-1">
-          <div
-            role="tablist"
-            aria-label="Información de la unidad"
-            className="grid grid-cols-3 border-b border-[#EDEDED]"
-          >
-            {[
-              { id: 'specs' as const, label: 'Ficha Técnica' },
-              { id: 'about' as const, label: 'Acerca de' },
-              { id: 'requisitos' as const, label: 'Requisitos' },
-            ].map((tab) => {
-              const active = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  onClick={() => {
-                    triggerHaptic(6);
-                    setActiveTab(tab.id);
-                  }}
-                  className={`pb-2.5 text-xs sm:text-sm font-bold transition relative cursor-pointer ${active
-                    ? 'text-[#111827]'
-                    : 'text-[#9CA3AF] hover:text-[#4B5563]'
-                    }`}
-                >
-                  {tab.label}
-                  {active && (
-                    <span className="absolute bottom-0 left-1/4 right-1/4 h-0.5 rounded-full bg-[#111827]" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-
-          {activeTab === 'about' && (
-            <div className="space-y-3 pt-1">
-              <p className="text-xs sm:text-sm text-[#4B5563] leading-relaxed">
-                {vehiculo.descripcion}
-              </p>
-              <div className="grid grid-cols-3 gap-2 pt-1">
-                <div className="rounded-2xl bg-[#EDEDED]/60 p-2.5 text-center">
-                  <span className="text-[10px] font-semibold text-[#4B5563] block">
-                    0-100 km/h
-                  </span>
-                  <span className="font-mono tabular-nums text-xs font-extrabold text-[#111827]">
-                    {vehiculo.aceleracion}
-                  </span>
-                </div>
-                <div className="rounded-2xl bg-[#EDEDED]/60 p-2.5 text-center">
-                  <span className="text-[10px] font-semibold text-[#4B5563] block">
-                    Vel. Máxima
-                  </span>
-                  <span className="font-mono tabular-nums text-xs font-extrabold text-[#111827]">
-                    {vehiculo.velocidadMaxima}
-                  </span>
-                </div>
-                <div className="rounded-2xl bg-[#EDEDED]/60 p-2.5 text-center">
-                  <span className="text-[10px] font-semibold text-[#4B5563] block">
-                    Rango / Odo
-                  </span>
-                  <span className="font-mono tabular-nums text-xs font-extrabold text-[#111827]">
-                    {vehiculo.autonomiaOdo}
-                  </span>
-                </div>
-              </div>
+        <div className="space-y-3.5 pt-1">
+          {/* Ficha Técnica */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between border-b border-[#EDEDED] pb-1.5">
+              <span className="text-xs sm:text-sm font-bold text-[#111827]">
+                Ficha Técnica
+              </span>
+              <span className="text-[11px] font-semibold text-[#4B5563]">
+                {vehiculo.categoriaEtiqueta} • {vehiculo.anio}
+              </span>
             </div>
-          )}
 
-          {activeTab === 'specs' && (
-            <div className="grid grid-cols-2 gap-2.5 pt-1 text-xs">
-              <div className="rounded-2xl bg-[#EDEDED]/60 p-3 flex items-center justify-between">
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="rounded-2xl bg-[#EDEDED]/60 p-2.5 sm:p-3 flex items-center justify-between">
                 <span className="text-[#4B5563]">Transmisión</span>
                 <span className="font-bold text-[#111827]">{vehiculo.transmision}</span>
               </div>
-              <div className="rounded-2xl bg-[#EDEDED]/60 p-3 flex items-center justify-between">
+              <div className="rounded-2xl bg-[#EDEDED]/60 p-2.5 sm:p-3 flex items-center justify-between">
                 <span className="text-[#4B5563]">Propulsión</span>
                 <span className="font-bold text-[#111827]">{vehiculo.combustible}</span>
               </div>
-              <div className="rounded-2xl bg-[#EDEDED]/60 p-3 flex items-center justify-between">
+              <div className="rounded-2xl bg-[#EDEDED]/60 p-2.5 sm:p-3 flex items-center justify-between">
                 <span className="text-[#4B5563]">Capacidad</span>
                 <span className="font-mono tabular-nums font-bold text-[#111827]">
                   {vehiculo.capacidadPasajeros} pasajeros
                 </span>
               </div>
-              <div className="rounded-2xl bg-[#EDEDED]/60 p-3 flex items-center justify-between">
-                <span className="text-[#4B5563]">Fianza / Garantía</span>
+              <div className="rounded-2xl bg-[#EDEDED]/60 p-2.5 sm:p-3 flex items-center justify-between">
+                <span className="text-[#4B5563]">Depósito</span>
                 <span className="font-mono tabular-nums font-bold text-[#111827]">
                   {formatCop(vehiculo.depositoGarantia)}
                 </span>
               </div>
             </div>
-          )}
+          </div>
 
-          {activeTab === 'requisitos' && (
-            <div className="rounded-2xl bg-[#EDEDED]/60 p-3.5 space-y-2 text-xs text-[#4B5563]">
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-[#111827]">
-                  ✓ Documento de identidad y licencia vigente
-                </span>
-                <span className="font-mono text-[10px] text-[#4B5563]">KYC en línea</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-[#111827]">
-                  ✓ Depósito reembolsable en sede ({local.nombre})
-                </span>
-                <span className="font-mono tabular-nums font-bold text-[#111827]">
-                  {formatCop(vehiculo.depositoGarantia)}
-                </span>
-              </div>
-              <p className="text-[11px] text-[#4B5563] pt-0.5">
-                Entrega con acta fotográfica pericial verificada por {local.nombre}.
-              </p>
+          {/* Requisitos de Alquiler */}
+          <div className="rounded-2xl bg-[#EDEDED]/60 p-3 sm:p-3.5 space-y-2 text-xs text-[#4B5563]">
+            <span className="text-xs font-bold text-[#111827] block">
+              Requisitos para Alquilar
+            </span>
+            <div className="flex items-center justify-between">
+              <span className="font-semibold text-[#111827]">
+                ✓ Documento de identidad y licencia vigente
+              </span>
+              <span className="font-mono text-[10px] text-[#4B5563] shrink-0">KYC en línea</span>
             </div>
-          )}
+            <div className="flex items-center justify-between">
+              <span className="font-semibold text-[#111827]">
+                ✓ Depósito reembolsable en garantía ({local.nombre})
+              </span>
+              <span className="font-mono tabular-nums font-bold text-[#111827] shrink-0">
+                {formatCop(vehiculo.depositoGarantia)}
+              </span>
+            </div>
+            <p className="text-[11px] text-[#4B5563] pt-0.5">
+              Entrega con acta fotográfica pericial verificada en patio.
+            </p>
+          </div>
         </div>
 
         {/* ===================================================================
