@@ -361,7 +361,7 @@ function construirCurvaMovimientosDiarios(
   todayExpense: number,
   estadoFinanciero?: ResumenFinancieroCompleto
 ): readonly DailyMovementCurvePoint[] {
-  const serieReal = estadoFinanciero?.graficoFlujo ?? [];
+  const serieReal = (estadoFinanciero?.graficoFlujo ?? []).slice(-5);
   if (serieReal.length >= 4) {
     return serieReal.map((p, idx) => {
       const esUltimo = idx === serieReal.length - 1;
@@ -384,12 +384,10 @@ function construirCurvaMovimientosDiarios(
   }
 
   const baseDias: readonly { offset: number; ing: number; egr: number }[] = [
-    { offset: -6, ing: 1_180_000, egr: 310_000 },
-    { offset: -5, ing: 1_460_000, egr: 220_000 },
-    { offset: -4, ing: 990_000, egr: 410_000 },
-    { offset: -3, ing: 1_680_000, egr: 285_000 },
-    { offset: -2, ing: 1_310_000, egr: 195_000 },
-    { offset: -1, ing: 1_760_000, egr: 350_000 },
+    { offset: -4, ing: 1_240_000, egr: 290_000 },
+    { offset: -3, ing: 1_490_000, egr: 220_000 },
+    { offset: -2, ing: 1_680_000, egr: 275_000 },
+    { offset: -1, ing: 1_360_000, egr: 210_000 },
     {
       offset: 0,
       ing: todayIncome > 0 ? todayIncome : 1_519_000,

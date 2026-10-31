@@ -38,7 +38,7 @@ export default function InteractiveSplineCard({
   };
 
   /* =========================================================================
-     NIVEL 1 (BENTO TILE): Resumen espacial compacto y visual (sin saturar)
+     NIVEL 1 (BENTO TILE): Mini gráfica limpia de 6 cápsulas mensuales
      ========================================================================= */
   if (mode === 'BENTO_TILE') {
     return (
@@ -72,7 +72,7 @@ export default function InteractiveSplineCard({
               </svg>
             </div>
 
-            <span className="rounded-full bg-[#1F2937] px-2.5 py-1 font-mono text-xs font-bold tabular-nums text-white">
+            <span className="rounded-full bg-[#111827] px-2.5 py-1 font-mono text-xs font-bold tabular-nums text-white shadow-2xs">
               {occupancy.currentOccupancyPct}%
             </span>
           </div>
@@ -93,31 +93,27 @@ export default function InteractiveSplineCard({
           </div>
         </div>
 
-        {/* Mini previsualización de las 6 cápsulas mensuales en azul oscuro */}
+        {/* Mini gráfico limpio de 6 cápsulas mensuales (sin línea superpuesta) */}
         <div className="mt-4 w-full space-y-2.5">
           <div
             className="grid h-10 grid-cols-6 items-end gap-1.5 rounded-2xl bg-[#EDEDED]/75 px-2.5 py-2"
             aria-hidden="true"
           >
             {occupancy.months.map((mes) => {
-              const barPct = Math.max(
-                28,
+              const heightPct = Math.max(
+                24,
                 Math.round((mes.earnings / maxEarnings) * 100)
               );
               return (
                 <div
                   key={mes.id}
-                  className="flex h-full items-end justify-center"
-                >
-                  <div
-                    style={{ height: `${barPct}%` }}
-                    className={`w-full rounded-full transition-all ${
-                      mes.isCurrentMonth
-                        ? 'bg-[#111827]'
-                        : 'bg-[#1F2937]/30 group-hover:bg-[#1F2937]/45'
-                    }`}
-                  />
-                </div>
+                  style={{ height: `${heightPct}%` }}
+                  className={`w-full rounded-full transition-all ${
+                    mes.isCurrentMonth
+                      ? 'bg-[#111827]'
+                      : 'bg-[#1F2937]/30 group-hover:bg-[#1F2937]/45'
+                  }`}
+                />
               );
             })}
           </div>
@@ -134,19 +130,31 @@ export default function InteractiveSplineCard({
   }
 
   /* =========================================================================
-     NIVEL 2 (FOCUSED DETAIL): Analítica completa mes a mes (no lineal, 2 cols)
+     NIVEL 2 (FOCUSED DETAIL): Ficha Protagonista + Cápsulas limpias de 6 meses
      ========================================================================= */
+  const ringRadius = 34;
+  const ringCircumference = 2 * Math.PI * ringRadius;
+  const activeOccupancyPct = activeMonth?.occupancyPct ?? occupancy.currentOccupancyPct;
+  const ringOffset =
+    ringCircumference -
+    (Math.min(100, Math.max(0, activeOccupancyPct)) / 100) * ringCircumference;
+
   return (
     <section
       aria-label="Analítica detallada de ocupación mensual, reservas y ganancias"
       className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch"
     >
-      {/* Columna Izquierda (Azul Oscuro): Ficha protagonista del mes seleccionado */}
+      {/* Columna Izquierda (Azul Oscuro): Ficha protagonista con Anillo Radial */}
       {activeMonth && (
-        <article className="lg:col-span-5 flex flex-col justify-between rounded-[28px] bg-[#111827] p-5 sm:p-6 text-white shadow-lg border border-white/10 space-y-5">
-          <div className="space-y-4">
+        <article className="lg:col-span-5 relative overflow-hidden flex flex-col justify-between rounded-[28px] bg-[#111827] p-5 sm:p-6 text-white shadow-xl border border-white/10 space-y-5">
+          <div
+            className="pointer-events-none absolute -right-12 -top-12 h-44 w-44 rounded-full bg-white/5 blur-3xl"
+            aria-hidden="true"
+          />
+
+          <div className="relative z-10 space-y-4">
             <div className="flex items-center justify-between gap-2">
-              <span className="inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-1 text-xs font-bold text-white">
+              <span className="inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-1 text-xs font-bold text-white border border-white/10">
                 <span className="h-2 w-2 rounded-full bg-status-success" />
                 {activeMonth.monthFull}
               </span>
@@ -167,32 +175,56 @@ export default function InteractiveSplineCard({
               </p>
             </div>
 
-            {/* Barra de ocupación del mes frente a meta */}
-            <div className="space-y-2 rounded-2xl bg-[#1F2937] p-4 border border-white/10">
-              <div className="flex items-center justify-between text-sm font-semibold tabular-nums">
-                <span className="text-[#EDEDED]">Ocupación del mes</span>
-                <span className="font-mono font-bold text-white">
-                  {activeMonth.occupancyPct}% / meta {occupancy.targetOccupancyPct}%
+            {/* Medidor Radial de Ocupación frente a Meta */}
+            <div className="flex items-center gap-4 rounded-2xl bg-[#1F2937] p-4 border border-white/10">
+              <div className="relative flex h-20 w-20 shrink-0 items-center justify-center">
+                <svg
+                  viewBox="0 0 84 84"
+                  className="h-full w-full -rotate-90"
+                  aria-hidden="true"
+                >
+                  <circle
+                    cx="42"
+                    cy="42"
+                    r={ringRadius}
+                    fill="none"
+                    stroke="#111827"
+                    strokeWidth="8"
+                  />
+                  <circle
+                    cx="42"
+                    cy="42"
+                    r={ringRadius}
+                    fill="none"
+                    stroke="#FFFFFF"
+                    strokeWidth="8"
+                    strokeLinecap="round"
+                    strokeDasharray={ringCircumference}
+                    strokeDashoffset={ringOffset}
+                    className="transition-all duration-500"
+                  />
+                </svg>
+                <span className="absolute font-mono text-sm font-extrabold tabular-nums text-white">
+                  {activeMonth.occupancyPct}%
                 </span>
               </div>
-              <div
-                role="progressbar"
-                aria-valuenow={activeMonth.occupancyPct}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-label={`Ocupación de ${activeMonth.monthFull}`}
-                className="h-3 w-full overflow-hidden rounded-full bg-[#111827]"
-              >
-                <div
-                  style={{
-                    width: `${Math.min(100, Math.max(10, activeMonth.occupancyPct))}%`,
-                  }}
-                  className="h-full rounded-full bg-white transition-all duration-300"
-                />
+
+              <div className="min-w-0 space-y-1">
+                <p className="text-sm font-bold text-white">
+                  Ocupación de flota del mes
+                </p>
+                <p className="text-xs font-medium text-[#9CA3AF]">
+                  Meta recomendada: {occupancy.targetOccupancyPct}%
+                </p>
+                <span className="inline-flex items-center rounded-full bg-white/10 px-2.5 py-0.5 font-mono text-xs font-bold text-[#EDEDED]">
+                  {activeMonth.occupancyPct >= occupancy.targetOccupancyPct
+                    ? 'Meta cumplida'
+                    : `A ${occupancy.targetOccupancyPct - activeMonth.occupancyPct} pts de meta`}
+                </span>
               </div>
             </div>
 
-            {/* Mini tarjetas blancas de alto contraste para Reservas y Ticket Promedio */}
+            {/* Mini tarjetas de alto contraste para Reservas y Ticket Promedio */}
             <div className="grid grid-cols-2 gap-3 tabular-nums">
               <div className="rounded-2xl bg-white p-3.5 text-[#111827] shadow-xs">
                 <span className="block text-xs font-bold uppercase tracking-wider text-[#4B5563]">
@@ -220,7 +252,7 @@ export default function InteractiveSplineCard({
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/12 pt-4 text-sm text-[#EDEDED]/90 tabular-nums">
+          <div className="relative z-10 flex flex-wrap items-center justify-between gap-2 border-t border-white/12 pt-4 text-sm text-[#EDEDED]/90 tabular-nums">
             <span>
               6 meses:{' '}
               <strong className="font-bold text-white">
@@ -234,7 +266,7 @@ export default function InteractiveSplineCard({
         </article>
       )}
 
-      {/* Columna Derecha (Blanca): Gráfico interactivo de cápsulas + selector mensual */}
+      {/* Columna Derecha (Blanca): Cápsulas limpias de 6 meses (diseño original sin líneas traseras) */}
       <article className="lg:col-span-7 flex flex-col justify-between rounded-[28px] bg-white p-5 sm:p-6 text-[#111827] border border-[#9CA3AF]/40 shadow-xs space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -242,26 +274,25 @@ export default function InteractiveSplineCard({
               Evolución de reservas y ganancias (6 meses)
             </h2>
             <p className="mt-0.5 text-sm text-[#4B5563]">
-              Toca una barra para inspeccionar el rendimiento de cada mes
+              Toca cualquier mes para comparar volumen de reservas y recaudo
             </p>
           </div>
 
-          <span className="rounded-full bg-[#EDEDED] px-3 py-1.5 text-xs font-bold text-[#1F2937] border border-[#9CA3AF]/35">
-            Mejor mes: {occupancy.bestMonthLabel}
+          <span className="rounded-full bg-[#111827] px-3 py-1.5 text-xs font-bold text-white shadow-2xs">
+            Pico: {occupancy.bestMonthLabel}
           </span>
         </div>
 
-        {/* Gráfico de cápsulas verticales en Azul Oscuro (inspirado en pantalla de Analytics del informe) */}
-        <div className="rounded-2xl bg-[#EDEDED]/55 px-3 sm:px-5 pt-11 pb-4 border border-[#9CA3AF]/30">
+        <div className="rounded-[22px] bg-[#EDEDED]/65 px-3 sm:px-5 pt-11 pb-4 border border-[#9CA3AF]/30">
           <div
             role="group"
             aria-label="Seleccionar mes para inspeccionar reservas y ganancias"
-            className="grid grid-cols-6 gap-2.5 sm:gap-4 items-end h-48 sm:h-52"
+            className="grid grid-cols-6 gap-2.5 sm:gap-4 items-end h-52 sm:h-56"
           >
             {occupancy.months.map((mes, idx) => {
               const isSelected = idx === safeIdx;
               const heightPct = Math.max(
-                26,
+                24,
                 Math.round((mes.earnings / maxEarnings) * 100)
               );
 
@@ -271,6 +302,7 @@ export default function InteractiveSplineCard({
                   type="button"
                   aria-pressed={isSelected}
                   aria-label={`${mes.monthFull}: ${mes.reservationsCount} reservas, ganancia ${mes.earningsFormatted}`}
+                  onMouseEnter={() => setSelectedMonthIdx(idx)}
                   onClick={() => {
                     triggerHaptic(6);
                     setSelectedMonthIdx(idx);
@@ -278,17 +310,17 @@ export default function InteractiveSplineCard({
                   className="ios-press-bounce group relative flex h-full min-h-[44px] flex-col items-center justify-end gap-2.5 focus:outline-none cursor-pointer"
                 >
                   {isSelected && (
-                    <span className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#111827] px-2.5 py-1 font-mono text-xs font-bold tabular-nums text-white shadow-sm">
+                    <span className="pointer-events-none absolute -top-8 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-xl bg-[#111827] px-2.5 py-1 font-mono text-xs font-bold tabular-nums text-white shadow-sm">
                       {mes.earningsCompactFormatted}
                     </span>
                   )}
 
-                  <div className="relative flex w-full max-w-[40px] flex-1 items-end justify-center rounded-full bg-white p-1 border border-[#9CA3AF]/35 shadow-2xs">
+                  <div className="flex w-full max-w-[40px] flex-1 items-end justify-center rounded-full bg-white p-1 border border-[#9CA3AF]/35 shadow-2xs">
                     <div
                       style={{ height: `${heightPct}%` }}
                       className={`w-full rounded-full transition-all duration-300 ${
                         isSelected
-                          ? 'bg-[#111827]'
+                          ? 'bg-[#111827] shadow-xs'
                           : 'bg-[#1F2937]/25 group-hover:bg-[#1F2937]/45'
                       }`}
                     />

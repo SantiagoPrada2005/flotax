@@ -50,6 +50,17 @@ export default function MetricsInteractiveHub({
   const { dailyEarnings, monthlyOccupancy, rentedFleet, dailyMovements } =
     snapshot;
 
+  const unitBlocksCount = Math.max(
+    1,
+    Math.min(8, rentedFleet.totalAutomobilesCount)
+  );
+  const miniRingRadius = 18;
+  const miniRingCircumference = 2 * Math.PI * miniRingRadius;
+  const miniRingOffset =
+    miniRingCircumference -
+    (Math.min(100, Math.max(0, rentedFleet.automobilesOccupancyPct)) / 100) *
+      miniRingCircumference;
+
   return (
     <div className="space-y-4 pb-8">
       {/* =====================================================================
@@ -59,26 +70,26 @@ export default function MetricsInteractiveHub({
          ===================================================================== */}
       {activeFocus === 'OVERVIEW' ? (
         <div className="grid grid-cols-2 lg:grid-cols-12 gap-3.5 sm:gap-4 items-stretch">
-          {/* BLOQUE A (Hero Azul Oscuro + Sub-bloque Blanco de Autos Alquilados) */}
+          {/* BLOQUE A (Hero Azul Oscuro + Sub-bloque Blanco con Anillo y Matriz) */}
           <article
             aria-label="Ganancia diaria y automóviles alquilados"
             className="col-span-2 lg:col-span-7 relative overflow-hidden rounded-[28px] bg-[#111827] p-5 sm:p-6 text-white shadow-xl border border-white/10 flex flex-col justify-between gap-5"
           >
             <div
-              className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/6 blur-2xl"
+              className="pointer-events-none absolute -right-12 -top-12 h-52 w-52 rounded-full bg-white/5 blur-3xl"
               aria-hidden="true"
             />
 
             <div className="relative z-10 flex flex-col sm:flex-row sm:items-stretch justify-between gap-4 sm:gap-5">
               {/* Lado principal: Ganancia diaria obtenida con los vehículos */}
-              <div className="flex flex-col justify-between space-y-3.5 flex-1 min-w-0">
+              <div className="flex flex-col justify-between space-y-4 flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/12 px-3 py-1 text-xs font-bold text-white">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/12 px-3 py-1 text-xs font-bold text-white border border-white/10">
                     <span className="h-2 w-2 rounded-full bg-status-success" />
                     Ganancia diaria con vehículos
                   </span>
 
-                  <span className="rounded-full bg-[#1F2937] px-2.5 py-1 font-mono text-xs font-bold tabular-nums text-[#EDEDED] border border-white/10">
+                  <span className="rounded-full bg-[#1F2937] px-2.5 py-1 font-mono text-xs font-bold tabular-nums text-white border border-white/10">
                     {dailyEarnings.variationPct >= 0
                       ? `+${dailyEarnings.variationPct}%`
                       : `${dailyEarnings.variationPct}%`}
@@ -90,8 +101,8 @@ export default function MetricsInteractiveHub({
                     {dailyEarnings.todayEarningsFormatted}
                   </p>
                   <p className="mt-1.5 text-sm font-medium text-[#EDEDED]/85 tabular-nums">
-                    Promedio diario {dailyEarnings.dailyAverageFormatted} •{' '}
-                    {dailyEarnings.contributingVehiclesCount} unidades aportando
+                    Promedio {dailyEarnings.dailyAverageFormatted} •{' '}
+                    {dailyEarnings.contributingVehiclesCount} unidades activas
                   </p>
                 </div>
 
@@ -99,29 +110,65 @@ export default function MetricsInteractiveHub({
                   <button
                     type="button"
                     onClick={() => openFocus('EARNINGS_FLEET')}
-                    className="ios-press-bounce inline-flex min-h-[44px] items-center gap-2 rounded-full bg-white/12 px-4 py-2 text-sm font-bold text-white border border-white/15 transition hover:bg-white/20 cursor-pointer"
+                    className="ios-press-bounce group inline-flex min-h-[44px] items-center gap-2.5 rounded-full bg-white/12 pl-4 pr-2 py-1.5 text-sm font-bold text-white border border-white/15 transition hover:bg-white/20 cursor-pointer"
                   >
                     <span>Desglosar ganancia y flota</span>
-                    <span aria-hidden="true">→</span>
+                    <span
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-xs font-black text-[#111827] transition-transform group-hover:translate-x-0.5"
+                      aria-hidden="true"
+                    >
+                      →
+                    </span>
                   </button>
                 </div>
               </div>
 
-              {/* Subsección complementaria integrada: Tarjeta Blanca de Autos Alquilados */}
+              {/* Subsección complementaria integrada: Tarjeta Blanca con Anillo Radial + Matriz */}
               <button
                 type="button"
                 onClick={() => openFocus('EARNINGS_FLEET')}
                 aria-label={`Ver ${rentedFleet.rentedAutomobilesCount} de ${rentedFleet.totalAutomobilesCount} automóviles alquilados`}
-                className="ios-press-bounce group flex sm:w-[215px] shrink-0 flex-col justify-between rounded-[22px] bg-white p-4 text-left text-[#111827] shadow-lg transition hover:bg-[#EDEDED] cursor-pointer"
+                className="ios-press-bounce group flex sm:w-[222px] shrink-0 flex-col justify-between rounded-[22px] bg-white p-4 text-left text-[#111827] shadow-lg transition hover:bg-[#EDEDED] cursor-pointer"
               >
-                <div className="space-y-2 w-full">
+                <div className="space-y-3 w-full">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-bold uppercase tracking-wider text-[#4B5563]">
                       Autos alquilados
                     </span>
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#111827] text-xs font-bold text-white">
-                      →
-                    </span>
+
+                    {/* Mini medidor circular de ocupación de autos */}
+                    <div
+                      className="relative flex h-11 w-11 shrink-0 items-center justify-center"
+                      aria-hidden="true"
+                    >
+                      <svg
+                        viewBox="0 0 44 44"
+                        className="h-full w-full -rotate-90"
+                      >
+                        <circle
+                          cx="22"
+                          cy="22"
+                          r={miniRingRadius}
+                          fill="none"
+                          stroke="#EDEDED"
+                          strokeWidth="4.5"
+                        />
+                        <circle
+                          cx="22"
+                          cy="22"
+                          r={miniRingRadius}
+                          fill="none"
+                          stroke="#111827"
+                          strokeWidth="4.5"
+                          strokeLinecap="round"
+                          strokeDasharray={miniRingCircumference}
+                          strokeDashoffset={miniRingOffset}
+                        />
+                      </svg>
+                      <span className="absolute font-mono text-xs font-extrabold text-[#111827]">
+                        {rentedFleet.automobilesOccupancyPct}%
+                      </span>
+                    </div>
                   </div>
 
                   <div className="flex items-baseline gap-1.5 tabular-nums">
@@ -133,18 +180,34 @@ export default function MetricsInteractiveHub({
                     </span>
                   </div>
 
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-[#EDEDED]">
-                    <div
-                      style={{ width: `${rentedFleet.automobilesOccupancyPct}%` }}
-                      className="h-full rounded-full bg-[#1F2937] transition-all duration-300"
-                    />
+                  {/* Bloques visuales por cada unidad del parque automotor */}
+                  <div
+                    className="grid gap-1.5"
+                    style={{
+                      gridTemplateColumns: `repeat(${unitBlocksCount}, minmax(0, 1fr))`,
+                    }}
+                    aria-hidden="true"
+                  >
+                    {Array.from({ length: unitBlocksCount }).map((_, idx) => {
+                      const active = idx < rentedFleet.rentedAutomobilesCount;
+                      return (
+                        <div
+                          key={`hero-auto-${idx}`}
+                          className={`h-3 rounded-md transition-all ${
+                            active
+                              ? 'bg-[#111827]'
+                              : 'bg-[#EDEDED] border border-[#9CA3AF]/45'
+                          }`}
+                        />
+                      );
+                    })}
                   </div>
                 </div>
 
                 <div className="mt-3 flex items-center justify-between border-t border-[#9CA3AF]/25 pt-2.5 text-xs font-bold text-[#1F2937] tabular-nums">
                   <span>{rentedFleet.availableAutomobilesCount} libres hoy</span>
-                  <span className="underline decoration-[#9CA3AF] underline-offset-2 group-hover:text-[#111827]">
-                    Ver autos
+                  <span className="inline-flex items-center gap-1 font-extrabold text-[#111827] group-hover:translate-x-0.5 transition-transform">
+                    Ver autos →
                   </span>
                 </div>
               </button>
