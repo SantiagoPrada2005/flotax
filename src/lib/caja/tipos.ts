@@ -1,13 +1,11 @@
 import type {
   CuentaFinancieraSelect,
-  CuentaFinancieraInsert,
   MovimientoCajaSelect,
-  MovimientoCajaInsert,
   SesionCajaSelect,
-  SesionCajaInsert,
   DepositoGarantiaSelect,
-  DepositoGarantiaInsert,
-  AuditoriaFinancieraSelect,
+  CategoriaEgreso,
+  EstadoDepositoGarantia,
+  MetodoPagoFinanciero,
 } from '@/db/schema/caja';
 
 export type {
@@ -20,53 +18,16 @@ export type {
   DepositoGarantiaSelect,
   DepositoGarantiaInsert,
   AuditoriaFinancieraSelect,
-};
-
-export type TipoCuentaFinanciera = 'CAJA_EFECTIVO' | 'BANCO' | 'BILLETERA_DIGITAL';
-
-export type TipoMovimientoCaja = 'INGRESO' | 'EGRESO' | 'TRANSFERENCIA';
-
-export type CategoriaIngreso =
-  | 'PAGO_ALQUILER'
-  | 'ABONO_CONTRATO'
-  | 'EXTENSION_ALQUILER'
-  | 'SERVICIOS_ADICIONALES'
-  | 'COBRO_DANOS_MULTAS'
-  | 'DEPOSITO_GARANTIA'
-  | 'INGRESO_EXTRAORDINARIO'
-  | 'OTRO_INGRESO';
-
-export type CategoriaEgreso =
-  | 'MANTENIMIENTO_REPARACION'
-  | 'COMBUSTIBLE_OPERACION'
-  | 'LIMPIEZA_ALISTAMIENTO'
-  | 'SEGUROS_IMPUESTOS'
-  | 'COMISIONES_BANCARIAS'
-  | 'REEMBOLSO_GARANTIA'
-  | 'COMPRAS_ADMINISTRATIVAS'
-  | 'OTRO_EGRESO';
-
-export type CategoriaMovimiento = CategoriaIngreso | CategoriaEgreso | 'TRANSFERENCIA_INTERNA';
-
-export type MetodoPagoFinanciero =
-  | 'efectivo'
-  | 'transferencia'
-  | 'tarjeta'
-  | 'especie'
-  | 'otro';
-
-export type EstadoMovimiento = 'BORRADOR' | 'PENDIENTE' | 'CONFIRMADO' | 'ANULADO';
-
-export type EstadoDepositoGarantia =
-  | 'PENDIENTE_RECIBIR'
-  | 'RECIBIDO_CUSTODIA'
-  | 'EN_REVISION'
-  | 'PENDIENTE_DEVOLUCION'
-  | 'DEVUELTO_PARCIAL'
-  | 'DEVUELTO_TOTAL'
-  | 'APLICADO_CARGOS';
-
-export type EstadoSesionCaja = 'ABIERTA' | 'CERRADA';
+  TipoCuentaFinanciera,
+  TipoMovimientoCaja,
+  CategoriaIngreso,
+  CategoriaEgreso,
+  CategoriaMovimiento,
+  MetodoPagoFinanciero,
+  EstadoMovimiento,
+  EstadoSesionCaja,
+  EstadoDepositoGarantia,
+} from '@/db/schema/caja';
 
 export type RangoPeriodoFinanciero =
   | 'HOY'

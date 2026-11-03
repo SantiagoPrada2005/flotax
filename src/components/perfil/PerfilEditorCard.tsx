@@ -403,33 +403,91 @@ export default function PerfilEditorCard({
           Gestión de Cuenta
         </h3>
 
+        {/* Tarjeta destacada para usuarios comunes: Crea tu negocio o alquiler de vehículos */}
+        {!hayAccesoOperativo && (
+          <div className="relative overflow-hidden rounded-[26px] bg-gradient-to-br from-[#111827] to-[#1F2937] p-5 text-white shadow-md border border-white/10">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold tracking-wide text-white backdrop-blur-sm">
+                <span>🚗</span>
+                <span>Oportunidad de Negocio</span>
+              </div>
+
+              <h4 className="font-display text-lg sm:text-xl font-black text-white leading-tight">
+                Crea tu alquiler de vehículos
+              </h4>
+
+              <p className="text-xs text-[#9CA3AF] leading-relaxed">
+                Convierte tus vehículos o flota en ingresos. Administra disponibilidades, depósitos de garantía y peritajes fotográficos desde tu teléfono.
+              </p>
+
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={() => navigate('/admin/onboarding?modo=crear')}
+                  className="ios-press-bounce w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-xs sm:text-sm font-bold text-[#111827] shadow-sm hover:bg-[#EDEDED] active:scale-98 transition-all cursor-pointer"
+                >
+                  <span>Crear mi patio de alquiler</span>
+                  <span>→</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="rounded-3xl bg-white p-2 shadow-xs border border-gray-200/70 overflow-hidden divide-y divide-gray-100">
           {/* Conmutador a Patio Operativo si el usuario tiene membresía */}
           {hayAccesoOperativo && (
-            <button
-              type="button"
-              onClick={handleConmutarPatio}
-              className="w-full flex items-center justify-between p-3.5 hover:bg-gray-50/80 active:bg-gray-100/60 rounded-2xl transition-all text-left"
-            >
-              <div className="flex items-center gap-3.5 min-w-0">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#111827] text-white">
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                  </svg>
+            <>
+              <button
+                type="button"
+                onClick={handleConmutarPatio}
+                className="w-full flex items-center justify-between p-3.5 hover:bg-gray-50/80 active:bg-gray-100/60 rounded-2xl transition-all text-left"
+              >
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#111827] text-white">
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-[#111827] truncate">
+                      Modo Operador de Patio
+                    </p>
+                    <p className="text-[11px] text-[#4B5563] truncate">
+                      {localActivoNombre ?? 'Administración y check-in'}
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-bold text-[#111827] truncate">
-                    Modo Operador de Patio
-                  </p>
-                  <p className="text-[11px] text-[#4B5563] truncate">
-                    {localActivoNombre ?? 'Administración y check-in'}
-                  </p>
+                <svg className="h-4 w-4 text-[#9CA3AF] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => navigate('/admin/onboarding?modo=crear')}
+                className="w-full flex items-center justify-between p-3.5 hover:bg-gray-50/80 active:bg-gray-100/60 rounded-2xl transition-all text-left"
+              >
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gray-100 text-[#111827]">
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-[#111827] truncate">
+                      Registrar otro patio o sede
+                    </p>
+                    <p className="text-[11px] text-[#4B5563] truncate">
+                      Crea un nuevo local para administrar más vehículos
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <svg className="h-4 w-4 text-[#9CA3AF] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
+                <svg className="h-4 w-4 text-[#9CA3AF] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </>
           )}
 
           {/* Cerrar Sesión */}

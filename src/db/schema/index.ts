@@ -13,6 +13,12 @@ export * from './notificaciones';
 export * from './caja';
 export * from './verificaciones';
 
-// Backwards compatibility legacy exports
+// Tabla histórica de administración (se conserva por compatibilidad del esquema D1).
+// Sus alias NO deben colisionar con los de `@/lib/auth` (`RolUsuario`, `UsuarioAutenticado`).
 export { usuarioAdmin, rolesValidos } from './usuarios_admin';
-export type { RolUsuario, UsuarioAutenticado, UsuarioAdminSelect, UsuarioAdminInsert } from './usuarios_admin';
+export type {
+  RolUsuarioAdmin,
+  UsuarioAdminPublico,
+  UsuarioAdminSelect,
+  UsuarioAdminInsert,
+} from './usuarios_admin';

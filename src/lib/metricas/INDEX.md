@@ -1,15 +1,15 @@
 # Index: `src/lib/metricas`
 
-**Responsibility**: Dominio de telemetría operativa, series temporales, matrices de unidades y agregación de métricas para el panel móvil iOS de FlotaX.
+**Responsibility**: Dominio de métricas y telemetría operativa de flota: ganancia diaria con vehículos, ocupación mensual (reservas y ganancias por mes), automóviles alquilados y movimientos diarios en COP.
 **Architectural Layer**: Application / Domain Layer
 
 ## File Manifest
 
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
-| [`index.ts`](./index.ts) | Barrel Export | Re-exporta todos los tipos y funciones del dominio de métricas | `./types`, `./telemetry-provider` |
-| [`telemetry-provider.ts`](./telemetry-provider.ts) | Proveedor de Telemetría | `getYardMetricsSnapshot`, `BuildMetricsInput` | [`./types.ts`](./types.ts) |
-| [`types.ts`](./types.ts) | Contratos de Dominio | `YardMetricsSnapshot`, `SplineDataPoint`, `FleetCategorySummary`, `WaffleUnitNode`, `ShiftMovementItem`, `LiveTelemetryPulse`, `MetricTimeRange`, `FleetCategoryFilter` | - |
+| [`index.ts`](./index.ts) | Barrel Export | Re-exporta todos los contratos y proveedores del dominio de métricas | `./types`, `./telemetry-provider` |
+| [`telemetry-provider.ts`](./telemetry-provider.ts) | Proveedor de Métricas Operativas | `getYardMetricsSnapshot`, `BuildMetricsInput` | `@/lib/caja`, `@/lib/flota`, [`./types.ts`](./types.ts) |
+| [`types.ts`](./types.ts) | Contratos de Dominio | `YardMetricsSnapshot`, `DailyVehicleEarningsSummary`, `VehicleEarningsCategorySlice`, `HourlyEarningsSlot`, `MonthlyFleetOccupancySummary`, `MonthlyOccupancyPoint`, `RentedFleetComplement`, `RentedAutomobileItem`, `DailyMovementsSummary`, `DailyMovementCurvePoint`, `DailyCompanyMovementItem`, `DailyMovementKind`, `DailyMovementFilter`, `DailyCurveSeriesFilter`, `MetricsFocusView`, `ProgressiveSectionId` | - |
 
 ## Invariants & Directory Rules
 

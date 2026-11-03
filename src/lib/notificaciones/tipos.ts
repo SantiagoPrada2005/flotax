@@ -3,25 +3,16 @@ import {
   alcancesNotificacion,
   prioridadesNotificacion,
   rolesEmpleadoValidos,
+  tiposNotificacion,
   type PrioridadNotificacion,
+  type TipoNotificacion,
 } from '@/db/schema';
 
 export type CanalNotificacionNombre = 'PUSH' | 'EMAIL';
 
-/** Catálogo cerrado de eventos que pueden generar una notificación. */
-export const tiposNotificacion = [
-  'SOLICITUD_NUEVA',
-  'RESERVA_CONFIRMADA',
-  'RESERVA_RECHAZADA',
-  'ABONO_REGISTRADO',
-  'ENTREGA_PROGRAMADA',
-  'DEVOLUCION_PROXIMA',
-  'DOCUMENTO_POR_VENCER',
-  'INVITACION_RECIBIDA',
-  'ANUNCIO_PLATAFORMA',
-] as const;
-
-export type TipoNotificacion = (typeof tiposNotificacion)[number];
+/** Catálogo cerrado de eventos que pueden generar una notificación (definido en el schema). */
+export { tiposNotificacion };
+export type { TipoNotificacion };
 
 export const tipoNotificacionSchema = z.enum(tiposNotificacion);
 

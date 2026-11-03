@@ -1,4 +1,5 @@
 ---
+import { env } from 'cloudflare:workers';
 import LayoutApp from '@/layouts/LayoutApp.astro';
 import NotificacionesPagina from '@/components/notificaciones/NotificacionesPagina';
 
@@ -11,5 +12,5 @@ const modoOperador = Astro.cookies.get('movix_portal_modo')?.value === 'ADMIN';
   showBack
   backHref={modoOperador ? '/admin' : '/catalogo'}
 >
-  <NotificacionesPagina client:load />
+  <NotificacionesPagina client:load clavePublicaVapid={env.VAPID_PUBLIC_KEY} />
 </LayoutApp>

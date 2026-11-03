@@ -10,6 +10,14 @@ import type {
   DistribucionCategoriaGasto,
   PuntoGraficoFlujo,
 } from './tipos';
+import { categoriasEgreso, metodosPagoFinanciero } from '@/db/schema/caja';
+
+const CATEGORIAS_EGRESO_VALIDAS: ReadonlySet<string> = new Set(categoriasEgreso);
+
+/** Verifica en runtime que una categoría libre de D1 pertenece al catálogo de egresos. */
+function esCategoriaEgreso(valor: string): valor is CategoriaEgreso {
+  return CATEGORIAS_EGRESO_VALIDAS.has(valor);
+}
 
 /**
  * Formatea un monto numérico a Pesos Colombianos (COP) estándar.
@@ -219,7 +227,7 @@ export function calcularDistribucionMetodosPago(
 
   for (const m of movimientosPeriodo) {
     if (m.tipo !== 'INGRESO' || m.estado !== 'CONFIRMADO') continue;
-    const metodo = (m.metodoPago as MetodoPagoFinanciero) || 'otro';
+    const metodo = m.metodoPago ?? 'otro';
     if (!totales[metodo]) {
       totales[metodo] = { total: 0, count: 0 };
     }
@@ -238,7 +246,7 @@ export function calcularDistribucionMetodosPago(
 
   const resultado: DistribucionMetodoPago[] = [];
 
-  for (const key of Object.keys(totales) as MetodoPagoFinanciero[]) {
+  for (const key of metodosPagoFinanciero) {
     const item = totales[key];
     if (item.total > 0 || item.count > 0) {
       resultado.push({
@@ -265,7 +273,8 @@ export function calcularDistribucionGastosCategorias(
 
   for (const m of movimientosPeriodo) {
     if (m.tipo !== 'EGRESO' || m.estado !== 'CONFIRMADO') continue;
-    const cat = m.categoria as CategoriaEgreso;
+    // `movimientos_caja.categoria` admite todo el catálogo; en un egreso lo ajeno cae en "otros".
+    const cat: CategoriaEgreso = esCategoriaEgreso(m.categoria) ? m.categoria : 'OTRO_EGRESO';
     totales[cat] = (totales[cat] ?? 0) + m.monto;
     totalGastos += m.monto;
   }
@@ -283,11 +292,12 @@ export function calcularDistribucionGastosCategorias(
 
   const resultado: DistribucionCategoriaGasto[] = [];
 
-  for (const [catKey, monto] of Object.entries(totales)) {
-    const cat = catKey as CategoriaEgreso;
+  for (const cat of categoriasEgreso) {
+    const monto = totales[cat] ?? 0;
+    if (monto <= 0) continue;
     resultado.push({
       categoria: cat,
-      etiqueta: etiquetasMap[cat] ?? cat,
+      etiqueta: etiquetasMap[cat],
       total: monto,
       porcentaje: totalGastos > 0 ? Math.round((monto / totalGastos) * 100) : 0,
     });

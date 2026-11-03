@@ -9,7 +9,9 @@ import {
   isSpaInterceptableUrl,
   isStandalonePwa,
   markAppInstalled,
+  prefetchRutasCalientes,
   registerPwaServiceWorker,
+  rutasCalientes,
 } from '@/lib/pwa';
 import IosInstallGuideModal from './IosInstallGuideModal';
 import FlotaxLoadingScreen from './FlotaxLoadingScreen';
@@ -53,9 +55,48 @@ export default function PwaRuntimeIsland() {
   const [loadingLabel, setLoadingLabel] = useState<string | undefined>(undefined);
   const [loadingVariant, setLoadingVariant] = useState<'orbital' | 'cad'>('orbital');
   const [isOffline, setIsOffline] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const navTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const navSafetyRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     void registerPwaServiceWorker();
+
+    const calentarRutas = () => {
+      const autenticado =
+        document.documentElement.dataset.autenticado === 'true';
+      prefetchRutasCalientes(
+        rutasCalientes(window.location.pathname, autenticado),
+        window.location.pathname
+      );
+    };
+
+    const iniciarNavegacion = () => {
+      if (navTimerRef.current) {
+        clearTimeout(navTimerRef.current);
+      }
+      if (navSafetyRef.current) {
+        clearTimeout(navSafetyRef.current);
+      }
+      navTimerRef.current = setTimeout(() => {
+        setIsNavigating(true);
+      }, 120);
+      navSafetyRef.current = setTimeout(() => {
+        setIsNavigating(false);
+      }, 8000);
+    };
+
+    const terminarNavegacion = () => {
+      if (navTimerRef.current) {
+        clearTimeout(navTimerRef.current);
+        navTimerRef.current = undefined;
+      }
+      if (navSafetyRef.current) {
+        clearTimeout(navSafetyRef.current);
+        navSafetyRef.current = undefined;
+      }
+      setIsNavigating(false);
+    };
 
     const syncStandaloneState = () => {
       const currentPath = window.location.pathname;
@@ -168,6 +209,7 @@ export default function PwaRuntimeIsland() {
     };
 
     syncStandaloneState();
+    calentarRutas();
 
     let bannerTimer: ReturnType<typeof setTimeout> | undefined;
     if (!isStandalonePwa() && !isInstallPromptDismissed()) {
@@ -180,7 +222,9 @@ export default function PwaRuntimeIsland() {
 
     const handlePageLoad = () => {
       setIsRouteLoading(false);
+      terminarNavegacion();
       syncStandaloneState();
+      calentarRutas();
     };
 
     const handleCustomLoading = (event: Event) => {
@@ -214,11 +258,19 @@ export default function PwaRuntimeIsland() {
     window.addEventListener('offline', handleOffline);
     window.addEventListener('online', handleOnline);
     document.addEventListener('astro:page-load', handlePageLoad);
+    document.addEventListener('astro:before-preparation', iniciarNavegacion);
+    document.addEventListener('astro:after-swap', terminarNavegacion);
     document.addEventListener('click', handleDocumentClick);
 
     return () => {
       if (bannerTimer) {
         clearTimeout(bannerTimer);
+      }
+      if (navTimerRef.current) {
+        clearTimeout(navTimerRef.current);
+      }
+      if (navSafetyRef.current) {
+        clearTimeout(navSafetyRef.current);
       }
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
@@ -227,6 +279,8 @@ export default function PwaRuntimeIsland() {
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('online', handleOnline);
       document.removeEventListener('astro:page-load', handlePageLoad);
+      document.removeEventListener('astro:before-preparation', iniciarNavegacion);
+      document.removeEventListener('astro:after-swap', terminarNavegacion);
       document.removeEventListener('click', handleDocumentClick);
     };
   }, []);
@@ -302,9 +356,20 @@ export default function PwaRuntimeIsland() {
       </div>
     ) : null;
 
+  const navProgress = isNavigating ? (
+    <div
+      role="progressbar"
+      aria-label="Cargando página"
+      className="fixed inset-x-0 top-0 z-[70] h-[2px] overflow-hidden bg-[#4B5563]/25"
+    >
+      <div className="h-full w-1/2 animate-pulse bg-[#111827] motion-reduce:animate-none" />
+    </div>
+  ) : null;
+
   if (isStandalone) {
     return (
       <>
+        {navProgress}
         {offlinePill}
         <FlotaxLoadingScreen
           isVisible={isRouteLoading}
@@ -324,6 +389,7 @@ export default function PwaRuntimeIsland() {
 
   return (
     <>
+      {navProgress}
       {offlinePill}
       <FlotaxLoadingScreen
         isVisible={isRouteLoading}

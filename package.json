@@ -9,6 +9,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
+    "test": "node --import ./tests/register-loader.mjs --test tests/*.test.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply flotax-db --local",
     "db:migrate:preview": "wrangler d1 migrations apply flotax-db-preview --remote --env preview",

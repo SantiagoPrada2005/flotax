@@ -1,6 +1,18 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 import { user } from './auth';
 
+/** Dominios canónicos del proceso KYC pericial. */
+export const tiposDocumentoIdentidad = ['CC', 'CE', 'PASAPORTE', 'NIT'] as const;
+export type TipoDocumentoIdentidad = (typeof tiposDocumentoIdentidad)[number];
+
+export const estadosVerificacion = [
+  'PENDIENTE',
+  'EN_REVISION',
+  'APROBADO',
+  'RECHAZADO',
+] as const;
+export type EstadoVerificacion = (typeof estadosVerificacion)[number];
+
 /**
  * Tabla de Verificaciones Periciales de Identidad y Licencia de Conducir (KYC FlotaX).
  * Almacena el estado de validación y las claves de objetos fotográficos en Cloudflare R2 (BUCKET_MULTIMEDIA).
@@ -12,7 +24,7 @@ export const verificacionesIdentidad = sqliteTable('verificaciones_identidad', {
     .references(() => user.id, { onDelete: 'cascade' }),
 
   // 1. Datos y fotos del Documento de Identidad (Cédula / Pasaporte / etc.)
-  tipoDocumento: text('tipo_documento').notNull(), // 'CC' | 'CE' | 'PASAPORTE' | 'NIT'
+  tipoDocumento: text('tipo_documento', { enum: tiposDocumentoIdentidad }).notNull(),
   numeroDocumento: text('numero_documento').notNull(),
   documentoFrenteKey: text('documento_frente_key'), // Clave en Cloudflare R2
   documentoDorsoKey: text('documento_dorso_key'),   // Clave en Cloudflare R2
@@ -25,7 +37,7 @@ export const verificacionesIdentidad = sqliteTable('verificaciones_identidad', {
   licenciaDorsoKey: text('licencia_dorso_key'),     // Clave en Cloudflare R2
 
   // 3. Estado pericial de aprobación
-  estado: text('estado').notNull().default('PENDIENTE'), // 'PENDIENTE' | 'EN_REVISION' | 'APROBADO' | 'RECHAZADO'
+  estado: text('estado', { enum: estadosVerificacion }).notNull().default('PENDIENTE'),
   motivoRechazo: text('motivo_rechazo'),
   verificadoEn: integer('verificado_en', { mode: 'timestamp' }),
 

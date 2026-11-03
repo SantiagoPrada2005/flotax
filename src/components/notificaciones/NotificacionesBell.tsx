@@ -8,9 +8,9 @@ interface NotificacionesBellProps {
   /** Solo usuarios con sesión ven la campana. */
   autenticado: boolean;
   clavePublicaVapid?: string | undefined;
-  /** Clases de la píldora flotante de la TopBar (borde/sombra según scroll). */
-  pillClass: string;
-  fadeClass: string;
+  /** Clases opcionales del botón contenedor en la TopBar. */
+  pillClass?: string | undefined;
+  fadeClass?: string | undefined;
   onHaptic: () => void;
 }
 
@@ -18,12 +18,12 @@ function etiquetaContador(total: number): string {
   return total > 9 ? '9+' : String(total);
 }
 
-/** Campana de la TopBar: badge con conteo real y panel de notificaciones. */
+/** Campana minimalista de la TopBar: ícono compacto sin borde pesado y panel bajo demanda. */
 export default function NotificacionesBell({
   autenticado,
   clavePublicaVapid,
-  pillClass,
-  fadeClass,
+  pillClass = '',
+  fadeClass = '',
   onHaptic,
 }: NotificacionesBellProps) {
   const [abierto, setAbierto] = useState(false);
@@ -55,17 +55,17 @@ export default function NotificacionesBell({
         aria-expanded={abierto}
         onPointerDown={onHaptic}
         onClick={() => setAbierto((previo) => !previo)}
-        className={`ios-press-bounce relative flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border text-[#4B5563] transition-all duration-200 hover:text-[#111827] ${pillClass} ${fadeClass}`}
+        className={`ios-press-bounce relative flex h-11 w-11 cursor-pointer items-center justify-center rounded-full text-[#1F2937] transition-colors duration-150 hover:bg-[#111827]/6 hover:text-[#111827] ${pillClass} ${fadeClass}`}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          strokeWidth="2"
+          strokeWidth="1.8"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="h-4.5 w-4.5"
+          className="h-[18px] w-[18px]"
           aria-hidden="true"
         >
           <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
@@ -74,10 +74,10 @@ export default function NotificacionesBell({
         {contador > 0 && (
           <motion.span
             key={contador}
-            initial={{ scale: 1.5 }}
+            initial={{ scale: 1.4 }}
             animate={{ scale: 1 }}
             aria-hidden="true"
-            className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#111827] px-1 text-[10px] font-bold leading-none text-[#EDEDED] ring-2 ring-[#EDEDED]"
+            className="absolute right-1.5 top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#111827] px-1 text-[9px] font-bold leading-none tabular-nums text-[#EDEDED] ring-2 ring-[#EDEDED]"
           >
             {etiquetaContador(contador)}
           </motion.span>

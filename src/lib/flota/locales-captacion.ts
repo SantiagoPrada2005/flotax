@@ -1,17 +1,16 @@
 import type { AppDb } from '@/lib/db';
+import { logFalloD1 } from '@/lib/db/diagnostics';
 import { localesAlquiler, clientesLocal, user } from '@/db/schema';
+import type { LocalAlquilerSelect } from '@/db/schema';
 import { eq, and, or } from 'drizzle-orm';
 
 export const COOKIE_LOCAL_CAPTACION = 'movix_local_captacion';
 
-export interface LocalPublicoContexto {
-  id: string;
-  nombre: string;
-  slug: string;
-  ciudad: string | null;
-  direccion: string | null;
-  telefono: string | null;
-}
+/** Proyección pública del tenant: subconjunto de `locales_alquiler` visible al cliente. */
+export type LocalPublicoContexto = Pick<
+  LocalAlquilerSelect,
+  'id' | 'nombre' | 'slug' | 'ciudad' | 'direccion' | 'telefono'
+>;
 
 export const LOCAL_CANONICO_DEFECTO: LocalPublicoContexto = {
   id: 'local-patio-norte',
@@ -92,8 +91,9 @@ export async function obtenerLocalPorSlugOId(
         registroLocalesMemoria.set(ctx.id, ctx);
         return ctx;
       }
-    } catch {
+    } catch (error) {
       // Fallback transparente a memoria si la tabla no responde
+      logFalloD1('locales.porSlugOId.select', error, { identificador: limpio });
     }
   }
 
@@ -144,8 +144,9 @@ export async function obtenerLocalCatalogoPorDefecto(
         registroLocalesMemoria.set(ctx.id, ctx);
         return ctx;
       }
-    } catch {
+    } catch (error) {
       // Continuar con fallback canónico
+      logFalloD1('locales.porDefecto.select', error, {});
     }
   }
 
@@ -223,8 +224,9 @@ export async function registrarCaptacionClienteEnLocal(
         creadoEn: ahora,
       });
     }
-  } catch {
+  } catch (error) {
     // No bloquear el flujo del cliente si el local es de demostración en memoria
+    logFalloD1('clientesLocal.upsert', error, { usuarioId, localId });
   }
 }
 
@@ -282,8 +284,9 @@ export async function actualizarConfigCatalogoLocal(
           actualizadoEn: ahora,
         })
         .where(eq(localesAlquiler.id, localId));
-    } catch {
+    } catch (error) {
       // Fallback a actualización en memoria
+      logFalloD1('locales.actualizarCatalogo.update', error, { localId });
     }
   }
 

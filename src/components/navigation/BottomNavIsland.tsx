@@ -359,6 +359,7 @@ export default function BottomNavIsland({
 
         const targetItem = items[targetIndex];
         if (targetItem && targetItem.href !== window.location.pathname) {
+          setLivePath(targetItem.href);
           navigate(targetItem.href);
         }
       } else {
@@ -419,11 +420,24 @@ export default function BottomNavIsland({
       setHoverIndex(index);
       hoverIndexRef.current = index;
       triggerHaptic(10);
+      setLivePath(href);
       navigate(href);
     }
   };
 
   const activePosition = isDragging ? dragOffset : selectedIndex * ITEM_STEP;
+
+  // Ocultar la barra de navegación flotante inferior en páginas de formularios y wizards
+  // para evitar superposiciones con los botones de acción inferior ("Continuar" / "Anterior")
+  const isFormPage =
+    livePath.startsWith('/admin/flota/nuevo') ||
+    (livePath.startsWith('/admin/flota/') && livePath.includes('/editar')) ||
+    livePath.startsWith('/alquilar') ||
+    livePath.includes('/entrega');
+
+  if (isFormPage) {
+    return null;
+  }
 
   return (
     <nav
@@ -468,6 +482,7 @@ export default function BottomNavIsland({
               aria-selected={isSelected}
               aria-current={isSelected ? 'page' : undefined}
               draggable={false}
+              data-astro-prefetch="tap"
               onClick={(e) => handleTabClick(e, index, item.href)}
               style={{ touchAction: 'none', WebkitUserSelect: 'none', userSelect: 'none' }}
               className={`ios-press-bounce group relative z-10 flex h-11 w-11 items-center justify-center rounded-full transition-colors duration-200 ${isCurrentVisual

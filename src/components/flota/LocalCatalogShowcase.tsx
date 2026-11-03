@@ -382,6 +382,7 @@ export default function LocalCatalogShowcase({
               <a
                 key={v.id}
                 href={`/vehiculos/${v.id}`}
+                data-astro-prefetch="tap"
                 onClick={() => triggerHaptic(8)}
                 className="group ios-press-bounce rounded-[26px] bg-white border border-[#9CA3AF]/30 p-4 shadow-2xs hover:border-[#111827]/40 transition flex items-center justify-between gap-3"
               >
@@ -447,6 +448,7 @@ export default function LocalCatalogShowcase({
                 {bentoPrincipalIzq && (
                   <a
                     href={`/vehiculos/${bentoPrincipalIzq.id}`}
+                    data-astro-prefetch="tap"
                     onClick={() => triggerHaptic(8)}
                     className="group ios-press-bounce col-span-1 flex flex-col justify-between rounded-[26px] bg-white border border-[#9CA3AF]/30 p-4 sm:p-5 shadow-[0_10px_28px_-6px_rgba(17,24,39,0.06)] hover:border-[#4B5563]/50 transition relative overflow-hidden min-h-[250px] sm:min-h-[275px]"
                   >
@@ -491,6 +493,7 @@ export default function LocalCatalogShowcase({
                 {bentoContrasteDer && (
                   <a
                     href={`/vehiculos/${bentoContrasteDer.id}`}
+                    data-astro-prefetch="tap"
                     onClick={() => triggerHaptic(8)}
                     className="group ios-press-bounce col-span-1 flex flex-col justify-between rounded-[26px] bg-[#1F2937] text-[#EDEDED] p-4 sm:p-5 shadow-[0_14px_30px_-6px_rgba(17,24,39,0.28)] border border-white/10 relative overflow-hidden min-h-[250px] sm:min-h-[275px]"
                   >
@@ -532,6 +535,7 @@ export default function LocalCatalogShowcase({
               {bentoHorizontalAncho && (
                 <a
                   href={`/vehiculos/${bentoHorizontalAncho.id}`}
+                  data-astro-prefetch="tap"
                   onClick={() => triggerHaptic(8)}
                   className="group ios-press-bounce col-span-2 rounded-[28px] bg-white border border-[#9CA3AF]/30 p-4 sm:p-5 shadow-[0_10px_28px_-6px_rgba(17,24,39,0.06)] hover:border-[#4B5563]/50 transition flex items-center justify-between gap-3 overflow-hidden"
                 >
@@ -618,6 +622,7 @@ export default function LocalCatalogShowcase({
                     <div className="pt-1 flex flex-wrap items-center gap-2.5">
                       <a
                         href={`/alquilar/${unidadHero.id}`}
+                        data-astro-prefetch="tap"
                         onClick={() => triggerHaptic(10)}
                         className="ios-press-bounce inline-flex min-h-[42px] items-center justify-center rounded-full bg-[#EDEDED] px-5 py-2 text-xs font-extrabold text-[#111827] shadow-md hover:bg-white transition"
                       >
@@ -630,6 +635,7 @@ export default function LocalCatalogShowcase({
                   <div className="col-span-5 flex flex-col items-center justify-center">
                     <a
                       href={`/vehiculos/${unidadHero.id}`}
+                      data-astro-prefetch="tap"
                       onClick={() => triggerHaptic(8)}
                       className="block w-full focus:outline-none"
                       aria-label={`Ver ficha de ${unidadHero.marca} ${unidadHero.modelo}`}
@@ -750,7 +756,7 @@ export default function LocalCatalogShowcase({
         </div>
 
         {/* Banner Mobile para Explorar Toda la Flota desde el fin del Showcase */}
-        <div className="pt-2">
+        <div className="pt-2 space-y-3">
           <button
             type="button"
             onClick={() => {
@@ -767,6 +773,32 @@ export default function LocalCatalogShowcase({
               {vehiculosFiltrados.length} disponibles →
             </span>
           </button>
+
+          {/* Banner de Invitación: Crea tu propio alquiler de vehículos */}
+          <div className="relative overflow-hidden rounded-[24px] bg-gradient-to-br from-[#111827] via-[#1F2937] to-[#111827] p-5 text-white border border-white/10 shadow-sm">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="space-y-1.5 max-w-md">
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-0.5 text-[10px] font-bold tracking-wide text-white">
+                  <span>✨</span>
+                  <span>Pon tu flota en servicio</span>
+                </div>
+                <h4 className="font-display text-base sm:text-lg font-black text-white leading-tight">
+                  ¿Tienes vehículos o quieres crear tu propio alquiler?
+                </h4>
+                <p className="text-xs text-[#9CA3AF] leading-relaxed">
+                  Publica tu catálogo, recibe reservas directas, gestiona inspecciones periciales y depósitos de garantía con FlotaX.
+                </p>
+              </div>
+              <a
+                href="/admin/onboarding?modo=crear"
+                onClick={() => triggerHaptic(8)}
+                className="ios-press-bounce w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-[#111827] shadow-sm hover:bg-[#EDEDED] shrink-0 transition-colors"
+              >
+                <span>Crea tu alquiler</span>
+                <span>→</span>
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     )}

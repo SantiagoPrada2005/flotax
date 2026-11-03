@@ -1,36 +1,52 @@
-export type CategoriaVehiculo = 'SEDAN' | 'SUV' | 'MOTO' | 'PATINETA' | 'UTILITARIO';
+import type { VehiculoSelect, CategoriaVehiculo } from '@/db/schema';
 
-export type EstadoVehiculo = 'DISPONIBLE' | 'RESERVADO' | 'MANTENIMIENTO' | 'FUERA_SERVICIO';
+export type {
+  CategoriaVehiculo,
+  EstadoVehiculo,
+  TransmisionVehiculo,
+  CombustibleVehiculo,
+} from '@/db/schema';
 
-export interface VehiculoItem {
-  id: string;
+/** Columnas de `vehiculos` que el modelo de vista reutiliza tal cual. */
+type ColumnasVehiculoItem = Pick<
+  VehiculoSelect,
+  | 'id'
+  | 'marca'
+  | 'modelo'
+  | 'anio'
+  | 'categoria'
+  | 'categoriaEtiqueta'
+  | 'placa'
+  | 'estado'
+  | 'precioDia'
+  | 'depositoGarantia'
+  | 'transmision'
+  | 'combustible'
+  | 'capacidadPasajeros'
+  | 'kilometraje'
+  | 'imagenUrl'
+  | 'descripcion'
+>;
+
+/**
+ * Modelo de vista de una unidad de flota.
+ *
+ * Deriva del schema Drizzle. Sólo declara lo que el mapper (`mapD1ToVehiculoItem`)
+ * transforma: las columnas nullable que él rellena con defaults y los campos
+ * calculados que no existen en `vehiculos`.
+ */
+export type VehiculoItem = ColumnasVehiculoItem & {
   localId?: string | undefined;
   localSlug?: string | undefined;
-  marca: string;
-  modelo: string;
-  anio: number;
-  categoria: CategoriaVehiculo;
-  categoriaEtiqueta: string;
-  placa: string;
-  estado: EstadoVehiculo;
-  precioDia: number;
-  depositoGarantia: number;
-  transmision: 'Automática' | 'Manual' | 'Eléctrica';
-  combustible: 'Gasolina' | 'Diésel' | 'Eléctrico' | 'Híbrido';
-  capacidadPasajeros: number;
   autonomiaKm?: number | undefined;
-  kilometraje: number;
-  imagenUrl: string;
   destacado?: boolean | undefined;
-  descripcion: string;
-  // Métricas del diseño de referencia móvil (Pantalla 1 y 3)
-  aceleracion: string;         // ej: "3.8 s" (0-100 km/h)
-  velocidadMaxima: string;     // ej: "210 km/h" o "155 mph"
-  rating: number;              // ej: 4.8
-  autonomiaOdo: string;        // ej: "480 km" o "18.400 km"
+  aceleracion: string;
+  velocidadMaxima: string;
+  rating: number;
+  autonomiaOdo: string;
   marcaLogo?: string | undefined;
   tipoPropulsionIcon?: 'electric' | 'gas' | 'hybrid' | undefined;
-}
+};
 
 export interface FiltrosBusquedaVehiculo {
   query?: string | undefined;

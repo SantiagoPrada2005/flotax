@@ -5,7 +5,8 @@ import OperatorOnboardingWizard from '@/components/auth/OperatorOnboardingWizard
 const usuario = Astro.locals.usuario;
 
 if (!usuario) {
-  return Astro.redirect('/login');
+  const redirectTarget = encodeURIComponent(Astro.url.pathname + Astro.url.search);
+  return Astro.redirect(`/login?redirect=${redirectTarget}`);
 }
 
 const localActivo = usuario.localActivo;

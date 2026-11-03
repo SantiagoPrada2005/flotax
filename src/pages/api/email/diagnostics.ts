@@ -10,7 +10,32 @@ const testEmailSchema = z.object({
   mensaje: z.string().optional(),
 });
 
-export const GET: APIRoute = async () => {
+function escapeHtml(texto: string): string {
+  return texto
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/** Diagnóstico interno: solo superadministradores pueden consultarlo o disparar envíos. */
+function esSuperAdmin(locals: App.Locals): boolean {
+  return locals.usuario?.esSuperAdmin === true;
+}
+
+function respuestaNoEncontrada(): Response {
+  return new Response(JSON.stringify({ error: 'Recurso no encontrado' }), {
+    status: 404,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+export const GET: APIRoute = async ({ locals }) => {
+  if (!esSuperAdmin(locals)) {
+    return respuestaNoEncontrada();
+  }
+
   const hasEmailBinding = Boolean(
     env?.EMAIL && typeof env.EMAIL.send === 'function'
   );
@@ -39,7 +64,11 @@ export const GET: APIRoute = async () => {
   );
 };
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
+  if (!esSuperAdmin(locals)) {
+    return respuestaNoEncontrada();
+  }
+
   try {
     const body = await request.json().catch(() => ({}));
     const parseResult = testEmailSchema.safeParse(body);
@@ -84,11 +113,13 @@ export const POST: APIRoute = async ({ request }) => {
         },
       });
     } else {
+      const textoPlano =
+        mensaje || 'Este es un correo de prueba desde FlotaX (flotax.innovaweb.pro).';
       result = await emailService.send({
         to,
         subject: asunto || 'FlotaX: Correo de Prueba',
-        html: `<p style="color: #EDEDED;">${mensaje || 'Este es un correo de prueba desde FlotaX (flotax.innovaweb.pro).'}</p>`,
-        text: mensaje || 'Este es un correo de prueba desde FlotaX (flotax.innovaweb.pro).',
+        html: `<p style="color: #EDEDED;">${escapeHtml(textoPlano)}</p>`,
+        text: textoPlano,
       });
     }
 

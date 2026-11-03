@@ -17,7 +17,7 @@
 
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
-| [`index.astro`](./index.astro) | Panel Principal `/admin` | Dashboard operativo Bento Grid de patio | `@/layouts/LayoutAdmin.astro`, `@/components/dashboard/*` |
+| [`index.astro`](./index.astro) | Panel General `/admin` | Dashboard operativo Bento Grid con enlace principal al catálogo del local | `@/layouts/LayoutAdmin.astro`, `@/components/flota/LocalCatalogShareCard`, `@/components/dashboard/*` |
 | [`onboarding.astro`](./onboarding.astro) | Page / Navigation Route | Astro Template | - |
 
 ## Invariants & Directory Rules

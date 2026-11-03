@@ -1,10 +1,12 @@
 import { defineAction, ActionError } from 'astro:actions';
+import { marcarRevisionNavegacion } from '@/lib/pwa/revision';
 import { z } from 'zod';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
 import {
   requireAuth,
   requireLocalAuth,
+  PERMISOS,
 } from '@/lib/auth';
 import {
   obtenerLocalesMembresia,
@@ -28,6 +30,7 @@ export const cambiarModoPortal = defineAction({
     modo: z.enum(['CLIENTE', 'ADMIN']),
   }),
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const usuario = requireAuth(context);
 
     if (input.modo === 'CLIENTE') {
@@ -104,6 +107,7 @@ export const conmutarLocalActivo = defineAction({
     localId: z.string().min(1, { error: 'El identificador del local es obligatorio' }),
   }),
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const usuario = requireAuth(context);
 
     if (!env.DB) {
@@ -147,7 +151,6 @@ import { localesAlquiler, miembrosLocal } from '@/db/schema';
 import {
   registrarLocalEnMemoria,
   actualizarConfigCatalogoLocal,
-  LOCAL_CANONICO_DEFECTO,
 } from '@/lib/flota/locales-captacion';
 
 function generarSlug(nombre: string): string {
@@ -167,6 +170,7 @@ function generarSlug(nombre: string): string {
  */
 export const finalizarOnboardingOperativo = defineAction({
   handler: async (_input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const usuario = requireLocalAuth(context);
 
     if (!env.DB) {
@@ -198,6 +202,7 @@ export const crearPatioOperativo = defineAction({
     telefono: z.string().optional(),
   }),
   handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
     const usuario = requireAuth(context);
 
     if (!env.DB) {
@@ -276,8 +281,9 @@ export const actualizarPerfilCatalogoLocal = defineAction({
     telefono: z.string().optional(),
   }),
   handler: async (input, context) => {
-    const usuario = context.locals.usuario;
-    const localId = usuario?.localActivo?.id ?? LOCAL_CANONICO_DEFECTO.id;
+    marcarRevisionNavegacion(context.cookies);
+    const usuario = requireLocalAuth(context, PERMISOS.LOCAL_GESTIONAR);
+    const localId = usuario.localActivo.id;
     const db = env.DB ? getDb(env.DB) : undefined;
 
     const resultado = await actualizarConfigCatalogoLocal(
