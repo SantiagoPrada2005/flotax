@@ -1,4 +1,4 @@
-import { useState, useMemo, useTransition } from 'react';
+import { useState, useMemo, useTransition, useEffect } from 'react';
 import { actions } from 'astro:actions';
 import type { LocalPublicoContexto } from '@/lib/flota/locales-captacion';
 import { normalizarSlugLocal } from '@/lib/flota/locales-captacion';
@@ -73,6 +73,7 @@ export default function LocalCatalogShareCard({
   compact = false,
 }: LocalCatalogShareCardProps) {
   const [local, setLocal] = useState<LocalPublicoContexto>(initialLocal);
+  const [opcionesAbiertas, setOpcionesAbiertas] = useState(false);
   const [copiado, setCopiado] = useState(false);
   const [modalAbierto, setModalAbierto] = useState<'qr' | 'editar' | null>(null);
   const [slugInput, setSlugInput] = useState(initialLocal.slug);
@@ -89,12 +90,24 @@ export default function LocalCatalogShareCard({
 
   const qrMatrix = useMemo(() => generarMatrizQr21(fullUrl), [fullUrl]);
 
+  useEffect(() => {
+    if (!modalAbierto) return;
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setModalAbierto(null);
+        setFeedback(null);
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [modalAbierto]);
+
   const triggerHaptic = (ms = 8) => {
     if (typeof window !== 'undefined' && 'vibrate' in navigator) {
       try {
         navigator.vibrate(ms);
       } catch {
-        // Ignorar
+        // Ignorar en dispositivos sin vibración
       }
     }
   };
@@ -108,7 +121,7 @@ export default function LocalCatalogShareCard({
           : fullUrl;
       await navigator.clipboard.writeText(targetUrl);
       setCopiado(true);
-      setTimeout(() => setCopiado(false), 2600);
+      setTimeout(() => setCopiado(false), 2400);
     } catch {
       setFeedback({
         tipo: 'err',
@@ -123,23 +136,21 @@ export default function LocalCatalogShareCard({
       typeof window !== 'undefined'
         ? `${window.location.origin}/c/${local.slug}`
         : fullUrl;
-    const shareText = `Explora el catálogo exclusivo de vehículos disponibles en ${local.nombre} y reserva directamente sin intermediarios:`;
+    const shareText = `Explora el catálogo de vehículos disponibles en ${local.nombre} y reserva directamente:`;
 
     if (typeof navigator !== 'undefined' && 'share' in navigator) {
       try {
         await navigator.share({
-          title: `${local.nombre} — Catálogo Oficial de Alquiler`,
+          title: `${local.nombre} — Catálogo de Alquiler`,
           text: shareText,
           url: targetUrl,
         });
         return;
       } catch {
-        // Si el usuario cancela el sheet nativo, no hacer nada
         return;
       }
     }
 
-    // Fallback directo a WhatsApp
     const waUrl = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${targetUrl}`)}`;
     if (typeof window !== 'undefined') {
       window.open(waUrl, '_blank', 'noopener,noreferrer');
@@ -178,12 +189,12 @@ export default function LocalCatalogShareCard({
         setSlugInput(data.local.slug);
         setFeedback({
           tipo: 'ok',
-          texto: '¡Enlace exclusivo actualizado correctamente!',
+          texto: '¡Enlace actualizado correctamente!',
         });
         setTimeout(() => {
           setModalAbierto(null);
           setFeedback(null);
-        }, 1100);
+        }, 1000);
       } catch {
         setFeedback({
           tipo: 'err',
@@ -196,147 +207,247 @@ export default function LocalCatalogShareCard({
   return (
     <>
       <section
-        aria-label="Compartir catálogo exclusivo del local"
-        className={`relative overflow-hidden rounded-[28px] bg-white border border-[#9CA3AF]/35 ${
-          compact ? 'p-4' : 'p-4.5 sm:p-5'
-        } shadow-[0_12px_30px_-8px_rgba(17,24,39,0.08)] space-y-3.5`}
+        aria-label="Enlace del catálogo del local"
+        className={`relative overflow-hidden rounded-[24px] bg-white border border-[#9CA3AF]/35 ${
+          compact ? 'p-3.5' : 'p-3.5 sm:p-4'
+        } shadow-[0_10px_26px_-10px_rgba(17,24,39,0.08)]`}
       >
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-[#EDEDED] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#111827]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#111827]" />
-              <span>Link Anti-Fuga Activo</span>
+        {/* NIVEL 1 (Progressive Disclosure): Fila Principal Compacta de Acción Rápida */}
+        <div className="flex items-center justify-between gap-2.5">
+          <div className="flex min-w-0 items-center gap-3">
+            <div
+              aria-hidden="true"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-[#111827] text-[#EDEDED]"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-[18px] w-[18px]"
+              >
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              </svg>
             </div>
-            <h2 className="mt-1.5 font-display text-base sm:text-lg font-black tracking-tight text-[#111827] truncate">
-              Catálogo Exclusivo · {local.nombre}
-            </h2>
-            <p className="text-xs text-[#4B5563] mt-0.5 leading-relaxed">
-              Comparte este enlace con tus clientes: verán únicamente tus{' '}
-              <span className="font-mono tabular-nums font-bold text-[#111827]">
-                {unidadesCount}
-              </span>{' '}
-              vehículos sin comparativas de otros locales.
-            </p>
+
+            <div className="min-w-0">
+              <h2 className="font-display text-sm sm:text-base font-extrabold tracking-tight text-[#111827] truncate">
+                Catálogo · {local.nombre}
+              </h2>
+              <p className="mt-0.5 flex items-center gap-1.5 text-xs text-[#4B5563] truncate">
+                <span className="font-mono font-semibold text-[#111827] truncate">
+                  /c/{local.slug}
+                </span>
+                <span aria-hidden="true">•</span>
+                <span className="font-mono tabular-nums shrink-0">
+                  {unidadesCount} {unidadesCount === 1 ? 'unidad' : 'uds'}
+                </span>
+              </p>
+            </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              triggerHaptic(8);
-              setModalAbierto('qr');
-            }}
-            aria-label="Mostrar código QR del catálogo"
-            title="Código QR de mostrador"
-            className="ios-press-bounce flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#111827] text-[#EDEDED] shadow-xs hover:bg-[#1F2937] cursor-pointer"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-              <rect width="5" height="5" x="3" y="3" rx="1" />
-              <rect width="5" height="5" x="16" y="3" rx="1" />
-              <rect width="5" height="5" x="3" y="16" rx="1" />
-              <path d="M21 16h-3a2 2 0 0 0-2 2v3" />
-              <path d="M21 21v.01" />
-              <path d="M12 7v3a2 2 0 0 1-2 2H7" />
-              <path d="M3 12h.01" />
-              <path d="M12 3h.01" />
-              <path d="M12 16v.01" />
-              <path d="M16 12h1" />
-              <path d="M21 12v.01" />
-              <path d="M12 21v-1" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Barra con URL corta y botón de edición de slug */}
-        <div className="flex items-center justify-between gap-2 rounded-2xl bg-[#EDEDED]/75 border border-[#9CA3AF]/30 px-3.5 py-2.5">
-          <div className="flex items-center gap-2 min-w-0">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-[#4B5563] shrink-0">
-              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-            </svg>
-            <span className="font-mono text-xs sm:text-sm font-bold text-[#111827] truncate">
-              /c/{local.slug}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex shrink-0 items-center gap-1.5">
             <button
               type="button"
+              onClick={compartirNativoOol}
+              className="ios-press-bounce inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-1.5 rounded-full bg-[#111827] px-3.5 sm:px-4 py-2 text-xs font-bold text-[#EDEDED] shadow-2xs transition hover:bg-[#1F2937]"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-3.5 w-3.5 shrink-0"
+                aria-hidden="true"
+              >
+                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                <polyline points="16 6 12 2 8 6" />
+                <line x1="12" y1="2" x2="12" y2="15" />
+              </svg>
+              <span>Compartir</span>
+            </button>
+
+            <button
+              type="button"
+              aria-expanded={opcionesAbiertas}
+              aria-label={
+                opcionesAbiertas
+                  ? 'Ocultar herramientas del catálogo'
+                  : 'Mostrar herramientas del catálogo'
+              }
               onClick={() => {
                 triggerHaptic(6);
-                setModalAbierto('editar');
+                setOpcionesAbiertas((prev) => !prev);
               }}
-              className="ios-press-bounce rounded-full bg-white border border-[#9CA3AF]/40 px-2.5 py-1 text-[11px] font-bold text-[#111827] hover:bg-[#EDEDED] cursor-pointer"
+              className={`ios-press-bounce flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border transition-colors ${
+                opcionesAbiertas
+                  ? 'border-[#111827] bg-[#1F2937] text-[#EDEDED]'
+                  : 'border-[#9CA3AF]/40 bg-[#EDEDED]/75 text-[#111827] hover:bg-[#EDEDED]'
+              }`}
             >
-              Personalizar
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={`h-4 w-4 transition-transform duration-200 ${
+                  opcionesAbiertas ? 'rotate-180' : ''
+                }`}
+                aria-hidden="true"
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
             </button>
-            <a
-              href={pathRelativo}
-              onClick={() => triggerHaptic(6)}
-              className="ios-press-bounce rounded-full bg-white border border-[#9CA3AF]/40 px-2.5 py-1 text-[11px] font-bold text-[#4B5563] hover:text-[#111827]"
-            >
-              Ver ↗
-            </a>
           </div>
         </div>
 
-        {/* Botones Primarios de Acción (Mobile-First 44px+) */}
-        <div className="grid grid-cols-2 gap-2.5">
-          <button
-            type="button"
-            onClick={copiarEnlace}
-            className={`ios-press-bounce min-h-[44px] inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-xs font-extrabold transition cursor-pointer border ${
-              copiado
-                ? 'bg-[#1F2937] text-[#EDEDED] border-[#111827]'
-                : 'bg-white text-[#111827] border-[#9CA3AF]/60 hover:bg-[#EDEDED]/50'
-            }`}
-          >
-            {copiado ? (
-              <>
-                <span>✓ Enlace copiado</span>
-              </>
-            ) : (
-              <>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                  <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
-                  <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-                </svg>
-                <span>Copiar link</span>
-              </>
-            )}
-          </button>
+        {/* NIVEL 2 (Progressive Disclosure): Bandeja de Acciones Secundarias Bajo Demanda */}
+        {opcionesAbiertas && (
+          <div className="mt-3 border-t border-[#EDEDED] pt-3 space-y-2.5">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <button
+                type="button"
+                onClick={copiarEnlace}
+                className={`ios-press-bounce inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-1.5 rounded-full border px-3 py-2 text-xs font-bold transition ${
+                  copiado
+                    ? 'border-[#111827] bg-[#1F2937] text-[#EDEDED]'
+                    : 'border-[#9CA3AF]/45 bg-[#EDEDED]/55 text-[#111827] hover:bg-[#EDEDED]'
+                }`}
+              >
+                {copiado ? (
+                  <span>✓ Copiado</span>
+                ) : (
+                  <>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.9"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-3.5 w-3.5 shrink-0"
+                      aria-hidden="true"
+                    >
+                      <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                    </svg>
+                    <span>Copiar link</span>
+                  </>
+                )}
+              </button>
 
-          <button
-            type="button"
-            onClick={compartirNativoOol}
-            className="ios-press-bounce min-h-[44px] inline-flex items-center justify-center gap-2 rounded-full bg-[#111827] px-4 py-2.5 text-xs font-extrabold text-[#EDEDED] shadow-xs hover:bg-[#1F2937] transition cursor-pointer"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
-              <polyline points="16 6 12 2 8 6" />
-              <line x1="12" y1="2" x2="12" y2="15" />
-            </svg>
-            <span>Compartir catálogo</span>
-          </button>
-        </div>
+              <button
+                type="button"
+                onClick={() => {
+                  triggerHaptic(8);
+                  setModalAbierto('qr');
+                }}
+                className="ios-press-bounce inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-1.5 rounded-full border border-[#9CA3AF]/45 bg-[#EDEDED]/55 px-3 py-2 text-xs font-bold text-[#111827] transition hover:bg-[#EDEDED]"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.9"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-3.5 w-3.5 shrink-0"
+                  aria-hidden="true"
+                >
+                  <rect width="5" height="5" x="3" y="3" rx="1" />
+                  <rect width="5" height="5" x="16" y="3" rx="1" />
+                  <rect width="5" height="5" x="3" y="16" rx="1" />
+                  <path d="M21 16h-3a2 2 0 0 0-2 2v3" />
+                  <path d="M12 7v3a2 2 0 0 1-2 2H7" />
+                </svg>
+                <span>Código QR</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  triggerHaptic(6);
+                  setModalAbierto('editar');
+                }}
+                className="ios-press-bounce inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-1.5 rounded-full border border-[#9CA3AF]/45 bg-[#EDEDED]/55 px-3 py-2 text-xs font-bold text-[#111827] transition hover:bg-[#EDEDED]"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.9"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-3.5 w-3.5 shrink-0"
+                  aria-hidden="true"
+                >
+                  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                </svg>
+                <span>Personalizar</span>
+              </button>
+
+              <a
+                href={pathRelativo}
+                data-astro-prefetch="tap"
+                onClick={() => triggerHaptic(6)}
+                className="ios-press-bounce inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-full border border-[#9CA3AF]/45 bg-white px-3 py-2 text-xs font-bold text-[#111827] transition hover:bg-[#EDEDED]/60"
+              >
+                <span>Abrir vista</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.9"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-3.5 w-3.5 shrink-0 text-[#4B5563]"
+                  aria-hidden="true"
+                >
+                  <path d="M7 17 17 7" />
+                  <path d="M7 7h10v10" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* =====================================================================
-          SHEET / MODAL iOS: CÓDIGO QR DE MOSTRADOR Y PERSONALIZACIÓN DE LINK
+          NIVEL 3 (Progressive Disclosure): SHEETS MODALES BAJO DEMANDA (QR / EDITAR)
          ===================================================================== */}
       {modalAbierto && (
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#111827]/60 backdrop-blur-md p-0 sm:p-4 animate-in fade-in duration-200"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setModalAbierto(null);
+              setFeedback(null);
+            }
+          }}
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#111827]/60 backdrop-blur-md p-0 sm:p-4"
         >
           <div className="w-full max-w-md rounded-t-[32px] sm:rounded-[32px] bg-white border border-white/20 p-5 sm:p-6 shadow-2xl space-y-4 safe-bottom">
-            {/* Grabber Superior iOS */}
             <div className="w-10 h-1 bg-[#9CA3AF]/50 rounded-full mx-auto -mt-1 sm:hidden" />
 
             <div className="flex items-center justify-between">
               <h3 className="font-display text-lg font-black text-[#111827]">
                 {modalAbierto === 'qr'
-                  ? 'QR de Mostrador · Catálogo Cautivo'
+                  ? 'Código QR de Mostrador'
                   : 'Personalizar Enlace del Local'}
               </h3>
               <button
@@ -346,7 +457,7 @@ export default function LocalCatalogShareCard({
                   setFeedback(null);
                 }}
                 aria-label="Cerrar ventana"
-                className="ios-press-bounce flex h-9 w-9 items-center justify-center rounded-full bg-[#EDEDED] text-[#111827] font-bold text-xs cursor-pointer"
+                className="ios-press-bounce flex h-11 w-11 items-center justify-center rounded-full bg-[#EDEDED] text-[#111827] font-bold text-xs cursor-pointer"
               >
                 ✕
               </button>
@@ -386,7 +497,7 @@ export default function LocalCatalogShareCard({
                     /c/{local.slug}
                   </p>
                   <p className="text-xs text-[#4B5563] mt-2 max-w-xs mx-auto">
-                    Cuando el cliente entra con este enlace, la app bloquea el catálogo únicamente a los vehículos de tu patio.
+                    Tus clientes verán directamente los vehículos disponibles de tu patio al escanear este código.
                   </p>
                 </div>
 
@@ -410,7 +521,7 @@ export default function LocalCatalogShareCard({
               <form onSubmit={guardarPersonalizacion} className="space-y-3.5">
                 <div>
                   <label className="block text-xs font-bold text-[#111827] mb-1">
-                    Identificador del enlace (Slug único)
+                    Identificador del enlace
                   </label>
                   <div className="flex items-center rounded-2xl bg-[#EDEDED]/70 border border-[#9CA3AF]/45 px-3.5 min-h-[46px] focus-within:border-[#111827]">
                     <span className="font-mono text-sm text-[#4B5563] select-none">

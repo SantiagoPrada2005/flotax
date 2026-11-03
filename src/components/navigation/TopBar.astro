@@ -6,14 +6,24 @@ interface Props {
   title?: string | undefined;
   showBack?: boolean | undefined;
   backHref?: string | undefined;
+  navVariant?: 'admin' | 'client' | undefined;
   class?: string | undefined;
 }
 
-const { title = 'FlotaX', showBack = false, backHref = '/', class: className = '' } = Astro.props;
+const {
+  title = 'FlotaX',
+  showBack = false,
+  backHref = '/',
+  navVariant = 'client',
+  class: className = '',
+} = Astro.props;
+
 const usuario = Astro.locals.usuario;
 const autenticado = Boolean(usuario);
 const usuarioImagen = usuario?.imagen ?? null;
 const usuarioNombre = usuario?.nombre ?? null;
+const usuarioLocalNombre = usuario?.localActivo?.nombre ?? null;
+const tieneAccesoAdmin = Boolean(usuario?.localActivo || usuario?.esSuperAdmin);
 const localCaptacion = Astro.locals.localCaptacion;
 ---
 
@@ -22,11 +32,13 @@ const localCaptacion = Astro.locals.localCaptacion;
   title={localCaptacion ? localCaptacion.nombre : title}
   showBack={showBack}
   backHref={backHref}
+  navVariant={navVariant}
   className={className}
   autenticado={autenticado}
   usuarioImagen={usuarioImagen}
   usuarioNombre={usuarioNombre}
+  usuarioLocalNombre={usuarioLocalNombre}
+  tieneAccesoAdmin={tieneAccesoAdmin}
   clavePublicaVapid={env.VAPID_PUBLIC_KEY}
-  localCaptacionId={localCaptacion?.id}
   localCaptacionNombre={localCaptacion?.nombre}
 />

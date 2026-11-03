@@ -29,38 +29,14 @@ const localContexto =
 const vehiculos = await listarVehiculos(db, { localId: localContexto.id });
 ---
 
-<LayoutAdmin title="FlotaX — Control de Flota" activeTab="fleet">
-  <div class="mx-auto w-full max-w-5xl px-4 sm:px-6 py-4 space-y-6">
-    <!-- Header de Módulo -->
-    <header class="flex items-center justify-between gap-4 pt-1 pb-1">
-      <div>
-        <h1 class="font-display text-2xl font-black tracking-tight text-[#111827] sm:text-3xl">
-          Flota
-        </h1>
-      </div>
+<LayoutAdmin title="FlotaX — Flota" activeTab="fleet">
+  <div class="mx-auto w-full max-w-5xl px-4 sm:px-6 py-3 space-y-5">
+    <h1 class="sr-only">Flota de vehículos — {localContexto.nombre}</h1>
 
-      <div class="flex items-center gap-2 shrink-0">
-        <a
-          href="/admin/flota/nuevo"
-          class="ios-press-bounce inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white shadow-xs transition hover:bg-[#1F2937]"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            class="h-4 w-4"
-          >
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          <span>Nueva Unidad</span>
-        </a>
-      </div>
-    </header>
-
-    <!-- Gestor Reactivo de Flota e Inventario -->
-    <FleetInventoryManager initialVehiculos={vehiculos} client:load />
+    <FleetInventoryManager
+      initialVehiculos={vehiculos}
+      nuevaUnidadHref="/admin/flota/nuevo"
+      client:load
+    />
   </div>
 </LayoutAdmin>

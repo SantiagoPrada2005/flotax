@@ -1,21 +1,20 @@
 ---
-import LayoutAdmin from "@/layouts/LayoutAdmin.astro";
-import { resolveClientTimeContext } from "@/lib/time/client-time";
-import BentoHeroCard from "@/components/dashboard/BentoHeroCard.astro";
-import BentoMetricsGrid from "@/components/dashboard/BentoMetricsGrid.astro";
-import BentoOperationsCard from "@/components/dashboard/BentoOperationsCard.astro";
-//import LocalCatalogShareCard from '@/components/flota/LocalCatalogShareCard';
+import LayoutAdmin from '@/layouts/LayoutAdmin.astro';
+import { resolveClientTimeContext } from '@/lib/time/client-time';
+import BentoHeroCard from '@/components/dashboard/BentoHeroCard.astro';
+import BentoMetricsGrid from '@/components/dashboard/BentoMetricsGrid.astro';
+import BentoOperationsCard from '@/components/dashboard/BentoOperationsCard.astro';
+import LocalCatalogShareCard from '@/components/flota/LocalCatalogShareCard';
 import {
-  //listarVehiculos,
+  listarVehiculos,
   obtenerLocalPorSlugOId,
   LOCAL_CANONICO_DEFECTO,
-} from "@/lib/flota";
-import { env } from "cloudflare:workers";
-import { getDb } from "@/lib/db";
+} from '@/lib/flota';
+import { env } from 'cloudflare:workers';
+import { getDb } from '@/lib/db';
 
 const timeContext = resolveClientTimeContext(Astro.request);
 const usuario = Astro.locals.usuario;
-//const operatorName = usuario?.nombre ?? "David Operador";
 const db = env.DB ? getDb(env.DB) : undefined;
 
 const localActivoSesion = usuario?.localActivo;
@@ -28,44 +27,26 @@ const localContexto =
         id: localActivoSesion.id,
         nombre: localActivoSesion.nombre,
         slug: localActivoSesion.slug,
-        ciudad: "Medellín",
+        ciudad: 'Medellín',
         direccion: null,
         telefono: null,
       }
     : LOCAL_CANONICO_DEFECTO);
 
-//const vehiculosPatio = await listarVehiculos(db, { localId: localContexto.id });
+const vehiculosPatio = await listarVehiculos(db, { localId: localContexto.id });
 ---
 
-<LayoutAdmin title="FlotaX — Panel de Control" activeTab="home">
+<LayoutAdmin title="FlotaX — Panel General" activeTab="home">
   <div class="mx-auto w-full max-w-md sm:max-w-xl px-4 py-3 space-y-4">
-    {
-      /* 
-    <!-- Greeting & Status Header (Matching Reference App Layout) -->
-    <header class="pt-1 pb-1">
-      <p class="text-xs font-semibold uppercase tracking-wider text-[#4B5563]">
-        Panel Operativo de Patio • {timeContext.timezone}
-      </p>
-      <div class="mt-0.5 flex items-baseline justify-between gap-2">
-        <h1
-          class="font-display text-2xl font-black tracking-tight text-[#111827] sm:text-3xl"
-        >
-          {operatorName}
-        </h1>
-      </div>
-    </header>
-    */
-    }
+    <h1 class="sr-only">Panel General — {localContexto.nombre}</h1>
 
-    <!-- Centro de Compartición de Catálogo Exclusivo del Local (Opción Principal)  -->
-    {
-      /*
+    <!-- Opción Principal: Enlace del Catálogo del Local con Progressive Disclosure -->
     <LocalCatalogShareCard
       client:load
       local={localContexto}
       unidadesCount={vehiculosPatio.length}
-    />*/
-    }
+      compact={true}
+    />
 
     <!-- Bento Grid Section 1: Hero Progress Card -->
     <BentoHeroCard
