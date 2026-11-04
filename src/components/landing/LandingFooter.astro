@@ -13,103 +13,128 @@ const { user = null } = Astro.props;
 ---
 <footer
   data-pencil-name="Footer"
-  class="w-full bg-[#FBFCFE] relative z-20 border-t border-[#E8ECF3] pt-12 md:pt-16 pb-24 md:pb-16"
+  class="w-full bg-[#FFFFFF] sticky bottom-0 z-0 pt-20 sm:pt-28 md:pt-36 pb-28 md:pb-24 border-0 text-[#111827]"
+  style="background-color: #FFFFFF !important;"
 >
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-10 md:gap-14">
-    <!-- Desktop Columns / Mobile Brand Row -->
-    <div class="w-full grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-10">
-      <!-- Col 1: Brand & Bio -->
-      <div class="md:col-span-4 flex flex-col gap-4">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-16 md:gap-24">
+    <!-- Desktop Columns / Mobile Brand Layout (Erthos Inspired) -->
+    <div class="w-full grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-12">
+      <!-- Col 1: Brand & Bio (Logo Negro Puro sin Contenedor) -->
+      <div class="md:col-span-5 flex flex-col items-start gap-4 sm:gap-5">
         <div
           data-pencil-name="FBLeft"
-          class="flex items-center gap-2.5"
+          class="flex items-center gap-3.5 select-none"
         >
-          <div
-            data-pencil-name="FootLogo"
-            class="w-8 h-8 flex items-center justify-center bg-[#111827] rounded-xl text-[#EDEDED] shadow-xs"
-          >
-            <FlotaxIsotype size={18} fill="#EDEDED" />
-          </div>
+          <FlotaxIsotype size={44} fill="#111827" />
           <span
             data-pencil-name="FootName"
-            class="text-xl font-extrabold text-[#111827] font-[Manrope,system-ui,sans-serif] tracking-tight"
+            class="text-3xl sm:text-4xl font-extrabold text-[#111827] font-[Manrope,system-ui,sans-serif] tracking-tight"
           >
             FlotaX
           </span>
         </div>
-        <p class="text-xs sm:text-sm text-[#4B5563] font-[Inter,system-ui,sans-serif] leading-relaxed max-w-sm">
-          Sistema operativo perimetral de alquiler y gestión de flotas. Alquiler ágil, inspección pericial digital y máxima transparencia de tarifas.
+
+        <p class="text-xs sm:text-sm text-[#1F2937] font-normal leading-normal max-w-sm font-[Inter,system-ui,sans-serif]">
+          Sistema operativo perimetral de alquiler y control de flotas. Entrega ágil en patio, inspección pericial digital y máxima claridad de tarifas.
         </p>
-        <div class="flex items-center gap-2 text-xs text-[#9CA3AF]">
+
+        <div class="flex items-center gap-2.5 text-xs sm:text-sm text-[#111827] pt-1">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span>Red de patios operativa 24/7 en vivo</span>
+          <span>Red de patios operativa 24/7 en tiempo real</span>
         </div>
       </div>
 
-      <!-- Col 2: Navigation Links (desktop) -->
-      <div class="hidden md:flex md:col-span-3 flex-col gap-3">
-        <span class="text-xs font-bold text-[#0C1120] uppercase tracking-wider font-[Manrope,system-ui,sans-serif]">
+      <!-- Col 2: Navegación (Tipografía idéntica a Cómo funciona: font-medium text-[#111827]) -->
+      <div class="hidden md:flex md:col-span-3 flex-col gap-3.5">
+        <h3 class="text-lg sm:text-xl font-medium text-[#111827] tracking-tight leading-snug">
           Navegación
-        </span>
-        <ul class="flex flex-col gap-2 text-xs sm:text-sm text-[#4B5563]">
-          <li><a href="#vehiculos" class="hover:text-[#2E4E8F] transition-colors">Vehículos Destacados</a></li>
-          <li><a href="#categorias" class="hover:text-[#2E4E8F] transition-colors">Categorías de Flota</a></li>
-          <li><a href="#proceso" class="hover:text-[#2E4E8F] transition-colors">Cómo Funciona</a></li>
-          <li><a href="#tarifas" class="hover:text-[#2E4E8F] transition-colors">Tarifas Transparentes</a></li>
-          <li><a href="#faq" class="hover:text-[#2E4E8F] transition-colors">Preguntas Frecuentes</a></li>
+        </h3>
+        <ul class="flex flex-col gap-2.5 font-[Inter,system-ui,sans-serif]">
+          <li>
+            <a href="#vehiculos" class="text-xs sm:text-sm text-[#1F2937] hover:text-[#111827] transition-colors leading-normal font-normal">
+              Vehículos en patio
+            </a>
+          </li>
+          <li>
+            <a href="#proceso" class="text-xs sm:text-sm text-[#1F2937] hover:text-[#111827] transition-colors leading-normal font-normal">
+              Cómo funciona
+            </a>
+          </li>
+          <li>
+            <a href="#requisitos" class="text-xs sm:text-sm text-[#1F2937] hover:text-[#111827] transition-colors leading-normal font-normal">
+              Requisitos de alquiler
+            </a>
+          </li>
+          <li>
+            <a href="#tarifas" class="text-xs sm:text-sm text-[#1F2937] hover:text-[#111827] transition-colors leading-normal font-normal">
+              Por qué elegirnos
+            </a>
+          </li>
         </ul>
       </div>
 
-      <!-- Col 3: Soluciones / Servicios (desktop) -->
-      <div class="hidden md:flex md:col-span-3 flex-col gap-3">
-        <span class="text-xs font-bold text-[#0C1120] uppercase tracking-wider font-[Manrope,system-ui,sans-serif]">
+      <!-- Col 3: Servicios & Plataforma -->
+      <div class="hidden md:flex md:col-span-2 flex-col gap-3.5">
+        <h3 class="text-lg sm:text-xl font-medium text-[#111827] tracking-tight leading-snug">
           Servicios
-        </span>
-        <ul class="flex flex-col gap-2 text-xs sm:text-sm text-[#4B5563]">
-          <li><a href="/catalogo" class="hover:text-[#2E4E8F] transition-colors">Catálogo Completo</a></li>
-          <li><a href={user ? "/admin" : "/login"} class="hover:text-[#2E4E8F] transition-colors">Gestión de Reservas</a></li>
-          <li><a href="#requisitos" class="hover:text-[#2E4E8F] transition-colors">Requisitos de Alquiler</a></li>
-          <li><a href="#confianza" class="hover:text-[#2E4E8F] transition-colors">Seguridad & Garantía</a></li>
+        </h3>
+        <ul class="flex flex-col gap-2.5 font-[Inter,system-ui,sans-serif]">
+          <li>
+            <a href="/catalogo" class="text-xs sm:text-sm text-[#1F2937] hover:text-[#111827] transition-colors leading-normal font-normal">
+              Catálogo
+            </a>
+          </li>
+          <li>
+            <a href={user ? "/admin/alquileres" : "/login"} class="text-xs sm:text-sm text-[#1F2937] hover:text-[#111827] transition-colors leading-normal font-normal">
+              Reservas
+            </a>
+          </li>
+          <li>
+            <a href={user ? "/admin" : "/login"} class="text-xs sm:text-sm text-[#1F2937] hover:text-[#111827] transition-colors leading-normal font-normal">
+              Mi cuenta
+            </a>
+          </li>
         </ul>
       </div>
 
-      <!-- Col 4: Social & Contact -->
-      <div class="md:col-span-2 flex flex-col gap-3">
-        <span class="text-xs font-bold text-[#0C1120] uppercase tracking-wider font-[Manrope,system-ui,sans-serif]">
-          Conéctate
-        </span>
-        <div class="flex items-center gap-3">
-          <a
-            href="https://instagram.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            data-pencil-name="FootSocial"
-            class="w-10 h-10 rounded-xl bg-white border border-[#E8ECF3] flex items-center justify-center text-[#3E4756] hover:text-[#0C1120] hover:border-[#2E4E8F]/40 transition-colors shadow-2xs"
-            aria-label="Instagram"
-          >
-            <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2">
-              <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
-              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-              <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
-            </svg>
-          </a>
-        </div>
+      <!-- Col 4: Redes & Contacto -->
+      <div class="md:col-span-2 flex flex-col gap-3.5">
+        <h3 class="text-lg sm:text-xl font-medium text-[#111827] tracking-tight leading-snug">
+          Contacto
+        </h3>
+        <ul class="flex flex-col gap-2.5 font-[Inter,system-ui,sans-serif]">
+          <li>
+            <a
+              href="https://instagram.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-xs sm:text-sm text-[#1F2937] hover:text-[#111827] transition-colors leading-normal font-normal"
+            >
+              Instagram
+            </a>
+          </li>
+          <li>
+            <a
+              href="/catalogo"
+              class="text-xs sm:text-sm text-[#1F2937] hover:text-[#111827] transition-colors leading-normal font-normal"
+            >
+              Atención en patio
+            </a>
+          </li>
+        </ul>
       </div>
     </div>
 
-    <div class="w-full h-px bg-[#E8ECF3]"></div>
-
-    <div class="w-full flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 text-xs text-[#9AA3B2]">
-      <p data-pencil-name="FootCopy">
-        © 2026 FlotaX. Todos los derechos reservados.
+    <!-- Bottom Row: Copyright & Legal (Negro Puro #111827, Sin Bordes, Espaciado Generoso y Aireado) -->
+    <div class="w-full flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 text-xs sm:text-sm text-[#111827]">
+      <p data-pencil-name="FootCopy" class="font-normal text-[#111827]">
+        © 2026 FlotaX Inc. Todos los derechos reservados.
       </p>
 
-      <div class="flex items-center gap-4">
+      <div class="flex flex-wrap items-center gap-4 sm:gap-6 text-[#111827] font-normal">
         <a href="#" class="hover:text-[#4B5563] transition-colors">Aviso de Privacidad</a>
-        <span>·</span>
         <a href="#" class="hover:text-[#4B5563] transition-colors">Términos de Servicio</a>
-        <span>·</span>
-        <a href="#" class="hover:text-[#4B5563] transition-colors">Seguridad Edge</a>
+        <a href="#" class="hover:text-[#4B5563] transition-colors">Peritaje R2</a>
       </div>
     </div>
   </div>
