@@ -1,5 +1,6 @@
 import { useState, type SyntheticEvent } from 'react';
 import { navigate } from 'astro:transitions/client';
+import { MapPin, Calendar, Clock, Search } from 'lucide-react';
 
 interface CategoryOption {
   id: 'todos' | 'carros' | 'motos';
@@ -13,6 +14,40 @@ const CATEGORIES: CategoryOption[] = [
   { id: 'motos', label: 'Motos', count: 36 },
 ];
 
+const HORAS_DISPONIBLES = [
+  '07:00 AM',
+  '08:00 AM',
+  '09:00 AM',
+  '10:00 AM',
+  '11:00 AM',
+  '12:00 PM',
+  '01:00 PM',
+  '02:00 PM',
+  '03:00 PM',
+  '04:00 PM',
+  '05:00 PM',
+  '06:00 PM',
+  '07:00 PM',
+  '08:00 PM',
+];
+
+const MESES_ABR = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
+function formatearFechaHumana(isoStr?: string): string {
+  if (!isoStr) return '';
+  const parts = isoStr.split('-');
+  if (parts.length !== 3) return isoStr;
+  const p0 = parts[0];
+  const p1 = parts[1];
+  const p2 = parts[2];
+  if (!p0 || !p1 || !p2) return isoStr;
+  const y = p0;
+  const m = parseInt(p1, 10) - 1;
+  const d = parseInt(p2, 10);
+  const mes = MESES_ABR[m] || p1;
+  return `${d} ${mes} ${y}`;
+}
+
 export function LandingBookingIsland() {
   const [selectedCat, setSelectedCat] = useState<'todos' | 'carros' | 'motos'>('todos');
   const [sede, setSede] = useState('centro');
@@ -25,7 +60,9 @@ export function LandingBookingIsland() {
   const formatDateVal = (d: Date) => d.toISOString().split('T')[0];
 
   const [fechaInicio, setFechaInicio] = useState(formatDateVal(today));
+  const [horaInicio, setHoraInicio] = useState('10:00 AM');
   const [fechaFin, setFechaFin] = useState(formatDateVal(returnDate));
+  const [horaFin, setHoraFin] = useState('10:00 AM');
 
   const handleSearchSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -39,156 +76,196 @@ export function LandingBookingIsland() {
     if (fechaInicio) {
       params.set('desde', fechaInicio);
     }
+    if (horaInicio) {
+      params.set('hora_desde', horaInicio);
+    }
     if (fechaFin) {
       params.set('hasta', fechaFin);
+    }
+    if (horaFin) {
+      params.set('hora_hasta', horaFin);
     }
     const query = params.toString();
     navigate(query ? `/catalogo?${query}` : '/catalogo');
   };
 
   return (
-    <section
+    <div
       id="reservar"
       data-pencil-name="BookingSection"
-      className="relative z-20 w-full px-4 sm:px-6 lg:px-8 -mt-2 sm:-mt-6 md:-mt-8"
+      className="w-full"
     >
-      <div className="max-w-6xl mx-auto">
-        {/* Outer Shell Double-Bezel Architecture */}
-        <div className="p-2 sm:p-3 rounded-[28px] sm:rounded-[36px] bg-gradient-to-b from-white/90 to-[#F4F6FA]/90 border border-white/80 shadow-[0_24px_50px_-12px_rgba(12,17,32,0.14)] backdrop-blur-xl animate-fade-up delay-200">
-          {/* Inner Core Container */}
-          <div className="w-full bg-white rounded-[22px] sm:rounded-[28px] p-4 sm:p-6 md:p-7 border border-[#E8ECF3] flex flex-col gap-5 sm:gap-6">
-            
-            {/* Category Selector Filter Pills & Status */}
-            <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#F4F6FA]">
-              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-                <span className="text-xs font-mono uppercase tracking-wider text-[#9AA3B2] font-semibold mr-1 shrink-0">
-                  Categoría:
-                </span>
-                {CATEGORIES.map((cat) => {
-                  const isActive = selectedCat === cat.id;
-                  return (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => setSelectedCat(cat.id)}
-                      className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 transition-all cursor-pointer active:scale-95 ${
-                        isActive
-                          ? 'bg-[#0C1120] text-white shadow-xs'
-                          : 'bg-[#F4F6FA] hover:bg-[#EEF2F6] text-[#3E4756] font-semibold'
-                      }`}
-                    >
-                      <span>{cat.label}</span>
-                      <span
-                        className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                          isActive ? 'bg-white/20 text-white' : 'text-[#9AA3B2]'
-                        }`}
-                      >
-                        {cat.count}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
+      {/* Canonical Flat Pure White Card: rounded-[42px], p-5 sm:p-6, no borders, no shadows */}
+      <div className="w-full bg-white rounded-[42px] p-5 sm:p-6 flex flex-col gap-5">
+        
+        <form
+          action="/catalogo"
+          method="GET"
+          onSubmit={handleSearchSubmit}
+          className="w-full flex flex-col gap-4 sm:gap-5"
+        >
+          {/* Hidden Category Filter */}
+          {selectedCat !== 'todos' && (
+            <input type="hidden" name="cat" value={selectedCat} />
+          )}
 
-              <div className="flex items-center gap-2 text-xs font-medium text-[#4B5563]">
-                <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                </svg>
-                <span>Reserva en 3 pasos con confirmación inmediata</span>
+          {/* Row 1: The 3 Primary Input Fields (Border-free, Shadow-free, Subtle Matte Fill) */}
+          <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-4">
+            
+            {/* Field 1: Punto de Entrega */}
+            <div className="flex flex-col">
+              <label htmlFor="sede-select" className="block text-sm font-bold text-[#111827] mb-2">
+                Punto de entrega
+              </label>
+              <div className="h-12 px-4 rounded-full bg-[#F9FAFB] hover:bg-[#F3F4F6] focus-within:bg-[#EEF2F6] transition-all flex items-center gap-2.5">
+                <MapPin className="w-4 h-4 text-[#4B5563] shrink-0" strokeWidth={1.8} />
+                <select
+                  id="sede-select"
+                  name="sede"
+                  value={sede}
+                  onChange={(e) => setSede(e.target.value)}
+                  className="w-full bg-transparent text-sm font-semibold text-[#1F2937] font-[Manrope,system-ui,sans-serif] focus:outline-none cursor-pointer truncate"
+                >
+                  <option value="centro">Patio Central · Aeropuerto</option>
+                  <option value="norte">Patio Norte · Zona Financiera</option>
+                  <option value="sur">Patio Sur · Terminal Terrestre</option>
+                </select>
               </div>
             </div>
 
-            {/* Integrated Horizontal Search Command Bar */}
-            <form action="/catalogo" method="GET" onSubmit={handleSearchSubmit} className="w-full grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4 items-stretch">
-              {/* Hidden Category Filter if specific */}
-              {selectedCat !== 'todos' && (
-                <input type="hidden" name="cat" value={selectedCat} />
-              )}
-
-              {/* Field 1: Patio de Recogida (4 cols on Desktop) */}
-              <div className="md:col-span-4 flex items-center gap-3.5 p-3.5 sm:p-4 rounded-2xl bg-[#F8FAFC] border border-[#E8ECF3] hover:border-[#2E4E8F]/40 transition-colors">
-                <div className="w-10 h-10 rounded-xl bg-[#2E4E8F]/10 flex items-center justify-center shrink-0 text-[#2E4E8F]">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </div>
-                <div className="flex flex-col min-w-0 flex-1">
-                  <label htmlFor="sede-select" className="text-[10px] font-mono uppercase tracking-wider text-[#9AA3B2] font-bold">
-                    Punto de Entrega
-                  </label>
-                  <select
-                    id="sede-select"
-                    name="sede"
-                    value={sede}
-                    onChange={(e) => setSede(e.target.value)}
-                    className="w-full bg-transparent text-base font-bold text-[#0C1120] font-[Manrope,system-ui,sans-serif] focus:outline-none cursor-pointer truncate"
-                  >
-                    <option value="centro">Patio Central · Aeropuerto</option>
-                    <option value="norte">Patio Norte · Zona Financiera</option>
-                    <option value="sur">Patio Sur · Terminal Terrestre</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Field 2: Recogida (3 cols on Desktop) */}
-              <div className="md:col-span-3 flex items-center gap-3 p-3.5 sm:p-4 rounded-2xl bg-[#F8FAFC] border border-[#E8ECF3] hover:border-[#2E4E8F]/40 transition-colors">
-                <div className="w-10 h-10 rounded-xl bg-[#2E4E8F]/10 flex items-center justify-center shrink-0 text-[#2E4E8F]">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <div className="flex flex-col min-w-0 flex-1">
-                  <label htmlFor="fecha-recogida" className="text-[10px] font-mono uppercase tracking-wider text-[#9AA3B2] font-bold">
-                    Fecha Recogida
-                  </label>
+            {/* Field 2: Fecha y Hora de Recogida */}
+            <div className="flex flex-col">
+              <label htmlFor="fecha-recogida" className="block text-sm font-bold text-[#111827] mb-2">
+                Recogida
+              </label>
+              <div className="h-12 px-4 rounded-full bg-[#F9FAFB] hover:bg-[#F3F4F6] focus-within:bg-[#EEF2F6] transition-all flex items-center justify-between gap-2.5">
+                {/* Date Button with Hidden Native Picker */}
+                <div className="relative flex items-center gap-2 min-w-0 flex-1 cursor-pointer">
+                  <Calendar className="w-4 h-4 text-[#4B5563] shrink-0" strokeWidth={1.8} />
+                  <span className="text-sm font-semibold text-[#1F2937] truncate font-[Manrope,system-ui,sans-serif]">
+                    {formatearFechaHumana(fechaInicio)}
+                  </span>
                   <input
                     id="fecha-recogida"
                     type="date"
                     name="desde"
                     value={fechaInicio}
                     onChange={(e) => setFechaInicio(e.target.value)}
-                    className="w-full bg-transparent text-base font-bold text-[#0C1120] font-[Manrope,system-ui,sans-serif] focus:outline-none cursor-pointer"
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                    aria-label="Seleccionar fecha de recogida"
                   />
                 </div>
-              </div>
 
-              {/* Field 3: Devolución (2 cols on Desktop) */}
-              <div className="md:col-span-2 flex items-center gap-3 p-3.5 sm:p-4 rounded-2xl bg-[#F8FAFC] border border-[#E8ECF3] hover:border-[#2E4E8F]/40 transition-colors">
-                <div className="flex flex-col min-w-0 flex-1 pl-1">
-                  <label htmlFor="fecha-devolucion" className="text-[10px] font-mono uppercase tracking-wider text-[#9AA3B2] font-bold">
-                    Devolución
-                  </label>
+                {/* Vertical Divider Line with partial height */}
+                <div className="h-4.5 w-px bg-[#D1D5DB] shrink-0" aria-hidden="true" />
+
+                {/* Time Selector */}
+                <div className="flex items-center gap-1 shrink-0">
+                  <Clock className="w-3.5 h-3.5 text-[#6B7280] shrink-0" strokeWidth={1.8} />
+                  <select
+                    name="hora_desde"
+                    value={horaInicio}
+                    onChange={(e) => setHoraInicio(e.target.value)}
+                    className="bg-transparent text-xs sm:text-[13px] font-semibold text-[#1F2937] focus:outline-none cursor-pointer"
+                    aria-label="Seleccionar hora de recogida"
+                  >
+                    {HORAS_DISPONIBLES.map((h) => (
+                      <option key={h} value={h}>{h}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Field 3: Fecha y Hora de Devolución */}
+            <div className="flex flex-col">
+              <label htmlFor="fecha-devolucion" className="block text-sm font-bold text-[#111827] mb-2">
+                Devolución
+              </label>
+              <div className="h-12 px-4 rounded-full bg-[#F9FAFB] hover:bg-[#F3F4F6] focus-within:bg-[#EEF2F6] transition-all flex items-center justify-between gap-2.5">
+                {/* Date Button with Hidden Native Picker */}
+                <div className="relative flex items-center gap-2 min-w-0 flex-1 cursor-pointer">
+                  <Calendar className="w-4 h-4 text-[#4B5563] shrink-0" strokeWidth={1.8} />
+                  <span className="text-sm font-semibold text-[#1F2937] truncate font-[Manrope,system-ui,sans-serif]">
+                    {formatearFechaHumana(fechaFin)}
+                  </span>
                   <input
                     id="fecha-devolucion"
                     type="date"
                     name="hasta"
                     value={fechaFin}
                     onChange={(e) => setFechaFin(e.target.value)}
-                    className="w-full bg-transparent text-base font-bold text-[#0C1120] font-[Manrope,system-ui,sans-serif] focus:outline-none cursor-pointer"
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                    aria-label="Seleccionar fecha de devolución"
                   />
                 </div>
-              </div>
 
-              {/* Action Button: Search (3 cols on Desktop) */}
-              <div className="md:col-span-3 flex items-center">
-                <button
-                  type="submit"
-                  className="shiny-cta w-full h-full min-h-[52px] sm:min-h-[58px] text-sm sm:text-base cursor-pointer group"
-                >
-                  <span>
-                    <svg className="w-4 h-4 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                    Buscar Unidades
-                  </span>
-                </button>
+                {/* Vertical Divider Line with partial height */}
+                <div className="h-4.5 w-px bg-[#D1D5DB] shrink-0" aria-hidden="true" />
+
+                {/* Time Selector */}
+                <div className="flex items-center gap-1 shrink-0">
+                  <Clock className="w-3.5 h-3.5 text-[#6B7280] shrink-0" strokeWidth={1.8} />
+                  <select
+                    name="hora_hasta"
+                    value={horaFin}
+                    onChange={(e) => setHoraFin(e.target.value)}
+                    className="bg-transparent text-xs sm:text-[13px] font-semibold text-[#1F2937] focus:outline-none cursor-pointer"
+                    aria-label="Seleccionar hora de devolución"
+                  >
+                    {HORAS_DISPONIBLES.map((h) => (
+                      <option key={h} value={h}>{h}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
-            </form>
+            </div>
 
           </div>
-        </div>
+
+          {/* Row 2: Bottom Action Bar (Chips on Left, CTA on Right) */}
+          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 pt-1">
+            {/* Category Filter Pills on Left (Borders Intact) */}
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+              {CATEGORIES.map((cat) => {
+                const isActive = selectedCat === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setSelectedCat(cat.id)}
+                    className={`h-10 px-4 flex items-center gap-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer active:scale-[0.98] ${
+                      isActive
+                        ? 'bg-[#111827] text-white border border-[#111827]'
+                        : 'bg-[#F5F5F5] text-[#111827] border border-[#E5E5E5] hover:border-[#A3A3A3] hover:bg-[#EBEBEB]'
+                    }`}
+                  >
+                    <span>{cat.label}</span>
+                    <span
+                      className={`text-[11px] px-1.5 py-0.5 rounded-full ${
+                        isActive ? 'bg-white/20 text-white' : 'bg-[#111827]/5 text-[#6B7280]'
+                      }`}
+                    >
+                      {cat.count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Search CTA on Right (Shadow Free) */}
+            <button
+              type="submit"
+              className="h-11 sm:h-12 px-6 rounded-full bg-[#111827] hover:bg-[#1F2937] active:scale-[0.99] text-white text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0 group self-stretch sm:self-auto"
+            >
+              <Search className="w-4 h-4 text-white group-hover:scale-110 transition-transform" strokeWidth={2} />
+              <span>Buscar Unidades</span>
+            </button>
+          </div>
+
+        </form>
+
       </div>
-    </section>
+    </div>
   );
 }

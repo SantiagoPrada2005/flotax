@@ -15,29 +15,33 @@ if (!usuario) {
 let verificacionPrevia = null;
 
 if (env.DB) {
-  const db = getDb(env.DB);
-  const registros = await db
-    .select()
-    .from(verificacionesIdentidad)
-    .where(eq(verificacionesIdentidad.usuarioId, usuario.id))
-    .orderBy(desc(verificacionesIdentidad.creadoEn))
-    .limit(1);
+  try {
+    const db = getDb(env.DB);
+    const registros = await db
+      .select()
+      .from(verificacionesIdentidad)
+      .where(eq(verificacionesIdentidad.usuarioId, usuario.id))
+      .orderBy(desc(verificacionesIdentidad.creadoEn))
+      .limit(1);
 
-  if (registros.length > 0 && registros[0]) {
-    const reg = registros[0];
-    verificacionPrevia = {
-      id: reg.id,
-      tipoDocumento: reg.tipoDocumento,
-      numeroDocumento: reg.numeroDocumento,
-      documentoFrenteKey: reg.documentoFrenteKey,
-      documentoDorsoKey: reg.documentoDorsoKey,
-      licenciaNumero: reg.licenciaNumero,
-      licenciaCategoria: reg.licenciaCategoria,
-      licenciaVencimiento: reg.licenciaVencimiento,
-      licenciaFrenteKey: reg.licenciaFrenteKey,
-      licenciaDorsoKey: reg.licenciaDorsoKey,
-      estado: reg.estado,
-    };
+    if (registros.length > 0 && registros[0]) {
+      const reg = registros[0];
+      verificacionPrevia = {
+        id: reg.id,
+        tipoDocumento: reg.tipoDocumento,
+        numeroDocumento: reg.numeroDocumento,
+        documentoFrenteKey: reg.documentoFrenteKey,
+        documentoDorsoKey: reg.documentoDorsoKey,
+        licenciaNumero: reg.licenciaNumero,
+        licenciaCategoria: reg.licenciaCategoria,
+        licenciaVencimiento: reg.licenciaVencimiento,
+        licenciaFrenteKey: reg.licenciaFrenteKey,
+        licenciaDorsoKey: reg.licenciaDorsoKey,
+        estado: reg.estado,
+      };
+    }
+  } catch (error) {
+    console.error('Error al obtener verificación previa:', error);
   }
 }
 ---

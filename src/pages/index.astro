@@ -2,13 +2,10 @@
 import LayoutApp from '../layouts/LayoutApp.astro';
 import LandingHeader from '../components/landing/LandingHeader.astro';
 import LandingHero from '../components/landing/LandingHero.astro';
-import LandingBookingCard from '../components/landing/LandingBookingCard.astro';
 import LandingFleetShowcase from '../components/landing/LandingFleetShowcase.astro';
 import LandingSteps from '../components/landing/LandingSteps.astro';
-import LandingTrust from '../components/landing/LandingTrust.astro';
 import LandingRequirements from '../components/landing/LandingRequirements.astro';
 import LandingPriceBreakdown from '../components/landing/LandingPriceBreakdown.astro';
-import LandingFaq from '../components/landing/LandingFaq.astro';
 import LandingFinalCta from '../components/landing/LandingFinalCta.astro';
 import LandingFooter from '../components/landing/LandingFooter.astro';
 
@@ -24,23 +21,21 @@ const usuario = Astro.locals.usuario;
   ogType="website"
   hideNav={true}
 >
-  <div class="min-h-screen bg-white flex flex-col w-full antialiased selection:bg-[#2E4E8F] selection:text-white relative">
+  <div class="relative z-10 bg-[#F5F5F5] flex flex-col w-full antialiased selection:bg-[#2E4E8F] selection:text-white">
     <LandingHeader user={user} usuario={usuario} />
 
-    <main class="flex-1 flex flex-col w-full">
+    <main class="flex-1 flex flex-col w-full -mt-14 sm:-mt-16 md:-mt-18">
       <LandingHero />
-      <LandingBookingCard />
       <LandingFleetShowcase />
       <LandingSteps />
-      <LandingTrust />
       <LandingRequirements />
       <LandingPriceBreakdown />
-      <LandingFaq />
       <LandingFinalCta />
     </main>
-
-    <LandingFooter user={user} />
   </div>
+
+  <!-- Footer con revelación parallax estilo Erthos (sticky bottom-0 z-0, blanco puro sin sombras ni separaciones) -->
+  <LandingFooter user={user} />
 
   <!-- Scroll Reveal Observer for Entrance Animations with ClientRouter Support -->
   <script>

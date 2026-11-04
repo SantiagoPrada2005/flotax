@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { navigate } from 'astro:transitions/client';
-import { isStandalonePwa, openInstallPromptModal } from '@/lib/pwa';
+import { isStandalonePwa } from '@/lib/pwa';
 import FlotaxIsotype from '@/components/ui/FlotaxIsotype';
 import NotificacionesBell from '@/components/notificaciones/NotificacionesBell';
+import UserDropdownMenu from './UserDropdownMenu';
 
 export interface TopBarIslandProps {
   title?: string | undefined;
@@ -13,6 +13,7 @@ export interface TopBarIslandProps {
   autenticado?: boolean | undefined;
   usuarioImagen?: string | null | undefined;
   usuarioNombre?: string | null | undefined;
+  usuarioCorreo?: string | null | undefined;
   usuarioLocalNombre?: string | null | undefined;
   tieneAccesoAdmin?: boolean | undefined;
   clavePublicaVapid?: string | undefined;
@@ -28,23 +29,15 @@ export default function TopBarIsland({
   autenticado = false,
   usuarioImagen,
   usuarioNombre,
+  usuarioCorreo,
   usuarioLocalNombre,
-  tieneAccesoAdmin = false,
   clavePublicaVapid,
   localCaptacionNombre,
 }: TopBarIslandProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isStandalone, setIsStandalone] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [avatarError, setAvatarError] = useState(false);
   const menuContainerRef = useRef<HTMLDivElement | null>(null);
-
-  const iniciales = (usuarioNombre || 'FX')
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase())
-    .join('');
 
   const isAdminVariant = navVariant === 'admin';
   const brandLabel = localCaptacionNombre || 'FlotaX';
@@ -73,7 +66,7 @@ export default function TopBarIsland({
     };
   }, []);
 
-  // Cierre accesible del menú progresivo (clic externo o tecla Escape)
+  // Cierre accesible del menú desplegable (clic externo o tecla Escape)
   useEffect(() => {
     if (!isMenuOpen) return;
 
@@ -113,12 +106,6 @@ export default function TopBarIsland({
     }
   };
 
-  const irARuta = (ruta: string) => {
-    triggerHaptic();
-    setIsMenuOpen(false);
-    void navigate(ruta);
-  };
-
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-30 flex h-14 items-center justify-between px-3.5 sm:px-6 transition-all duration-200 ${
@@ -155,7 +142,7 @@ export default function TopBarIsland({
           </a>
         ) : (
           <>
-            {/* Marca compacta estilo referencia (siempre en cliente; solo móvil en admin donde ya existe Sidebar desktop) */}
+            {/* Marca compacta estilo referencia */}
             <a
               href={brandHref}
               data-astro-prefetch="tap"
@@ -172,7 +159,7 @@ export default function TopBarIsland({
               </span>
             </a>
 
-            {/* En escritorio Admin, la Sidebar ya exhibe el isotipo; mostramos el título conciso de la vista */}
+            {/* En escritorio Admin, mostramos el título conciso de la vista */}
             {isAdminVariant && cleanSectionTitle && (
               <span className="hidden md:inline-block font-display text-sm font-bold tracking-tight text-[#111827] truncate">
                 {cleanSectionTitle}
@@ -182,7 +169,7 @@ export default function TopBarIsland({
         )}
       </div>
 
-      {/* Lado Derecho: Iconos Pequeños Minimalistas + Progressive Disclosure (Campana + Menú) */}
+      {/* Lado Derecho: Campana de Notificaciones + Botón de Menú de Tres Rayitas */}
       <div ref={menuContainerRef} className="relative flex items-center gap-0.5">
         <NotificacionesBell
           autenticado={autenticado}
@@ -190,10 +177,10 @@ export default function TopBarIsland({
           onHaptic={triggerHaptic}
         />
 
-        {/* Disparador de Progressive Disclosure: agrupa Perfil, Accesos y PWA Install fuera de la barra */}
+        {/* Botón de Menú de tres rayitas horizontales (Hamburguesa) */}
         <button
           type="button"
-          aria-label={isMenuOpen ? 'Cerrar menú de opciones' : 'Abrir menú de opciones'}
+          aria-label={isMenuOpen ? 'Cerrar menú de usuario' : 'Abrir menú de usuario'}
           aria-expanded={isMenuOpen}
           aria-haspopup="menu"
           onPointerDown={triggerHaptic}
@@ -245,178 +232,17 @@ export default function TopBarIsland({
           )}
         </button>
 
-        {/* Nivel 2 (Progressive Disclosure): Popover de Cuenta, Cambio de Vista e Instalación */}
-        {isMenuOpen && (
-          <div
-            role="menu"
-            aria-label="Opciones rápidas de usuario y aplicación"
-            className="absolute right-0 top-[calc(100%+6px)] z-50 w-64 rounded-[22px] border border-[#9CA3AF]/35 bg-white/96 p-2 shadow-[0_20px_44px_-10px_rgba(17,24,39,0.22)] backdrop-blur-2xl"
-          >
-            {/* Bloque 1: Identidad / Perfil */}
-            {autenticado ? (
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => irARuta('/perfil')}
-                className="ios-press-bounce flex min-h-[48px] w-full cursor-pointer items-center justify-between gap-2.5 rounded-[15px] px-3 py-2 text-left transition-colors hover:bg-[#EDEDED]/80"
-              >
-                <div className="flex min-w-0 items-center gap-2.5">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#111827] text-[11px] font-bold text-[#EDEDED]">
-                    {usuarioImagen && !avatarError ? (
-                      <img
-                        src={usuarioImagen}
-                        alt={usuarioNombre || 'Perfil'}
-                        referrerPolicy="no-referrer"
-                        onError={() => setAvatarError(true)}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <span>{iniciales}</span>
-                    )}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="truncate text-xs font-bold text-[#111827]">
-                      {usuarioNombre || 'Mi perfil'}
-                    </p>
-                    <p className="truncate text-[11px] font-medium text-[#4B5563]">
-                      {usuarioLocalNombre || 'Cuenta y documentos'}
-                    </p>
-                  </div>
-                </div>
-
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-4 w-4 shrink-0 text-[#9CA3AF]"
-                  aria-hidden="true"
-                >
-                  <path d="m9 18 6-6-6-6" />
-                </svg>
-              </button>
-            ) : (
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => irARuta('/login')}
-                className="ios-press-bounce flex min-h-[46px] w-full cursor-pointer items-center justify-between rounded-[15px] px-3 py-2 text-left text-xs font-bold text-[#111827] transition-colors hover:bg-[#EDEDED]/80"
-              >
-                <span>Iniciar sesión</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-4 w-4 text-[#4B5563]"
-                  aria-hidden="true"
-                >
-                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-                  <polyline points="10 17 15 12 10 7" />
-                  <line x1="15" x2="3" y1="12" y2="12" />
-                </svg>
-              </button>
-            )}
-
-            {/* Bloque 2: Accesos Contextuales */}
-            {(tieneAccesoAdmin || autenticado) && (
-              <div className="mt-1 border-t border-[#EDEDED] pt-1 space-y-0.5">
-                {tieneAccesoAdmin && (
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => irARuta(isAdminVariant ? '/catalogo' : '/admin')}
-                    className="ios-press-bounce flex min-h-[44px] w-full cursor-pointer items-center justify-between rounded-[14px] px-3 py-2 text-left text-xs font-semibold text-[#1F2937] transition-colors hover:bg-[#EDEDED]/75 hover:text-[#111827]"
-                  >
-                    <span>
-                      {isAdminVariant ? 'Ver catálogo público' : 'Panel operativo'}
-                    </span>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="h-4 w-4 text-[#4B5563]"
-                      aria-hidden="true"
-                    >
-                      <path d="M7 17 17 7" />
-                      <path d="M7 7h10v10" />
-                    </svg>
-                  </button>
-                )}
-
-                {autenticado && !isAdminVariant && (
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => irARuta('/reservas')}
-                    className="ios-press-bounce flex min-h-[44px] w-full cursor-pointer items-center justify-between rounded-[14px] px-3 py-2 text-left text-xs font-semibold text-[#1F2937] transition-colors hover:bg-[#EDEDED]/75 hover:text-[#111827]"
-                  >
-                    <span>Mis reservas</span>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="h-4 w-4 text-[#4B5563]"
-                      aria-hidden="true"
-                    >
-                      <rect width="18" height="18" x="3" y="4" rx="2" />
-                      <line x1="16" x2="16" y1="2" y2="6" />
-                      <line x1="8" x2="8" y1="2" y2="6" />
-                      <line x1="3" x2="21" y1="10" y2="10" />
-                    </svg>
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Bloque 3: Instalación PWA bajo demanda (solo fuera de modo standalone) */}
-            {!isStandalone && (
-              <div className="mt-1.5 border-t border-[#EDEDED] pt-1.5">
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    triggerHaptic();
-                    setIsMenuOpen(false);
-                    openInstallPromptModal();
-                  }}
-                  className="ios-press-bounce flex min-h-[44px] w-full cursor-pointer items-center justify-between rounded-[14px] bg-[#111827] px-3.5 py-2 text-xs font-bold text-[#EDEDED] transition-colors hover:bg-[#1F2937]"
-                >
-                  <span>Instalar aplicación</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-4 w-4 shrink-0"
-                    aria-hidden="true"
-                  >
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="7 10 12 15 17 10" />
-                    <line x1="12" x2="12" y1="15" y2="3" />
-                  </svg>
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+        {/* Menú Desplegable Flotante de Usuario */}
+        <UserDropdownMenu
+          isOpen={isMenuOpen}
+          onClose={() => setIsMenuOpen(false)}
+          autenticado={autenticado}
+          usuarioNombre={usuarioNombre}
+          usuarioCorreo={usuarioCorreo}
+          usuarioImagen={usuarioImagen}
+          usuarioLocalNombre={usuarioLocalNombre}
+          onTriggerHaptic={triggerHaptic}
+        />
       </div>
     </header>
   );

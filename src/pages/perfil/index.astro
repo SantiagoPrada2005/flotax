@@ -17,18 +17,27 @@ let membresias: MembresiaLocalResumen[] = [];
 let estadoVerificacion = 'PENDIENTE';
 
 if (env.DB) {
-  const db = getDb(env.DB);
-  membresias = await obtenerLocalesMembresia(db, usuario.id);
+  try {
+    const db = getDb(env.DB);
+    membresias = await obtenerLocalesMembresia(db, usuario.id);
+  } catch (error) {
+    console.error('Error al obtener membresías para perfil:', error);
+  }
 
-  const verif = await db
-    .select({ estado: verificacionesIdentidad.estado })
-    .from(verificacionesIdentidad)
-    .where(eq(verificacionesIdentidad.usuarioId, usuario.id))
-    .orderBy(desc(verificacionesIdentidad.creadoEn))
-    .limit(1);
+  try {
+    const db = getDb(env.DB);
+    const verif = await db
+      .select({ estado: verificacionesIdentidad.estado })
+      .from(verificacionesIdentidad)
+      .where(eq(verificacionesIdentidad.usuarioId, usuario.id))
+      .orderBy(desc(verificacionesIdentidad.creadoEn))
+      .limit(1);
 
-  if (verif.length > 0 && verif[0]) {
-    estadoVerificacion = verif[0].estado;
+    if (verif.length > 0 && verif[0]) {
+      estadoVerificacion = verif[0].estado;
+    }
+  } catch (error) {
+    console.error('Error al obtener estado de verificación para perfil:', error);
   }
 }
 

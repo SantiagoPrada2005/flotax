@@ -89,20 +89,20 @@ const featuredVehicles: Vehicle[] = [
     >
       {featuredVehicles.map((v) => (
         <article
-          class="min-w-[290px] sm:min-w-[320px] md:min-w-0 bg-white rounded-[26px] overflow-hidden border border-[#E8ECF3] shadow-[0_10px_30px_-8px_rgba(12,17,32,0.06)] hover:shadow-[0_20px_40px_-10px_rgba(12,17,32,0.12)] hover:border-[#2E4E8F]/30 transition-all duration-300 flex flex-col justify-between group"
+          class="min-w-[290px] sm:min-w-[320px] md:min-w-0 bg-white rounded-[26px] overflow-hidden transition-all duration-300 flex flex-col justify-between group"
         >
           <!-- Image Container with Lighting & Badges -->
-          <div class="relative w-full aspect-[16/10] bg-gradient-to-b from-[#F8FAFC] to-[#EEF2F6] overflow-hidden flex items-center justify-center p-4">
+          <div class="relative w-full aspect-[16/10] bg-white overflow-hidden flex items-center justify-center">
             <img
               src={v.image}
               alt={v.name}
-              class="w-full h-full object-cover rounded-2xl group-hover:scale-105 transition-transform duration-500"
+              class="w-full h-full object-cover rounded-2xl"
               loading="lazy"
               decoding="async"
             />
 
             <!-- Top Left Status Badge -->
-            <div class="absolute top-3 left-3 flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 backdrop-blur-md border border-white/80 shadow-xs">
+            <div class="absolute top-3 left-3 flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 backdrop-blur-md border border-white/80">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
               <span class="text-[11px] font-bold text-[#0C1120] font-[Manrope,system-ui,sans-serif]">Disponible</span>
             </div>
@@ -137,15 +137,15 @@ const featuredVehicles: Vehicle[] = [
 
             <!-- Specifications Chips -->
             <div class="grid grid-cols-3 gap-2 py-3 border-y border-[#F4F6FA] text-center text-xs text-[#4B5563]">
-              <div class="flex items-center justify-center gap-1.5 bg-[#F8FAFC] py-1.5 px-2 rounded-xl">
+              <div class="flex items-center justify-center gap-1.5 bg-[#F5F5F5] py-1.5 px-2 rounded-xl">
                 <span>👤</span>
                 <span class="font-semibold truncate">{v.users}</span>
               </div>
-              <div class="flex items-center justify-center gap-1.5 bg-[#F8FAFC] py-1.5 px-2 rounded-xl">
+              <div class="flex items-center justify-center gap-1.5 bg-[#F5F5F5] py-1.5 px-2 rounded-xl">
                 <span>⚙️</span>
                 <span class="font-semibold truncate">{v.trans}</span>
               </div>
-              <div class="flex items-center justify-center gap-1.5 bg-[#F8FAFC] py-1.5 px-2 rounded-xl">
+              <div class="flex items-center justify-center gap-1.5 bg-[#F5F5F5] py-1.5 px-2 rounded-xl">
                 <span>⛽</span>
                 <span class="font-semibold truncate">{v.fuel}</span>
               </div>

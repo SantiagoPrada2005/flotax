@@ -14,15 +14,15 @@
 | [`LandingFeatured.astro`](./LandingFeatured.astro) | Astro UI Component | Astro Template | - |
 | [`LandingFinalCta.astro`](./LandingFinalCta.astro) | Llamado a la acción final | `default` | Astro |
 | [`LandingFleetShowcase.astro`](./LandingFleetShowcase.astro) | Sección unificada de flota y categorías | `default` | `./LandingFleetShowcaseIsland`, `@/lib/flota` |
-| [`LandingFleetShowcaseIsland.tsx`](./LandingFleetShowcaseIsland.tsx) | Isla interactiva con TextRoll, cards azules y preview de flota | `default` | React, `@/components/ui/text-roll` |
+| [`LandingFleetShowcaseIsland.tsx`](./LandingFleetShowcaseIsland.tsx) | Isla interactiva de filtrado reactivo de flota | `default` | React, `@/lib/flota` |
 | [`LandingFooter.astro`](./LandingFooter.astro) | Pie de página corporativo | `default` | Astro |
 | [`LandingHeader.astro`](./LandingHeader.astro) | Encabezado principal y navegación | `default` | Astro |
-| [`LandingHero.astro`](./LandingHero.astro) | Wrapper del Hero Canvas | `default` | `./LandingHeroIsland` |
-| [`LandingHeroIsland.tsx`](./LandingHeroIsland.tsx) | Isla interactiva Hero con Canvas 3D | `default` | React |
+| [`LandingHero.astro`](./LandingHero.astro) | Hero editorial SSR con cotizador integrado | `default` | `./LandingBookingIsland` |
+| [`LandingHeroIsland.tsx`](./LandingHeroIsland.tsx) | (Obsoleto) Isla interactiva Hero con Canvas 3D | `default` | React |
 | [`LandingPriceBreakdown.astro`](./LandingPriceBreakdown.astro) | Desglose y política de precios | `default` | Astro |
 | [`LandingRequirements.astro`](./LandingRequirements.astro) | Requisitos para alquilar | `default` | Astro |
-| [`LandingSteps.astro`](./LandingSteps.astro) | Proceso de 3 pasos de alquiler | `default` | Astro |
-| [`LandingTrust.astro`](./LandingTrust.astro) | Pilares de confianza y seguridad | `default` | Astro |
+| [`LandingSteps.astro`](./LandingSteps.astro) | Bento Grid operativo unificado (Proceso y Confianza) | `default` | Astro |
+| [`LandingTrust.astro`](./LandingTrust.astro) | (Consolidado en LandingSteps) Pilares de confianza | `default` | Astro |
 
 ## Invariants & Directory Rules
 
