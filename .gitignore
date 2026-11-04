@@ -23,3 +23,4 @@ yarn-error.log*
 powershell.bat
 powershell.cmd
 .dev.vars
+graphify-out/

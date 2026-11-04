@@ -27,7 +27,7 @@ const trustCards = [
 <section
   id="confianza"
   data-pencil-name="TrustSection"
-  class="w-full py-12 sm:py-16 md:py-20 relative z-10 reveal-on-scroll bg-[#F8FAFC]/60 border-y border-[#E8ECF3]"
+  class="w-full py-12 sm:py-16 md:py-20 relative z-10 reveal-on-scroll bg-[#F5F5F5]"
 >
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-8 md:gap-12">
     
@@ -48,7 +48,7 @@ const trustCards = [
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
       {trustCards.map((card) => (
         <div
-          class="p-6 rounded-[24px] bg-white border border-[#E8ECF3] shadow-xs hover:shadow-md hover:border-[#2E4E8F]/40 transition-all duration-300 flex flex-col justify-between group"
+          class="p-6 rounded-[24px] bg-white transition-all duration-300 flex flex-col justify-between group"
         >
           <div class="w-12 h-12 rounded-2xl bg-[#EEF2F6] group-hover:bg-[#0C1120] text-[#2E4E8F] group-hover:text-white flex items-center justify-center mb-6 transition-all duration-300 shadow-2xs">
             {card.icon === "file-text" && (
