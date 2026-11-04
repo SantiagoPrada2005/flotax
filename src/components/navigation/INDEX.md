@@ -1,6 +1,6 @@
 # Index: `src/components/navigation`
 
-**Responsibility**: Componentes atómicos y estructurales de navegación (Bottom Navigation Bar, Minimalist Top App Bar con Progressive Disclosure, Desktop Sidebar).
+**Responsibility**: Componentes atómicos y estructurales de navegación (Bottom Navigation Bar, Minimalist Top App Bar con Menú Desplegable de Usuario, Desktop Sidebar).
 **Architectural Layer**: Presentation / Navigation Components
 
 ## File Manifest
@@ -18,8 +18,9 @@
 | [`PwaRuntimeIsland.tsx`](./PwaRuntimeIsland.tsx) | Isla React 19: Orquestador PWA Standalone, SPA, Loader & Detector Offline | Componente `<PwaRuntimeIsland />` | `@/lib/pwa`, `astro:transitions/client`, [`IosInstallGuideModal.tsx`](./IosInstallGuideModal.tsx), [`FlotaxLoadingScreen.tsx`](./FlotaxLoadingScreen.tsx) |
 | [`Sidebar.astro`](./Sidebar.astro) | Barra Lateral de Navegación Desktop | Componente `<Sidebar activeTab="..." />` | Design tokens FlotaX (`tokens.css`) |
 | [`TopBar.astro`](./TopBar.astro) | Orquestador SSR Barra Superior Minimalista | Componente `<TopBar title="..." showBack="..." navVariant="..." />` | [`TopBarIsland.tsx`](./TopBarIsland.tsx) |
-| [`TopBarIsland.tsx`](./TopBarIsland.tsx) | Isla React 19: Encabezado Minimalista con Progressive Disclosure | Componente `<TopBarIsland ... />`, `TopBarIslandProps` | `astro:transitions/client`, `@/lib/pwa`, [`NotificacionesBell.tsx`](../notificaciones/NotificacionesBell.tsx) |
+| [`TopBarIsland.tsx`](./TopBarIsland.tsx) | Isla React 19: Encabezado Minimalista con Activador de Menú | Componente `<TopBarIsland ... />`, `TopBarIslandProps` | `astro:transitions/client`, `@/lib/pwa`, [`NotificacionesBell.tsx`](../notificaciones/NotificacionesBell.tsx), [`UserDropdownMenu.tsx`](./UserDropdownMenu.tsx) |
 | [`TopBarSearch.tsx`](./TopBarSearch.tsx) | Isla React 19: Buscador Morphing iOS 27 (Módulo Auxiliar) | Componente `<TopBarSearch ... />`, `TopBarSearchProps` | [`VehicleSearchSpotlight.tsx`](../flota/VehicleSearchSpotlight.tsx) |
+| [`UserDropdownMenu.tsx`](./UserDropdownMenu.tsx) | Isla React 19: Menú Desplegable Flotante de Usuario | Componente `<UserDropdownMenu ... />`, `UserDropdownMenuProps` | `astro:transitions/client`, `@/lib/auth/client` |
 
 ## Invariants & Directory Rules
 
