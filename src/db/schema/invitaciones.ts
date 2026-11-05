@@ -4,6 +4,9 @@ import { localesAlquiler } from './locales';
 
 export const rolesInvitacionValidos = [
   'ADMIN',
+  'ASESOR',
+  'ENCARGADO_FLOTA',
+  'CONTADOR',
   'OPERATIVO',
   'AUDITOR_FINANCIERO',
 ] as const;

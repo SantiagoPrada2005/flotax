@@ -1,23 +1,13 @@
-import {
-  FLOTA_CANONICA,
-  registrarVehiculoEnMemoria,
-  eliminarVehiculoEnMemoria,
-} from './mock-vehiculos';
 import type { VehiculoItem, EstadoVehiculo } from './types';
 import type { AppDb } from '@/lib/db';
 import { logFalloD1 } from '@/lib/db/diagnostics';
 import { vehiculos, type VehiculoSelect } from '@/db/schema/vehiculos';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and } from 'drizzle-orm';
 
-// Registro dinámico en memoria para asegurar reactividad inmediata durante la sesión
-const registroVehiculosMemoria = new Map<string, VehiculoItem>();
-
-// Inicializar con la flota canónica
-for (const v of FLOTA_CANONICA) {
-  registroVehiculosMemoria.set(v.id, { ...v });
-}
-
-function mapD1ToVehiculoItem(row: VehiculoSelect): VehiculoItem {
+/**
+ * Mapea una fila relacional de Cloudflare D1 (Drizzle) a la estructura de dominio `VehiculoItem`.
+ */
+export function mapD1ToVehiculoItem(row: VehiculoSelect): VehiculoItem {
   const isElectrico = row.combustible === 'Eléctrico' || row.combustible === 'Híbrido';
 
   return {
@@ -45,115 +35,87 @@ function mapD1ToVehiculoItem(row: VehiculoSelect): VehiculoItem {
     rating: row.rating ? Number(row.rating) : 4.8,
     autonomiaOdo: row.autonomiaOdo || `${row.kilometraje} km`,
     tipoPropulsionIcon: isElectrico ? 'electric' : 'gas',
+    color: row.color,
+    numeroMotor: row.numeroMotor,
+    numeroChasis: row.numeroChasis,
+    valorComercial: row.valorComercial,
+    unidadMedidaUso: row.unidadMedidaUso,
+    specsBento: row.specsBento,
   };
 }
 
 export interface OpcionesListarVehiculos {
   localId?: string | null | undefined;
-}
-
-function filtrarPorLocalConFallbackCanonico(
-  todos: VehiculoItem[],
-  localId?: string | null
-): VehiculoItem[] {
-  if (!localId) return todos;
-  const propios = todos.filter((v) => v.localId === localId);
-  if (propios.length > 0) {
-    return propios;
-  }
-  // Si el local consultado aún no tiene unidades con su UUID explícito (ej. entorno demo/seed inicial),
-  // retornar las unidades base asignadas al contexto de ese local para evitar catálogos vacíos rotos.
-  return todos.map((v) => ({
-    ...v,
-    localId,
-  }));
+  soloDisponibles?: boolean | undefined;
 }
 
 /**
- * Obtiene el catálogo de vehículos activos, opcionalmente aislado a un local específico.
- * Consulta Cloudflare D1 si está disponible; de lo contrario o si falla la tabla,
- * consume el registro sincronizado en memoria.
+ * Obtiene el catálogo de vehículos activos desde Cloudflare D1,
+ * opcionalmente aislado a un local específico o filtrado por disponibilidad.
  */
 export async function listarVehiculos(
   db?: AppDb,
   opciones?: OpcionesListarVehiculos
 ): Promise<VehiculoItem[]> {
-  if (db) {
-    try {
-      const rows = await db
-        .select()
-        .from(vehiculos)
-        .where(eq(vehiculos.activo, true))
-        .orderBy(desc(vehiculos.creadoEn));
+  if (!db) return [];
 
-      if (rows && rows.length > 0) {
-        // Sincronizar memoria con D1
-        for (const row of rows) {
-          const item = mapD1ToVehiculoItem(row);
-          registroVehiculosMemoria.set(item.id, item);
-        }
-        const lista = Array.from(registroVehiculosMemoria.values());
-        return filtrarPorLocalConFallbackCanonico(lista, opciones?.localId);
-      }
-    } catch (error) {
-      // Si la tabla no está creada aún en D1 local/remoto, fallback transparente a memoria
-      logFalloD1('vehiculos.listar', error, { localId: opciones?.localId ?? null });
+  try {
+    const condiciones = [eq(vehiculos.activo, true)];
+
+    if (opciones?.localId) {
+      condiciones.push(eq(vehiculos.localId, opciones.localId));
     }
-  }
+    if (opciones?.soloDisponibles) {
+      condiciones.push(eq(vehiculos.estado, 'DISPONIBLE'));
+    }
 
-  const listaMemoria = Array.from(registroVehiculosMemoria.values());
-  return filtrarPorLocalConFallbackCanonico(listaMemoria, opciones?.localId);
+    const rows = await db
+      .select()
+      .from(vehiculos)
+      .where(and(...condiciones))
+      .orderBy(desc(vehiculos.creadoEn));
+
+    return rows.map(mapD1ToVehiculoItem);
+  } catch (error) {
+    logFalloD1('vehiculos.listar', error, { localId: opciones?.localId ?? null });
+    return [];
+  }
 }
 
 /**
- * Busca una unidad por su identificador único, validando opcionalmente que pertenezca al local cautivo.
+ * Busca una unidad por su identificador único en D1, validando opcionalmente que pertenezca al local activo.
  */
 export async function obtenerVehiculoAsync(
   id: string,
   db?: AppDb,
   localIdRestringido?: string | null
 ): Promise<VehiculoItem | undefined> {
-  let encontrado: VehiculoItem | undefined;
+  if (!db) return undefined;
 
-  if (db) {
-    try {
-      const rows = await db
-        .select()
-        .from(vehiculos)
-        .where(eq(vehiculos.id, id))
-        .limit(1);
+  try {
+    const rows = await db
+      .select()
+      .from(vehiculos)
+      .where(and(eq(vehiculos.id, id), eq(vehiculos.activo, true)))
+      .limit(1);
 
-      if (rows && rows.length > 0) {
-        const item = mapD1ToVehiculoItem(rows[0]!);
-        registroVehiculosMemoria.set(item.id, item);
-        encontrado = item;
-      }
-    } catch (error) {
-      // Fallback a memoria
-      logFalloD1('vehiculos.obtener', error, { vehiculoId: id });
-    }
-  }
+    if (!rows || rows.length === 0) return undefined;
 
-  if (!encontrado) {
-    encontrado = registroVehiculosMemoria.get(id);
-  }
+    const item = mapD1ToVehiculoItem(rows[0]!);
 
-  if (!encontrado) return undefined;
-
-  // Verificar aislamiento si el local restringido tiene flota propia diferenciada
-  if (localIdRestringido && encontrado.localId && encontrado.localId !== localIdRestringido) {
-    const todos = Array.from(registroVehiculosMemoria.values());
-    const localTieneFlotaPropia = todos.some((v) => v.localId === localIdRestringido);
-    if (localTieneFlotaPropia) {
+    if (localIdRestringido && item.localId && item.localId !== localIdRestringido) {
       return undefined;
     }
-  }
 
-  return encontrado;
+    return item;
+  } catch (error) {
+    logFalloD1('vehiculos.obtener', error, { vehiculoId: id });
+    return undefined;
+  }
 }
 
 /**
- * Guarda o actualiza un vehículo tanto en memoria como en D1 si está disponible.
+ * Guarda o actualiza un vehículo de la flota en Cloudflare D1.
  */
 export async function guardarVehiculo(
   item: VehiculoItem,
@@ -165,144 +127,135 @@ export async function guardarVehiculo(
     localId: localId || item.localId || 'local-patio-norte',
   };
 
-  // 1. Guardar en registro memoria
-  registroVehiculosMemoria.set(itemConLocal.id, { ...itemConLocal });
-  registrarVehiculoEnMemoria({ ...itemConLocal });
-
-  // 2. Si D1 está disponible, persistir en D1
-  if (db) {
-    try {
-      const ahora = new Date();
-      await db
-        .insert(vehiculos)
-        .values({
-          id: item.id,
-          localId: localId || null,
-          marca: item.marca,
-          modelo: item.modelo,
-          anio: item.anio,
-          categoria: item.categoria,
-          categoriaEtiqueta: item.categoriaEtiqueta,
-          placa: item.placa,
-          estado: item.estado,
-          precioDia: item.precioDia,
-          depositoGarantia: item.depositoGarantia,
-          transmision: item.transmision,
-          combustible: item.combustible,
-          capacidadPasajeros: item.capacidadPasajeros,
-          autonomiaKm: item.autonomiaKm ?? null,
-          kilometraje: item.kilometraje,
-          imagenUrl: item.imagenUrl,
-          destacado: item.destacado ? true : false,
-          descripcion: item.descripcion,
-          aceleracion: item.aceleracion,
-          velocidadMaxima: item.velocidadMaxima,
-          rating: item.rating,
-          autonomiaOdo: item.autonomiaOdo,
-          activo: true,
-          creadoEn: ahora,
-          actualizadoEn: ahora,
-        })
-        .onConflictDoUpdate({
-          target: vehiculos.id,
-          set: {
-            marca: item.marca,
-            modelo: item.modelo,
-            anio: item.anio,
-            categoria: item.categoria,
-            categoriaEtiqueta: item.categoriaEtiqueta,
-            placa: item.placa,
-            estado: item.estado,
-            precioDia: item.precioDia,
-            depositoGarantia: item.depositoGarantia,
-            transmision: item.transmision,
-            combustible: item.combustible,
-            capacidadPasajeros: item.capacidadPasajeros,
-            autonomiaKm: item.autonomiaKm ?? null,
-            kilometraje: item.kilometraje,
-            imagenUrl: item.imagenUrl,
-            destacado: item.destacado ? true : false,
-            descripcion: item.descripcion,
-            aceleracion: item.aceleracion,
-            velocidadMaxima: item.velocidadMaxima,
-            rating: item.rating,
-            autonomiaOdo: item.autonomiaOdo,
-            actualizadoEn: ahora,
-          },
-        });
-    } catch (error) {
-      // Si la tabla aún no existe en D1, la operación en memoria ya surtió efecto
-      logFalloD1('vehiculos.guardar', error, { vehiculoId: item.id, localId });
-    }
+  if (!db) {
+    return itemConLocal;
   }
 
-  return item;
+  try {
+    const ahora = new Date();
+    await db
+      .insert(vehiculos)
+      .values({
+        id: itemConLocal.id,
+        localId: itemConLocal.localId,
+        marca: itemConLocal.marca,
+        modelo: itemConLocal.modelo,
+        anio: itemConLocal.anio,
+        categoria: itemConLocal.categoria,
+        categoriaEtiqueta: itemConLocal.categoriaEtiqueta,
+        placa: itemConLocal.placa,
+        estado: itemConLocal.estado,
+        precioDia: itemConLocal.precioDia,
+        depositoGarantia: itemConLocal.depositoGarantia,
+        transmision: itemConLocal.transmision,
+        combustible: itemConLocal.combustible,
+        capacidadPasajeros: itemConLocal.capacidadPasajeros,
+        autonomiaKm: itemConLocal.autonomiaKm ?? null,
+        kilometraje: itemConLocal.kilometraje,
+        imagenUrl: itemConLocal.imagenUrl,
+        destacado: itemConLocal.destacado ? true : false,
+        descripcion: itemConLocal.descripcion,
+        aceleracion: itemConLocal.aceleracion,
+        velocidadMaxima: itemConLocal.velocidadMaxima,
+        rating: itemConLocal.rating,
+        autonomiaOdo: itemConLocal.autonomiaOdo,
+        color: itemConLocal.color ?? null,
+        numeroMotor: itemConLocal.numeroMotor ?? null,
+        numeroChasis: itemConLocal.numeroChasis ?? null,
+        valorComercial: itemConLocal.valorComercial ?? null,
+        unidadMedidaUso: itemConLocal.unidadMedidaUso ?? 'KM',
+        specsBento: itemConLocal.specsBento ?? null,
+        activo: true,
+        creadoEn: ahora,
+        actualizadoEn: ahora,
+      })
+      .onConflictDoUpdate({
+        target: vehiculos.id,
+        set: {
+          marca: itemConLocal.marca,
+          modelo: itemConLocal.modelo,
+          anio: itemConLocal.anio,
+          categoria: itemConLocal.categoria,
+          categoriaEtiqueta: itemConLocal.categoriaEtiqueta,
+          placa: itemConLocal.placa,
+          estado: itemConLocal.estado,
+          precioDia: itemConLocal.precioDia,
+          depositoGarantia: itemConLocal.depositoGarantia,
+          transmision: itemConLocal.transmision,
+          combustible: itemConLocal.combustible,
+          capacidadPasajeros: itemConLocal.capacidadPasajeros,
+          autonomiaKm: itemConLocal.autonomiaKm ?? null,
+          kilometraje: itemConLocal.kilometraje,
+          imagenUrl: itemConLocal.imagenUrl,
+          destacado: itemConLocal.destacado ? true : false,
+          descripcion: itemConLocal.descripcion,
+          aceleracion: itemConLocal.aceleracion,
+          velocidadMaxima: itemConLocal.velocidadMaxima,
+          rating: itemConLocal.rating,
+          autonomiaOdo: itemConLocal.autonomiaOdo,
+          color: itemConLocal.color ?? null,
+          numeroMotor: itemConLocal.numeroMotor ?? null,
+          numeroChasis: itemConLocal.numeroChasis ?? null,
+          valorComercial: itemConLocal.valorComercial ?? null,
+          unidadMedidaUso: itemConLocal.unidadMedidaUso ?? 'KM',
+          specsBento: itemConLocal.specsBento ?? null,
+          actualizadoEn: ahora,
+        },
+      });
+  } catch (error) {
+    logFalloD1('vehiculos.guardar', error, { vehiculoId: item.id, localId });
+    throw error;
+  }
+
+  return itemConLocal;
 }
 
 /**
- * Cambia el estado operativo de una unidad (DISPONIBLE, RESERVADO, MANTENIMIENTO, FUERA_SERVICIO).
+ * Cambia el estado operativo de una unidad (DISPONIBLE, RESERVADO, MANTENIMIENTO, FUERA_SERVICIO) en D1.
  */
 export async function actualizarEstadoVehiculo(
   id: string,
   nuevoEstado: EstadoVehiculo,
   db?: AppDb
-): Promise<VehiculoItem | undefined> {
-  const actual = registroVehiculosMemoria.get(id);
-  if (!actual) return undefined;
+): Promise<boolean> {
+  if (!db) return false;
 
-  const actualizado: VehiculoItem = {
-    ...actual,
-    estado: nuevoEstado,
-  };
-  registroVehiculosMemoria.set(id, actualizado);
-  registrarVehiculoEnMemoria(actualizado);
-
-  if (db) {
-    try {
-      await db
-        .update(vehiculos)
-        .set({
-          estado: nuevoEstado,
-          actualizadoEn: new Date(),
-        })
-        .where(eq(vehiculos.id, id));
-    } catch (error) {
-      // Fallback: el estado ya quedó aplicado en memoria
-      logFalloD1('vehiculos.cambiarEstado', error, { vehiculoId: id, estado: nuevoEstado });
-    }
+  try {
+    await db
+      .update(vehiculos)
+      .set({
+        estado: nuevoEstado,
+        actualizadoEn: new Date(),
+      })
+      .where(eq(vehiculos.id, id));
+    return true;
+  } catch (error) {
+    logFalloD1('vehiculos.cambiarEstado', error, { vehiculoId: id, estado: nuevoEstado });
+    return false;
   }
-
-  return actualizado;
 }
 
 /**
- * Da de baja o elimina una unidad.
+ * Da de baja o elimina lógicamente una unidad en D1.
  */
 export async function darDeBajaVehiculo(
   id: string,
   db?: AppDb
 ): Promise<boolean> {
-  const existe = registroVehiculosMemoria.has(id);
-  if (!existe) return false;
+  if (!db) return false;
 
-  registroVehiculosMemoria.delete(id);
-  eliminarVehiculoEnMemoria(id);
-
-  if (db) {
-    try {
-      await db
-        .update(vehiculos)
-        .set({
-          activo: false,
-          estado: 'FUERA_SERVICIO',
-          actualizadoEn: new Date(),
-        })
-        .where(eq(vehiculos.id, id));
-    } catch (error) {
-      // Fallback: la baja ya quedó aplicada en memoria
-      logFalloD1('vehiculos.darDeBaja', error, { vehiculoId: id });
-    }
+  try {
+    await db
+      .update(vehiculos)
+      .set({
+        activo: false,
+        estado: 'FUERA_SERVICIO',
+        actualizadoEn: new Date(),
+      })
+      .where(eq(vehiculos.id, id));
+    return true;
+  } catch (error) {
+    logFalloD1('vehiculos.darDeBaja', error, { vehiculoId: id });
+    return false;
   }
-
-  return true;
 }

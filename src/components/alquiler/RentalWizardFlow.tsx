@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { actions } from 'astro:actions';
 import {
   calcularCotizacionAlquiler,
   formatearFechaCorta,
@@ -134,7 +135,7 @@ export default function RentalWizardFlow({
     setFechaFin(fin);
   };
 
-  const avanzarPaso = () => {
+  const avanzarPaso = async () => {
     setErrorValidacion(null);
 
     if (paso === 1) {
@@ -183,39 +184,57 @@ export default function RentalWizardFlow({
         modalidadPago === 'ABONO_30'
           ? cotizacion.abonoMinimoReserva
           : cotizacion.totalAlquiler;
-      const codigo = `FLX-${Math.floor(100000 + Math.random() * 900000)}`;
-      const nuevaSolicitud = {
-        codigo,
-        vehiculoId: vehiculo.id,
-        vehiculoNombre: `${vehiculo.marca} ${vehiculo.modelo}`,
-        placa: vehiculo.placa,
-        imagenUrl: vehiculo.imagenUrl,
-        fechaInicio: cotizacion.fechaInicio,
-        fechaFin: cotizacion.fechaFin,
-        diasAlquiler: cotizacion.diasAlquiler,
-        totalAlquiler: cotizacion.totalAlquiler,
-        montoReportado,
-        estado: 'PENDIENTE',
-        creadaEn: new Date().toISOString(),
-      };
+
+      setErrorValidacion(null);
 
       try {
-        const prevRaw = window.localStorage.getItem('flotax_reservas_cliente');
-        const prevList = prevRaw ? (JSON.parse(prevRaw) as unknown[]) : [];
-        window.localStorage.setItem(
-          'flotax_reservas_cliente',
-          JSON.stringify([nuevaSolicitud, ...prevList])
-        );
-      } catch {
-        // Ignorar si localStorage está restringido
-      }
+        const { data, error } = await actions.reservas.crearReserva({
+          vehiculoId: vehiculo.id,
+          fechaInicio: cotizacion.fechaInicio,
+          fechaFin: cotizacion.fechaFin,
+          diasAlquiler: cotizacion.diasAlquiler,
+          precioDiaCotizado: vehiculo.precioDia,
+          subtotalTarifaCotizado: cotizacion.subtotalTarifa,
+          coberturaPericialCotizada: cotizacion.coberturaPericial,
+          totalCotizado: cotizacion.totalAlquiler,
+          modalidadEntrega: conductor.modalidadEntrega,
+          direccionEntrega:
+            conductor.modalidadEntrega === 'DOMICILIO_MEDELLIN'
+              ? 'Dirección coordinada para Medellín / Valle de Aburrá'
+              : undefined,
+          sedeNombre: 'Patio Norte Medellín',
+          modalidadPagoInicial: modalidadPago,
+          metodoAbonoInicial: metodoAbono,
+          montoAbonoReportado: montoReportado,
+          contactoNombre: conductor.nombreCompleto.trim(),
+          contactoTipoDocumento: conductor.tipoDocumento,
+          contactoNumeroDocumento: conductor.numeroDocumento.trim(),
+          contactoCategoriaLicencia: conductor.categoriaLicencia,
+          contactoTelefono: conductor.telefono.trim(),
+          contactoCorreo: conductor.correo.trim(),
+          ley1581Aceptada: aceptaLey1581,
+        });
 
-      setSolicitudRadicada({
-        codigo,
-        creadaEn: nuevaSolicitud.creadaEn,
-        montoReportado,
-      });
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (error || !data?.ok) {
+          setErrorValidacion(
+            error?.message || 'No fue posible radicar la reserva. Intenta de nuevo.'
+          );
+          return;
+        }
+
+        setSolicitudRadicada({
+          codigo: data.codigo,
+          creadaEn: data.reserva.creadaEn,
+          montoReportado,
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (err) {
+        setErrorValidacion(
+          err instanceof Error
+            ? err.message
+            : 'Ocurrió un error al procesar tu solicitud.'
+        );
+      }
     }
   };
 

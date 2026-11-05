@@ -39,12 +39,20 @@ export const ALL: APIRoute = async (context) => {
       return error;
     }
     if (isOAuthCallback) {
+      const isStateMismatch =
+        error instanceof Error &&
+        (error.message.includes('state_mismatch') ||
+          error.message.includes('State mismatch') ||
+          error.message.includes('verification not found'));
+
+      const errorParam = isStateMismatch ? 'session_expired' : 'oauth_error';
       const errorMsg =
         error instanceof Error
           ? encodeURIComponent(error.message)
           : 'oauth_callback_error';
+
       return context.redirect(
-        `${requestOrigin}/login?error=oauth_error&error_description=${errorMsg}`
+        `${requestOrigin}/login?error=${errorParam}&error_description=${errorMsg}`
       );
     }
     throw error;

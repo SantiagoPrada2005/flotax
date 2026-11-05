@@ -1,13 +1,19 @@
-# Base de Datos - Sistema de Alquiler de Vehículos
+# Base de Datos - Sistema de Alquiler de Vehículos (FlotaX)
 
-## Arquitectura de Datos y Multi-Tenancy
+## Arquitectura de Datos, Principio de Responsabilidad Única (SRP) y Multi-Tenancy
 
-El sistema utiliza **Cloudflare D1 (SQLite en el Edge)** gestionado mediante **Drizzle ORM**. La arquitectura implementa un modelo **Multi-Tenant jerárquico**:
-- La plataforma soporta múltiples locales o sedes de servicio de alquiler de vehículos (`locales_alquiler`).
-- La autenticación es provista por **Better Auth** con soporte para inicio de sesión sin contraseña (**Email OTP**) y **Google OAuth**.
-- Los empleados y dueños pertenecen a mínimo un local (`miembros_local`) con roles granulares de sede (`DUENO`, `ADMIN`, `OPERATIVO`, `AUDITOR_FINANCIERO`).
-- Los clientes finales (`USUARIO`) pueden explorar catálogos de diferentes locales, y el sistema rastrea sus comercios preferidos, histórico de accesos y local de captación de origen (`clientes_local`) para **prevenir la fuga de clientes**.
-- Los dueños de local pueden emitir invitaciones seguras con token (`invitaciones_local`) para vincular personal y transferir la titularidad del local a otro usuario (`historial_transferencias_local`).
+El sistema utiliza **Cloudflare D1 (SQLite en el Edge)** gestionado mediante **Drizzle ORM** y **Cloudflare R2 (`BUCKET_MULTIMEDIA`)** para el archivo probatorio longitudinal de imágenes, videos periciales y contratos PDF. La arquitectura implementa un modelo **Multi-Tenant jerárquico** con separación estricta de responsabilidades por entidad:
+
+- **Sedes y Políticas Separadas**: La plataforma soporta múltiples locales o sedes de alquiler (`locales_alquiler`) y desacopla en una relación 1:1 sus reglas tarifarias, porcentajes de mora/fotomultas y datos fiscales del arrendador (`politicas_local`).
+- **Autenticación y RBAC Extensible**: La autenticación es provista por **Better Auth** (**Email OTP** y **Google OAuth**). Los colaboradores pertenecen a un local (`miembros_local`) con roles canónicos (`DUENO`, `ADMIN`, `ASESOR`, `ENCARGADO_FLOTA`, `CONTADOR`, más alias compatibles `OPERATIVO` y `AUDITOR_FINANCIERO`) y cuentan con una tabla dedicada de overrides granulares por usuario (`permisos_miembro_local`) con efectos `CONCEDER` o `REVOCAR`.
+- **Anti-Fuga de Clientes**: Los clientes (`USUARIO`) se vinculan a sus locales de origen y preferidos mediante `clientes_local`.
+- **Separación de Reserva Comercial y Contrato Legal**:
+  - `reservas`: Gestiona la solicitud comercial, bloqueo de fechas en el calendario de disponibilidad y abono inicial reportado (`30%` o `100%`).
+  - `contratos_alquiler`: Instrumento jurídico 1:1 que formaliza el traslado de guarda material (Cláusula 4), autorización de fotomultas (Sentencias C-038/20 y C-321/22), telemetría real de entrega/retorno y liquidación financiera Waybill.
+- **Historial Longitudinal Multimedia en Cloudflare R2**:
+  - `multimedia_vehiculo`: Preserva cronológicamente todas las fotografías y videos (`IMAGEN` | `VIDEO`) de cada vehículo a través del tiempo y por cada reserva/alquiler (`CATALOGO_ESTUDIO`, `ENTREGA_SALIDA`, `DEVOLUCION_RETORNO`, `REPORTE_EN_RUTA`, `MANTENIMIENTO_TALLER`), clasificados por zona anatómica (exterior, interior, pantalla/odómetro, nivel de energía, video 360° y detalle de daños) con soporte de miniaturas instantáneas (`poster_r2_key`) para videos.
+- **Peritaje R2 y Mantenimiento**:
+  - `documentos_vehiculo`, `mantenimientos_vehiculo`, `plantillas_inspeccion`, `inspecciones_periciales`, `puntos_inspeccion_r2` y `evaluaciones_entrega_cliente` completan la trazabilidad técnica y probatoria de cada unidad.
 
 ---
 
@@ -17,10 +23,35 @@ Los dominios cerrados viven **en el schema Drizzle**, no en los módulos de cons
 
 | Archivo | Constante | Columna |
 | :--- | :--- | :--- |
-| `src/db/schema/vehiculos.ts` | `categoriasVehiculo` | `vehiculos.categoria` |
+| `src/db/schema/miembros.ts` | `rolesMiembroLocal` | `miembros_local.rol` |
+| `src/db/schema/invitaciones.ts` | `rolesInvitacionLocal`, `estadosInvitacionLocal` | `invitaciones_local.rol`, `invitaciones_local.estado` |
+| `src/db/schema/permisos_miembro.ts` | `efectosPermisoIndividual` | `permisos_miembro_local.efecto` |
+| `src/db/schema/vehiculos.ts` | `categoriasVehiculo` | `vehiculos.categoria`, `plantillas_inspeccion.categoria_vehiculo` |
 | | `estadosVehiculo` | `vehiculos.estado` |
 | | `transmisionesVehiculo` | `vehiculos.transmision` |
 | | `combustiblesVehiculo` | `vehiculos.combustible` |
+| | `unidadesMedidaUso` | `vehiculos.unidad_medida_uso`, `plantillas_inspeccion.unidad_medida_uso` |
+| `src/db/schema/documentos_vehiculo.ts` | `tiposDocumentoVehiculo` | `documentos_vehiculo.tipo_documento` |
+| `src/db/schema/multimedia_vehiculo.ts` | `tiposMedioMultimedia` | `multimedia_vehiculo.tipo_medio` |
+| | `etapasMultimediaVehiculo` | `multimedia_vehiculo.etapa_operativa` |
+| | `zonasEvidenciaVehiculo` | `multimedia_vehiculo.zona_evidencia` |
+| | `angulosEstudioVehiculo` | `multimedia_vehiculo.angulo_estudio` |
+| `src/db/schema/mantenimientos.ts` | `tiposMantenimientoVehiculo` | `mantenimientos_vehiculo.tipo` |
+| | `estadosMantenimientoVehiculo` | `mantenimientos_vehiculo.estado` |
+| `src/db/schema/reservas.ts` | `estadosReserva` | `reservas.estado` |
+| | `modalidadesEntregaReserva` | `reservas.modalidad_entrega` |
+| | `modalidadesPagoInicial` | `reservas.modalidad_pago_inicial` |
+| | `metodosAbonoInicial` | `reservas.metodo_abono_inicial` |
+| | `categoriasLicenciaConduccion` | `reservas.contacto_categoria_licencia`, `contratos_alquiler.arrendatario_licencia_categoria` |
+| `src/db/schema/contratos.ts` | `estadosPagoContrato` | `contratos_alquiler.estado_pago` |
+| | `estadosContratoAlquiler` | `contratos_alquiler.estado_contrato` |
+| `src/db/schema/inspecciones.ts` | `tiposActoInspeccion` | `inspecciones_periciales.tipo_acto` |
+| | `estadosGeneralesInspeccion` | `inspecciones_periciales.estado_general` |
+| | `estadosPuntoInspeccionR2` | `puntos_inspeccion_r2.estado` |
+| | `gravedadesNovedadInspeccion` | `puntos_inspeccion_r2.gravedad` |
+| | `nivelesCalificacionServicio` | `evaluaciones_entrega_cliente.calificacion_general` |
+| | `nivelesDesempenoVehiculo` | `evaluaciones_entrega_cliente.desempeno_vehiculo` |
+| | `nivelesCombustibleEntregaCliente` | `evaluaciones_entrega_cliente.combustible_nivel` |
 | `src/db/schema/caja.ts` | `tiposCuentaFinanciera` | `cuentas_financieras.tipo` |
 | | `tiposMovimientoCaja` | `movimientos_caja.tipo` |
 | | `categoriasIngreso` + `categoriasEgreso` + `TRANSFERENCIA_INTERNA` (`categoriasMovimiento`) | `movimientos_caja.categoria` |
@@ -31,12 +62,10 @@ Los dominios cerrados viven **en el schema Drizzle**, no en los módulos de cons
 | | `entidadesAuditoria` / `accionesAuditoria` | `auditoria_financiera.entidad` / `.accion` |
 | `src/db/schema/notificaciones.ts` | `tiposNotificacion` | `notificaciones.tipo` |
 | | `alcancesNotificacion` / `prioridadesNotificacion` | `notificaciones.alcance` / `.prioridad` |
-| `src/db/schema/verificaciones.ts` | `tiposDocumentoIdentidad` | `verificaciones_identidad.tipo_documento` |
+| `src/db/schema/verificaciones.ts` | `tiposDocumentoIdentidad` | `verificaciones_identidad.tipo_documento`, `reservas.contacto_tipo_documento`, `contratos_alquiler.arrendatario_tipo_documento` |
 | | `estadosVerificacion` | `verificaciones_identidad.estado` |
 | `src/db/schema/incidentes.ts` | `nivelesIncidente` | `incidentes_sistema.nivel` |
 | | `estadosIncidente` | `incidentes_sistema.estado` |
-
-> Los enums son **solo de tipado**: no alteran el DDL. `pnpm db:generate` no produce migraciones por añadirlos.
 
 ---
 
@@ -102,7 +131,7 @@ Códigos OTP de un solo uso (sin contraseña) y verificaciones temporales.
 
 ---
 
-### 2. Módulo Multi-Tenant & Locales
+### 2. Módulo Multi-Tenant, Locales, Políticas & RBAC Granular
 
 #### `locales_alquiler`
 Representa cada agencia o sede física de alquiler de vehículos.
@@ -110,8 +139,8 @@ Representa cada agencia o sede física de alquiler de vehículos.
 | Campo | Tipo | Restricciones | Descripción |
 |-------|------|---------------|-------------|
 | `id` | TEXT | PRIMARY KEY | Identificador del local. |
-| `nombre` | TEXT | NOT NULL | Nombre comercial (ej. 'Rentas Medellín Poblado'). |
-| `slug` | TEXT | NOT NULL, UNIQUE | Identificador de URL (ej. 'medellin-poblado'). |
+| `nombre` | TEXT | NOT NULL | Nombre comercial (ej. 'Patio Norte Medellín'). |
+| `slug` | TEXT | NOT NULL, UNIQUE | Identificador de URL (ej. 'patio-norte'). |
 | `ciudad` | TEXT | NULLABLE | Ciudad de operación. |
 | `direccion` | TEXT | NULLABLE | Ubicación física. |
 | `telefono` | TEXT | NULLABLE | Teléfono de atención de la sede. |
@@ -120,18 +149,55 @@ Representa cada agencia o sede física de alquiler de vehículos.
 | `creado_en` | TIMESTAMP | NOT NULL | Creación. |
 | `actualizado_en` | TIMESTAMP | NOT NULL | Última modificación. |
 
+#### `politicas_local`
+Políticas operativas, tarifarias, recargos de mora y datos jurídicos del arrendador (relación 1:1 con `locales_alquiler`).
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|---------------|-------------|
+| `id` | TEXT | PRIMARY KEY | Identificador único de la política. |
+| `local_id` | TEXT | NOT NULL, UNIQUE, FK `locales_alquiler.id` (CASCADE) | Local propietario. |
+| `abono_minimo_pct` | INTEGER | NOT NULL, DEFAULT 30 | Porcentaje mínimo de anticipo para reservar (ej. 30%). |
+| `cobertura_pericial_pct` | INTEGER | NOT NULL, DEFAULT 8 | Porcentaje de cobertura e inspección R2 (ej. 8%). |
+| `recargo_mora_diaria_pct` | INTEGER | NOT NULL, DEFAULT 200 | Sanción por mora diaria según Cláusula 3 (ej. 200%). |
+| `recargo_admin_fotomulta_pct` | INTEGER | NOT NULL, DEFAULT 30 | Recargo administrativo por gestión de comparendos (Cláusula 6). |
+| `cargo_lavado_estandar` | INTEGER | NOT NULL, DEFAULT 45000 | Cargo base en COP por entrega con suciedad excesiva (Cláusula 8). |
+| `limite_km_diario` | INTEGER | NULLABLE | Límite de km por día (`NULL` = kilometraje libre). |
+| `cargo_km_adicional` | INTEGER | NOT NULL, DEFAULT 0 | Tarifa en COP por km excedido. |
+| `nit_arrendador` | TEXT | NULLABLE | NIT y razón social del arrendador para contratos PDF. |
+| `representante_legal` | TEXT | NULLABLE | Nombre del representante legal del local. |
+| `municipio_contractual` | TEXT | NOT NULL, DEFAULT 'Medellín, Antioquia' | Jurisdicción contractual por defecto. |
+| `creado_en` | TIMESTAMP | NOT NULL | Fecha de creación. |
+| `actualizado_en` | TIMESTAMP | NOT NULL | Fecha de última modificación. |
+
 #### `miembros_local`
-Asignación de trabajadores y personal al local. Regla: todo empleado o dueño debe pertenecer a mínimo un local.
+Asignación de trabajadores y personal al local.
 
 | Campo | Tipo | Restricciones | Descripción |
 |-------|------|---------------|-------------|
 | `id` | TEXT | PRIMARY KEY | Identificador de membresía. |
 | `local_id` | TEXT | NOT NULL, FK `locales_alquiler.id` | Local asignado. |
 | `usuario_id` | TEXT | NOT NULL, FK `user.id` | Trabajador o dueño. |
-| `rol` | TEXT | NOT NULL | Rol en sede: 'DUENO', 'ADMIN', 'OPERATIVO', 'AUDITOR_FINANCIERO'. |
+| `rol` | TEXT | NOT NULL | Rol en sede: 'DUENO', 'ADMIN', 'ASESOR', 'ENCARGADO_FLOTA', 'CONTADOR', 'OPERATIVO', 'AUDITOR_FINANCIERO'. |
 | `activo` | INTEGER (boolean) | NOT NULL, DEFAULT true | Habilitación en la sede. |
-| `onboarding_completado` | INTEGER (boolean) | NOT NULL, DEFAULT false | Flag de inducción operativa inicial completada por el usuario. |
+| `onboarding_completado` | INTEGER (boolean) | NOT NULL, DEFAULT false | Flag de inducción operativa inicial completada. |
 | `creado_en` | TIMESTAMP | NOT NULL | Fecha de alta. |
+
+#### `permisos_miembro_local`
+Overrides individuales de permisos por trabajador dentro de un local (`CONCEDER` o `REVOCAR` sobre la matriz base de su rol).
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|---------------|-------------|
+| `id` | TEXT | PRIMARY KEY | Identificador del override de permiso. |
+| `miembro_id` | TEXT | NOT NULL, FK `miembros_local.id` (CASCADE) | Membresía sobre la que aplica. |
+| `local_id` | TEXT | NOT NULL, FK `locales_alquiler.id` (CASCADE) | Local donde aplica. |
+| `usuario_id` | TEXT | NOT NULL, FK `user.id` (CASCADE) | Usuario afectado. |
+| `permiso` | TEXT | NOT NULL | Código canónico del catálogo `PERMISOS` (`src/lib/auth/permisos.ts`). |
+| `efecto` | TEXT | NOT NULL, DEFAULT 'CONCEDER' | 'CONCEDER' (habilita permiso extra) o 'REVOCAR' (restringe permiso del rol). |
+| `motivo` | TEXT | NULLABLE | Justificación administrativa de la excepción. |
+| `asignado_por_id` | TEXT | NOT NULL, FK `user.id` | Dueño o administrador que configuró el permiso. |
+| `creado_en` | TIMESTAMP | NOT NULL | Fecha de asignación. |
+
+Índices: único `permisos_miembro_unico_idx (miembro_id, permiso)` y `permisos_miembro_usuario_local_idx (local_id, usuario_id)`.
 
 #### `clientes_local`
 Vínculo entre clientes y locales para prevenir fuga comercial y rastrear comercios preferidos.
@@ -147,16 +213,16 @@ Vínculo entre clientes y locales para prevenir fuga comercial y rastrear comerc
 | `creado_en` | TIMESTAMP | NOT NULL | Fecha de registro. |
 
 #### `invitaciones_local`
-Invitaciones con token criptográfico emitidas por el dueño o creador para incorporar colaboradores.
+Invitaciones con token criptográfico emitidas por el dueño o administrador para incorporar colaboradores.
 
 | Campo | Tipo | Restricciones | Descripción |
 |-------|------|---------------|-------------|
 | `id` | TEXT | PRIMARY KEY | Identificador de invitación. |
 | `local_id` | TEXT | NOT NULL, FK `locales_alquiler.id` | Local al que se invita. |
 | `email` | TEXT | NOT NULL | Correo del invitado. |
-| `rol` | TEXT | NOT NULL | Rol propuesto ('ADMIN', 'OPERATIVO', 'AUDITOR_FINANCIERO'). |
+| `rol` | TEXT | NOT NULL | Rol propuesto ('ADMIN', 'ASESOR', 'ENCARGADO_FLOTA', 'CONTADOR', 'OPERATIVO', 'AUDITOR_FINANCIERO'). |
 | `token` | TEXT | NOT NULL, UNIQUE | Token seguro de la URL de aceptación. |
-| `invitado_por_id` | TEXT | NOT NULL, FK `user.id` | Usuario creador/dueño que invitó. |
+| `invitado_por_id` | TEXT | NOT NULL, FK `user.id` | Usuario que invitó. |
 | `estado` | TEXT | NOT NULL, DEFAULT 'PENDIENTE' | 'PENDIENTE', 'ACEPTADA', 'RECHAZADA', 'EXPIRADA'. |
 | `expira_en` | TIMESTAMP | NOT NULL | Caducidad de la invitación. |
 | `creado_en` | TIMESTAMP | NOT NULL | Emisión. |
@@ -178,7 +244,7 @@ Auditoría inmutable cuando el dueño transfiere la propiedad del local a otro u
 ### 3. Módulo de Gobernanza, Logging e Incidentes del Sistema
 
 #### `incidentes_sistema`
-Persistencia y deduplicación global de errores entre isolates de Cloudflare Workers. Controla ventanas de enfriamiento, alertas tempranas y previene la saturación de correos a desarrolladores, habilitando monitoreo operativo futuro.
+Persistencia y deduplicación global de errores entre isolates de Cloudflare Workers.
 
 | Campo | Tipo | Restricciones | Descripción |
 |-------|------|---------------|-------------|
@@ -194,9 +260,11 @@ Persistencia y deduplicación global de errores entre isolates de Cloudflare Wor
 | `estado` | TEXT | NOT NULL, DEFAULT 'ABIERTO' | Estado operativo ('ABIERTO', 'MITIGADO', 'RESUELTO'). |
 | `metadata` | TEXT | NULLABLE | JSON sanitizado con contexto de petición y stack trace. |
 | `creado_en` | TIMESTAMP | NOT NULL | Creación del registro. |
-| ---
+| `actualizado_en` | TIMESTAMP | NOT NULL | Última modificación. |
 
-### 4. Módulo de Flota de Vehículos
+---
+
+### 4. Módulo de Flota, Documentos Legales, Mantenimiento e Historial Multimedia R2
 
 #### `vehiculos`
 Catálogo de unidades físicas y operativas disponibles para alquiler y control perimetral de patio.
@@ -211,6 +279,11 @@ Catálogo de unidades físicas y operativas disponibles para alquiler y control 
 | `categoria` | TEXT | NOT NULL | Categoría canónica: 'SEDAN', 'SUV', 'MOTO', 'PATINETA', 'UTILITARIO'. |
 | `categoria_etiqueta` | TEXT | NOT NULL | Etiqueta amigable (ej. 'SUV Eléctrica', 'Coupe Deportivo'). |
 | `placa` | TEXT | NOT NULL, UNIQUE | Placa o matrícula oficial (ej. 'FLX-801'). |
+| `color` | TEXT | NULLABLE | Color oficial registrado en tarjeta de propiedad (Cláusula 1). |
+| `numero_motor` | TEXT | NULLABLE | Serial único de motor para contrato legal. |
+| `numero_chasis` | TEXT | NULLABLE | VIN / número de chasis o serie para contrato legal. |
+| `valor_comercial` | INTEGER | NULLABLE | Avalúo comercial en COP para respaldo y pagaré (Cláusula 4). |
+| `unidad_medida_uso` | TEXT | NOT NULL, DEFAULT 'KM' | Medidor de uso: 'KM', 'HORAS_MOTOR', 'MINUTOS'. |
 | `estado` | TEXT | NOT NULL, DEFAULT 'DISPONIBLE' | Estado operativo: 'DISPONIBLE', 'RESERVADO', 'MANTENIMIENTO', 'FUERA_SERVICIO'. |
 | `precio_dia` | INTEGER | NOT NULL | Tarifa diaria en COP (ej. 280000). |
 | `deposito_garantia` | INTEGER | NOT NULL | Depósito o fianza de garantía en COP (ej. 750000). |
@@ -218,24 +291,282 @@ Catálogo de unidades físicas y operativas disponibles para alquiler y control 
 | `combustible` | TEXT | NOT NULL | Tipo de propulsión ('Gasolina', 'Diésel', 'Eléctrico', 'Híbrido'). |
 | `capacidad_pasajeros` | INTEGER | NOT NULL | Aforo máximo de personas (ej. 5 o 7). |
 | `autonomia_km` | INTEGER | NULLABLE | Autonomía estimada en km para eléctricos o híbridos. |
-| `kilometraje` | INTEGER | NOT NULL | Lectura actual del odómetro. |
-| `imagen_url` | TEXT | NOT NULL | URL de la imagen principal del vehículo. |
+| `kilometraje` | INTEGER | NOT NULL | Lectura actual del odómetro u horómetro. |
+| `imagen_url` | TEXT | NOT NULL | URL de la imagen portada principal del vehículo. |
 | `destacado` | INTEGER (boolean) | NOT NULL, DEFAULT false | Flag para visibilidad prioritaria en catálogo. |
 | `descripcion` | TEXT | NOT NULL | Reseña técnica y descriptiva para el cliente. |
 | `aceleracion` | TEXT | NULLABLE | Métrica de aceleración (ej. '3.8 s'). |
 | `velocidad_maxima` | TEXT | NULLABLE | Velocidad punta (ej. '210 km/h'). |
 | `rating` | REAL | NULLABLE | Calificación promedio del modelo (ej. 4.8). |
 | `autonomia_odo` | TEXT | NULLABLE | Métrica visual de autonomía/odómetro (ej. '420 km'). |
+| `specs_bento` | TEXT (JSON) | NULLABLE | Especificaciones editoriales Bento (`EspecificacionesBentoVehiculoSchema`). |
 | `activo` | INTEGER (boolean) | NOT NULL, DEFAULT true | Estado de habilitación en el sistema. |
 | `creado_en` | TIMESTAMP | NOT NULL | Fecha de alta en inventario. |
 | `actualizado_en` | TIMESTAMP | NOT NULL | Fecha de última modificación. |
 
+#### `documentos_vehiculo`
+Control de vigencias normativas y pólizas por unidad (SOAT, Técnico-Mecánica, Tarjeta de Propiedad, Póliza Todo Riesgo, Kit de Carretera).
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|---------------|-------------|
+| `id` | TEXT | PRIMARY KEY | Identificador único del documento. |
+| `local_id` | TEXT | NOT NULL, FK `locales_alquiler.id` (CASCADE) | Local propietario. |
+| `vehiculo_id` | TEXT | NOT NULL, FK `vehiculos.id` (CASCADE) | Vehículo asociado. |
+| `tipo_documento` | TEXT | NOT NULL | 'SOAT', 'TECNICO_MECANICA', 'TARJETA_PROPIEDAD', 'POLIZA_TODO_RIESGO', 'LICENCIA_NAUTICA_DIMAR', 'KIT_CARRETERA'. |
+| `numero_referencia` | TEXT | NULLABLE | Número de póliza o certificado oficial. |
+| `entidad_emisora` | TEXT | NULLABLE | Aseguradora, CDA o autoridad de tránsito. |
+| `fecha_expedicion` | TEXT | NULLABLE | Fecha de emisión (`YYYY-MM-DD`). |
+| `fecha_vencimiento` | TEXT | NULLABLE | Fecha de expiración (`YYYY-MM-DD`). |
+| `vigente` | INTEGER (boolean) | NOT NULL, DEFAULT true | Estado de vigencia verificado. |
+| `archivo_r2_key` | TEXT | NULLABLE | Clave del PDF o imagen en Cloudflare R2 (`BUCKET_MULTIMEDIA`). |
+| `observaciones` | TEXT | NULLABLE | Notas de auditoría documental. |
+| `verificado_por_id` | TEXT | NULLABLE, FK `user.id` | Usuario que validó el documento. |
+| `creado_en` | TIMESTAMP | NOT NULL | Creación. |
+| `actualizado_en` | TIMESTAMP | NOT NULL | Última actualización. |
+
+Índice: `documentos_vehiculo_vigencia_idx (vehiculo_id, tipo_documento, vigente, fecha_vencimiento)`.
+
+#### `multimedia_vehiculo`
+Historial longitudinal fotográfico y de video en Cloudflare R2 (`BUCKET_MULTIMEDIA`) por vehículo a través del tiempo y por cada reserva o alquiler.
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|---------------|-------------|
+| `id` | TEXT | PRIMARY KEY | Identificador único del recurso multimedia. |
+| `local_id` | TEXT | NOT NULL, FK `locales_alquiler.id` (CASCADE) | Local propietario. |
+| `vehiculo_id` | TEXT | NOT NULL, FK `vehiculos.id` (CASCADE) | Vehículo al que pertenece la evidencia. |
+| `reserva_id` | TEXT | NULLABLE, FK `reservas.id` (SET NULL) | Reserva asociada (en entregas, devoluciones o reportes en ruta). |
+| `contrato_id` | TEXT | NULLABLE, FK `contratos_alquiler.id` (SET NULL) | Contrato asociado. |
+| `inspeccion_id` | TEXT | NULLABLE | Acta en `inspecciones_periciales` donde se capturó. |
+| `mantenimiento_id` | TEXT | NULLABLE, FK `mantenimientos_vehiculo.id` (SET NULL) | Orden de taller asociada. |
+| `tipo_medio` | TEXT | NOT NULL, DEFAULT 'IMAGEN' | 'IMAGEN' o 'VIDEO'. |
+| `etapa_operativa` | TEXT | NOT NULL | 'CATALOGO_ESTUDIO', 'ENTREGA_SALIDA', 'DEVOLUCION_RETORNO', 'REPORTE_EN_RUTA', 'MANTENIMIENTO_TALLER'. |
+| `zona_evidencia` | TEXT | NOT NULL | Zona anatómica ('EXTERIOR_FRONTAL', 'PANTALLA_TABLERO_ODOMETRO', 'VIDEO_RECORRIDO_360', 'DETALLE_NOVEDAD_DANO', etc.). |
+| `angulo_estudio` | TEXT | NULLABLE | 'ESTUDIO_3_4', 'PERFIL_DINAMICO', 'CABINA_CONFORT', 'TREN_MOTRIZ'. |
+| `es_portada_catalogo` | INTEGER (boolean) | NOT NULL, DEFAULT false | Indica si es la foto principal del vehículo. |
+| `orden_visual` | INTEGER | NOT NULL, DEFAULT 0 | Orden en la galería o línea de tiempo. |
+| `r2_key` | TEXT | NOT NULL, UNIQUE | Clave jerárquica en Cloudflare R2. |
+| `poster_r2_key` | TEXT | NULLABLE | Miniatura WebP/JPEG para carga móvil instantánea cuando `tipo_medio = 'VIDEO'`. |
+| `mime_type` | TEXT | NOT NULL | MIME type (`image/webp`, `video/mp4`, `video/webm`). |
+| `tamano_bytes` | INTEGER | NOT NULL, DEFAULT 0 | Peso del objeto en bytes. |
+| `ancho_px` | INTEGER | NULLABLE | Resolución horizontal en píxeles. |
+| `alto_px` | INTEGER | NULLABLE | Resolución vertical en píxeles. |
+| `duracion_segundos` | REAL | NULLABLE | Duración en segundos para videos de inspección. |
+| `sha256_hash` | TEXT | NULLABLE | Hash SHA-256 de integridad probatoria. |
+| `medidor_uso_momento` | INTEGER | NULLABLE | Odómetro (km) u horómetro en el momento de la captura. |
+| `observacion` | TEXT | NULLABLE | Nota pericial asociada a la captura. |
+| `subido_por_id` | TEXT | NULLABLE, FK `user.id` | Inspector, operador o cliente que subió la evidencia. |
+| `capturado_en` | TIMESTAMP | NOT NULL | Timestamp exacto de captura. |
+| `creado_en` | TIMESTAMP | NOT NULL | Timestamp de registro en D1. |
+
+Índices: `multimedia_vehiculo_historial_idx (vehiculo_id, capturado_en)`, `multimedia_vehiculo_reserva_etapa_idx (reserva_id, etapa_operativa, zona_evidencia)` y `multimedia_vehiculo_catalogo_idx (vehiculo_id, etapa_operativa, orden_visual)`.
+
+#### `mantenimientos_vehiculo`
+Órdenes de mantenimiento preventivo, correctivo, alistamiento y bloqueos técnicos en el calendario de disponibilidad.
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|---------------|-------------|
+| `id` | TEXT | PRIMARY KEY | Identificador de la orden de mantenimiento. |
+| `local_id` | TEXT | NOT NULL, FK `locales_alquiler.id` (CASCADE) | Local. |
+| `vehiculo_id` | TEXT | NOT NULL, FK `vehiculos.id` (CASCADE) | Vehículo intervenido. |
+| `reserva_origen_id` | TEXT | NULLABLE, FK `reservas.id` | Reserva que originó el mantenimiento al retorno. |
+| `tipo` | TEXT | NOT NULL, DEFAULT 'PREVENTIVO' | 'PREVENTIVO', 'CORRECTIVO_NOVEDAD', 'ALISTAMIENTO', 'BLOQUEO_OPERATIVO'. |
+| `estado` | TEXT | NOT NULL, DEFAULT 'PROGRAMADO' | 'PROGRAMADO', 'EN_TALLER', 'COMPLETADO', 'CANCELADO'. |
+| `etiqueta` | TEXT | NOT NULL | Título corto para calendario (ej. 'Inspección y alistamiento técnico'). |
+| `descripcion` | TEXT | NULLABLE | Detalle técnico de los trabajos. |
+| `taller_proveedor` | TEXT | NULLABLE | Nombre del taller o proveedor. |
+| `fecha_inicio` | TEXT | NOT NULL | Inicio del bloqueo (`YYYY-MM-DD`). |
+| `fecha_fin` | TEXT | NOT NULL | Fin del bloqueo (`YYYY-MM-DD`). |
+| `kilometraje_registro` | INTEGER | NULLABLE | Odómetro al ingresar a taller. |
+| `costo_total` | INTEGER | NOT NULL, DEFAULT 0 | Costo en COP. |
+| `movimiento_caja_id` | TEXT | NULLABLE, FK `movimientos_caja.id` | Egreso contable vinculado en caja. |
+| `creado_por_id` | TEXT | NOT NULL, FK `user.id` | Responsable que programó la orden. |
+| `creado_en` | TIMESTAMP | NOT NULL | Creación. |
+| `actualizado_en` | TIMESTAMP | NOT NULL | Última modificación. |
+
 ---
 
-### 5. Módulo de Notificaciones
+### 5. Módulo de Reservas Comerciales, Contratos de Alquiler y Peritaje R2
+
+#### `reservas`
+Solicitudes comerciales de alquiler, bloqueo de fechas en el calendario suizo y abono inicial reportado.
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|---------------|-------------|
+| `id` | TEXT | PRIMARY KEY | Identificador interno de la reserva. |
+| `codigo` | TEXT | NOT NULL, UNIQUE | Código público canónico (ej. 'FLX-849210'). |
+| `local_id` | TEXT | NOT NULL, FK `locales_alquiler.id` (CASCADE) | Local de la reserva. |
+| `vehiculo_id` | TEXT | NOT NULL, FK `vehiculos.id` | Vehículo solicitado. |
+| `cliente_id` | TEXT | NULLABLE, FK `user.id` | Usuario cliente autenticado. |
+| `fecha_inicio` | TEXT | NOT NULL | Fecha de inicio (`YYYY-MM-DD`). |
+| `fecha_fin` | TEXT | NOT NULL | Fecha de fin (`YYYY-MM-DD`). |
+| `dias_alquiler` | INTEGER | NOT NULL | Cantidad de días inclusivos. |
+| `estado` | TEXT | NOT NULL, DEFAULT 'PENDIENTE' | 'PENDIENTE', 'CONFIRMADA', 'EN_CURSO', 'COMPLETADA', 'RECHAZADA', 'CANCELADA'. |
+| `modalidad_entrega` | TEXT | NOT NULL, DEFAULT 'PATIO_PRINCIPAL' | 'PATIO_PRINCIPAL', 'DOMICILIO_MEDELLIN'. |
+| `direccion_entrega` | TEXT | NULLABLE | Dirección cuando es entrega a domicilio. |
+| `sede_nombre` | TEXT | NOT NULL | Nombre de la sede de entrega. |
+| `precio_dia_cotizado` | INTEGER | NOT NULL | Tarifa diaria congelada al cotizar en COP. |
+| `subtotal_tarifa_cotizado` | INTEGER | NOT NULL | Subtotal tarifa base (`dias * precio_dia`). |
+| `cobertura_pericial_cotizada` | INTEGER | NOT NULL | Monto de cobertura e inspección R2 (8%). |
+| `total_cotizado` | INTEGER | NOT NULL | Total cotizado en COP. |
+| `modalidad_pago_inicial` | TEXT | NOT NULL, DEFAULT 'ABONO_30' | 'ABONO_30', 'TOTAL_100'. |
+| `metodo_abono_inicial` | TEXT | NOT NULL, DEFAULT 'TRANSFERENCIA_PSE' | 'TRANSFERENCIA_PSE', 'NEQUI_BREB', 'CAJA_PATIO', 'EFECTIVO', 'TARJETA'. |
+| `monto_abono_reportado` | INTEGER | NOT NULL, DEFAULT 0 | Importe en COP reportado al reservar. |
+| `referencia_abono_inicial` | TEXT | NULLABLE | Comprobante o referencia de transferencia. |
+| `contacto_nombre` | TEXT | NOT NULL | Nombre completo del conductor titular. |
+| `contacto_tipo_documento` | TEXT | NOT NULL | 'CC', 'CE', 'PASAPORTE', 'NIT'. |
+| `contacto_numero_documento` | TEXT | NOT NULL | Número de documento del conductor. |
+| `contacto_categoria_licencia` | TEXT | NOT NULL | 'A1', 'A2', 'B1', 'B2', 'C1'. |
+| `contacto_telefono` | TEXT | NOT NULL | Celular WhatsApp del conductor. |
+| `contacto_correo` | TEXT | NOT NULL | Correo electrónico para envío de contrato y OTP. |
+| `ley_1581_aceptada` | INTEGER (boolean) | NOT NULL, DEFAULT true | Aceptación de tratamiento de datos personales. |
+| `motivo_rechazo` | TEXT | NULLABLE | Causal explicativa si la solicitud es rechazada. |
+| `creado_por_id` | TEXT | NULLABLE, FK `user.id` | Usuario o asesor que creó la reserva. |
+| `confirmado_por_id` | TEXT | NULLABLE, FK `user.id` | Operador que aprobó la solicitud. |
+| `creado_en` | TIMESTAMP | NOT NULL | Fecha de creación. |
+| `actualizado_en` | TIMESTAMP | NOT NULL | Fecha de última actualización. |
+
+Índices: `reservas_vehiculo_fechas_idx (vehiculo_id, estado, fecha_inicio, fecha_fin)`, `reservas_local_estado_idx (local_id, estado, creado_en)` y `reservas_cliente_idx (cliente_id, creado_en)`.
+
+#### `contratos_alquiler`
+Instrumento jurídico 1:1 con `reservas` que formaliza el traslado de guarda material, fotomultas, telemetría de entrega/retorno y liquidación financiera Waybill.
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|---------------|-------------|
+| `id` | TEXT | PRIMARY KEY | Identificador único del contrato. |
+| `numero_contrato` | TEXT | NOT NULL, UNIQUE | Número oficial del contrato (ej. 'FLX-849210'). |
+| `reserva_id` | TEXT | NOT NULL, UNIQUE, FK `reservas.id` (CASCADE) | Reserva origen (relación 1:1). |
+| `local_id` | TEXT | NOT NULL, FK `locales_alquiler.id` (CASCADE) | Local arrendador. |
+| `vehiculo_id` | TEXT | NOT NULL, FK `vehiculos.id` | Vehículo entregado en tenencia. |
+| `cliente_id` | TEXT | NULLABLE, FK `user.id` | Cliente titular. |
+| `arrendatario_nombre` | TEXT | NOT NULL | Nombre legal en el contrato. |
+| `arrendatario_tipo_documento` | TEXT | NOT NULL | 'CC', 'CE', 'PASAPORTE', 'NIT'. |
+| `arrendatario_numero_documento` | TEXT | NOT NULL | Identificación legal del arrendatario. |
+| `arrendatario_ciudad_expedicion` | TEXT | NULLABLE | Lugar de expedición del documento. |
+| `arrendatario_licencia_numero` | TEXT | NOT NULL | Número de licencia de conducción. |
+| `arrendatario_licencia_categoria` | TEXT | NOT NULL | 'A1', 'A2', 'B1', 'B2', 'C1'. |
+| `arrendatario_domicilio` | TEXT | NULLABLE | Dirección física para notificaciones judiciales. |
+| `arrendatario_telefono` | TEXT | NOT NULL | Teléfono del arrendatario. |
+| `arrendatario_correo` | TEXT | NOT NULL | Correo electrónico del arrendatario. |
+| `ley_1581_aceptada` | INTEGER (boolean) | NOT NULL, DEFAULT true | Consentimiento Habeas Data (Ley 1581). |
+| `traslado_fotomultas_aceptado` | INTEGER (boolean) | NOT NULL, DEFAULT true | Autorización de fotodetecciones (Sentencias C-038/20 y C-321/22). |
+| `pagare_blanco_firmado` | INTEGER (boolean) | NOT NULL, DEFAULT false | Suscripción de pagaré y carta de instrucciones (Cláusula 10). |
+| `fecha_hora_entrega_real` | TIMESTAMP | NULLABLE | Momento exacto del traslado de guarda material. |
+| `fecha_hora_devolucion_pactada` | TIMESTAMP | NOT NULL | Límite contractual antes de configurar mora o retención indebida. |
+| `fecha_hora_devolucion_real` | TIMESTAMP | NULLABLE | Momento exacto de restitución en patio. |
+| `medidor_uso_entrega` | INTEGER | NOT NULL | Kilometraje u horas de motor a la salida. |
+| `medidor_uso_retorno` | INTEGER | NULLABLE | Kilometraje u horas de motor al retorno. |
+| `nivel_energia_entrega_pct` | INTEGER | NOT NULL, DEFAULT 100 | Porcentaje de batería o tanque en salida (0..100). |
+| `nivel_energia_retorno_pct` | INTEGER | NULLABLE | Porcentaje de batería o tanque al retorno (0..100). |
+| `canon_diario_pactado` | INTEGER | NOT NULL | Tarifa diaria contractual en COP. |
+| `subtotal_canon` | INTEGER | NOT NULL | Subtotal del canon de arrendamiento. |
+| `cobertura_pericial` | INTEGER | NOT NULL, DEFAULT 0 | Cobertura e inspección R2 en COP. |
+| `cargos_mora` | INTEGER | NOT NULL, DEFAULT 0 | Sanción liquidada por retraso en devolución. |
+| `cargos_novedades_danos` | INTEGER | NOT NULL, DEFAULT 0 | Cargos por daños verificados en inspección de retorno. |
+| `cargos_combustible_lavado` | INTEGER | NOT NULL, DEFAULT 0 | Cargos por faltante de combustible/carga o limpieza. |
+| `total_liquidado` | INTEGER | NOT NULL | Total final liquidado del Waybill en COP. |
+| `total_pagado` | INTEGER | NOT NULL, DEFAULT 0 | Total recaudado en caja. |
+| `saldo_pendiente` | INTEGER | NOT NULL | Saldo por cobrar al cliente. |
+| `estado_pago` | TEXT | NOT NULL, DEFAULT 'PARCIAL' | 'PENDIENTE', 'PARCIAL', 'PAGADO', 'EN_MORA'. |
+| `estado_contrato` | TEXT | NOT NULL, DEFAULT 'VIGENTE' | 'BORRADOR', 'VIGENTE', 'CERRADO_PAZ_Y_SALVO', 'CERRADO_CON_SALDO', 'INCUMPLIMIENTO_PENAL', 'ANULADO'. |
+| `firma_arrendador_r2_key` | TEXT | NULLABLE | Firma digital del operador en R2. |
+| `firma_arrendatario_r2_key` | TEXT | NULLABLE | Firma digital del cliente en R2. |
+| `contrato_pdf_r2_key` | TEXT | NULLABLE | Documento PDF inmutable del contrato en R2. |
+| `creado_en` | TIMESTAMP | NOT NULL | Creación. |
+| `actualizado_en` | TIMESTAMP | NOT NULL | Última modificación. |
+
+#### `plantillas_inspeccion`
+Plantillas versionadas de checklist pericial por categoría de vehículo (`SUV`, `SEDAN`, `MOTO`, `PATINETA`, `UTILITARIO`).
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|---------------|-------------|
+| `id` | TEXT | PRIMARY KEY | Identificador de la plantilla. |
+| `local_id` | TEXT | NULLABLE, FK `locales_alquiler.id` (CASCADE) | `NULL` = plantilla base global; con valor = personalizada del local. |
+| `categoria_vehiculo` | TEXT | NOT NULL | Categoría de vehículo a la que aplica. |
+| `nombre` | TEXT | NOT NULL | Nombre del protocolo pericial. |
+| `version` | INTEGER | NOT NULL, DEFAULT 1 | Versión inmutable del formulario. |
+| `unidad_medida_uso` | TEXT | NOT NULL, DEFAULT 'KM' | 'KM', 'HORAS_MOTOR', 'MINUTOS'. |
+| `items_definicion` | TEXT (JSON) | NOT NULL | Arreglo tipado `ItemDefinicionPlantillaInspeccion[]`. |
+| `activo` | INTEGER (boolean) | NOT NULL, DEFAULT true | Habilitación de la plantilla. |
+| `creado_en` | TIMESTAMP | NOT NULL | Creación. |
+
+#### `inspecciones_periciales`
+Actas formales de inspección de salida (`ENTREGA`) y devolución (`RECEPCION`).
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|---------------|-------------|
+| `id` | TEXT | PRIMARY KEY | Identificador único del acta. |
+| `local_id` | TEXT | NOT NULL, FK `locales_alquiler.id` (CASCADE) | Local. |
+| `reserva_id` | TEXT | NOT NULL, FK `reservas.id` (CASCADE) | Reserva inspeccionada. |
+| `contrato_id` | TEXT | NULLABLE, FK `contratos_alquiler.id` (SET NULL) | Contrato vinculado. |
+| `vehiculo_id` | TEXT | NOT NULL, FK `vehiculos.id` | Unidad inspeccionada. |
+| `plantilla_id` | TEXT | NULLABLE, FK `plantillas_inspeccion.id` | Plantilla utilizada. |
+| `plantilla_version` | INTEGER | NOT NULL, DEFAULT 1 | Versión congelada de la plantilla. |
+| `tipo_acto` | TEXT | NOT NULL | 'ENTREGA' o 'RECEPCION'. |
+| `inspector_id` | TEXT | NOT NULL, FK `user.id` | Operador o encargado de flota que ejecutó el peritaje. |
+| `medidor_uso` | INTEGER | NOT NULL | Lectura de odómetro u horómetro verificada. |
+| `nivel_energia_pct` | INTEGER | NOT NULL | Nivel de carga/combustible (0..100). |
+| `estado_general` | TEXT | NOT NULL, DEFAULT 'IMPECABLE' | 'IMPECABLE', 'OPTIMO', 'CON_NOVEDAD'. |
+| `respuestas_checklist` | TEXT (JSON) | NOT NULL | Arreglo tipado `RespuestaItemChecklistInspeccion[]`. |
+| `observaciones` | TEXT | NULLABLE | Dictamen general del inspector. |
+| `firma_cliente_r2_key` | TEXT | NULLABLE | Firma de conformidad del cliente en R2. |
+| `firma_responsable_r2_key` | TEXT | NULLABLE | Firma del inspector en R2. |
+| `acta_pdf_r2_key` | TEXT | NULLABLE | Acta PDF generada en R2. |
+| `iniciada_en` | TIMESTAMP | NOT NULL | Inicio de la inspección en patio. |
+| `finalizada_en` | TIMESTAMP | NULLABLE | Cierre y firma del acta. |
+| `creado_en` | TIMESTAMP | NOT NULL | Creación del registro. |
+
+#### `puntos_inspeccion_r2`
+Puntos interactivos 360° sobre la anatomía del vehículo con comparación directa entre la evidencia multimedia de entrega y la de retorno en Cloudflare R2.
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|---------------|-------------|
+| `id` | TEXT | PRIMARY KEY | Identificador único del punto R2. |
+| `local_id` | TEXT | NOT NULL, FK `locales_alquiler.id` (CASCADE) | Local. |
+| `reserva_id` | TEXT | NOT NULL, FK `reservas.id` (CASCADE) | Reserva asociada. |
+| `inspeccion_id` | TEXT | NULLABLE, FK `inspecciones_periciales.id` (SET NULL) | Acta de inspección asociada. |
+| `vehiculo_id` | TEXT | NOT NULL, FK `vehiculos.id` (CASCADE) | Vehículo. |
+| `zona` | TEXT | NOT NULL | Zona anatómica (ej. 'Carrocería y Pintura Superior'). |
+| `etiqueta` | TEXT | NOT NULL | Título del dictamen (ej. 'Pintura Original Sin Rayones'). |
+| `dictamen` | TEXT | NOT NULL | Descripción detallada del estado o hallazgo. |
+| `estado` | TEXT | NOT NULL, DEFAULT 'VERIFICADO' | 'ORIGINAL', 'VERIFICADO', 'PROTEGIDO', 'NOVEDAD'. |
+| `gravedad` | TEXT | NULLABLE | 'LEVE', 'MODERADA', 'GRAVE' (cuando `estado = 'NOVEDAD'`). |
+| `coord_x` | TEXT | NOT NULL, DEFAULT '50%' | Posición horizontal porcentual en el visor interactivo. |
+| `coord_y` | TEXT | NOT NULL, DEFAULT '50%' | Posición vertical porcentual en el visor interactivo. |
+| `multimedia_entrega_id` | TEXT | NULLABLE, FK `multimedia_vehiculo.id` (SET NULL) | Evidencia foto/video R2 tomada a la salida. |
+| `multimedia_retorno_id` | TEXT | NULLABLE, FK `multimedia_vehiculo.id` (SET NULL) | Evidencia foto/video R2 tomada al retorno. |
+| `costo_estimado` | INTEGER | NOT NULL, DEFAULT 0 | Valor estimado de reparación en COP. |
+| `genera_cargo_cliente` | INTEGER (boolean) | NOT NULL, DEFAULT false | Indica si se descuenta de la garantía del cliente. |
+| `reparado` | INTEGER (boolean) | NOT NULL, DEFAULT false | Indica si la novedad ya fue corregida en taller. |
+| `creado_en` | TIMESTAMP | NOT NULL | Creación. |
+| `actualizado_en` | TIMESTAMP | NOT NULL | Última modificación. |
+
+#### `evaluaciones_entrega_cliente`
+Checklist de autoverificación y calificación de calidad del servicio completada por el cliente en el Wizard de entrega (`100dvh`).
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|---------------|-------------|
+| `id` | TEXT | PRIMARY KEY | Identificador único de la evaluación. |
+| `reserva_id` | TEXT | NOT NULL, UNIQUE, FK `reservas.id` (CASCADE) | Reserva evaluada (1:1). |
+| `local_id` | TEXT | NOT NULL, FK `locales_alquiler.id` (CASCADE) | Local evaluado. |
+| `vehiculo_id` | TEXT | NOT NULL, FK `vehiculos.id` | Vehículo evaluado. |
+| `cliente_id` | TEXT | NULLABLE, FK `user.id` | Cliente que completó la entrega. |
+| `calificacion_general` | TEXT | NOT NULL | 'SOBRESALIENTE', 'MUY_BUENO', 'REGULAR', 'ATENCION_REQUERIDA'. |
+| `puntaje_numerico` | INTEGER | NOT NULL | Puntaje de 2 a 5. |
+| `aspectos_destacados` | TEXT (JSON) | NOT NULL | Lista `string[]` de aspectos destacados. |
+| `desempeno_vehiculo` | TEXT | NOT NULL | 'IMPECABLE', 'OPTIMO', 'DETALLE_MENOR'. |
+| `comentario_opcional` | TEXT | NULLABLE | Reseña abierta del cliente. |
+| `cabina_sin_objetos` | INTEGER (boolean) | NOT NULL, DEFAULT true | Confirmación de cabina revisada sin objetos personales. |
+| `telemetria_verificada` | INTEGER (boolean) | NOT NULL, DEFAULT true | Confirmación de lectura de odómetro y carga. |
+| `llaves_entregadas` | INTEGER (boolean) | NOT NULL, DEFAULT true | Confirmación de entrega de llaves/accesorios. |
+| `combustible_nivel` | TEXT | NOT NULL, DEFAULT 'MISMO_NIVEL' | 'MISMO_NIVEL', 'CARGA_COMPLETA', 'RECARGA_PENDIENTE'. |
+| `completada_en` | TIMESTAMP | NOT NULL | Fecha y hora de finalización del wizard. |
+
+---
+
+### 6. Módulo de Notificaciones
 
 #### `notificaciones`
-Bandeja in-app con *fan-out on write*: una fila por destinatario. El **alcance** (scope) con el que se emitió el aviso es `USUARIO` (uno o varios usuarios concretos), `LOCAL` (todos los miembros activos de un patio), `LOCAL_ROLES` (miembros de un patio con ciertos roles) o `PLATAFORMA` (todos los usuarios activos).
+Bandeja in-app con *fan-out on write*: una fila por destinatario.
 
 | Campo | Tipo | Restricciones | Descripción |
 |-------|------|---------------|-------------|
@@ -243,7 +574,7 @@ Bandeja in-app con *fan-out on write*: una fila por destinatario. El **alcance**
 | `usuario_id` | TEXT | NOT NULL, FK `user.id` (CASCADE) | Destinatario. |
 | `local_id` | TEXT | NULLABLE, FK `locales_alquiler.id` (CASCADE) | `NULL` = aviso personal (modo cliente); con valor = aviso del patio (modo operador). |
 | `tipo` | TEXT | NOT NULL | Evento del catálogo (`SOLICITUD_NUEVA`, `RESERVA_CONFIRMADA`, ...). |
-| `alcance` | TEXT | NOT NULL | 'USUARIO', 'LOCAL', 'LOCAL_ROLES', 'PLATAFORMA'. Solo auditoría. |
+| `alcance` | TEXT | NOT NULL | 'USUARIO', 'LOCAL', 'LOCAL_ROLES', 'PLATAFORMA'. |
 | `prioridad` | TEXT | NOT NULL, DEFAULT 'NORMAL' | 'NORMAL' o 'URGENTE'. |
 | `titulo` | TEXT | NOT NULL | Título corto (verbo + objeto). |
 | `detalle` | TEXT | NULLABLE | Dato clave (vehículo, fechas, monto). |
@@ -251,8 +582,6 @@ Bandeja in-app con *fan-out on write*: una fila por destinatario. El **alcance**
 | `dedupe_key` | TEXT | NULLABLE, UNIQUE con `usuario_id` | Evita avisos duplicados del mismo hecho. |
 | `leida_en` | TIMESTAMP | NULLABLE | `NULL` = sin leer. |
 | `creada_en` | TIMESTAMP | NOT NULL | Fecha de emisión. |
-
-Índices: `notificaciones_bandeja_idx (usuario_id, leida_en, creada_en)` y único `notificaciones_dedupe_idx (usuario_id, dedupe_key)`.
 
 #### `suscripciones_push`
 Suscripciones Web Push por dispositivo.
@@ -269,7 +598,7 @@ Suscripciones Web Push por dispositivo.
 
 ---
 
-### 6. Módulo de Caja, Finanzas y Arqueo Diario
+### 7. Módulo de Caja, Finanzas y Arqueo Diario
 
 #### `cuentas_financieras`
 Catálogo administrable de cajas físicas de efectivo, cuentas bancarias y billeteras digitales del local.
@@ -386,7 +715,7 @@ Registro inmutable para operaciones sensibles, anulaciones, reversiones y arqueo
 
 ---
 
-### 6. Módulo Verificación de Identidad (KYC & Peritaje FlotaX)
+### 8. Módulo Verificación de Identidad (KYC & Peritaje FlotaX)
 
 #### `verificaciones_identidad`
 Almacena el estado pericial y las evidencias fotográficas de Cédula/DNI y Licencia de Conducir alojadas en Cloudflare R2 (`BUCKET_MULTIMEDIA`).
@@ -419,17 +748,45 @@ erDiagram
     user ||--o{ account : "proveedores OAuth"
     user ||--o{ session : "sesiones activas"
     user ||--o{ miembros_local : "trabaja en"
+    user ||--o{ permisos_miembro_local : "overrides RBAC"
     user ||--o{ clientes_local : "accede / prefiere"
     user ||--o{ locales_alquiler : "es dueno de"
     user ||--o{ invitaciones_local : "invita trabajadores"
     user ||--o{ historial_transferencias_local : "participa en"
     user ||--o{ verificaciones_identidad : "solicita verificacion KYC"
+    user ||--o{ reservas : "solicita alquiler"
+    user ||--o{ contratos_alquiler : "firma contrato"
+    user ||--o{ inspecciones_periciales : "ejecuta peritaje"
+    user ||--o{ multimedia_vehiculo : "captura evidencia R2"
 
+    locales_alquiler ||--|| politicas_local : "parametrizacion y tarifas"
     locales_alquiler ||--o{ miembros_local : "tiene trabajadores y dueno"
+    miembros_local ||--o{ permisos_miembro_local : "excepciones de permisos"
     locales_alquiler ||--o{ clientes_local : "clientes captados"
     locales_alquiler ||--o{ invitaciones_local : "invitaciones activas"
     locales_alquiler ||--o{ historial_transferencias_local : "auditoria titularidad"
     locales_alquiler ||--o{ vehiculos : "posee unidades"
+    locales_alquiler ||--o{ plantillas_inspeccion : "protocolos periciales"
+    locales_alquiler ||--o{ reservas : "recibe solicitudes"
+    locales_alquiler ||--o{ contratos_alquiler : "emite contratos"
+
+    vehiculos ||--o{ documentos_vehiculo : "SOAT / RTM / polizas"
+    vehiculos ||--o{ multimedia_vehiculo : "historial fotos y videos R2"
+    vehiculos ||--o{ mantenimientos_vehiculo : "ordenes de taller"
+    vehiculos ||--o{ reservas : "reservado en"
+    vehiculos ||--o{ contratos_alquiler : "arrendado en"
+    vehiculos ||--o{ inspecciones_periciales : "inspeccionado en"
+    vehiculos ||--o{ puntos_inspeccion_r2 : "anatomia 360 R2"
+
+    reservas ||--o| contratos_alquiler : "formaliza 1 a 1"
+    reservas ||--o{ inspecciones_periciales : "actas entrega y retorno"
+    reservas ||--o{ puntos_inspeccion_r2 : "hallazgos R2"
+    reservas ||--o{ multimedia_vehiculo : "evidencia por reserva"
+    reservas ||--o| evaluaciones_entrega_cliente : "wizard autoverificacion"
+
+    inspecciones_periciales ||--o{ puntos_inspeccion_r2 : "registra puntos"
+    multimedia_vehiculo ||--o{ puntos_inspeccion_r2 : "foto/video salida y retorno"
+
     user ||--o{ notificaciones : "recibe"
     locales_alquiler ||--o{ notificaciones : "avisos del patio"
     user ||--o{ suscripciones_push : "dispositivos push"
@@ -465,23 +822,27 @@ erDiagram
 
     session {
         string id PK
-        string user_id FK
-        string token UK
         timestamp expires_at
-        string ip_address
-        string user_agent
+        string token UK
         timestamp created_at
         timestamp updated_at
+        string ip_address
+        string user_agent
+        string user_id FK
     }
 
     account {
         string id PK
-        string user_id FK
         string account_id
         string provider_id
+        string user_id FK
         string access_token
         string refresh_token
         string id_token
+        timestamp access_token_expires_at
+        timestamp refresh_token_expires_at
+        string scope
+        string password
         timestamp created_at
         timestamp updated_at
     }
@@ -508,6 +869,23 @@ erDiagram
         timestamp actualizado_en
     }
 
+    politicas_local {
+        string id PK
+        string local_id FK, UK
+        integer abono_minimo_pct
+        integer cobertura_pericial_pct
+        integer recargo_mora_diaria_pct
+        integer recargo_admin_fotomulta_pct
+        integer cargo_lavado_estandar
+        integer limite_km_diario
+        integer cargo_km_adicional
+        string nit_arrendador
+        string representante_legal
+        string municipio_contractual
+        timestamp creado_en
+        timestamp actualizado_en
+    }
+
     miembros_local {
         string id PK
         string local_id FK
@@ -515,6 +893,18 @@ erDiagram
         string rol
         boolean activo
         boolean onboarding_completado
+        timestamp creado_en
+    }
+
+    permisos_miembro_local {
+        string id PK
+        string miembro_id FK
+        string local_id FK
+        string usuario_id FK
+        string permiso
+        string efecto
+        string motivo
+        string asignado_por_id FK
         timestamp creado_en
     }
 
@@ -574,6 +964,11 @@ erDiagram
         string categoria
         string categoria_etiqueta
         string placa UK
+        string color
+        string numero_motor
+        string numero_chasis
+        integer valor_comercial
+        string unidad_medida_uso
         string estado
         integer precio_dia
         integer deposito_garantia
@@ -589,9 +984,189 @@ erDiagram
         string velocidad_maxima
         real rating
         string autonomia_odo
+        string specs_bento
         boolean activo
         timestamp creado_en
         timestamp actualizado_en
+    }
+
+    documentos_vehiculo {
+        string id PK
+        string local_id FK
+        string vehiculo_id FK
+        string tipo_documento
+        string numero_referencia
+        string entidad_emisora
+        string fecha_expedicion
+        string fecha_vencimiento
+        boolean vigente
+        string archivo_r2_key
+        string verificado_por_id FK
+        timestamp creado_en
+        timestamp actualizado_en
+    }
+
+    multimedia_vehiculo {
+        string id PK
+        string local_id FK
+        string vehiculo_id FK
+        string reserva_id FK
+        string contrato_id FK
+        string inspeccion_id
+        string mantenimiento_id FK
+        string tipo_medio
+        string etapa_operativa
+        string zona_evidencia
+        string angulo_estudio
+        boolean es_portada_catalogo
+        integer orden_visual
+        string r2_key UK
+        string poster_r2_key
+        string mime_type
+        integer tamano_bytes
+        real duracion_segundos
+        string sha256_hash
+        integer medidor_uso_momento
+        timestamp capturado_en
+        timestamp creado_en
+    }
+
+    mantenimientos_vehiculo {
+        string id PK
+        string local_id FK
+        string vehiculo_id FK
+        string reserva_origen_id FK
+        string tipo
+        string estado
+        string etiqueta
+        string fecha_inicio
+        string fecha_fin
+        integer costo_total
+        string movimiento_caja_id FK
+        string creado_por_id FK
+        timestamp creado_en
+        timestamp actualizado_en
+    }
+
+    reservas {
+        string id PK
+        string codigo UK
+        string local_id FK
+        string vehiculo_id FK
+        string cliente_id FK
+        string fecha_inicio
+        string fecha_fin
+        integer dias_alquiler
+        string estado
+        string modalidad_entrega
+        integer precio_dia_cotizado
+        integer subtotal_tarifa_cotizado
+        integer cobertura_pericial_cotizada
+        integer total_cotizado
+        string modalidad_pago_inicial
+        string metodo_abono_inicial
+        integer monto_abono_reportado
+        string contacto_nombre
+        string contacto_tipo_documento
+        string contacto_numero_documento
+        string contacto_categoria_licencia
+        timestamp creado_en
+        timestamp actualizado_en
+    }
+
+    contratos_alquiler {
+        string id PK
+        string numero_contrato UK
+        string reserva_id FK, UK
+        string local_id FK
+        string vehiculo_id FK
+        string cliente_id FK
+        string arrendatario_nombre
+        string arrendatario_numero_documento
+        boolean traslado_fotomultas_aceptado
+        boolean pagare_blanco_firmado
+        timestamp fecha_hora_entrega_real
+        timestamp fecha_hora_devolucion_pactada
+        timestamp fecha_hora_devolucion_real
+        integer medidor_uso_entrega
+        integer medidor_uso_retorno
+        integer total_liquidado
+        integer total_pagado
+        integer saldo_pendiente
+        string estado_pago
+        string estado_contrato
+        string contrato_pdf_r2_key
+        timestamp creado_en
+        timestamp actualizado_en
+    }
+
+    plantillas_inspeccion {
+        string id PK
+        string local_id FK
+        string categoria_vehiculo
+        string nombre
+        integer version
+        string unidad_medida_uso
+        string items_definicion
+        boolean activo
+        timestamp creado_en
+    }
+
+    inspecciones_periciales {
+        string id PK
+        string local_id FK
+        string reserva_id FK
+        string contrato_id FK
+        string vehiculo_id FK
+        string plantilla_id FK
+        string tipo_acto
+        string inspector_id FK
+        integer medidor_uso
+        integer nivel_energia_pct
+        string estado_general
+        string respuestas_checklist
+        string acta_pdf_r2_key
+        timestamp iniciada_en
+        timestamp finalizada_en
+        timestamp creado_en
+    }
+
+    puntos_inspeccion_r2 {
+        string id PK
+        string local_id FK
+        string reserva_id FK
+        string inspeccion_id FK
+        string vehiculo_id FK
+        string zona
+        string etiqueta
+        string dictamen
+        string estado
+        string gravedad
+        string coord_x
+        string coord_y
+        string multimedia_entrega_id FK
+        string multimedia_retorno_id FK
+        integer costo_estimado
+        boolean genera_cargo_cliente
+        boolean reparado
+        timestamp creado_en
+        timestamp actualizado_en
+    }
+
+    evaluaciones_entrega_cliente {
+        string id PK
+        string reserva_id FK, UK
+        string local_id FK
+        string vehiculo_id FK
+        string cliente_id FK
+        string calificacion_general
+        integer puntaje_numerico
+        string desempeno_vehiculo
+        boolean cabina_sin_objetos
+        boolean telemetria_verificada
+        boolean llaves_entregadas
+        string combustible_nivel
+        timestamp completada_en
     }
 
     notificaciones {
@@ -739,7 +1314,7 @@ erDiagram
 
 ---
 
-## 7. Entornos de Base de Datos y Operaciones (Runbook)
+## 9. Entornos de Base de Datos y Operaciones (Runbook)
 
 ### Entornos Configurados
 
@@ -768,4 +1343,3 @@ erDiagram
    - **Historial de transacciones (Time Travel):** `pnpm db:timetravel:info`
    - **Restauración ante contingencias:** `pnpm wrangler d1 time-travel restore flotax-db --timestamp="YYYY-MM-DDTHH:MM:SSZ"`
    - **Backup lógico frío:** `pnpm db:backup:prod`
-

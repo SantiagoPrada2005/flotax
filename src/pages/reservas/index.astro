@@ -2,12 +2,28 @@
 import LayoutApp from '@/layouts/LayoutApp.astro';
 import MisReservasHub from '@/components/reservas/MisReservasHub';
 import { resolveClientTimeContext } from '@/lib/time/client-time';
+import { env } from 'cloudflare:workers';
+import { getDb } from '@/lib/db';
+import { listarReservasD1 } from '@/lib/flota/repositorio-reservas';
+import { listarVehiculos } from '@/lib/flota/repositorio';
 
 const { dateString: hoyISO } = resolveClientTimeContext(Astro.request);
+const usuario = Astro.locals.usuario;
+const db = env.DB ? getDb(env.DB) : undefined;
+
+const initialReservas = await listarReservasD1(db, {
+  clienteId: usuario?.id,
+});
+const vehiculosDisponibles = await listarVehiculos(db);
 ---
 
 <LayoutApp title="FlotaX — Mis Reservas" activeTab="search" navVariant="client">
   <div class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-2 sm:py-4">
-    <MisReservasHub client:load hoyISO={hoyISO} />
+    <MisReservasHub
+      client:load
+      hoyISO={hoyISO}
+      initialReservas={initialReservas}
+      vehiculosDisponibles={vehiculosDisponibles}
+    />
   </div>
 </LayoutApp>

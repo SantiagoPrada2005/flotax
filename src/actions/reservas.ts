@@ -1,23 +1,116 @@
-import { defineAction } from 'astro:actions';
+import { defineAction, ActionError } from 'astro:actions';
 import { marcarRevisionNavegacion } from '@/lib/pwa/revision';
 import { z } from 'zod';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
-import { actualizarEstadoVehiculo } from '@/lib/flota/repositorio';
+import {
+  crearReservaD1,
+  cambiarEstadoReservaD1,
+  registrarEntregaEvaluacionD1,
+  registrarCobroWaybillD1,
+} from '@/lib/flota/repositorio-reservas';
+import {
+  estadosReserva,
+  modalidadesEntregaReserva,
+  modalidadesPagoInicial,
+  metodosAbonoInicial,
+  categoriasLicenciaConduccion,
+  tiposDocumentoIdentidad,
+  nivelesCalificacionServicio,
+  nivelesDesempenoVehiculo,
+} from '@/db/schema';
 import { crearServicioNotificaciones } from '@/lib/notificaciones';
 import { requireAuth, requireLocalAuth, PERMISOS } from '@/lib/auth';
 
-const estadoReservaSchema = z.enum([
-  'PENDIENTE',
-  'CONFIRMADA',
-  'EN_CURSO',
-  'COMPLETADA',
-  'RECHAZADA',
-]);
+/**
+ * Radica una nueva solicitud de reserva comercial de vehículo desde el wizard de alquiler
+ * o desde la cabina de atención en patio.
+ */
+export const crearReservaAction = defineAction({
+  input: z.object({
+    vehiculoId: z.string().min(1, { error: 'El vehículo es obligatorio' }),
+    fechaInicio: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, { error: 'Fecha de inicio no válida (YYYY-MM-DD)' }),
+    fechaFin: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, { error: 'Fecha de fin no válida (YYYY-MM-DD)' }),
+    diasAlquiler: z.number().int().positive({ error: 'Días de alquiler deben ser mayores a 0' }),
+    precioDiaCotizado: z.number().positive(),
+    subtotalTarifaCotizado: z.number().positive(),
+    coberturaPericialCotizada: z.number().nonnegative(),
+    totalCotizado: z.number().positive(),
+    modalidadEntrega: z.enum(modalidadesEntregaReserva),
+    direccionEntrega: z.string().optional(),
+    sedeNombre: z.string().min(1, { error: 'La sede es obligatoria' }),
+    localId: z.string().optional(),
+    modalidadPagoInicial: z.enum(modalidadesPagoInicial),
+    metodoAbonoInicial: z.enum(metodosAbonoInicial),
+    montoAbonoReportado: z.number().nonnegative(),
+    referenciaAbonoInicial: z.string().optional(),
+    contactoNombre: z.string().min(3, { error: 'El nombre completo es obligatorio' }),
+    contactoTipoDocumento: z.enum(tiposDocumentoIdentidad),
+    contactoNumeroDocumento: z.string().min(4, { error: 'El número de identificación es obligatorio' }),
+    contactoCategoriaLicencia: z.enum(categoriasLicenciaConduccion),
+    contactoTelefono: z.string().min(7, { error: 'El número de teléfono debe ser válido' }),
+    contactoCorreo: z.email({ error: 'Correo electrónico de contacto no válido' }),
+    ley1581Aceptada: z.boolean().refine((val) => val === true, {
+      error: 'Debes autorizar el tratamiento de datos personales (Ley 1581)',
+    }),
+  }),
+  handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
+
+    if (!env.DB) {
+      throw new ActionError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Base de datos no disponible.',
+      });
+    }
+
+    const db = getDb(env.DB);
+    const usuario = context.locals.usuario;
+    const localId =
+      input.localId ||
+      context.locals.localCaptacion?.id ||
+      usuario?.localActivo?.id ||
+      'local-patio-norte';
+
+    const reserva = await crearReservaD1(db, input, localId, usuario?.id);
+
+    // Disparar notificación in-app para el equipo operativo de patio
+    try {
+      await crearServicioNotificaciones(env, context.locals.logger).notificar({
+        tipo: 'SOLICITUD_NUEVA',
+        payload: {
+          reservaId: reserva.codigo,
+          clienteNombre: reserva.conductor.nombreCompleto,
+          vehiculo: `${reserva.vehiculo.marca} ${reserva.vehiculo.modelo}`,
+        },
+        destino: {
+          alcance: 'LOCAL_ROLES',
+          localId,
+          roles: ['DUENO', 'ADMIN', 'ASESOR'],
+        },
+        localId,
+        actorId: usuario?.id,
+      });
+    } catch {
+      // No interrumpir la respuesta si falla el broker de notificaciones
+    }
+
+    return {
+      ok: true,
+      codigo: reserva.codigo,
+      rutaDestino: `/reservas/${reserva.codigo}`,
+      reserva,
+    };
+  },
+});
 
 /**
  * Actualiza el estado operativo de una reserva desde la cabina de administración,
- * sincronizando el estado del vehículo en D1 cuando hay entrega o devolución.
+ * sincronizando el estado de la reserva y del vehículo en D1.
  */
 export const cambiarEstadoReservaAction = defineAction({
   input: z.object({
@@ -25,30 +118,38 @@ export const cambiarEstadoReservaAction = defineAction({
     vehiculoId: z.string().min(1, { error: 'El ID del vehículo es obligatorio' }),
     vehiculoNombre: z.string().min(1, { error: 'El nombre del vehículo es obligatorio' }),
     rangoFechas: z.string().min(1, { error: 'El rango de fechas es obligatorio' }),
-    nuevoEstado: estadoReservaSchema,
+    nuevoEstado: z.enum(estadosReserva),
     motivoRechazo: z.string().optional(),
     requiereMantenimiento: z.boolean().optional(),
   }),
   handler: async (input, context) => {
     marcarRevisionNavegacion(context.cookies);
-    const db = env.DB ? getDb(env.DB) : undefined;
     const usuario = requireAuth(context);
     const localId = usuario.localActivo?.id;
 
-    // Sincronizar estado de la unidad física en flota según la etapa del ciclo
-    if (input.nuevoEstado === 'EN_CURSO') {
-      await actualizarEstadoVehiculo(input.vehiculoId, 'RESERVADO', db);
-    } else if (input.nuevoEstado === 'COMPLETADA') {
-      const estadoDestino = input.requiereMantenimiento
-        ? 'MANTENIMIENTO'
-        : 'DISPONIBLE';
-      await actualizarEstadoVehiculo(input.vehiculoId, estadoDestino, db);
-    } else if (input.nuevoEstado === 'RECHAZADA') {
-      await actualizarEstadoVehiculo(input.vehiculoId, 'DISPONIBLE', db);
+    if (!env.DB) {
+      throw new ActionError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Base de datos no disponible.',
+      });
     }
 
-    // Emitir notificación in-app si hay sesión y base de datos activa
-    if (env.DB && localId) {
+    const db = getDb(env.DB);
+    const ok = await cambiarEstadoReservaD1(db, input.codigo, input.nuevoEstado, {
+      motivoRechazo: input.motivoRechazo,
+      confirmadoPorId: usuario.id,
+      requiereMantenimiento: input.requiereMantenimiento,
+    });
+
+    if (!ok) {
+      throw new ActionError({
+        code: 'NOT_FOUND',
+        message: `No se encontró la reserva #${input.codigo} para actualizar`,
+      });
+    }
+
+    // Emitir notificación in-app si hay local activo
+    if (localId) {
       try {
         const servicioNotif = crearServicioNotificaciones(
           env,
@@ -86,7 +187,7 @@ export const cambiarEstadoReservaAction = defineAction({
           });
         }
       } catch {
-        // No bloquear la transición operativa si falla el despacho de notificación
+        // Tolerante en entornos sin notificaciones configuradas
       }
     }
 
@@ -100,7 +201,7 @@ export const cambiarEstadoReservaAction = defineAction({
 });
 
 /**
- * Asienta el cobro del saldo pendiente o liberación de garantía en el Waybill.
+ * Asienta el cobro del saldo pendiente o liberación de garantía en el Waybill y caja operativa.
  */
 export const registrarCobroWaybillAction = defineAction({
   input: z.object({
@@ -113,7 +214,29 @@ export const registrarCobroWaybillAction = defineAction({
     const usuario = requireLocalAuth(context, PERMISOS.CAJA_ABONOS_REGISTRAR);
     const localId = usuario.localActivo.id;
 
-    if (env.DB && input.monto > 0) {
+    if (!env.DB) {
+      throw new ActionError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Base de datos no disponible.',
+      });
+    }
+
+    const db = getDb(env.DB);
+    const ok = await registrarCobroWaybillD1(db, {
+      codigo: input.codigo,
+      monto: input.monto,
+      metodoPago: input.metodoPago,
+      usuarioId: usuario.id,
+    });
+
+    if (!ok) {
+      throw new ActionError({
+        code: 'BAD_REQUEST',
+        message: `No fue posible asentar el cobro de la reserva #${input.codigo}. Verifica la cuenta operativa.`,
+      });
+    }
+
+    if (input.monto > 0) {
       try {
         await crearServicioNotificaciones(env, context.locals.logger).notificar({
           tipo: 'ABONO_REGISTRADO',
@@ -135,7 +258,7 @@ export const registrarCobroWaybillAction = defineAction({
           actorId: usuario.id,
         });
       } catch {
-        // Ignorar en modo offline o sin suscriptores
+        // Ignorar si falla notificación
       }
     }
 
@@ -150,23 +273,18 @@ export const registrarCobroWaybillAction = defineAction({
 });
 
 /**
- * Registra la entrega/devolución del vehículo desde el Full-Screen Wizard del cliente
- * junto con la evaluación interactiva del servicio prestado.
+ * Registra la entrega/devolución del vehículo desde el Wizard del cliente
+ * persistiendo el checklist y la evaluación en Cloudflare D1.
  */
 export const registrarEntregaEvaluacionAction = defineAction({
   input: z.object({
     codigo: z.string().min(1, { error: 'El código de reserva es obligatorio' }),
     vehiculoId: z.string().min(1, { error: 'El ID del vehículo es obligatorio' }),
     vehiculoNombre: z.string().min(1, { error: 'El nombre del vehículo es obligatorio' }),
-    calificacionGeneral: z.enum([
-      'SOBRESALIENTE',
-      'MUY_BUENO',
-      'REGULAR',
-      'ATENCION_REQUERIDA',
-    ]),
-    puntajeNumerico: z.number().min(1).max(5),
+    calificacionGeneral: z.enum(nivelesCalificacionServicio),
+    puntajeNumerico: z.number().int().min(2).max(5),
     aspectosDestacados: z.array(z.string()),
-    desempenoVehiculo: z.enum(['IMPECABLE', 'OPTIMO', 'DETALLE_MENOR']),
+    desempenoVehiculo: z.enum(nivelesDesempenoVehiculo),
     comentarioOpcional: z.string().optional(),
     cabinaSinObjetos: z.boolean(),
     telemetriaVerificada: z.boolean(),
@@ -174,17 +292,40 @@ export const registrarEntregaEvaluacionAction = defineAction({
   }),
   handler: async (input, context) => {
     marcarRevisionNavegacion(context.cookies);
-    requireAuth(context);
-    const db = env.DB ? getDb(env.DB) : undefined;
+    const usuario = context.locals.usuario;
+
+    if (!env.DB) {
+      throw new ActionError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Base de datos no disponible.',
+      });
+    }
+
+    const db = getDb(env.DB);
+    const ok = await registrarEntregaEvaluacionD1(db, {
+      codigo: input.codigo,
+      vehiculoId: input.vehiculoId,
+      calificacionGeneral: input.calificacionGeneral,
+      puntajeNumerico: input.puntajeNumerico as 2 | 3 | 4 | 5,
+      aspectosDestacados: input.aspectosDestacados,
+      desempenoVehiculo: input.desempenoVehiculo,
+      comentarioOpcional: input.comentarioOpcional,
+      cabinaSinObjetos: input.cabinaSinObjetos,
+      telemetriaVerificada: input.telemetriaVerificada,
+      llavesEntregadas: input.llavesEntregadas,
+      clienteId: usuario?.id,
+    });
+
+    if (!ok) {
+      throw new ActionError({
+        code: 'BAD_REQUEST',
+        message: `No fue posible registrar la evaluación para la reserva #${input.codigo}`,
+      });
+    }
+
     const requiereRevision =
       input.calificacionGeneral === 'ATENCION_REQUERIDA' ||
       input.desempenoVehiculo === 'DETALLE_MENOR';
-
-    await actualizarEstadoVehiculo(
-      input.vehiculoId,
-      requiereRevision ? 'MANTENIMIENTO' : 'DISPONIBLE',
-      db
-    );
 
     return {
       ok: true,
@@ -195,4 +336,3 @@ export const registrarEntregaEvaluacionAction = defineAction({
     };
   },
 });
-

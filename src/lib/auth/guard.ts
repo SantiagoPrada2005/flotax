@@ -44,10 +44,19 @@ export function requireAuth(
   }
 
   if (permisoRequerido) {
-    // Si tiene local activo, se evalúa su rol en dicho local; de lo contrario rol 'USUARIO'
-    const rolEfectivo = usuario.localActivo ? usuario.localActivo.rol : 'USUARIO';
+    const sujeto = usuario.localActivo
+      ? {
+          rol: usuario.localActivo.rol,
+          esSuperAdmin: usuario.esSuperAdmin,
+          permisosConcedidos: usuario.localActivo.permisosConcedidos,
+          permisosRevocados: usuario.localActivo.permisosRevocados,
+        }
+      : {
+          rol: 'USUARIO' as const,
+          esSuperAdmin: usuario.esSuperAdmin,
+        };
 
-    if (!tienePermiso(rolEfectivo, permisoRequerido)) {
+    if (!tienePermiso(sujeto, permisoRequerido)) {
       throw new ActionError({
         code: 'FORBIDDEN',
         message: `No posee privilegios suficientes para la acción requerida (${permisoRequerido}).`,
@@ -74,13 +83,17 @@ export function requireLocalAuth(
   permisoRequerido?: Permiso
 ): UsuarioSesion & { localActivo: LocalActivoSesion } {
   const usuario = requireAuth(context, permisoRequerido);
+  const localActivo = usuario.localActivo;
 
-  if (!usuario.localActivo) {
+  if (!localActivo) {
     throw new ActionError({
       code: 'BAD_REQUEST',
       message: 'Debe seleccionar un local de alquiler activo para realizar esta operación.',
     });
   }
 
-  return usuario as UsuarioSesion & { localActivo: LocalActivoSesion };
+  return {
+    ...usuario,
+    localActivo,
+  };
 }
