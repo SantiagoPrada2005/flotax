@@ -380,8 +380,9 @@ export default function MaintenanceWizardFlow({
           <button
             type="button"
             onClick={onCancel}
+            disabled={isSubmitting || Boolean(ordenCreada)}
             aria-label="Cancelar programación de mantenimiento"
-            className="ios-press-bounce min-h-[44px] px-3.5 rounded-full border border-[#9CA3AF]/40 bg-white font-display text-xs font-bold text-[#4B5563] hover:text-[#111827] hover:bg-white shadow-2xs transition cursor-pointer flex items-center gap-1.5"
+            className="ios-press-bounce min-h-[44px] px-3.5 rounded-full border border-[#9CA3AF]/40 bg-white font-display text-xs font-bold text-[#4B5563] hover:text-[#111827] hover:bg-white shadow-2xs transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
           >
             <span>✕</span>
             <span>Cancelar</span>
@@ -958,14 +959,16 @@ export default function MaintenanceWizardFlow({
         )}
 
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={retrocederPaso}
-            disabled={isSubmitting}
-            className="ios-press-bounce min-h-[48px] px-5 sm:px-6 rounded-2xl border border-[#9CA3AF]/40 bg-white font-display text-sm font-bold text-[#111827] hover:bg-[#EDEDED] transition shadow-2xs cursor-pointer disabled:opacity-50"
-          >
-            {paso === 1 ? 'Cancelar' : 'Atrás'}
-          </button>
+          {!ordenCreada && (
+            <button
+              type="button"
+              onClick={retrocederPaso}
+              disabled={isSubmitting}
+              className="ios-press-bounce min-h-[48px] px-5 sm:px-6 rounded-2xl border border-[#9CA3AF]/40 bg-white font-display text-sm font-bold text-[#111827] hover:bg-[#EDEDED] transition shadow-2xs cursor-pointer disabled:opacity-50"
+            >
+              {paso === 1 ? 'Cancelar' : 'Atrás'}
+            </button>
+          )}
 
           {paso < 5 ? (
             <button
@@ -977,11 +980,20 @@ export default function MaintenanceWizardFlow({
               <span>Continuar</span>
               <span className="font-mono text-sm">→</span>
             </button>
+          ) : ordenCreada ? (
+            <button
+              type="button"
+              onClick={() => onSuccess(ordenCreada, advertenciasServidor ?? [])}
+              className="ios-press-bounce flex-1 min-h-[48px] rounded-2xl bg-[#111827] hover:bg-[#1F2937] active:scale-[0.99] font-display text-sm sm:text-base font-bold text-[#EDEDED] shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>Entendido, Finalizar Registro</span>
+              <span className="font-mono text-sm">✓</span>
+            </button>
           ) : (
             <button
               type="button"
               onClick={handleCrearMantenimiento}
-              disabled={isSubmitting || Boolean(advertenciasServidor)}
+              disabled={isSubmitting}
               className="ios-press-bounce flex-1 min-h-[48px] rounded-2xl bg-[#111827] hover:bg-[#1F2937] active:scale-[0.99] font-display text-sm sm:text-base font-bold text-[#EDEDED] shadow-sm transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {isSubmitting ? (

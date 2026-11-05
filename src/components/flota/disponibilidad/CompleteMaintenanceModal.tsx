@@ -84,9 +84,9 @@ export default function CompleteMaintenanceModal({
       return;
     }
 
-    if (orden.kilometrajeRegistro && kmNum < orden.kilometrajeRegistro) {
+    if (kmNum < kmBase) {
       setErrorMsg(
-        `El odómetro final (${kmNum.toLocaleString('es-CO')} km) no puede ser menor al de ingreso (${orden.kilometrajeRegistro.toLocaleString('es-CO')} km).`
+        `El odómetro final (${kmNum.toLocaleString('es-CO')} km) no puede ser menor al de referencia (${kmBase.toLocaleString('es-CO')} km).`
       );
       return;
     }
@@ -224,7 +224,7 @@ export default function CompleteMaintenanceModal({
               <input
                 id="kilometrajeFinalInput"
                 type="number"
-                min={orden.kilometrajeRegistro ?? 0}
+                min={kmBase}
                 step="1"
                 required
                 value={kilometrajeFinal}
@@ -239,9 +239,9 @@ export default function CompleteMaintenanceModal({
             <p className="mt-1 text-[11px] text-[#4B5563]">
               Mínimo:{' '}
               <strong className="text-[#111827]">
-                {(orden.kilometrajeRegistro ?? 0).toLocaleString('es-CO')} km
+                {kmBase.toLocaleString('es-CO')} km
               </strong>{' '}
-              (odómetro registrado al ingreso).
+              (odómetro registrado de referencia).
             </p>
           </div>
 
