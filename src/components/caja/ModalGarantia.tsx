@@ -1,6 +1,18 @@
 import { useState } from 'react';
 import type { DepositoGarantiaSelect, CuentaFinancieraSelect, MetodoPagoFinanciero } from '@/lib/caja';
 import { formatearMonedaCOP } from '@/lib/caja';
+import {
+  CajaCustomSelect,
+  type CajaSelectOption,
+} from './CajaMovimientosFilterBar';
+
+const OPCIONES_METODO_GARANTIA: readonly CajaSelectOption<MetodoPagoFinanciero>[] = [
+  { value: 'transferencia', label: 'Transferencia Bancaria' },
+  { value: 'efectivo', label: 'Efectivo' },
+  { value: 'tarjeta', label: 'Tarjeta Débito / Crédito' },
+  { value: 'especie', label: 'En Especie' },
+  { value: 'otro', label: 'Otro medio' },
+];
 
 export interface ModalGarantiaProps {
   isOpen: boolean;
@@ -188,32 +200,32 @@ export function ModalGarantia({
               <label className="block text-xs font-bold uppercase tracking-wider text-[#4B5563] mb-1">
                 Método de Pago
               </label>
-              <select
+              <CajaCustomSelect<MetodoPagoFinanciero>
+                ariaLabel="Método de pago de garantía"
                 value={metodoPago}
-                onChange={(e) => setMetodoPago(e.target.value as MetodoPagoFinanciero)}
-                className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/50 bg-white px-3 py-2 text-base text-[#111827] focus:border-[#111827] focus:outline-hidden"
-              >
-                <option value="transferencia">Transferencia Bancaria</option>
-                <option value="efectivo">Efectivo</option>
-                <option value="tarjeta">Tarjeta</option>
-                <option value="otro">Otro</option>
-              </select>
+                options={OPCIONES_METODO_GARANTIA}
+                onChange={setMetodoPago}
+              />
             </div>
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-[#4B5563] mb-1">
                 Cuenta / Caja
               </label>
-              <select
+              <CajaCustomSelect
+                ariaLabel="Cuenta o caja de garantía"
                 value={cuentaId}
-                onChange={(e) => setCuentaId(e.target.value)}
-                className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/50 bg-white px-3 py-2 text-base text-[#111827] focus:border-[#111827] focus:outline-hidden"
-              >
-                {cuentas.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.nombre}
-                  </option>
-                ))}
-              </select>
+                options={cuentas.map((c) => ({
+                  value: c.id,
+                  label: c.nombre,
+                  badge:
+                    c.tipo === 'CAJA_EFECTIVO'
+                      ? 'Efectivo'
+                      : c.tipo === 'BANCO'
+                        ? 'Banco'
+                        : 'Billetera',
+                }))}
+                onChange={setCuentaId}
+              />
             </div>
           </div>
 
