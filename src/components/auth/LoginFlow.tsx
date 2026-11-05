@@ -20,7 +20,9 @@ function getFriendlyAuthErrorMessage(code: string, description?: string | null):
     case 'state_not_found':
     case 'invalid_state':
     case 'invalid_code':
-      return 'La sesión de validación con Google caducó por seguridad. Por favor, intenta de nuevo.';
+    case 'state_mismatch':
+    case 'session_expired':
+      return 'La sesión de validación con Google caducó o fue reintentada. Por favor, intenta de nuevo.';
     case 'unable_to_get_user_info':
       return 'No fue posible obtener la información de perfil desde Google. Intenta nuevamente.';
     case 'email_not_found':
@@ -52,6 +54,7 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(0);
   const otpInputRef = useRef<HTMLInputElement>(null);
+  const isGoogleSubmitting = useRef(false);
 
   // Determinar cuál fondo puro automotriz corresponde al estado actual
   const getActiveBackground = (): 'blueprint' | 'sketch' | 'cad' | 'stencil' => {
@@ -111,7 +114,9 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
   };
 
   const handleGoogleSignIn = async () => {
+    if (isGoogleSubmitting.current || isLoading) return;
     try {
+      isGoogleSubmitting.current = true;
       setIsLoading(true);
       setError(null);
       const destination = getDestinationUrl();
@@ -126,6 +131,7 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
       if (res?.error) {
         setError(res.error.message || 'No se pudo conectar con el servicio de autenticación de Google.');
         setIsLoading(false);
+        isGoogleSubmitting.current = false;
         return;
       }
 
@@ -137,6 +143,7 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
       console.error('Error al iniciar sesión con Google:', err);
       setError('No se pudo conectar con el servicio de autenticación de Google. Por favor, intenta de nuevo.');
       setIsLoading(false);
+      isGoogleSubmitting.current = false;
     }
   };
 

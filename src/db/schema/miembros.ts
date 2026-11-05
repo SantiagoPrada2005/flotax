@@ -5,6 +5,9 @@ import { localesAlquiler } from './locales';
 export const rolesEmpleadoValidos = [
   'DUENO',
   'ADMIN',
+  'ASESOR',
+  'ENCARGADO_FLOTA',
+  'CONTADOR',
   'OPERATIVO',
   'AUDITOR_FINANCIERO',
 ] as const;

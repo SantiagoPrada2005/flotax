@@ -1,6 +1,12 @@
 import type { AppDb } from '@/lib/db';
 import { logFalloD1 } from '@/lib/db/diagnostics';
-import { localesAlquiler, clientesLocal, user } from '@/db/schema';
+import {
+  localesAlquiler,
+  clientesLocal,
+  user,
+  politicasLocal,
+  cuentasFinancieras,
+} from '@/db/schema';
 import type { LocalAlquilerSelect } from '@/db/schema';
 import { eq, and, or } from 'drizzle-orm';
 
@@ -313,3 +319,88 @@ export async function actualizarConfigCatalogoLocal(
     local: actualizado,
   };
 }
+
+/**
+ * Garantiza de forma idempotente que un local cuente con sus políticas contractuales
+ * y al menos una cuenta financiera activa en D1 para operar reservas, caja y cobros.
+ */
+export async function asegurarConfiguracionBaseLocal(
+  db: AppDb,
+  localId: string
+): Promise<void> {
+  const ahora = new Date();
+
+  try {
+    // 1. Políticas operativas del local
+    const polExistente = await db
+      .select({ id: politicasLocal.id })
+      .from(politicasLocal)
+      .where(eq(politicasLocal.localId, localId))
+      .limit(1);
+
+    if (!polExistente[0]) {
+      await db
+        .insert(politicasLocal)
+        .values({
+          id: `pol-${localId.slice(0, 24)}`,
+          localId,
+          abonoMinimoPct: 30,
+          coberturaPericialPct: 8,
+          recargoMoraDiariaPct: 200,
+          recargoAdminFotomultaPct: 30,
+          cargoLavadoEstandar: 45000,
+          limiteKmDiario: null,
+          cargoKmAdicional: 0,
+          nitArrendador: '901.482.109-4 · FlotaX Mobility S.A.S.',
+          representanteLegal: 'Representante Operativo FlotaX',
+          municipioContractual: 'Medellín, Antioquia',
+          creadoEn: ahora,
+          actualizadoEn: ahora,
+        })
+        .onConflictDoNothing();
+    }
+
+    // 2. Cuentas financieras operativas
+    const ctaExistente = await db
+      .select({ id: cuentasFinancieras.id })
+      .from(cuentasFinancieras)
+      .where(
+        and(
+          eq(cuentasFinancieras.localId, localId),
+          eq(cuentasFinancieras.activo, true)
+        )
+      )
+      .limit(1);
+
+    if (!ctaExistente[0]) {
+      await db
+        .insert(cuentasFinancieras)
+        .values([
+          {
+            id: `cta-caja-${localId.slice(0, 20)}`,
+            localId,
+            nombre: 'Caja Operativa (Efectivo)',
+            tipo: 'CAJA_EFECTIVO',
+            saldoInicial: 1_000_000,
+            activo: true,
+            creadoEn: ahora,
+            actualizadoEn: ahora,
+          },
+          {
+            id: `cta-banco-${localId.slice(0, 20)}`,
+            localId,
+            nombre: 'Cuenta Bancaria Recaudos',
+            tipo: 'BANCO',
+            saldoInicial: 5_000_000,
+            activo: true,
+            creadoEn: ahora,
+            actualizadoEn: ahora,
+          },
+        ])
+        .onConflictDoNothing();
+    }
+  } catch (error) {
+    logFalloD1('locales.asegurarConfiguracionBase', error, { localId });
+  }
+}
+

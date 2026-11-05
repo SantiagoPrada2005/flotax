@@ -2,7 +2,10 @@
 import LayoutApp from '@/layouts/LayoutApp.astro';
 import AlquilerDetalleView from '@/components/reservas/AlquilerDetalleView';
 import { obtenerReservaClientePorCodigo } from '@/lib/flota';
+import { obtenerReservaPorCodigoD1 } from '@/lib/flota/repositorio-reservas';
 import { resolveClientTimeContext } from '@/lib/time/client-time';
+import { env } from 'cloudflare:workers';
+import { getDb } from '@/lib/db';
 
 const { codigo } = Astro.params;
 
@@ -11,7 +14,11 @@ if (!codigo) {
 }
 
 const { dateString: hoyISO } = resolveClientTimeContext(Astro.request);
-const reservaInicial = obtenerReservaClientePorCodigo(codigo, null, hoyISO);
+const db = env.DB ? getDb(env.DB) : undefined;
+let reservaInicial = await obtenerReservaPorCodigoD1(db, codigo);
+if (!reservaInicial) {
+  reservaInicial = obtenerReservaClientePorCodigo(codigo, null, hoyISO) ?? null;
+}
 
 if (!reservaInicial) {
   return Astro.redirect('/reservas');

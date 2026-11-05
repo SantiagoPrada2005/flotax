@@ -1,4 +1,5 @@
 import type { RolSistema } from './rbac';
+import type { Permiso } from './permisos';
 import type { AppDb } from '@/lib/db';
 import { miembrosLocal, localesAlquiler } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
@@ -10,6 +11,8 @@ export interface LocalActivoSesion {
   rol: RolSistema;
   esDueno: boolean;
   onboardingCompletado: boolean;
+  permisosConcedidos?: readonly Permiso[] | undefined;
+  permisosRevocados?: readonly Permiso[] | undefined;
 }
 
 export interface UsuarioSesion {

@@ -32,6 +32,7 @@ import {
   obtenerVehiculoDetalleAction,
 } from './flota';
 import {
+  crearReservaAction,
   cambiarEstadoReservaAction,
   registrarCobroWaybillAction,
   registrarEntregaEvaluacionAction,
@@ -86,6 +87,7 @@ export const server = {
     obtenerVehiculoDetalle: obtenerVehiculoDetalleAction,
   },
   reservas: {
+    crearReserva: crearReservaAction,
     cambiarEstado: cambiarEstadoReservaAction,
     registrarCobroWaybill: registrarCobroWaybillAction,
     registrarEntregaEvaluacion: registrarEntregaEvaluacionAction,
