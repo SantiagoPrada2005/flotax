@@ -110,7 +110,19 @@ export default function AvailabilityOverviewView({
         </button>
       </div>
 
-      {/* 3. Leyenda Visual Clara */}
+      {/* 3. Calendario Editorial Reutilizado */}
+      <div className="rounded-[28px] overflow-hidden bg-white border border-[#9CA3AF]/30 shadow-xs">
+        <EditorialAvailabilityCalendar
+          vehiculo={vehiculo}
+          hoyISO={hoyISO}
+          fechaInicio={fechaInicio}
+          fechaFin={fechaFin}
+          onChangeRango={manejarCambioRango}
+          bloquesPrecalculados={bloques}
+        />
+      </div>
+
+      {/* 4. Leyenda Visual Clara */}
       <div className="rounded-2xl bg-white border border-[#9CA3AF]/30 p-3 sm:p-4 shadow-2xs">
         <span className="block text-[10px] font-bold uppercase tracking-wider text-[#4B5563] mb-2">
           Leyenda de Disponibilidad
@@ -138,18 +150,6 @@ export default function AvailabilityOverviewView({
             </div>
           </div>
         </div>
-      </div>
-
-      {/* 4. Calendario Editorial Reutilizado */}
-      <div className="rounded-[28px] overflow-hidden bg-white border border-[#9CA3AF]/30 shadow-xs">
-        <EditorialAvailabilityCalendar
-          vehiculo={vehiculo}
-          hoyISO={hoyISO}
-          fechaInicio={fechaInicio}
-          fechaFin={fechaFin}
-          onChangeRango={manejarCambioRango}
-          bloquesPrecalculados={bloques}
-        />
       </div>
 
       {/* 5. Próximos Mantenimientos Programados (si existen) */}
@@ -227,9 +227,8 @@ export default function AvailabilityOverviewView({
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
-              className={`h-4 w-4 text-[#4B5563] transition-transform duration-200 ${
-                mostrarHistorial ? 'rotate-180' : ''
-              }`}
+              className={`h-4 w-4 text-[#4B5563] transition-transform duration-200 ${mostrarHistorial ? 'rotate-180' : ''
+                }`}
               aria-hidden="true"
             >
               <polyline points="6 9 12 15 18 9" />
@@ -246,11 +245,10 @@ export default function AvailabilityOverviewView({
                   <div>
                     <div className="flex items-center gap-1.5">
                       <span
-                        className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded ${
-                          ord.estado === 'COMPLETADO'
-                            ? 'bg-status-success/10 text-status-success border border-status-success/30'
-                            : 'bg-[#EDEDED] text-[#4B5563]'
-                        }`}
+                        className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded ${ord.estado === 'COMPLETADO'
+                          ? 'bg-status-success/10 text-status-success border border-status-success/30'
+                          : 'bg-[#EDEDED] text-[#4B5563]'
+                          }`}
                       >
                         {ord.estado}
                       </span>
