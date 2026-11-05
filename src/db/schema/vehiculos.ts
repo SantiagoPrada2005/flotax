@@ -34,10 +34,23 @@ export const combustiblesVehiculo = [
 ] as const;
 export type CombustibleVehiculo = (typeof combustiblesVehiculo)[number];
 
+export const unidadesMedidaUso = ['KM', 'HORAS_MOTOR', 'MINUTOS'] as const;
+export type UnidadMedidaUso = (typeof unidadesMedidaUso)[number];
+
+export interface EspecificacionesBentoVehiculoSchema {
+  motorDetalle: string;
+  motorSubtitulo: string;
+  potenciaHp: string;
+  rangoRpm: string;
+  transmisionBadge: string;
+  paqueteEstilo: string;
+  carroceriaTag: string;
+  notaGarantia: string;
+}
+
 /**
  * Tabla de Vehículos de la Flota (Cloudflare D1 / SQLite).
- * Administra las unidades operativas disponibles para alquiler,
- * sus especificaciones periciales, estado en patio y tarifas.
+ * Responsabilidad única: Identidad física, técnica y comercial base de cada unidad.
  */
 export const vehiculos = sqliteTable('vehiculos', {
   id: text('id').primaryKey(),
@@ -48,6 +61,13 @@ export const vehiculos = sqliteTable('vehiculos', {
   categoria: text('categoria', { enum: categoriasVehiculo }).notNull(),
   categoriaEtiqueta: text('categoria_etiqueta').notNull(),
   placa: text('placa').notNull().unique(),
+  color: text('color'),
+  numeroMotor: text('numero_motor'),
+  numeroChasis: text('numero_chasis'),
+  valorComercial: integer('valor_comercial'), // Valor comercial en COP (Cláusula 5 del Contrato)
+  unidadMedidaUso: text('unidad_medida_uso', { enum: unidadesMedidaUso })
+    .notNull()
+    .default('KM'),
   estado: text('estado', { enum: estadosVehiculo }).notNull().default('DISPONIBLE'),
   precioDia: integer('precio_dia').notNull(),
   depositoGarantia: integer('deposito_garantia').notNull(),
@@ -57,6 +77,7 @@ export const vehiculos = sqliteTable('vehiculos', {
   autonomiaKm: integer('autonomia_km'),
   kilometraje: integer('kilometraje').notNull(),
   imagenUrl: text('imagen_url').notNull(),
+  specsBento: text('specs_bento', { mode: 'json' }).$type<EspecificacionesBentoVehiculoSchema>(),
   destacado: integer('destacado', { mode: 'boolean' }).notNull().default(false),
   descripcion: text('descripcion').notNull(),
   aceleracion: text('aceleracion'),

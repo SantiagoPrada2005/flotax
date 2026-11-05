@@ -31,12 +31,18 @@ export function createAuth(d1: D1Database, env?: AuthEnv, options?: CreateAuthOp
   const db = getDb(d1);
 
   const requestOrigin = options?.baseURL;
-  const isLocalOrigin =
+  const isPrivateIpOrLocal =
     requestOrigin &&
-    (requestOrigin.includes('localhost') || requestOrigin.includes('127.0.0.1'));
+    (requestOrigin.includes('localhost') ||
+      requestOrigin.includes('127.0.0.1') ||
+      /https?:\/\/(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|\[::1\])/.test(requestOrigin) ||
+      requestOrigin.endsWith('.local') ||
+      requestOrigin.includes('.local:'));
+
+  const isDevMode = import.meta.env.DEV || process.env.NODE_ENV !== 'production';
 
   const baseURL =
-    (isLocalOrigin ? requestOrigin : undefined) ||
+    (isPrivateIpOrLocal || (isDevMode && requestOrigin) ? requestOrigin : undefined) ||
     (env?.BETTER_AUTH_URL as string | undefined) ||
     requestOrigin ||
     (import.meta.env?.BETTER_AUTH_URL as string | undefined) ||
@@ -57,6 +63,9 @@ export function createAuth(d1: D1Database, env?: AuthEnv, options?: CreateAuthOp
     'http://localhost:*',
     'http://127.0.0.1:4321',
     'http://127.0.0.1:*',
+    'http://192.168.*:*',
+    'http://10.*:*',
+    'http://*.local:*',
   ];
 
   const trustedOrigins = Array.from(
@@ -111,6 +120,9 @@ export function createAuth(d1: D1Database, env?: AuthEnv, options?: CreateAuthOp
         enabled: true,
         trustedProviders: ['google'],
       },
+    },
+    advanced: {
+      useSecureCookies: !isDevMode && baseURL.startsWith('https://'),
     },
     onAPIError: {
       errorURL: `${baseURL}/login`,

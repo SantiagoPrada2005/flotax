@@ -4,16 +4,11 @@ import { navigate } from 'astro:transitions/client';
 import {
   ENCABEZADOS_SEMANA_EDITORIAL,
   FLOTA_CANONICA,
-  STORAGE_KEY_RESERVAS_FLOTAX,
   calcularDiasInclusivos,
   construirCalendarioSuizoReservas,
-  crearReservaMostradorPatio,
   formatearFechaCorta,
   formatearRangoReservaHumano,
-  hidratarReservasCliente,
   obtenerInfoDiaFechaISO,
-  obtenerReservasSemillaCliente,
-  persistirReservaActualizadaEnStorage,
   sumarDiasISO,
   type CeldaCalendarioSuizo,
   type EstadoReservaCliente,
@@ -25,6 +20,8 @@ export interface MisReservasHubProps {
   hoyISO: string;
   modo?: 'cliente' | 'admin' | undefined;
   abrirNuevaInicial?: boolean | undefined;
+  initialReservas?: ReservaClienteItem[] | undefined;
+  vehiculosDisponibles?: { id: string; marca: string; modelo: string; anio: number; placa: string; precioDia: number; imagenUrl: string }[] | undefined;
 }
 
 type FiltroEstadoAdmin =
@@ -53,13 +50,21 @@ export default function MisReservasHub({
   hoyISO,
   modo = 'cliente',
   abrirNuevaInicial = false,
+  initialReservas,
+  vehiculosDisponibles,
 }: MisReservasHubProps) {
   const esAdmin = modo === 'admin';
+  const catalogoVehiculos =
+    vehiculosDisponibles && vehiculosDisponibles.length > 0
+      ? vehiculosDisponibles
+      : FLOTA_CANONICA;
 
-  const [reservas, setReservas] = useState<ReservaClienteItem[]>(() =>
-    obtenerReservasSemillaCliente(hoyISO)
+  const [reservas, setReservas] = useState<ReservaClienteItem[]>(
+    () => initialReservas ?? []
   );
-  const [codigoActivo, setCodigoActivo] = useState<string>('');
+  const [codigoActivo, setCodigoActivo] = useState<string>(
+    initialReservas?.[0]?.codigo ?? ''
+  );
   const [filtroInicioISO, setFiltroInicioISO] = useState<string | null>(null);
   const [filtroFinISO, setFiltroFinISO] = useState<string | null>(null);
   const [filtroEstado, setFiltroEstado] = useState<FiltroEstadoAdmin>('TODAS');
@@ -69,7 +74,7 @@ export default function MisReservasHub({
 
   // Estado del formulario rápido de mostrador (1 paso)
   const [formVehiculoId, setFormVehiculoId] = useState<string>(
-    FLOTA_CANONICA[0]?.id ?? 'veh-mercedes-eqb'
+    catalogoVehiculos[0]?.id ?? 'veh-mercedes-eqb'
   );
   const [formFechaInicio, setFormFechaInicio] = useState<string>(hoyISO);
   const [formFechaFin, setFormFechaFin] = useState<string>(() =>
@@ -104,19 +109,13 @@ export default function MisReservasHub({
   };
 
   useEffect(() => {
-    try {
-      const rawReservas = window.localStorage.getItem(
-        STORAGE_KEY_RESERVAS_FLOTAX
-      );
-      const hidratadas = hidratarReservasCliente(rawReservas, null, hoyISO);
-      setReservas(hidratadas);
-      if (hidratadas[0]) {
-        setCodigoActivo(hidratadas[0].codigo);
+    if (initialReservas) {
+      setReservas(initialReservas);
+      if (initialReservas[0] && !codigoActivo) {
+        setCodigoActivo(initialReservas[0].codigo);
       }
-    } catch {
-      // Fallback a semillas por defecto
     }
-  }, [hoyISO]);
+  }, [initialReservas]);
 
   const conteosPorEstado = useMemo(() => {
     let pendientes = 0;
@@ -197,7 +196,7 @@ export default function MisReservasHub({
 
   const cotizacionRapidaPatio = useMemo(() => {
     const veh =
-      FLOTA_CANONICA.find((v) => v.id === formVehiculoId) ?? FLOTA_CANONICA[0]!;
+      catalogoVehiculos.find((v) => v.id === formVehiculoId) ?? catalogoVehiculos[0]!;
     const inicio =
       formFechaInicio <= formFechaFin ? formFechaInicio : formFechaFin;
     const fin =
@@ -206,7 +205,7 @@ export default function MisReservasHub({
     const subtotal = dias * veh.precioDia;
     const total = subtotal + Math.round(subtotal * 0.08);
     return { vehiculo: veh, dias, total };
-  }, [formVehiculoId, formFechaInicio, formFechaFin]);
+  }, [catalogoVehiculos, formVehiculoId, formFechaInicio, formFechaFin]);
 
   const cambiarMes = (delta: number) => {
     setMesCursor((prev) => {
@@ -260,28 +259,8 @@ export default function MisReservasHub({
   };
 
   const aprobarSolicitudRapida = async (item: ReservaClienteItem) => {
-    const actualizada: ReservaClienteItem = {
-      ...item,
-      estado: 'CONFIRMADA',
-      estadoGarantia: 'CUSTODIA_ACTIVA',
-    };
-    const rawActual =
-      typeof window !== 'undefined'
-        ? window.localStorage.getItem(STORAGE_KEY_RESERVAS_FLOTAX)
-        : null;
-    const nuevaLista = persistirReservaActualizadaEnStorage(
-      actualizada,
-      rawActual,
-      hoyISO
-    );
-    setReservas(nuevaLista);
-    setCodigoActivo(item.codigo);
-    mostrarAviso(
-      `Reserva #${item.codigo} confirmada · Lista para entrega R2`
-    );
-
     try {
-      await actions.reservas.cambiarEstado({
+      const res = await actions.reservas.cambiarEstado({
         codigo: item.codigo,
         vehiculoId: item.vehiculo.id,
         vehiculoNombre: `${item.vehiculo.marca} ${item.vehiculo.modelo}`,
@@ -291,49 +270,81 @@ export default function MisReservasHub({
         ),
         nuevoEstado: 'CONFIRMADA',
       });
+
+      if (res.error) {
+        mostrarAviso(`Error: ${res.error.message}`);
+        return;
+      }
+
+      setReservas((prev) =>
+        prev.map((r) =>
+          r.codigo === item.codigo
+            ? { ...r, estado: 'CONFIRMADA', estadoGarantia: 'CUSTODIA_ACTIVA' }
+            : r
+        )
+      );
+      setCodigoActivo(item.codigo);
+      mostrarAviso(
+        `Reserva #${item.codigo} confirmada · Lista para entrega R2`
+      );
     } catch {
-      // Persistido localmente
+      mostrarAviso('Error de red al confirmar');
     }
   };
 
-  const manejarCrearReservaMostrador = (e: SyntheticEvent<HTMLFormElement>) => {
+  const manejarCrearReservaMostrador = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const rawActual =
-      typeof window !== 'undefined'
-        ? window.localStorage.getItem(STORAGE_KEY_RESERVAS_FLOTAX)
-        : null;
-    const { creada, lista } = crearReservaMostradorPatio(
-      {
+    try {
+      const subtotalTarifa = cotizacionRapidaPatio.dias * cotizacionRapidaPatio.vehiculo.precioDia;
+      const coberturaPericial = Math.round(subtotalTarifa * 0.08);
+      const res = await actions.reservas.crearReserva({
         vehiculoId: formVehiculoId,
         fechaInicio: formFechaInicio,
         fechaFin: formFechaFin,
-        nombreCompleto: formNombre || 'Cliente Presencial Patio',
-        tipoDocumento: formTipoDoc,
-        numeroDocumento: formNumDoc || '1.037.482.910',
-        categoriaLicencia: formLicencia,
-        telefono: formTelefono || '+57 300 512 9080',
-        correo: 'mostrador@flotax.co',
+        diasAlquiler: cotizacionRapidaPatio.dias,
+        precioDiaCotizado: cotizacionRapidaPatio.vehiculo.precioDia,
+        subtotalTarifaCotizado: subtotalTarifa,
+        coberturaPericialCotizada: coberturaPericial,
+        totalCotizado: cotizacionRapidaPatio.total,
         modalidadEntrega: formModalidad,
-        estadoInicial: formEstadoInicial,
-        porcentajeAbonoInicial: formPorcentajeAbono,
-      },
-      rawActual,
-      hoyISO
-    );
+        sedeNombre: 'Patio Norte Medellín',
+        modalidadPagoInicial: formPorcentajeAbono === 100 ? 'TOTAL_100' : 'ABONO_30',
+        metodoAbonoInicial: 'CAJA_PATIO',
+        montoAbonoReportado:
+          formPorcentajeAbono === 100
+            ? cotizacionRapidaPatio.total
+            : Math.round(cotizacionRapidaPatio.total * 0.3),
+        contactoNombre: formNombre.trim() || 'Cliente Presencial Patio',
+        contactoTipoDocumento: formTipoDoc,
+        contactoNumeroDocumento: formNumDoc.trim() || '1037482910',
+        contactoCategoriaLicencia: formLicencia,
+        contactoTelefono: formTelefono.trim() || '+57 300 512 9080',
+        contactoCorreo: 'mostrador@flotax.co',
+        ley1581Aceptada: true,
+      });
 
-    setReservas(lista);
-    setCodigoActivo(creada.codigo);
-    setFiltroEstado('TODAS');
-    setFiltroInicioISO(null);
-    setFiltroFinISO(null);
-    setSheetNuevaAbierto(false);
-    setFormNombre('');
-    setFormNumDoc('');
-    setFormTelefono('');
+      if (res.error || !res.data) {
+        mostrarAviso(`Error al radicar: ${res.error?.message ?? 'Sin respuesta'}`);
+        return;
+      }
 
-    const [y = 2026, m = 10] = creada.fechaInicio.split('-').map(Number);
-    setMesCursor({ anio: y, mesIndexCero: m - 1 });
-    mostrarAviso(`Reserva #${creada.codigo} radicada en agenda de patio`);
+      const nuevaReserva = res.data.reserva;
+      setReservas((prev) => [nuevaReserva, ...prev]);
+      setCodigoActivo(nuevaReserva.codigo);
+      setFiltroEstado('TODAS');
+      setFiltroInicioISO(null);
+      setFiltroFinISO(null);
+      setSheetNuevaAbierto(false);
+      setFormNombre('');
+      setFormNumDoc('');
+      setFormTelefono('');
+
+      const [y = 2026, m = 10] = nuevaReserva.fechaInicio.split('-').map(Number);
+      setMesCursor({ anio: y, mesIndexCero: m - 1 });
+      mostrarAviso(`Reserva #${nuevaReserva.codigo} radicada en D1`);
+    } catch {
+      mostrarAviso('Error al radicar la reserva');
+    }
   };
 
   const rutaDetallePorCodigo = (codigo: string): string =>
@@ -905,7 +916,7 @@ export default function MisReservasHub({
                   onChange={(e) => setFormVehiculoId(e.target.value)}
                   className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3.5 py-2.5 text-base font-semibold text-[#111827] outline-none focus:ring-2 focus:ring-[#111827]"
                 >
-                  {FLOTA_CANONICA.map((veh) => (
+                  {catalogoVehiculos.map((veh) => (
                     <option key={veh.id} value={veh.id}>
                       {veh.marca} {veh.modelo} ({veh.placa}) ·{' '}
                       {formatCop(veh.precioDia)}/día

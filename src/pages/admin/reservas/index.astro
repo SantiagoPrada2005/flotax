@@ -2,9 +2,38 @@
 import LayoutAdmin from '@/layouts/LayoutAdmin.astro';
 import MisReservasHub from '@/components/reservas/MisReservasHub';
 import { resolveClientTimeContext } from '@/lib/time/client-time';
+import { env } from 'cloudflare:workers';
+import { getDb } from '@/lib/db';
+import { listarReservasD1 } from '@/lib/flota/repositorio-reservas';
+import { listarVehiculos, obtenerLocalPorSlugOId, LOCAL_CANONICO_DEFECTO } from '@/lib/flota';
 
 const { dateString: hoyISO } = resolveClientTimeContext(Astro.request);
 const abrirNuevaInicial = Astro.url.searchParams.get('nueva') === '1';
+
+const usuario = Astro.locals.usuario;
+const db = env.DB ? getDb(env.DB) : undefined;
+const localActivoSesion = usuario?.localActivo;
+const localContexto =
+  (localActivoSesion
+    ? await obtenerLocalPorSlugOId(localActivoSesion.id, db)
+    : null) ??
+  (localActivoSesion
+    ? {
+        id: localActivoSesion.id,
+        nombre: localActivoSesion.nombre,
+        slug: localActivoSesion.slug,
+        ciudad: 'Medellín',
+        direccion: null,
+        telefono: null,
+      }
+    : LOCAL_CANONICO_DEFECTO);
+
+const initialReservas = await listarReservasD1(db, {
+  localId: localContexto.id,
+});
+const vehiculosDisponibles = await listarVehiculos(db, {
+  localId: localContexto.id,
+});
 ---
 
 <LayoutAdmin title="FlotaX — Reservas de Patio" activeTab="search">
@@ -14,6 +43,8 @@ const abrirNuevaInicial = Astro.url.searchParams.get('nueva') === '1';
       hoyISO={hoyISO}
       modo="admin"
       abrirNuevaInicial={abrirNuevaInicial}
+      initialReservas={initialReservas}
+      vehiculosDisponibles={vehiculosDisponibles}
     />
   </div>
 </LayoutAdmin>

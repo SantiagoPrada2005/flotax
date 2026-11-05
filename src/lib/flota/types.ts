@@ -1,10 +1,17 @@
-import type { VehiculoSelect, CategoriaVehiculo } from '@/db/schema';
+import type {
+  VehiculoSelect,
+  CategoriaVehiculo,
+  UnidadMedidaUso,
+  EspecificacionesBentoVehiculoSchema,
+} from '@/db/schema';
 
 export type {
   CategoriaVehiculo,
   EstadoVehiculo,
   TransmisionVehiculo,
   CombustibleVehiculo,
+  UnidadMedidaUso,
+  EspecificacionesBentoVehiculoSchema,
 } from '@/db/schema';
 
 /** Columnas de `vehiculos` que el modelo de vista reutiliza tal cual. */
@@ -46,6 +53,12 @@ export type VehiculoItem = ColumnasVehiculoItem & {
   autonomiaOdo: string;
   marcaLogo?: string | undefined;
   tipoPropulsionIcon?: 'electric' | 'gas' | 'hybrid' | undefined;
+  color?: string | null | undefined;
+  numeroMotor?: string | null | undefined;
+  numeroChasis?: string | null | undefined;
+  valorComercial?: number | null | undefined;
+  unidadMedidaUso?: UnidadMedidaUso | undefined;
+  specsBento?: EspecificacionesBentoVehiculoSchema | null | undefined;
 };
 
 export interface FiltrosBusquedaVehiculo {

@@ -2,12 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { actions } from 'astro:actions';
 import { navigate } from 'astro:transitions/client';
 import {
-  STORAGE_KEY_RESERVAS_FLOTAX,
   formatearRangoReservaHumano,
   obtenerPuntosInspeccionPorVehiculo,
-  obtenerReservaClientePorCodigo,
   obtenerRubrosWaybillReserva,
-  persistirReservaActualizadaEnStorage,
   type EstadoGarantiaReserva,
   type EstadoPuntoR2,
   type EstadoReservaCliente,
@@ -50,9 +47,9 @@ const formatCop = (val: number): string =>
   }).format(val);
 
 export default function AlquilerDetalleView({
-  codigo,
+  codigo: _codigo,
   reservaInicial,
-  hoyISO,
+  hoyISO: _hoyISO,
   modo = 'cliente',
 }: AlquilerDetalleViewProps) {
   const esAdmin = modo === 'admin';
@@ -84,19 +81,11 @@ export default function AlquilerDetalleView({
   };
 
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY_RESERVAS_FLOTAX);
-      const encontrada = obtenerReservaClientePorCodigo(codigo, raw, hoyISO);
-      if (encontrada) {
-        setReserva(encontrada);
-        setRequiereMantenimientoAlCerrar(
-          Boolean(encontrada.requiereMantenimientoRetorno)
-        );
-      }
-    } catch {
-      // Mantener reservaInicial SSR
-    }
-  }, [codigo, hoyISO]);
+    setReserva(reservaInicial);
+    setRequiereMantenimientoAlCerrar(
+      Boolean(reservaInicial.requiereMantenimientoRetorno)
+    );
+  }, [reservaInicial]);
 
   const { vehiculo, specsBento } = reserva;
 
@@ -169,11 +158,6 @@ export default function AlquilerDetalleView({
 
   const guardarCambioReserva = (actualizada: ReservaClienteItem) => {
     setReserva(actualizada);
-    const rawActual =
-      typeof window !== 'undefined'
-        ? window.localStorage.getItem(STORAGE_KEY_RESERVAS_FLOTAX)
-        : null;
-    persistirReservaActualizadaEnStorage(actualizada, rawActual, hoyISO);
   };
 
   // --- Acciones Operativas Estación 1: Inspección R2 ---

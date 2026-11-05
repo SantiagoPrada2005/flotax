@@ -6,12 +6,16 @@ import {
   sesionesCaja,
   depositosGarantia,
   auditoriaFinanciera,
+  contratosAlquiler,
+  reservas,
+  vehiculos,
   type CuentaFinancieraSelect,
   type MovimientoCajaSelect,
   type SesionCajaSelect,
   type DepositoGarantiaSelect,
-} from '@/db/schema/caja';
+} from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
+import { asegurarConfiguracionBaseLocal } from '@/lib/flota/locales-captacion';
 import {
   CUENTAS_CANONICAS_SEMILLA,
   MOVIMIENTOS_CANONICOS_SEMILLA,
@@ -126,18 +130,23 @@ export async function obtenerEstadoFinancieroCompleto(params: {
   let movimientosList: MovimientoCajaSelect[] = Array.from(cacheMovimientos.values());
   let sesionesList: SesionCajaSelect[] = Array.from(cacheSesiones.values());
   let garantiasList: DepositoGarantiaSelect[] = Array.from(cacheGarantias.values());
-  const carteraList: ContratoCarteraItem[] = Array.from(cacheCartera.values());
+  let carteraList: ContratoCarteraItem[] = Array.from(cacheCartera.values());
 
   // Si hay base de datos D1 conectada, leer registros persistidos
   if (db) {
     try {
-      const dbCuentas = await db.select().from(cuentasFinancieras).all();
+      const dbCuentas = await db
+        .select()
+        .from(cuentasFinancieras)
+        .where(params.localId ? eq(cuentasFinancieras.localId, params.localId) : undefined)
+        .all();
       if (dbCuentas.length > 0) {
         cuentasList = dbCuentas;
       }
       const dbMovimientos = await db
         .select()
         .from(movimientosCaja)
+        .where(params.localId ? eq(movimientosCaja.localId, params.localId) : undefined)
         .orderBy(desc(movimientosCaja.fechaMovimiento))
         .all();
       if (dbMovimientos.length > 0) {
@@ -146,6 +155,7 @@ export async function obtenerEstadoFinancieroCompleto(params: {
       const dbSesiones = await db
         .select()
         .from(sesionesCaja)
+        .where(params.localId ? eq(sesionesCaja.localId, params.localId) : undefined)
         .orderBy(desc(sesionesCaja.fechaApertura))
         .all();
       if (dbSesiones.length > 0) {
@@ -154,13 +164,80 @@ export async function obtenerEstadoFinancieroCompleto(params: {
       const dbGarantias = await db
         .select()
         .from(depositosGarantia)
+        .where(params.localId ? eq(depositosGarantia.localId, params.localId) : undefined)
         .orderBy(desc(depositosGarantia.creadoEn))
         .all();
       if (dbGarantias.length > 0) {
         garantiasList = dbGarantias;
       }
+
+      // Proyección estricta E2E (16 columnas en vez de 103) para evitar SQLITE_MAX_COLUMN (100) en D1
+      const dbContratos = await db
+        .select({
+          id: contratosAlquiler.id,
+          numeroContrato: contratosAlquiler.numeroContrato,
+          localId: contratosAlquiler.localId,
+          arrendatarioNombre: contratosAlquiler.arrendatarioNombre,
+          arrendatarioTipoDocumento: contratosAlquiler.arrendatarioTipoDocumento,
+          arrendatarioNumeroDocumento: contratosAlquiler.arrendatarioNumeroDocumento,
+          totalLiquidado: contratosAlquiler.totalLiquidado,
+          totalPagado: contratosAlquiler.totalPagado,
+          saldoPendiente: contratosAlquiler.saldoPendiente,
+          estadoPago: contratosAlquiler.estadoPago,
+          creadoEn: contratosAlquiler.creadoEn,
+          reservaVehiculoId: reservas.vehiculoId,
+          reservaFechaInicio: reservas.fechaInicio,
+          reservaFechaFin: reservas.fechaFin,
+          vehiculoMarca: vehiculos.marca,
+          vehiculoModelo: vehiculos.modelo,
+          vehiculoPlaca: vehiculos.placa,
+        })
+        .from(contratosAlquiler)
+        .innerJoin(reservas, eq(contratosAlquiler.reservaId, reservas.id))
+        .leftJoin(vehiculos, eq(reservas.vehiculoId, vehiculos.id))
+        .where(params.localId ? eq(contratosAlquiler.localId, params.localId) : undefined)
+        .orderBy(desc(contratosAlquiler.creadoEn));
+
+      if (dbContratos.length > 0) {
+        const mapaGarantiasPorContrato = new Map(
+          garantiasList.map((g) => [g.contratoId, g])
+        );
+
+        carteraList = dbContratos.map((row) => {
+          const garantiaAsociada =
+            mapaGarantiasPorContrato.get(row.id) ??
+            mapaGarantiasPorContrato.get(row.numeroContrato);
+
+          const vehiculoNombre =
+            row.vehiculoMarca && row.vehiculoModelo
+              ? `${row.vehiculoMarca} ${row.vehiculoModelo}`
+              : row.reservaVehiculoId;
+
+          return {
+            codigoContrato: row.numeroContrato,
+            clienteNombre: row.arrendatarioNombre,
+            clienteDocumento: `${row.arrendatarioTipoDocumento} ${row.arrendatarioNumeroDocumento}`,
+            vehiculoNombre,
+            vehiculoPlaca: row.vehiculoPlaca ?? 'N/A',
+            fechaInicio: row.reservaFechaInicio,
+            fechaFin: row.reservaFechaFin,
+            totalAlquiler: row.totalLiquidado,
+            totalAbonado: row.totalPagado,
+            saldoPendiente: row.saldoPendiente,
+            estadoPago:
+              row.estadoPago === 'PAGADO'
+                ? 'PAGADO'
+                : row.estadoPago === 'EN_MORA'
+                  ? 'VENCIDO'
+                  : row.totalPagado > 0
+                    ? 'PARCIAL'
+                    : 'PENDIENTE',
+            garantiaEsperada: garantiaAsociada?.montoEsperado ?? 1500000,
+            garantiaEstado: garantiaAsociada?.estado ?? 'PENDIENTE_RECIBIR',
+          };
+        });
+      }
     } catch (error) {
-      // Si las tablas aún no están migradas en el isolate local, continúa con memoria
       logFalloD1('caja.resumen.select', error, {});
     }
   }
@@ -315,6 +392,26 @@ export async function registrarMovimientoRepo(params: {
   // Persistir en D1
   if (params.db) {
     try {
+      // Validar o resolver la cuenta existente en D1 para evitar fallo de FK
+      let cuentaEfectivaId = nuevoMov.cuentaId;
+      const ctaCheck = await params.db
+        .select({ id: cuentasFinancieras.id })
+        .from(cuentasFinancieras)
+        .where(eq(cuentasFinancieras.id, cuentaEfectivaId))
+        .limit(1);
+
+      if (!ctaCheck[0]) {
+        await asegurarConfiguracionBaseLocal(params.db, params.localId);
+        const primeraCta = await params.db
+          .select({ id: cuentasFinancieras.id })
+          .from(cuentasFinancieras)
+          .where(eq(cuentasFinancieras.localId, params.localId))
+          .limit(1);
+        if (primeraCta[0]) {
+          cuentaEfectivaId = primeraCta[0].id;
+        }
+      }
+
       await params.db.insert(movimientosCaja).values({
         id: nuevoMov.id,
         localId: nuevoMov.localId,
@@ -323,7 +420,7 @@ export async function registrarMovimientoRepo(params: {
         concepto: nuevoMov.concepto,
         monto: nuevoMov.monto,
         metodoPago: nuevoMov.metodoPago,
-        cuentaId: nuevoMov.cuentaId,
+        cuentaId: cuentaEfectivaId,
         cuentaDestinoId: null,
         contratoId: nuevoMov.contratoId,
         clienteId: null,
@@ -376,7 +473,15 @@ export async function anularMovimientoRepo(params: {
   localId: string;
   db?: AppDb | undefined;
 }): Promise<MovimientoCajaSelect> {
-  const mov = cacheMovimientos.get(params.movimientoId);
+  let mov = cacheMovimientos.get(params.movimientoId);
+  if (!mov && params.db) {
+    const rows = await params.db
+      .select()
+      .from(movimientosCaja)
+      .where(eq(movimientosCaja.id, params.movimientoId))
+      .limit(1);
+    if (rows[0]) mov = rows[0];
+  }
   if (!mov) {
     throw new Error('El movimiento financiero no existe');
   }
@@ -461,8 +566,24 @@ export async function registrarTransferenciaInternaRepo(params: {
     throw new Error('La cuenta origen y destino deben ser diferentes');
   }
 
-  const ctaOrigen = cacheCuentas.get(params.cuentaOrigenId);
-  const ctaDestino = cacheCuentas.get(params.cuentaDestinoId);
+  let ctaOrigen = cacheCuentas.get(params.cuentaOrigenId);
+  let ctaDestino = cacheCuentas.get(params.cuentaDestinoId);
+
+  if ((!ctaOrigen || !ctaDestino) && params.db) {
+    const rowsO = await params.db
+      .select()
+      .from(cuentasFinancieras)
+      .where(eq(cuentasFinancieras.id, params.cuentaOrigenId))
+      .limit(1);
+    const rowsD = await params.db
+      .select()
+      .from(cuentasFinancieras)
+      .where(eq(cuentasFinancieras.id, params.cuentaDestinoId))
+      .limit(1);
+    if (rowsO[0]) ctaOrigen = rowsO[0];
+    if (rowsD[0]) ctaDestino = rowsD[0];
+  }
+
   if (!ctaOrigen || !ctaDestino) {
     throw new Error('Las cuentas seleccionadas no son válidas');
   }
@@ -627,7 +748,15 @@ export async function cierreCajaRepo(params: {
   localId: string;
   db?: AppDb | undefined;
 }): Promise<SesionCajaSelect> {
-  const sesion = cacheSesiones.get(params.sesionId);
+  let sesion = cacheSesiones.get(params.sesionId);
+  if (!sesion && params.db) {
+    const rows = await params.db
+      .select()
+      .from(sesionesCaja)
+      .where(eq(sesionesCaja.id, params.sesionId))
+      .limit(1);
+    if (rows[0]) sesion = rows[0];
+  }
   if (!sesion) {
     throw new Error('La sesión de caja no existe');
   }
@@ -730,7 +859,15 @@ export async function gestionarGarantiaRepo(params: {
   localId: string;
   db?: AppDb | undefined;
 }): Promise<DepositoGarantiaSelect> {
-  const dep = cacheGarantias.get(params.garantiaId);
+  let dep = cacheGarantias.get(params.garantiaId);
+  if (!dep && params.db) {
+    const rows = await params.db
+      .select()
+      .from(depositosGarantia)
+      .where(eq(depositosGarantia.id, params.garantiaId))
+      .limit(1);
+    if (rows[0]) dep = rows[0];
+  }
   if (!dep) {
     throw new Error('El depósito de garantía no fue encontrado');
   }
