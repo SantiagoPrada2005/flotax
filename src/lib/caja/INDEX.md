@@ -15,6 +15,7 @@
 | :--- | :--- | :--- | :--- |
 | [`calculos.ts`](./calculos.ts) | Pure Utilities: Cálculos de Balance | Funciones de balance, arqueo y series temporales | - |
 | [`exportar.ts`](./exportar.ts) | Pure Utilities: Exportación | `exportarMovimientosCSV` | - |
+| [`graficos.ts`](./graficos.ts) | Pure Utilities: Geometría y paletas de gráficas | `PALETA_GASTOS_FLOTAX`, `PALETA_CANALES_FLOTAX`, `polarACartesiano`, `crearPathSectorAnular`, `calcularSegmentosAngulares` | - |
 | [`index.ts`](./index.ts) | Barrel Export | Exportaciones públicas del módulo caja | `./repositorio`, `./calculos`, `./tipos` |
 | [`repositorio.ts`](./repositorio.ts) | Repository / Database Access | Operaciones CRUD y transacciones de caja sobre D1 | `drizzle-orm`, `@/lib/db`, `@/db/schema` |
 | [`semillas.ts`](./semillas.ts) | Database Seeds | Datos semilla para cuentas de caja | `@/db/schema` |

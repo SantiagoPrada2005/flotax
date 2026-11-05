@@ -43,6 +43,10 @@ import {
   finalizarVerificacionAction,
   obtenerEstadoVerificacionAction,
 } from './verificacion';
+import {
+  crearMantenimiento,
+  cambiarEstadoMantenimiento,
+} from './mantenimientos';
 
 export const server = {
   perfil: {
@@ -91,6 +95,10 @@ export const server = {
     cambiarEstado: cambiarEstadoReservaAction,
     registrarCobroWaybill: registrarCobroWaybillAction,
     registrarEntregaEvaluacion: registrarEntregaEvaluacionAction,
+  },
+  mantenimientos: {
+    crearMantenimiento,
+    cambiarEstadoMantenimiento,
   },
 };
 

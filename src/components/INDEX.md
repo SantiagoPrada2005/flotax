@@ -12,7 +12,7 @@
 | [`caja/`](./caja/) | Dashboard interactivo de Caja y Finanzas con Bento Grid, gráficos de flujo reales y modales transaccionales. | [INDEX.md](./caja/INDEX.md) |
 | [`configuracion/`](./configuracion/) | Isla interactiva de preferencias del sistema: selección de temas (Claro, Oscuro, Sistema) e internacionalización/formatos regionales. | [INDEX.md](./configuracion/INDEX.md) |
 | [`dashboard/`](./dashboard/) | Componentes modulares del Bento Grid para el panel de control operativo (Hero, Métricas con Sparkline, Operaciones y Categorías). | [INDEX.md](./dashboard/INDEX.md) |
-| [`flota/`](./flota/) | Dominio de Flota, catálogo bento, ficha de estudio 360° y wizard multi-paso. | [INDEX.md](./flota/INDEX.md) |
+| [`flota/`](./flota/) | Dominio de Flota, catálogo bento, ficha de estudio 360°, wizard multi-paso y tablero de disponibilidad/mantenimiento. | [INDEX.md](./flota/INDEX.md) |
 | [`landing/`](./landing/) | Componentes visuales y secciones promocionales de la landing page principal de FlotaX. | [INDEX.md](./landing/INDEX.md) |
 | [`navigation/`](./navigation/) | Componentes atómicos y estructurales de navegación (Bottom Navigation Bar, Top App Bar, Desktop Sidebar). | [INDEX.md](./navigation/INDEX.md) |
 | [`notificaciones/`](./notificaciones/) | Centro de notificaciones in-app, campana de avisos, panel popover y activación Web Push. | [INDEX.md](./notificaciones/INDEX.md) |
