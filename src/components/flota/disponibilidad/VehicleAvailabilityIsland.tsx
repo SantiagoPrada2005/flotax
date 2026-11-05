@@ -147,7 +147,8 @@ export default function VehicleAvailabilityIsland({
           (b) =>
             !(
               b.motivo === 'MANTENIMIENTO' &&
-              (b.id === `blq-mant-${ordenActualizada.id}` ||
+              (b.id === ordenActualizada.id ||
+                b.id === `blq-mant-${ordenActualizada.id}` ||
                 (b.fechaInicio === ordenActualizada.fechaInicio &&
                   b.etiqueta === ordenActualizada.etiqueta))
             )
@@ -201,7 +202,7 @@ export default function VehicleAvailabilityIsland({
           <button
             type="button"
             onClick={() => setToast(null)}
-            className="ml-auto min-h-[36px] min-w-[36px] inline-flex items-center justify-center text-xs opacity-70 hover:opacity-100 rounded-lg hover:bg-white/10 cursor-pointer"
+            className="ml-auto min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-xs opacity-70 hover:opacity-100 rounded-lg hover:bg-white/10 cursor-pointer"
             aria-label="Cerrar notificación"
           >
             ✕
