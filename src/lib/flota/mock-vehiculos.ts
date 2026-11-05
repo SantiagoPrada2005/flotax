@@ -1,5 +1,9 @@
 import type { VehiculoItem, FiltrosBusquedaVehiculo } from './types';
 
+/**
+ * Fixture Canónico de Unidades para inicialización y demostración en desarrollo/preview.
+ * Usado exclusivamente por el módulo de semillas (`src/lib/db/seed.ts`).
+ */
 export const FLOTA_CANONICA: VehiculoItem[] = [
   {
     id: 'veh-mercedes-eqb',
@@ -162,7 +166,14 @@ export const FLOTA_CANONICA: VehiculoItem[] = [
   },
 ];
 
-export function buscarVehiculos(filtros: FiltrosBusquedaVehiculo): VehiculoItem[] {
+/**
+ * Función pura de filtrado y búsqueda de vehículos en una lista en memoria.
+ */
+export function buscarVehiculos(
+  filtros: FiltrosBusquedaVehiculo,
+  fuenteVehiculos?: VehiculoItem[]
+): VehiculoItem[] {
+  const lista = fuenteVehiculos ?? FLOTA_CANONICA;
   const query = (filtros.query || '').trim().toLowerCase();
   const categoria = filtros.categoria || 'TODOS';
   const soloDisponibles = filtros.soloDisponibles ?? false;
@@ -170,10 +181,10 @@ export function buscarVehiculos(filtros: FiltrosBusquedaVehiculo): VehiculoItem[
 
   // Si se solicita un localId específico y existen unidades propias de ese local, aislar estrictamente
   const tieneUnidadesPropiasDelLocal = Boolean(
-    localId && FLOTA_CANONICA.some((v) => v.localId === localId)
+    localId && lista.some((v) => v.localId === localId)
   );
 
-  return FLOTA_CANONICA.filter((vehiculo) => {
+  return lista.filter((vehiculo) => {
     if (localId && tieneUnidadesPropiasDelLocal && vehiculo.localId !== localId) {
       return false;
     }
@@ -207,23 +218,9 @@ export function buscarVehiculos(filtros: FiltrosBusquedaVehiculo): VehiculoItem[
   });
 }
 
+/**
+ * Busca un vehículo por id dentro del fixture canónico (fallback de diseño o test).
+ */
 export function obtenerVehiculoPorId(id: string): VehiculoItem | undefined {
   return FLOTA_CANONICA.find((v) => v.id === id);
 }
-
-export function registrarVehiculoEnMemoria(vehiculo: VehiculoItem): void {
-  const index = FLOTA_CANONICA.findIndex((v) => v.id === vehiculo.id);
-  if (index >= 0) {
-    FLOTA_CANONICA[index] = vehiculo;
-  } else {
-    FLOTA_CANONICA.unshift(vehiculo);
-  }
-}
-
-export function eliminarVehiculoEnMemoria(id: string): void {
-  const index = FLOTA_CANONICA.findIndex((v) => v.id === id);
-  if (index >= 0) {
-    FLOTA_CANONICA.splice(index, 1);
-  }
-}
-

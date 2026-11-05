@@ -4,10 +4,15 @@ import CajaDashboardIsland from '@/components/caja/CajaDashboardIsland';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
 import { obtenerEstadoFinancieroCompleto } from '@/lib/caja';
+import { asegurarConfiguracionBaseLocal } from '@/lib/flota';
 
 const usuario = Astro.locals.usuario;
 const localId = usuario?.localActivo?.id;
 const db = env.DB ? getDb(env.DB) : undefined;
+
+if (db && localId) {
+  await asegurarConfiguracionBaseLocal(db, localId);
+}
 
 const initialData = await obtenerEstadoFinancieroCompleto({
   localId,

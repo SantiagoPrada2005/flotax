@@ -2,10 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { actions } from 'astro:actions';
 import { navigate } from 'astro:transitions/client';
 import {
-  STORAGE_KEY_RESERVAS_FLOTAX,
   formatearRangoReservaHumano,
-  obtenerReservaClientePorCodigo,
-  registrarEntregaClienteConEvaluacion,
   type CalificacionServicioNivel,
   type ChecklistEntregaCliente,
   type EvaluacionEntregaServicio,
@@ -80,31 +77,40 @@ const formatCop = (val: number): string =>
   }).format(val);
 
 export default function VehiculoEntregaWizard({
-  codigo,
+  codigo: _codigo,
   reservaInicial,
-  hoyISO,
+  hoyISO: _hoyISO,
 }: VehiculoEntregaWizardProps) {
   const [reserva, setReserva] = useState<ReservaClienteItem>(reservaInicial);
   const [pasoActual, setPasoActual] = useState<PasoWizard>(0);
   const [maxPasoDesbloqueado, setMaxPasoDesbloqueado] = useState<PasoWizard>(1);
 
   // Estado Paso 2: Checklist interactivo de unidad (Ref 03 Device Key style)
-  const [checklist, setChecklist] = useState<ChecklistEntregaCliente>({
-    cabinaSinObjetos: true,
-    telemetriaVerificada: true,
-    llavesEntregadas: true,
-    combustibleNivel: 'MISMO_NIVEL',
-  });
+  const [checklist, setChecklist] = useState<ChecklistEntregaCliente>(
+    () =>
+      reservaInicial.evaluacionEntrega?.checklist ?? {
+        cabinaSinObjetos: true,
+        telemetriaVerificada: true,
+        llavesEntregadas: true,
+        combustibleNivel: 'MISMO_NIVEL',
+      }
+  );
 
   // Estado Paso 3: Evaluación conversacional Typeform + Bento Cards
-  const [calificacion, setCalificacion] =
-    useState<CalificacionServicioNivel>('SOBRESALIENTE');
-  const [aspectosSeleccionados, setAspectosSeleccionados] = useState<string[]>([
-    'Entrega sin filas',
-    'Unidad impecable',
-    'Peritaje R2 transparente',
-  ]);
-  const [comentario, setComentario] = useState<string>('');
+  const [calificacion, setCalificacion] = useState<CalificacionServicioNivel>(
+    () => reservaInicial.evaluacionEntrega?.calificacionGeneral ?? 'SOBRESALIENTE'
+  );
+  const [aspectosSeleccionados, setAspectosSeleccionados] = useState<string[]>(
+    () =>
+      reservaInicial.evaluacionEntrega?.aspectosDestacados ?? [
+        'Entrega sin filas',
+        'Unidad impecable',
+        'Peritaje R2 transparente',
+      ]
+  );
+  const [comentario, setComentario] = useState<string>(
+    () => reservaInicial.evaluacionEntrega?.comentarioOpcional ?? ''
+  );
   const [mostrarInputComentario, setMostrarInputComentario] =
     useState<boolean>(false);
   const [autoAdvanceNotice, setAutoAdvanceNotice] = useState<boolean>(false);
@@ -118,28 +124,6 @@ export default function VehiculoEntregaWizard({
   const lastWheelTimestampRef = useRef<number>(0);
   const autoAdvanceTimerRef = useRef<number | null>(null);
   const persistedFlagRef = useRef<boolean>(false);
-
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY_RESERVAS_FLOTAX);
-      const encontrada = obtenerReservaClientePorCodigo(codigo, raw, hoyISO);
-      if (encontrada) {
-        setReserva(encontrada);
-        if (encontrada.evaluacionEntrega) {
-          setCalificacion(encontrada.evaluacionEntrega.calificacionGeneral);
-          setAspectosSeleccionados(
-            encontrada.evaluacionEntrega.aspectosDestacados
-          );
-          setChecklist(encontrada.evaluacionEntrega.checklist);
-          if (encontrada.evaluacionEntrega.comentarioOpcional) {
-            setComentario(encontrada.evaluacionEntrega.comentarioOpcional);
-          }
-        }
-      }
-    } catch {
-      // Mantener reservaInicial SSR
-    }
-  }, [codigo, hoyISO]);
 
   const primerNombreConductor = useMemo(() => {
     const partes = reserva.conductor.nombreCompleto.trim().split(/\s+/);
@@ -251,17 +235,19 @@ export default function VehiculoEntregaWizard({
       completadaEnISO: new Date().toISOString(),
     };
 
-    const rawActual =
-      typeof window !== 'undefined'
-        ? window.localStorage.getItem(STORAGE_KEY_RESERVAS_FLOTAX)
-        : null;
+    const tieneAlertaTecnica =
+      evaluacion.calificacionGeneral === 'ATENCION_REQUERIDA' ||
+      evaluacion.desempenoVehiculo === 'DETALLE_MENOR';
 
-    const actualizada = registrarEntregaClienteConEvaluacion(
-      reserva,
-      evaluacion,
-      rawActual,
-      hoyISO
-    );
+    const actualizada: ReservaClienteItem = {
+      ...reserva,
+      estado: 'COMPLETADA',
+      montoReportado: reserva.totalAlquiler,
+      estadoGarantia: tieneAlertaTecnica ? 'CUSTODIA_ACTIVA' : 'LIBERADA',
+      kilometrajeRetorno: reserva.kilometrajeEntrega + reserva.diasAlquiler * 68,
+      requiereMantenimientoRetorno: tieneAlertaTecnica,
+      evaluacionEntrega: evaluacion,
+    };
     setReserva(actualizada);
 
     void actions.reservas
@@ -277,9 +263,6 @@ export default function VehiculoEntregaWizard({
         cabinaSinObjetos: checklist.cabinaSinObjetos,
         telemetriaVerificada: checklist.telemetriaVerificada,
         llavesEntregadas: checklist.llavesEntregadas,
-      })
-      .catch(() => {
-        // Persistido en localStorage
       });
   }, [
     sintesisCompletada,
@@ -288,7 +271,6 @@ export default function VehiculoEntregaWizard({
     comentario,
     checklist,
     reserva,
-    hoyISO,
   ]);
 
   const toggleItemChecklist = (

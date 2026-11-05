@@ -1,0 +1,5029 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "9e67817d-feb3-4fe2-bce5-a1d19d214049",
+  "prevId": "eb08e48f-f26a-46bd-b776-6b90038696e4",
+  "tables": {
+    "usuarios_admin": {
+      "name": "usuarios_admin",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "correo": {
+          "name": "correo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "password_hash": {
+          "name": "password_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "rol": {
+          "name": "rol",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'OPERATIVO'"
+        },
+        "activo": {
+          "name": "activo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actualizado_en": {
+          "name": "actualizado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "usuarios_admin_correo_unique": {
+          "name": "usuarios_admin_correo_unique",
+          "columns": [
+            "correo"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "account": {
+      "name": "account",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "provider_id": {
+          "name": "provider_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "access_token": {
+          "name": "access_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "refresh_token": {
+          "name": "refresh_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "id_token": {
+          "name": "id_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "access_token_expires_at": {
+          "name": "access_token_expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "refresh_token_expires_at": {
+          "name": "refresh_token_expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "scope": {
+          "name": "scope",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "password": {
+          "name": "password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "account_user_id_user_id_fk": {
+          "name": "account_user_id_user_id_fk",
+          "tableFrom": "account",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "session": {
+      "name": "session",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "session_token_unique": {
+          "name": "session_token_unique",
+          "columns": [
+            "token"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "session_user_id_user_id_fk": {
+          "name": "session_user_id_user_id_fk",
+          "tableFrom": "session",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "user": {
+      "name": "user",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email_verified": {
+          "name": "email_verified",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "image": {
+          "name": "image",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "telefono": {
+          "name": "telefono",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tipo_documento": {
+          "name": "tipo_documento",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "numero_documento": {
+          "name": "numero_documento",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "es_super_admin": {
+          "name": "es_super_admin",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "local_origen_id": {
+          "name": "local_origen_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "activo": {
+          "name": "activo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        }
+      },
+      "indexes": {
+        "user_email_unique": {
+          "name": "user_email_unique",
+          "columns": [
+            "email"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "verification": {
+      "name": "verification",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "identifier": {
+          "name": "identifier",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "value": {
+          "name": "value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "locales_alquiler": {
+      "name": "locales_alquiler",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ciudad": {
+          "name": "ciudad",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "direccion": {
+          "name": "direccion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "telefono": {
+          "name": "telefono",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "dueno_id": {
+          "name": "dueno_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "activo": {
+          "name": "activo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actualizado_en": {
+          "name": "actualizado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "locales_alquiler_slug_unique": {
+          "name": "locales_alquiler_slug_unique",
+          "columns": [
+            "slug"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "locales_alquiler_dueno_id_user_id_fk": {
+          "name": "locales_alquiler_dueno_id_user_id_fk",
+          "tableFrom": "locales_alquiler",
+          "tableTo": "user",
+          "columnsFrom": [
+            "dueno_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "politicas_local": {
+      "name": "politicas_local",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "abono_minimo_pct": {
+          "name": "abono_minimo_pct",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 30
+        },
+        "cobertura_pericial_pct": {
+          "name": "cobertura_pericial_pct",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 8
+        },
+        "recargo_mora_diaria_pct": {
+          "name": "recargo_mora_diaria_pct",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 200
+        },
+        "recargo_admin_fotomulta_pct": {
+          "name": "recargo_admin_fotomulta_pct",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 30
+        },
+        "cargo_lavado_estandar": {
+          "name": "cargo_lavado_estandar",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 45000
+        },
+        "limite_km_diario": {
+          "name": "limite_km_diario",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cargo_km_adicional": {
+          "name": "cargo_km_adicional",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "nit_arrendador": {
+          "name": "nit_arrendador",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "representante_legal": {
+          "name": "representante_legal",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "municipio_contractual": {
+          "name": "municipio_contractual",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'Medellín, Antioquia'"
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actualizado_en": {
+          "name": "actualizado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "politicas_local_local_id_unique": {
+          "name": "politicas_local_local_id_unique",
+          "columns": [
+            "local_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "politicas_local_local_id_locales_alquiler_id_fk": {
+          "name": "politicas_local_local_id_locales_alquiler_id_fk",
+          "tableFrom": "politicas_local",
+          "tableTo": "locales_alquiler",
+          "columnsFrom": [
+            "local_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "miembros_local": {
+      "name": "miembros_local",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "usuario_id": {
+          "name": "usuario_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "rol": {
+          "name": "rol",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "activo": {
+          "name": "activo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "onboarding_completado": {
+          "name": "onboarding_completado",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "miembros_local_local_id_locales_alquiler_id_fk": {
+          "name": "miembros_local_local_id_locales_alquiler_id_fk",
+          "tableFrom": "miembros_local",
+          "tableTo": "locales_alquiler",
+          "columnsFrom": [
+            "local_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "miembros_local_usuario_id_user_id_fk": {
+          "name": "miembros_local_usuario_id_user_id_fk",
+          "tableFrom": "miembros_local",
+          "tableTo": "user",
+          "columnsFrom": [
+            "usuario_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "permisos_miembro_local": {
+      "name": "permisos_miembro_local",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "miembro_id": {
+          "name": "miembro_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "usuario_id": {
+          "name": "usuario_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "permiso": {
+          "name": "permiso",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "efecto": {
+          "name": "efecto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'CONCEDER'"
+        },
+        "motivo": {
+          "name": "motivo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "asignado_por_id": {
+          "name": "asignado_por_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "permisos_miembro_unico_idx": {
+          "name": "permisos_miembro_unico_idx",
+          "columns": [
+            "miembro_id",
+            "permiso"
+          ],
+          "isUnique": true
+        },
+        "permisos_miembro_usuario_local_idx": {
+          "name": "permisos_miembro_usuario_local_idx",
+          "columns": [
+            "local_id",
+            "usuario_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "permisos_miembro_local_miembro_id_miembros_local_id_fk": {
+          "name": "permisos_miembro_local_miembro_id_miembros_local_id_fk",
+          "tableFrom": "permisos_miembro_local",
+          "tableTo": "miembros_local",
+          "columnsFrom": [
+            "miembro_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "permisos_miembro_local_local_id_locales_alquiler_id_fk": {
+          "name": "permisos_miembro_local_local_id_locales_alquiler_id_fk",
+          "tableFrom": "permisos_miembro_local",
+          "tableTo": "locales_alquiler",
+          "columnsFrom": [
+            "local_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "permisos_miembro_local_usuario_id_user_id_fk": {
+          "name": "permisos_miembro_local_usuario_id_user_id_fk",
+          "tableFrom": "permisos_miembro_local",
+          "tableTo": "user",
+          "columnsFrom": [
+            "usuario_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "permisos_miembro_local_asignado_por_id_user_id_fk": {
+          "name": "permisos_miembro_local_asignado_por_id_user_id_fk",
+          "tableFrom": "permisos_miembro_local",
+          "tableTo": "user",
+          "columnsFrom": [
+            "asignado_por_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "clientes_local": {
+      "name": "clientes_local",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "usuario_id": {
+          "name": "usuario_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "es_local_origen": {
+          "name": "es_local_origen",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "es_preferido": {
+          "name": "es_preferido",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "ultima_visita_en": {
+          "name": "ultima_visita_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "clientes_local_usuario_id_user_id_fk": {
+          "name": "clientes_local_usuario_id_user_id_fk",
+          "tableFrom": "clientes_local",
+          "tableTo": "user",
+          "columnsFrom": [
+            "usuario_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "clientes_local_local_id_locales_alquiler_id_fk": {
+          "name": "clientes_local_local_id_locales_alquiler_id_fk",
+          "tableFrom": "clientes_local",
+          "tableTo": "locales_alquiler",
+          "columnsFrom": [
+            "local_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "invitaciones_local": {
+      "name": "invitaciones_local",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "rol": {
+          "name": "rol",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "invitado_por_id": {
+          "name": "invitado_por_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'PENDIENTE'"
+        },
+        "expira_en": {
+          "name": "expira_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "invitaciones_local_token_unique": {
+          "name": "invitaciones_local_token_unique",
+          "columns": [
+            "token"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "invitaciones_local_local_id_locales_alquiler_id_fk": {
+          "name": "invitaciones_local_local_id_locales_alquiler_id_fk",
+          "tableFrom": "invitaciones_local",
+          "tableTo": "locales_alquiler",
+          "columnsFrom": [
+            "local_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "invitaciones_local_invitado_por_id_user_id_fk": {
+          "name": "invitaciones_local_invitado_por_id_user_id_fk",
+          "tableFrom": "invitaciones_local",
+          "tableTo": "user",
+          "columnsFrom": [
+            "invitado_por_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "historial_transferencias_local": {
+      "name": "historial_transferencias_local",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "dueno_anterior_id": {
+          "name": "dueno_anterior_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nuevo_dueno_id": {
+          "name": "nuevo_dueno_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "motivo": {
+          "name": "motivo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "historial_transferencias_local_local_id_locales_alquiler_id_fk": {
+          "name": "historial_transferencias_local_local_id_locales_alquiler_id_fk",
+          "tableFrom": "historial_transferencias_local",
+          "tableTo": "locales_alquiler",
+          "columnsFrom": [
+            "local_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "historial_transferencias_local_dueno_anterior_id_user_id_fk": {
+          "name": "historial_transferencias_local_dueno_anterior_id_user_id_fk",
+          "tableFrom": "historial_transferencias_local",
+          "tableTo": "user",
+          "columnsFrom": [
+            "dueno_anterior_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "historial_transferencias_local_nuevo_dueno_id_user_id_fk": {
+          "name": "historial_transferencias_local_nuevo_dueno_id_user_id_fk",
+          "tableFrom": "historial_transferencias_local",
+          "tableTo": "user",
+          "columnsFrom": [
+            "nuevo_dueno_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "incidentes_sistema": {
+      "name": "incidentes_sistema",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "fingerprint": {
+          "name": "fingerprint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nivel": {
+          "name": "nivel",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "mensaje": {
+          "name": "mensaje",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "modulo": {
+          "name": "modulo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "ocurrencias": {
+          "name": "ocurrencias",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "primera_vez": {
+          "name": "primera_vez",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ultima_vez": {
+          "name": "ultima_vez",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ultimo_correo_en": {
+          "name": "ultimo_correo_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'ABIERTO'"
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actualizado_en": {
+          "name": "actualizado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "incidentes_sistema_fingerprint_unique": {
+          "name": "incidentes_sistema_fingerprint_unique",
+          "columns": [
+            "fingerprint"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "vehiculos": {
+      "name": "vehiculos",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "marca": {
+          "name": "marca",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "modelo": {
+          "name": "modelo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "anio": {
+          "name": "anio",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "categoria": {
+          "name": "categoria",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "categoria_etiqueta": {
+          "name": "categoria_etiqueta",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "placa": {
+          "name": "placa",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "color": {
+          "name": "color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "numero_motor": {
+          "name": "numero_motor",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "numero_chasis": {
+          "name": "numero_chasis",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "valor_comercial": {
+          "name": "valor_comercial",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "unidad_medida_uso": {
+          "name": "unidad_medida_uso",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'KM'"
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'DISPONIBLE'"
+        },
+        "precio_dia": {
+          "name": "precio_dia",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "deposito_garantia": {
+          "name": "deposito_garantia",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "transmision": {
+          "name": "transmision",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "combustible": {
+          "name": "combustible",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "capacidad_pasajeros": {
+          "name": "capacidad_pasajeros",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "autonomia_km": {
+          "name": "autonomia_km",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "kilometraje": {
+          "name": "kilometraje",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "imagen_url": {
+          "name": "imagen_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "specs_bento": {
+          "name": "specs_bento",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "destacado": {
+          "name": "destacado",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "descripcion": {
+          "name": "descripcion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "aceleracion": {
+          "name": "aceleracion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "velocidad_maxima": {
+          "name": "velocidad_maxima",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "rating": {
+          "name": "rating",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "autonomia_odo": {
+          "name": "autonomia_odo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "activo": {
+          "name": "activo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actualizado_en": {
+          "name": "actualizado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "vehiculos_placa_unique": {
+          "name": "vehiculos_placa_unique",
+          "columns": [
+            "placa"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "vehiculos_local_id_locales_alquiler_id_fk": {
+          "name": "vehiculos_local_id_locales_alquiler_id_fk",
+          "tableFrom": "vehiculos",
+          "tableTo": "locales_alquiler",
+          "columnsFrom": [
+            "local_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "documentos_vehiculo": {
+      "name": "documentos_vehiculo",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "vehiculo_id": {
+          "name": "vehiculo_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tipo_documento": {
+          "name": "tipo_documento",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "numero_referencia": {
+          "name": "numero_referencia",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "entidad_emisora": {
+          "name": "entidad_emisora",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "fecha_expedicion": {
+          "name": "fecha_expedicion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "fecha_vencimiento": {
+          "name": "fecha_vencimiento",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "vigente": {
+          "name": "vigente",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "archivo_r2_key": {
+          "name": "archivo_r2_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "observaciones": {
+          "name": "observaciones",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "verificado_por_id": {
+          "name": "verificado_por_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actualizado_en": {
+          "name": "actualizado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "documentos_vehiculo_vigencia_idx": {
+          "name": "documentos_vehiculo_vigencia_idx",
+          "columns": [
+            "vehiculo_id",
+            "tipo_documento",
+            "vigente",
+            "fecha_vencimiento"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "documentos_vehiculo_local_id_locales_alquiler_id_fk": {
+          "name": "documentos_vehiculo_local_id_locales_alquiler_id_fk",
+          "tableFrom": "documentos_vehiculo",
+          "tableTo": "locales_alquiler",
+          "columnsFrom": [
+            "local_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "documentos_vehiculo_vehiculo_id_vehiculos_id_fk": {
+          "name": "documentos_vehiculo_vehiculo_id_vehiculos_id_fk",
+          "tableFrom": "documentos_vehiculo",
+          "tableTo": "vehiculos",
+          "columnsFrom": [
+            "vehiculo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "documentos_vehiculo_verificado_por_id_user_id_fk": {
+          "name": "documentos_vehiculo_verificado_por_id_user_id_fk",
+          "tableFrom": "documentos_vehiculo",
+          "tableTo": "user",
+          "columnsFrom": [
+            "verificado_por_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "multimedia_vehiculo": {
+      "name": "multimedia_vehiculo",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "vehiculo_id": {
+          "name": "vehiculo_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reserva_id": {
+          "name": "reserva_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "contrato_id": {
+          "name": "contrato_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "inspeccion_id": {
+          "name": "inspeccion_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "mantenimiento_id": {
+          "name": "mantenimiento_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tipo_medio": {
+          "name": "tipo_medio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'IMAGEN'"
+        },
+        "etapa_operativa": {
+          "name": "etapa_operativa",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "zona_evidencia": {
+          "name": "zona_evidencia",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "angulo_estudio": {
+          "name": "angulo_estudio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "es_portada_catalogo": {
+          "name": "es_portada_catalogo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "orden_visual": {
+          "name": "orden_visual",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "r2_key": {
+          "name": "r2_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "poster_r2_key": {
+          "name": "poster_r2_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "mime_type": {
+          "name": "mime_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tamano_bytes": {
+          "name": "tamano_bytes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "ancho_px": {
+          "name": "ancho_px",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "alto_px": {
+          "name": "alto_px",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "duracion_segundos": {
+          "name": "duracion_segundos",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sha256_hash": {
+          "name": "sha256_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "medidor_uso_momento": {
+          "name": "medidor_uso_momento",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "observacion": {
+          "name": "observacion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "subido_por_id": {
+          "name": "subido_por_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "capturado_en": {
+          "name": "capturado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "multimedia_vehiculo_r2_key_unique": {
+          "name": "multimedia_vehiculo_r2_key_unique",
+          "columns": [
+            "r2_key"
+          ],
+          "isUnique": true
+        },
+        "multimedia_vehiculo_historial_idx": {
+          "name": "multimedia_vehiculo_historial_idx",
+          "columns": [
+            "vehiculo_id",
+            "capturado_en"
+          ],
+          "isUnique": false
+        },
+        "multimedia_vehiculo_reserva_etapa_idx": {
+          "name": "multimedia_vehiculo_reserva_etapa_idx",
+          "columns": [
+            "reserva_id",
+            "etapa_operativa",
+            "zona_evidencia"
+          ],
+          "isUnique": false
+        },
+        "multimedia_vehiculo_catalogo_idx": {
+          "name": "multimedia_vehiculo_catalogo_idx",
+          "columns": [
+            "vehiculo_id",
+            "etapa_operativa",
+            "orden_visual"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "multimedia_vehiculo_local_id_locales_alquiler_id_fk": {
+          "name": "multimedia_vehiculo_local_id_locales_alquiler_id_fk",
+          "tableFrom": "multimedia_vehiculo",
+          "tableTo": "locales_alquiler",
+          "columnsFrom": [
+            "local_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "multimedia_vehiculo_vehiculo_id_vehiculos_id_fk": {
+          "name": "multimedia_vehiculo_vehiculo_id_vehiculos_id_fk",
+          "tableFrom": "multimedia_vehiculo",
+          "tableTo": "vehiculos",
+          "columnsFrom": [
+            "vehiculo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "multimedia_vehiculo_reserva_id_reservas_id_fk": {
+          "name": "multimedia_vehiculo_reserva_id_reservas_id_fk",
+          "tableFrom": "multimedia_vehiculo",
+          "tableTo": "reservas",
+          "columnsFrom": [
+            "reserva_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "multimedia_vehiculo_contrato_id_contratos_alquiler_id_fk": {
+          "name": "multimedia_vehiculo_contrato_id_contratos_alquiler_id_fk",
+          "tableFrom": "multimedia_vehiculo",
+          "tableTo": "contratos_alquiler",
+          "columnsFrom": [
+            "contrato_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "multimedia_vehiculo_mantenimiento_id_mantenimientos_vehiculo_id_fk": {
+          "name": "multimedia_vehiculo_mantenimiento_id_mantenimientos_vehiculo_id_fk",
+          "tableFrom": "multimedia_vehiculo",
+          "tableTo": "mantenimientos_vehiculo",
+          "columnsFrom": [
+            "mantenimiento_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "multimedia_vehiculo_subido_por_id_user_id_fk": {
+          "name": "multimedia_vehiculo_subido_por_id_user_id_fk",
+          "tableFrom": "multimedia_vehiculo",
+          "tableTo": "user",
+          "columnsFrom": [
+            "subido_por_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "mantenimientos_vehiculo": {
+      "name": "mantenimientos_vehiculo",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "vehiculo_id": {
+          "name": "vehiculo_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reserva_origen_id": {
+          "name": "reserva_origen_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'PREVENTIVO'"
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'PROGRAMADO'"
+        },
+        "etiqueta": {
+          "name": "etiqueta",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "descripcion": {
+          "name": "descripcion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "taller_proveedor": {
+          "name": "taller_proveedor",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "fecha_inicio": {
+          "name": "fecha_inicio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "fecha_fin": {
+          "name": "fecha_fin",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "kilometraje_registro": {
+          "name": "kilometraje_registro",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "costo_total": {
+          "name": "costo_total",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "movimiento_caja_id": {
+          "name": "movimiento_caja_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creado_por_id": {
+          "name": "creado_por_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actualizado_en": {
+          "name": "actualizado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "mantenimientos_vehiculo_fechas_idx": {
+          "name": "mantenimientos_vehiculo_fechas_idx",
+          "columns": [
+            "vehiculo_id",
+            "estado",
+            "fecha_inicio",
+            "fecha_fin"
+          ],
+          "isUnique": false
+        },
+        "mantenimientos_local_estado_idx": {
+          "name": "mantenimientos_local_estado_idx",
+          "columns": [
+            "local_id",
+            "estado"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "mantenimientos_vehiculo_local_id_locales_alquiler_id_fk": {
+          "name": "mantenimientos_vehiculo_local_id_locales_alquiler_id_fk",
+          "tableFrom": "mantenimientos_vehiculo",
+          "tableTo": "locales_alquiler",
+          "columnsFrom": [
+            "local_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "mantenimientos_vehiculo_vehiculo_id_vehiculos_id_fk": {
+          "name": "mantenimientos_vehiculo_vehiculo_id_vehiculos_id_fk",
+          "tableFrom": "mantenimientos_vehiculo",
+          "tableTo": "vehiculos",
+          "columnsFrom": [
+            "vehiculo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "mantenimientos_vehiculo_reserva_origen_id_reservas_id_fk": {
+          "name": "mantenimientos_vehiculo_reserva_origen_id_reservas_id_fk",
+          "tableFrom": "mantenimientos_vehiculo",
+          "tableTo": "reservas",
+          "columnsFrom": [
+            "reserva_origen_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "mantenimientos_vehiculo_movimiento_caja_id_movimientos_caja_id_fk": {
+          "name": "mantenimientos_vehiculo_movimiento_caja_id_movimientos_caja_id_fk",
+          "tableFrom": "mantenimientos_vehiculo",
+          "tableTo": "movimientos_caja",
+          "columnsFrom": [
+            "movimiento_caja_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "mantenimientos_vehiculo_creado_por_id_user_id_fk": {
+          "name": "mantenimientos_vehiculo_creado_por_id_user_id_fk",
+          "tableFrom": "mantenimientos_vehiculo",
+          "tableTo": "user",
+          "columnsFrom": [
+            "creado_por_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "reservas": {
+      "name": "reservas",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "codigo": {
+          "name": "codigo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "vehiculo_id": {
+          "name": "vehiculo_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cliente_id": {
+          "name": "cliente_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "fecha_inicio": {
+          "name": "fecha_inicio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "fecha_fin": {
+          "name": "fecha_fin",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "dias_alquiler": {
+          "name": "dias_alquiler",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'PENDIENTE'"
+        },
+        "modalidad_entrega": {
+          "name": "modalidad_entrega",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'PATIO_PRINCIPAL'"
+        },
+        "direccion_entrega": {
+          "name": "direccion_entrega",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sede_nombre": {
+          "name": "sede_nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "precio_dia_cotizado": {
+          "name": "precio_dia_cotizado",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "subtotal_tarifa_cotizado": {
+          "name": "subtotal_tarifa_cotizado",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cobertura_pericial_cotizada": {
+          "name": "cobertura_pericial_cotizada",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "total_cotizado": {
+          "name": "total_cotizado",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "modalidad_pago_inicial": {
+          "name": "modalidad_pago_inicial",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'ABONO_30'"
+        },
+        "metodo_abono_inicial": {
+          "name": "metodo_abono_inicial",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'TRANSFERENCIA_PSE'"
+        },
+        "monto_abono_reportado": {
+          "name": "monto_abono_reportado",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "referencia_abono_inicial": {
+          "name": "referencia_abono_inicial",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "contacto_nombre": {
+          "name": "contacto_nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "contacto_tipo_documento": {
+          "name": "contacto_tipo_documento",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "contacto_numero_documento": {
+          "name": "contacto_numero_documento",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "contacto_categoria_licencia": {
+          "name": "contacto_categoria_licencia",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "contacto_telefono": {
+          "name": "contacto_telefono",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "contacto_correo": {
+          "name": "contacto_correo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ley_1581_aceptada": {
+          "name": "ley_1581_aceptada",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "motivo_rechazo": {
+          "name": "motivo_rechazo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creado_por_id": {
+          "name": "creado_por_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "confirmado_por_id": {
+          "name": "confirmado_por_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actualizado_en": {
+          "name": "actualizado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "reservas_codigo_unique": {
+          "name": "reservas_codigo_unique",
+          "columns": [
+            "codigo"
+          ],
+          "isUnique": true
+        },
+        "reservas_vehiculo_fechas_idx": {
+          "name": "reservas_vehiculo_fechas_idx",
+          "columns": [
+            "vehiculo_id",
+            "estado",
+            "fecha_inicio",
+            "fecha_fin"
+          ],
+          "isUnique": false
+        },
+        "reservas_local_estado_idx": {
+          "name": "reservas_local_estado_idx",
+          "columns": [
+            "local_id",
+            "estado",
+            "creado_en"
+          ],
+          "isUnique": false
+        },
+        "reservas_cliente_idx": {
+          "name": "reservas_cliente_idx",
+          "columns": [
+            "cliente_id",
+            "creado_en"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "reservas_local_id_locales_alquiler_id_fk": {
+          "name": "reservas_local_id_locales_alquiler_id_fk",
+          "tableFrom": "reservas",
+          "tableTo": "locales_alquiler",
+          "columnsFrom": [
+            "local_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "reservas_vehiculo_id_vehiculos_id_fk": {
+          "name": "reservas_vehiculo_id_vehiculos_id_fk",
+          "tableFrom": "reservas",
+          "tableTo": "vehiculos",
+          "columnsFrom": [
+            "vehiculo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "reservas_cliente_id_user_id_fk": {
+          "name": "reservas_cliente_id_user_id_fk",
+          "tableFrom": "reservas",
+          "tableTo": "user",
+          "columnsFrom": [
+            "cliente_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "reservas_creado_por_id_user_id_fk": {
+          "name": "reservas_creado_por_id_user_id_fk",
+          "tableFrom": "reservas",
+          "tableTo": "user",
+          "columnsFrom": [
+            "creado_por_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "reservas_confirmado_por_id_user_id_fk": {
+          "name": "reservas_confirmado_por_id_user_id_fk",
+          "tableFrom": "reservas",
+          "tableTo": "user",
+          "columnsFrom": [
+            "confirmado_por_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "contratos_alquiler": {
+      "name": "contratos_alquiler",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "numero_contrato": {
+          "name": "numero_contrato",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reserva_id": {
+          "name": "reserva_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "vehiculo_id": {
+          "name": "vehiculo_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cliente_id": {
+          "name": "cliente_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "arrendatario_nombre": {
+          "name": "arrendatario_nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "arrendatario_tipo_documento": {
+          "name": "arrendatario_tipo_documento",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "arrendatario_numero_documento": {
+          "name": "arrendatario_numero_documento",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "arrendatario_ciudad_expedicion": {
+          "name": "arrendatario_ciudad_expedicion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "arrendatario_licencia_numero": {
+          "name": "arrendatario_licencia_numero",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "arrendatario_licencia_categoria": {
+          "name": "arrendatario_licencia_categoria",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "arrendatario_domicilio": {
+          "name": "arrendatario_domicilio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "arrendatario_telefono": {
+          "name": "arrendatario_telefono",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "arrendatario_correo": {
+          "name": "arrendatario_correo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ley_1581_aceptada": {
+          "name": "ley_1581_aceptada",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "traslado_fotomultas_aceptado": {
+          "name": "traslado_fotomultas_aceptado",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "pagare_blanco_firmado": {
+          "name": "pagare_blanco_firmado",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "fecha_hora_entrega_real": {
+          "name": "fecha_hora_entrega_real",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "fecha_hora_devolucion_pactada": {
+          "name": "fecha_hora_devolucion_pactada",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "fecha_hora_devolucion_real": {
+          "name": "fecha_hora_devolucion_real",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "medidor_uso_entrega": {
+          "name": "medidor_uso_entrega",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "medidor_uso_retorno": {
+          "name": "medidor_uso_retorno",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "nivel_energia_entrega_pct": {
+          "name": "nivel_energia_entrega_pct",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 100
+        },
+        "nivel_energia_retorno_pct": {
+          "name": "nivel_energia_retorno_pct",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "canon_diario_pactado": {
+          "name": "canon_diario_pactado",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "subtotal_canon": {
+          "name": "subtotal_canon",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cobertura_pericial": {
+          "name": "cobertura_pericial",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "cargos_mora": {
+          "name": "cargos_mora",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "cargos_novedades_danos": {
+          "name": "cargos_novedades_danos",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "cargos_combustible_lavado": {
+          "name": "cargos_combustible_lavado",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "total_liquidado": {
+          "name": "total_liquidado",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "total_pagado": {
+          "name": "total_pagado",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "saldo_pendiente": {
+          "name": "saldo_pendiente",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estado_pago": {
+          "name": "estado_pago",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'PARCIAL'"
+        },
+        "estado_contrato": {
+          "name": "estado_contrato",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'VIGENTE'"
+        },
+        "firma_arrendador_r2_key": {
+          "name": "firma_arrendador_r2_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "firma_arrendatario_r2_key": {
+          "name": "firma_arrendatario_r2_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "contrato_pdf_r2_key": {
+          "name": "contrato_pdf_r2_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actualizado_en": {
+          "name": "actualizado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "contratos_alquiler_numero_contrato_unique": {
+          "name": "contratos_alquiler_numero_contrato_unique",
+          "columns": [
+            "numero_contrato"
+          ],
+          "isUnique": true
+        },
+        "contratos_alquiler_reserva_id_unique": {
+          "name": "contratos_alquiler_reserva_id_unique",
+          "columns": [
+            "reserva_id"
+          ],
+          "isUnique": true
+        },
+        "contratos_local_estado_idx": {
+          "name": "contratos_local_estado_idx",
+          "columns": [
+            "local_id",
+            "estado_contrato",
+            "estado_pago"
+          ],
+          "isUnique": false
+        },
+        "contratos_vehiculo_idx": {
+          "name": "contratos_vehiculo_idx",
+          "columns": [
+            "vehiculo_id",
+            "creado_en"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "contratos_alquiler_reserva_id_reservas_id_fk": {
+          "name": "contratos_alquiler_reserva_id_reservas_id_fk",
+          "tableFrom": "contratos_alquiler",
+          "tableTo": "reservas",
+          "columnsFrom": [
+            "reserva_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "contratos_alquiler_local_id_locales_alquiler_id_fk": {
+          "name": "contratos_alquiler_local_id_locales_alquiler_id_fk",
+          "tableFrom": "contratos_alquiler",
+          "tableTo": "locales_alquiler",
+          "columnsFrom": [
+            "local_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "contratos_alquiler_vehiculo_id_vehiculos_id_fk": {
+          "name": "contratos_alquiler_vehiculo_id_vehiculos_id_fk",
+          "tableFrom": "contratos_alquiler",
+          "tableTo": "vehiculos",
+          "columnsFrom": [
+            "vehiculo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "contratos_alquiler_cliente_id_user_id_fk": {
+          "name": "contratos_alquiler_cliente_id_user_id_fk",
+          "tableFrom": "contratos_alquiler",
+          "tableTo": "user",
+          "columnsFrom": [
+            "cliente_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "evaluaciones_entrega_cliente": {
+      "name": "evaluaciones_entrega_cliente",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reserva_id": {
+          "name": "reserva_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "vehiculo_id": {
+          "name": "vehiculo_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cliente_id": {
+          "name": "cliente_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "calificacion_general": {
+          "name": "calificacion_general",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "puntaje_numerico": {
+          "name": "puntaje_numerico",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "aspectos_destacados": {
+          "name": "aspectos_destacados",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "desempeno_vehiculo": {
+          "name": "desempeno_vehiculo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "comentario_opcional": {
+          "name": "comentario_opcional",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cabina_sin_objetos": {
+          "name": "cabina_sin_objetos",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "telemetria_verificada": {
+          "name": "telemetria_verificada",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "llaves_entregadas": {
+          "name": "llaves_entregadas",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "combustible_nivel": {
+          "name": "combustible_nivel",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'MISMO_NIVEL'"
+        },
+        "completada_en": {
+          "name": "completada_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "evaluaciones_entrega_cliente_reserva_id_unique": {
+          "name": "evaluaciones_entrega_cliente_reserva_id_unique",
+          "columns": [
+            "reserva_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "evaluaciones_entrega_cliente_reserva_id_reservas_id_fk": {
+          "name": "evaluaciones_entrega_cliente_reserva_id_reservas_id_fk",
+          "tableFrom": "evaluaciones_entrega_cliente",
+          "tableTo": "reservas",
+          "columnsFrom": [
+            "reserva_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "evaluaciones_entrega_cliente_local_id_locales_alquiler_id_fk": {
+          "name": "evaluaciones_entrega_cliente_local_id_locales_alquiler_id_fk",
+          "tableFrom": "evaluaciones_entrega_cliente",
+          "tableTo": "locales_alquiler",
+          "columnsFrom": [
+            "local_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "evaluaciones_entrega_cliente_vehiculo_id_vehiculos_id_fk": {
+          "name": "evaluaciones_entrega_cliente_vehiculo_id_vehiculos_id_fk",
+          "tableFrom": "evaluaciones_entrega_cliente",
+          "tableTo": "vehiculos",
+          "columnsFrom": [
+            "vehiculo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "evaluaciones_entrega_cliente_cliente_id_user_id_fk": {
+          "name": "evaluaciones_entrega_cliente_cliente_id_user_id_fk",
+          "tableFrom": "evaluaciones_entrega_cliente",
+          "tableTo": "user",
+          "columnsFrom": [
+            "cliente_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "inspecciones_periciales": {
+      "name": "inspecciones_periciales",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reserva_id": {
+          "name": "reserva_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "contrato_id": {
+          "name": "contrato_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "vehiculo_id": {
+          "name": "vehiculo_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "plantilla_id": {
+          "name": "plantilla_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "plantilla_version": {
+          "name": "plantilla_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "tipo_acto": {
+          "name": "tipo_acto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "inspector_id": {
+          "name": "inspector_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "medidor_uso": {
+          "name": "medidor_uso",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nivel_energia_pct": {
+          "name": "nivel_energia_pct",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estado_general": {
+          "name": "estado_general",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'IMPECABLE'"
+        },
+        "respuestas_checklist": {
+          "name": "respuestas_checklist",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "observaciones": {
+          "name": "observaciones",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "firma_cliente_r2_key": {
+          "name": "firma_cliente_r2_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "firma_responsable_r2_key": {
+          "name": "firma_responsable_r2_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "acta_pdf_r2_key": {
+          "name": "acta_pdf_r2_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "iniciada_en": {
+          "name": "iniciada_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "finalizada_en": {
+          "name": "finalizada_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "inspecciones_reserva_tipo_idx": {
+          "name": "inspecciones_reserva_tipo_idx",
+          "columns": [
+            "reserva_id",
+            "tipo_acto"
+          ],
+          "isUnique": false
+        },
+        "inspecciones_vehiculo_idx": {
+          "name": "inspecciones_vehiculo_idx",
+          "columns": [
+            "vehiculo_id",
+            "creado_en"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "inspecciones_periciales_local_id_locales_alquiler_id_fk": {
+          "name": "inspecciones_periciales_local_id_locales_alquiler_id_fk",
+          "tableFrom": "inspecciones_periciales",
+          "tableTo": "locales_alquiler",
+          "columnsFrom": [
+            "local_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "inspecciones_periciales_reserva_id_reservas_id_fk": {
+          "name": "inspecciones_periciales_reserva_id_reservas_id_fk",
+          "tableFrom": "inspecciones_periciales",
+          "tableTo": "reservas",
+          "columnsFrom": [
+            "reserva_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "inspecciones_periciales_contrato_id_contratos_alquiler_id_fk": {
+          "name": "inspecciones_periciales_contrato_id_contratos_alquiler_id_fk",
+          "tableFrom": "inspecciones_periciales",
+          "tableTo": "contratos_alquiler",
+          "columnsFrom": [
+            "contrato_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "inspecciones_periciales_vehiculo_id_vehiculos_id_fk": {
+          "name": "inspecciones_periciales_vehiculo_id_vehiculos_id_fk",
+          "tableFrom": "inspecciones_periciales",
+          "tableTo": "vehiculos",
+          "columnsFrom": [
+            "vehiculo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "inspecciones_periciales_plantilla_id_plantillas_inspeccion_id_fk": {
+          "name": "inspecciones_periciales_plantilla_id_plantillas_inspeccion_id_fk",
+          "tableFrom": "inspecciones_periciales",
+          "tableTo": "plantillas_inspeccion",
+          "columnsFrom": [
+            "plantilla_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "inspecciones_periciales_inspector_id_user_id_fk": {
+          "name": "inspecciones_periciales_inspector_id_user_id_fk",
+          "tableFrom": "inspecciones_periciales",
+          "tableTo": "user",
+          "columnsFrom": [
+            "inspector_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "plantillas_inspeccion": {
+      "name": "plantillas_inspeccion",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "categoria_vehiculo": {
+          "name": "categoria_vehiculo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "unidad_medida_uso": {
+          "name": "unidad_medida_uso",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'KM'"
+        },
+        "items_definicion": {
+          "name": "items_definicion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "activo": {
+          "name": "activo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "plantillas_inspeccion_cat_idx": {
+          "name": "plantillas_inspeccion_cat_idx",
+          "columns": [
+            "categoria_vehiculo",
+            "activo",
+            "version"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "plantillas_inspeccion_local_id_locales_alquiler_id_fk": {
+          "name": "plantillas_inspeccion_local_id_locales_alquiler_id_fk",
+          "tableFrom": "plantillas_inspeccion",
+          "tableTo": "locales_alquiler",
+          "columnsFrom": [
+            "local_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "puntos_inspeccion_r2": {
+      "name": "puntos_inspeccion_r2",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reserva_id": {
+          "name": "reserva_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "inspeccion_id": {
+          "name": "inspeccion_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "vehiculo_id": {
+          "name": "vehiculo_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "zona": {
+          "name": "zona",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "etiqueta": {
+          "name": "etiqueta",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "dictamen": {
+          "name": "dictamen",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'VERIFICADO'"
+        },
+        "gravedad": {
+          "name": "gravedad",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "coord_x": {
+          "name": "coord_x",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'50%'"
+        },
+        "coord_y": {
+          "name": "coord_y",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'50%'"
+        },
+        "multimedia_entrega_id": {
+          "name": "multimedia_entrega_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "multimedia_retorno_id": {
+          "name": "multimedia_retorno_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "costo_estimado": {
+          "name": "costo_estimado",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "genera_cargo_cliente": {
+          "name": "genera_cargo_cliente",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "reparado": {
+          "name": "reparado",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actualizado_en": {
+          "name": "actualizado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "puntos_r2_reserva_idx": {
+          "name": "puntos_r2_reserva_idx",
+          "columns": [
+            "reserva_id",
+            "estado"
+          ],
+          "isUnique": false
+        },
+        "puntos_r2_vehiculo_novedades_idx": {
+          "name": "puntos_r2_vehiculo_novedades_idx",
+          "columns": [
+            "vehiculo_id",
+            "estado",
+            "reparado"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "puntos_inspeccion_r2_local_id_locales_alquiler_id_fk": {
+          "name": "puntos_inspeccion_r2_local_id_locales_alquiler_id_fk",
+          "tableFrom": "puntos_inspeccion_r2",
+          "tableTo": "locales_alquiler",
+          "columnsFrom": [
+            "local_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "puntos_inspeccion_r2_reserva_id_reservas_id_fk": {
+          "name": "puntos_inspeccion_r2_reserva_id_reservas_id_fk",
+          "tableFrom": "puntos_inspeccion_r2",
+          "tableTo": "reservas",
+          "columnsFrom": [
+            "reserva_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "puntos_inspeccion_r2_inspeccion_id_inspecciones_periciales_id_fk": {
+          "name": "puntos_inspeccion_r2_inspeccion_id_inspecciones_periciales_id_fk",
+          "tableFrom": "puntos_inspeccion_r2",
+          "tableTo": "inspecciones_periciales",
+          "columnsFrom": [
+            "inspeccion_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "puntos_inspeccion_r2_vehiculo_id_vehiculos_id_fk": {
+          "name": "puntos_inspeccion_r2_vehiculo_id_vehiculos_id_fk",
+          "tableFrom": "puntos_inspeccion_r2",
+          "tableTo": "vehiculos",
+          "columnsFrom": [
+            "vehiculo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "puntos_inspeccion_r2_multimedia_entrega_id_multimedia_vehiculo_id_fk": {
+          "name": "puntos_inspeccion_r2_multimedia_entrega_id_multimedia_vehiculo_id_fk",
+          "tableFrom": "puntos_inspeccion_r2",
+          "tableTo": "multimedia_vehiculo",
+          "columnsFrom": [
+            "multimedia_entrega_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "puntos_inspeccion_r2_multimedia_retorno_id_multimedia_vehiculo_id_fk": {
+          "name": "puntos_inspeccion_r2_multimedia_retorno_id_multimedia_vehiculo_id_fk",
+          "tableFrom": "puntos_inspeccion_r2",
+          "tableTo": "multimedia_vehiculo",
+          "columnsFrom": [
+            "multimedia_retorno_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "notificaciones": {
+      "name": "notificaciones",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "usuario_id": {
+          "name": "usuario_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "alcance": {
+          "name": "alcance",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "prioridad": {
+          "name": "prioridad",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'NORMAL'"
+        },
+        "titulo": {
+          "name": "titulo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "detalle": {
+          "name": "detalle",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "href": {
+          "name": "href",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "dedupe_key": {
+          "name": "dedupe_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "leida_en": {
+          "name": "leida_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creada_en": {
+          "name": "creada_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "notificaciones_bandeja_idx": {
+          "name": "notificaciones_bandeja_idx",
+          "columns": [
+            "usuario_id",
+            "leida_en",
+            "creada_en"
+          ],
+          "isUnique": false
+        },
+        "notificaciones_dedupe_idx": {
+          "name": "notificaciones_dedupe_idx",
+          "columns": [
+            "usuario_id",
+            "dedupe_key"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "notificaciones_usuario_id_user_id_fk": {
+          "name": "notificaciones_usuario_id_user_id_fk",
+          "tableFrom": "notificaciones",
+          "tableTo": "user",
+          "columnsFrom": [
+            "usuario_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "notificaciones_local_id_locales_alquiler_id_fk": {
+          "name": "notificaciones_local_id_locales_alquiler_id_fk",
+          "tableFrom": "notificaciones",
+          "tableTo": "locales_alquiler",
+          "columnsFrom": [
+            "local_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "suscripciones_push": {
+      "name": "suscripciones_push",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "usuario_id": {
+          "name": "usuario_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "endpoint": {
+          "name": "endpoint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "p256dh": {
+          "name": "p256dh",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "auth": {
+          "name": "auth",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "agente": {
+          "name": "agente",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creada_en": {
+          "name": "creada_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "suscripciones_push_endpoint_unique": {
+          "name": "suscripciones_push_endpoint_unique",
+          "columns": [
+            "endpoint"
+          ],
+          "isUnique": true
+        },
+        "suscripciones_push_usuario_idx": {
+          "name": "suscripciones_push_usuario_idx",
+          "columns": [
+            "usuario_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "suscripciones_push_usuario_id_user_id_fk": {
+          "name": "suscripciones_push_usuario_id_user_id_fk",
+          "tableFrom": "suscripciones_push",
+          "tableTo": "user",
+          "columnsFrom": [
+            "usuario_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "auditoria_financiera": {
+      "name": "auditoria_financiera",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "entidad": {
+          "name": "entidad",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "entidad_id": {
+          "name": "entidad_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "accion": {
+          "name": "accion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "monto_anterior": {
+          "name": "monto_anterior",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "monto_nuevo": {
+          "name": "monto_nuevo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "motivo": {
+          "name": "motivo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "usuario_id": {
+          "name": "usuario_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "detalles_json": {
+          "name": "detalles_json",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "auditoria_financiera_local_id_locales_alquiler_id_fk": {
+          "name": "auditoria_financiera_local_id_locales_alquiler_id_fk",
+          "tableFrom": "auditoria_financiera",
+          "tableTo": "locales_alquiler",
+          "columnsFrom": [
+            "local_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "auditoria_financiera_usuario_id_user_id_fk": {
+          "name": "auditoria_financiera_usuario_id_user_id_fk",
+          "tableFrom": "auditoria_financiera",
+          "tableTo": "user",
+          "columnsFrom": [
+            "usuario_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "cuentas_financieras": {
+      "name": "cuentas_financieras",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "saldo_inicial": {
+          "name": "saldo_inicial",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "activo": {
+          "name": "activo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actualizado_en": {
+          "name": "actualizado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "cuentas_financieras_local_id_locales_alquiler_id_fk": {
+          "name": "cuentas_financieras_local_id_locales_alquiler_id_fk",
+          "tableFrom": "cuentas_financieras",
+          "tableTo": "locales_alquiler",
+          "columnsFrom": [
+            "local_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "depositos_garantia": {
+      "name": "depositos_garantia",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "contrato_id": {
+          "name": "contrato_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cliente_id": {
+          "name": "cliente_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cliente_nombre": {
+          "name": "cliente_nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "vehiculo_id": {
+          "name": "vehiculo_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "monto_esperado": {
+          "name": "monto_esperado",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "monto_recibido": {
+          "name": "monto_recibido",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "monto_retenido": {
+          "name": "monto_retenido",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "monto_devuelto": {
+          "name": "monto_devuelto",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "saldo_comprometido": {
+          "name": "saldo_comprometido",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cuenta_id": {
+          "name": "cuenta_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "metodo_pago": {
+          "name": "metodo_pago",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "referencia_recepcion": {
+          "name": "referencia_recepcion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "fecha_recepcion": {
+          "name": "fecha_recepcion",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "fecha_devolucion_prevista": {
+          "name": "fecha_devolucion_prevista",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "fecha_devolucion_real": {
+          "name": "fecha_devolucion_real",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "referencia_devolucion": {
+          "name": "referencia_devolucion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "motivo_retencion": {
+          "name": "motivo_retencion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "observaciones": {
+          "name": "observaciones",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actualizado_en": {
+          "name": "actualizado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "depositos_garantia_local_id_locales_alquiler_id_fk": {
+          "name": "depositos_garantia_local_id_locales_alquiler_id_fk",
+          "tableFrom": "depositos_garantia",
+          "tableTo": "locales_alquiler",
+          "columnsFrom": [
+            "local_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "depositos_garantia_cliente_id_user_id_fk": {
+          "name": "depositos_garantia_cliente_id_user_id_fk",
+          "tableFrom": "depositos_garantia",
+          "tableTo": "user",
+          "columnsFrom": [
+            "cliente_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "depositos_garantia_vehiculo_id_vehiculos_id_fk": {
+          "name": "depositos_garantia_vehiculo_id_vehiculos_id_fk",
+          "tableFrom": "depositos_garantia",
+          "tableTo": "vehiculos",
+          "columnsFrom": [
+            "vehiculo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "depositos_garantia_cuenta_id_cuentas_financieras_id_fk": {
+          "name": "depositos_garantia_cuenta_id_cuentas_financieras_id_fk",
+          "tableFrom": "depositos_garantia",
+          "tableTo": "cuentas_financieras",
+          "columnsFrom": [
+            "cuenta_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "movimientos_caja": {
+      "name": "movimientos_caja",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "categoria": {
+          "name": "categoria",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "concepto": {
+          "name": "concepto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "monto": {
+          "name": "monto",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "metodo_pago": {
+          "name": "metodo_pago",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cuenta_id": {
+          "name": "cuenta_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cuenta_destino_id": {
+          "name": "cuenta_destino_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "contrato_id": {
+          "name": "contrato_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cliente_id": {
+          "name": "cliente_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cliente_nombre": {
+          "name": "cliente_nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "vehiculo_id": {
+          "name": "vehiculo_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "proveedor": {
+          "name": "proveedor",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "referencia": {
+          "name": "referencia",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "soporte_url": {
+          "name": "soporte_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'CONFIRMADO'"
+        },
+        "motivo_anulacion": {
+          "name": "motivo_anulacion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "anulado_por_id": {
+          "name": "anulado_por_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "anulado_en": {
+          "name": "anulado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creado_por_id": {
+          "name": "creado_por_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "observaciones": {
+          "name": "observaciones",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "fecha_movimiento": {
+          "name": "fecha_movimiento",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actualizado_en": {
+          "name": "actualizado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "movimientos_caja_local_id_locales_alquiler_id_fk": {
+          "name": "movimientos_caja_local_id_locales_alquiler_id_fk",
+          "tableFrom": "movimientos_caja",
+          "tableTo": "locales_alquiler",
+          "columnsFrom": [
+            "local_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "movimientos_caja_cuenta_id_cuentas_financieras_id_fk": {
+          "name": "movimientos_caja_cuenta_id_cuentas_financieras_id_fk",
+          "tableFrom": "movimientos_caja",
+          "tableTo": "cuentas_financieras",
+          "columnsFrom": [
+            "cuenta_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "movimientos_caja_cuenta_destino_id_cuentas_financieras_id_fk": {
+          "name": "movimientos_caja_cuenta_destino_id_cuentas_financieras_id_fk",
+          "tableFrom": "movimientos_caja",
+          "tableTo": "cuentas_financieras",
+          "columnsFrom": [
+            "cuenta_destino_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "movimientos_caja_cliente_id_user_id_fk": {
+          "name": "movimientos_caja_cliente_id_user_id_fk",
+          "tableFrom": "movimientos_caja",
+          "tableTo": "user",
+          "columnsFrom": [
+            "cliente_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "movimientos_caja_vehiculo_id_vehiculos_id_fk": {
+          "name": "movimientos_caja_vehiculo_id_vehiculos_id_fk",
+          "tableFrom": "movimientos_caja",
+          "tableTo": "vehiculos",
+          "columnsFrom": [
+            "vehiculo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "movimientos_caja_anulado_por_id_user_id_fk": {
+          "name": "movimientos_caja_anulado_por_id_user_id_fk",
+          "tableFrom": "movimientos_caja",
+          "tableTo": "user",
+          "columnsFrom": [
+            "anulado_por_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "movimientos_caja_creado_por_id_user_id_fk": {
+          "name": "movimientos_caja_creado_por_id_user_id_fk",
+          "tableFrom": "movimientos_caja",
+          "tableTo": "user",
+          "columnsFrom": [
+            "creado_por_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "sesiones_caja": {
+      "name": "sesiones_caja",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cuenta_id": {
+          "name": "cuenta_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "usuario_apertura_id": {
+          "name": "usuario_apertura_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "fecha_apertura": {
+          "name": "fecha_apertura",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "saldo_inicial_contado": {
+          "name": "saldo_inicial_contado",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'ABIERTA'"
+        },
+        "usuario_cierre_id": {
+          "name": "usuario_cierre_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "fecha_cierre": {
+          "name": "fecha_cierre",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "saldo_esperado": {
+          "name": "saldo_esperado",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "saldo_real_contado": {
+          "name": "saldo_real_contado",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "diferencia": {
+          "name": "diferencia",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "motivo_diferencia": {
+          "name": "motivo_diferencia",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "observaciones": {
+          "name": "observaciones",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actualizado_en": {
+          "name": "actualizado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sesiones_caja_local_id_locales_alquiler_id_fk": {
+          "name": "sesiones_caja_local_id_locales_alquiler_id_fk",
+          "tableFrom": "sesiones_caja",
+          "tableTo": "locales_alquiler",
+          "columnsFrom": [
+            "local_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sesiones_caja_cuenta_id_cuentas_financieras_id_fk": {
+          "name": "sesiones_caja_cuenta_id_cuentas_financieras_id_fk",
+          "tableFrom": "sesiones_caja",
+          "tableTo": "cuentas_financieras",
+          "columnsFrom": [
+            "cuenta_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "sesiones_caja_usuario_apertura_id_user_id_fk": {
+          "name": "sesiones_caja_usuario_apertura_id_user_id_fk",
+          "tableFrom": "sesiones_caja",
+          "tableTo": "user",
+          "columnsFrom": [
+            "usuario_apertura_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "sesiones_caja_usuario_cierre_id_user_id_fk": {
+          "name": "sesiones_caja_usuario_cierre_id_user_id_fk",
+          "tableFrom": "sesiones_caja",
+          "tableTo": "user",
+          "columnsFrom": [
+            "usuario_cierre_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "verificaciones_identidad": {
+      "name": "verificaciones_identidad",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "usuario_id": {
+          "name": "usuario_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tipo_documento": {
+          "name": "tipo_documento",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "numero_documento": {
+          "name": "numero_documento",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "documento_frente_key": {
+          "name": "documento_frente_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "documento_dorso_key": {
+          "name": "documento_dorso_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "licencia_numero": {
+          "name": "licencia_numero",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "licencia_categoria": {
+          "name": "licencia_categoria",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "licencia_vencimiento": {
+          "name": "licencia_vencimiento",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "licencia_frente_key": {
+          "name": "licencia_frente_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "licencia_dorso_key": {
+          "name": "licencia_dorso_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'PENDIENTE'"
+        },
+        "motivo_rechazo": {
+          "name": "motivo_rechazo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "verificado_en": {
+          "name": "verificado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actualizado_en": {
+          "name": "actualizado_en",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "verificaciones_identidad_usuario_id_user_id_fk": {
+          "name": "verificaciones_identidad_usuario_id_user_id_fk",
+          "tableFrom": "verificaciones_identidad",
+          "tableTo": "user",
+          "columnsFrom": [
+            "usuario_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}

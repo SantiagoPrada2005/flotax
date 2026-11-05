@@ -9,7 +9,7 @@
 | :--- | :--- | :--- |
 | [`auth/`](./auth/) | Sistema central de autenticación y autorización (Better Auth, RBAC multi-tenant, sesiones y guards). | [INDEX.md](./auth/INDEX.md) |
 | [`caja/`](./caja/) | Dominio financiero y de caja operativa: cálculos de balance, liquidación de depósitos de garantía y repositorio D1. | [INDEX.md](./caja/INDEX.md) |
-| [`db/`](./db/) | Directory `db` | *(No index)* |
+| [`db/`](./db/) | Bootstrap defensivo de esquemas D1, diagnósticos de persistencia y seed idempotente de demostración. | [INDEX.md](./db/INDEX.md) |
 | [`email/`](./email/) | Módulo de envío de correos electrónicos transaccionales para FlotaX sobre Cloudflare Workers (API `send_email`) y dominio `flotax.innovaweb.pro`. | [INDEX.md](./email/INDEX.md) |
 | [`flota/`](./flota/) | Dominio de catálogo, especificaciones técnicas, buscador evaluativo de unidades, motor de franjas de disponibilidad, calendario suizo de reservas e inspección R2/waybill del cliente. | [INDEX.md](./flota/INDEX.md) |
 | [`logger/`](./logger/) | Módulo de logging centralizado, sanitización de datos sensibles (PII/Secretos), gobernanza de errores y alertas tempranas con prevención de tormentas por correo para desarrolladores en Cloudflare Workers y D1. | [INDEX.md](./logger/INDEX.md) |
