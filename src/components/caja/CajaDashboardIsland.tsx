@@ -496,8 +496,8 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
             type="button"
             onClick={() => setModalArqueoAbierto(true)}
             className={`ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition active:scale-95 cursor-pointer ${data.sesionCajaActiva
-                ? 'bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200'
-                : 'bg-emerald-100 text-emerald-900 border border-emerald-300 hover:bg-emerald-200'
+                ? 'bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40 dark:hover:bg-amber-500/30'
+                : 'bg-emerald-100 text-emerald-900 border border-emerald-300 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/40 dark:hover:bg-emerald-500/30'
               }`}
           >
             {data.sesionCajaActiva ? 'Cierre de Turno' : 'Abrir Turno'}
@@ -522,8 +522,8 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
             type="button"
             onClick={() => setActiveTab(tab.id as TabCaja)}
             className={`min-h-[40px] shrink-0 rounded-xl px-3.5 py-2 transition cursor-pointer ${activeTab === tab.id
-                ? 'bg-white text-[#111827] shadow-xs'
-                : 'hover:text-[#111827] hover:bg-white/50'
+                ? 'bg-white text-[#111827] shadow-xs dark:bg-white/15 dark:text-white'
+                : 'hover:text-[#111827] hover:bg-white/50 dark:text-[#D1D5DB] dark:hover:text-white dark:hover:bg-white/10'
               }`}
           >
             {tab.label}

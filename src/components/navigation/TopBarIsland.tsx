@@ -187,8 +187,8 @@ export default function TopBarIsland({
           onClick={() => setIsMenuOpen((prev) => !prev)}
           className={`ios-press-bounce relative flex h-11 w-11 cursor-pointer items-center justify-center rounded-full transition-colors duration-150 ${
             isMenuOpen
-              ? 'bg-[#111827] text-[#EDEDED]'
-              : 'text-[#1F2937] hover:bg-[#111827]/6 hover:text-[#111827]'
+              ? 'bg-[#111827] dark:bg-white/20 text-[#EDEDED]'
+              : 'text-[#1F2937] dark:text-[#EDEDED] hover:bg-[#111827]/6 dark:hover:bg-white/10 hover:text-[#111827] dark:hover:text-white'
           }`}
         >
           {isMenuOpen ? (

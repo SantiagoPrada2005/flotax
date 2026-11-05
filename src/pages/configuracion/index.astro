@@ -1,0 +1,16 @@
+---
+import LayoutApp from '@/layouts/LayoutApp.astro';
+import ConfiguracionIsland from '@/components/configuracion/ConfiguracionIsland';
+---
+
+<LayoutApp
+  title="FlotaX — Configuración"
+  description="Personaliza tu experiencia, apariencia de temas claro y oscuro, idioma y formatos regionales en FlotaX."
+  navVariant="client"
+  noindex={true}
+>
+  <div class="w-full pb-20">
+    <ConfiguracionIsland client:load />
+  </div>
+</LayoutApp>
+

@@ -644,16 +644,16 @@ export default function MisReservasHub({
                   onClick={() => setFiltroEstado(tab.id)}
                   className={`ios-press-bounce shrink-0 inline-flex min-h-[36px] items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
                     activo
-                      ? 'bg-[#111827] text-white'
-                      : 'bg-white/75 text-[#4B5563] hover:bg-white hover:text-[#111827]'
+                      ? 'bg-[#111827] text-white border border-transparent dark:bg-white dark:text-[#111827]'
+                      : 'bg-white/75 text-[#4B5563] hover:bg-white hover:text-[#111827] dark:bg-[#1F2937] dark:text-[#EDEDED] dark:hover:bg-white/10 dark:hover:text-white border border-transparent dark:border-white/10'
                   }`}
                 >
                   <span>{tab.label}</span>
                   <span
                     className={`rounded-full px-1.5 py-0.2 text-[10px] tabular-nums ${
                       activo
-                        ? 'bg-white/20 text-white'
-                        : 'bg-[#EDEDED] text-[#111827]'
+                        ? 'bg-white/20 text-white dark:bg-black/20 dark:text-[#111827]'
+                        : 'bg-[#EDEDED] text-[#111827] dark:bg-white/10 dark:text-[#EDEDED]'
                     }`}
                   >
                     {tab.count}
@@ -752,7 +752,7 @@ export default function MisReservasHub({
                       <img
                         src={item.vehiculo.imagenUrl}
                         alt={`${item.vehiculo.marca} ${item.vehiculo.modelo}`}
-                        className="h-full w-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105"
+                        className="h-full w-full object-contain mix-blend-multiply dark:mix-blend-normal transition-transform duration-300 group-hover:scale-105"
                         loading="lazy"
                       />
                     </div>
@@ -770,10 +770,10 @@ export default function MisReservasHub({
                         <span
                           className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
                             item.estado === 'PENDIENTE'
-                              ? 'bg-[#111827] text-white'
+                              ? 'bg-[#111827] text-white border border-transparent dark:bg-white dark:text-[#111827]'
                               : item.estado === 'EN_CURSO'
                                 ? 'bg-[#1F2937] text-white'
-                                : 'bg-[#EDEDED] text-[#111827]'
+                                : 'bg-[#EDEDED] text-[#111827] dark:bg-white/10 dark:text-[#EDEDED]'
                           }`}
                         >
                           {ETIQUETA_ESTADO[item.estado]}

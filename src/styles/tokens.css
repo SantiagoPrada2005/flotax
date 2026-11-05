@@ -870,3 +870,289 @@ html.js-ready .reveal-on-scroll.is-visible {
   animation: auth-step-in 260ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+
+/* ==========================================================================
+   Dark Mode System (WCAG 2.2 AAA & Contrast Governance)
+   Canonical Palette: #EDEDED | #9CA3AF | #4B5563 | #1F2937 | #111827
+   ========================================================================== */
+html.dark {
+  color-scheme: dark;
+  --color-surface-canvas: #111827;
+  --color-surface-card: #1f2937;
+  --color-surface-elevated: #1f2937;
+  --color-surface-sidebar: #111827;
+  --color-brand-primary: #ededed;
+  --color-brand-secondary: #e5e7eb;
+  --color-brand-accent: #ededed;
+  --color-border-subtle: #374151;
+  --color-text-muted: #d1d5db;
+  --color-text-subtle: #9ca3af;
+
+  background-color: #111827;
+  color: #ededed;
+}
+
+html.dark body {
+  background-color: #111827;
+  color: #ededed;
+}
+
+/* Background surface mappings in dark mode */
+html.dark .bg-surface-canvas {
+  background-color: #111827 !important;
+}
+
+html.dark .bg-surface-card,
+html.dark .bg-white {
+  background-color: #1f2937 !important;
+}
+
+html.dark .bg-surface-elevated,
+html.dark .bg-surface-sidebar {
+  background-color: #111827 !important;
+}
+
+/* Gray and subtle backgrounds in dark mode */
+html.dark .bg-\[\#EDEDED\] {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark .bg-\[\#EDEDED\]\/85,
+html.dark .bg-\[\#EDEDED\]\/80,
+html.dark .bg-\[\#EDEDED\]\/70,
+html.dark .bg-\[\#EDEDED\]\/60,
+html.dark .bg-\[\#EDEDED\]\/50,
+html.dark .bg-\[\#EDEDED\]\/40,
+html.dark .bg-\[\#EDEDED\]\/30,
+html.dark .bg-\[\#EDEDED\]\/20 {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+html.dark .bg-white\/90,
+html.dark .bg-white\/95,
+html.dark .bg-white\/96,
+html.dark .bg-white\/85,
+html.dark .bg-white\/80,
+html.dark .bg-white\/75,
+html.dark .bg-white\/70,
+html.dark .bg-white\/65,
+html.dark .bg-white\/60,
+html.dark .bg-white\/50 {
+  background-color: rgba(31, 41, 55, 0.96) !important;
+}
+
+/* Vehicle and Car photos: prevent darkening in dark mode */
+html.dark img.mix-blend-multiply,
+html.dark img[class*="mix-blend-multiply"],
+html.dark .mix-blend-multiply {
+  mix-blend-mode: normal !important;
+}
+
+html.dark .bg-gray-100,
+html.dark .bg-gray-100\/80,
+html.dark .bg-gray-50,
+html.dark .bg-gray-50\/80 {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Dark mode active / selected badge tints */
+html.dark .bg-\[\#111827\]\/8,
+html.dark .bg-\[\#111827\]\/6,
+html.dark .bg-\[\#111827\]\/10,
+html.dark .bg-\[\#111827\]\/15 {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Text and Foreground mappings */
+html.dark .text-brand-primary,
+html.dark .text-\[\#111827\],
+html.dark .text-\[\#1F2937\],
+html.dark .text-gray-900,
+html.dark .text-neutral-900 {
+  color: #ededed !important;
+}
+
+/* Status buttons and badges in dark mode (prevent white text on light amber / yellow) */
+html.dark .text-amber-900,
+html.dark .text-amber-800,
+html.dark .text-amber-700 {
+  color: #fcd34d !important;
+}
+
+html.dark .bg-amber-100,
+html.dark .bg-amber-50,
+html.dark .bg-amber-200 {
+  background-color: rgba(245, 158, 11, 0.22) !important;
+  border-color: rgba(245, 158, 11, 0.45) !important;
+  color: #fcd34d !important;
+}
+
+html.dark button.bg-amber-100,
+html.dark a.bg-amber-100,
+html.dark [role="button"].bg-amber-100 {
+  background-color: rgba(245, 158, 11, 0.22) !important;
+  border-color: rgba(245, 158, 11, 0.45) !important;
+  color: #fcd34d !important;
+}
+
+html.dark button.bg-amber-100:hover,
+html.dark a.bg-amber-100:hover,
+html.dark [role="button"].bg-amber-100:hover {
+  background-color: rgba(245, 158, 11, 0.32) !important;
+}
+
+html.dark .text-emerald-900,
+html.dark .text-emerald-800,
+html.dark .text-emerald-700 {
+  color: #6ee7b7 !important;
+}
+
+html.dark .bg-emerald-100,
+html.dark .bg-emerald-50,
+html.dark .bg-emerald-200 {
+  background-color: rgba(16, 185, 129, 0.22) !important;
+  border-color: rgba(16, 185, 129, 0.45) !important;
+  color: #6ee7b7 !important;
+}
+
+html.dark button.bg-emerald-100,
+html.dark a.bg-emerald-100,
+html.dark [role="button"].bg-emerald-100 {
+  background-color: rgba(16, 185, 129, 0.22) !important;
+  border-color: rgba(16, 185, 129, 0.45) !important;
+  color: #6ee7b7 !important;
+}
+
+html.dark button.bg-emerald-100:hover,
+html.dark a.bg-emerald-100:hover,
+html.dark [role="button"].bg-emerald-100:hover {
+  background-color: rgba(16, 185, 129, 0.32) !important;
+}
+
+/* Secondary text in dark mode: use high contrast silver-white (#E5E7EB / #D1D5DB) instead of dark gray */
+html.dark .text-brand-secondary,
+html.dark .text-neutral-600,
+html.dark .text-gray-600,
+html.dark .text-\[\#4B5563\] {
+  color: #e5e7eb !important;
+}
+
+html.dark .text-neutral-500,
+html.dark .text-gray-500,
+html.dark .text-\[\#9CA3AF\] {
+  color: #9ca3af !important;
+}
+
+/* ==========================================================================
+   BUTTON & INTERACTIVE HOVER / ACTIVE STATES IN DARK MODE
+   Bans bright white flashes on hover/active in dark mode
+   ========================================================================== */
+html.dark [class*="hover:bg-[#EDEDED]"]:hover,
+html.dark [class*="hover:bg-white"]:hover,
+html.dark [class*="hover:bg-gray-100"]:hover,
+html.dark [class*="hover:bg-gray-200"]:hover,
+html.dark [class*="hover:bg-gray-50"]:hover,
+html.dark [class*="hover:bg-neutral-100"]:hover,
+html.dark [class*="hover:bg-neutral-50"]:hover,
+html.dark .hover\:bg-white:hover,
+html.dark .hover\:bg-\[\#EDEDED\]:hover,
+html.dark .hover\:bg-\[\#EDEDED\]\/80:hover,
+html.dark .hover\:bg-\[\#EDEDED\]\/70:hover,
+html.dark .hover\:bg-\[\#EDEDED\]\/60:hover,
+html.dark .hover\:bg-\[\#EDEDED\]\/50:hover,
+html.dark .hover\:bg-gray-100:hover,
+html.dark .hover\:bg-gray-200:hover,
+html.dark .hover\:bg-gray-50:hover {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+}
+
+html.dark [class*="active:bg-[#EDEDED]"]:active,
+html.dark [class*="active:bg-white"]:active,
+html.dark [class*="active:bg-gray-100"]:active,
+html.dark [class*="active:bg-gray-200"]:active,
+html.dark .active\:bg-white:active,
+html.dark .active\:bg-\[\#EDEDED\]:active,
+html.dark .active\:bg-gray-100:active {
+  background-color: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+}
+
+/* Ensure text doesn't turn black on hover in dark mode */
+html.dark [class*="hover:text-[#111827]"]:hover,
+html.dark [class*="hover:text-black"]:hover,
+html.dark [class*="hover:text-gray-900"]:hover,
+html.dark .hover\:text-\[\#111827\]:hover,
+html.dark .hover\:text-black:hover {
+  color: #ffffff !important;
+}
+
+/* Icon containers in buttons / menu items */
+html.dark [role="menuitem"] .bg-\[\#EDEDED\],
+html.dark button .bg-\[\#EDEDED\],
+html.dark a .bg-\[\#EDEDED\] {
+  background-color: rgba(255, 255, 255, 0.10) !important;
+  color: #ededed !important;
+}
+
+/* Selected active items in menus, radios, and tabs */
+html.dark [role="menuitem"][aria-selected="true"],
+html.dark [role="radio"][aria-checked="true"] {
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark [role="tab"][aria-selected="false"] {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: #ededed !important;
+}
+
+html.dark [role="tab"][aria-selected="true"] {
+  background-color: #ededed !important;
+  color: #111827 !important;
+}
+
+html.dark [role="radio"][aria-checked="true"] .bg-\[\#111827\] {
+  background-color: #ededed !important;
+}
+
+/* Borders and Dividers */
+html.dark .border-border-subtle,
+html.dark .border-\[\#EDEDED\],
+html.dark .border-gray-200,
+html.dark .border-gray-200\/70,
+html.dark .border-gray-200\/60,
+html.dark .border-gray-200\/80,
+html.dark .border-gray-200\/50,
+html.dark .border-gray-100,
+html.dark .border-\[\#9CA3AF\]\/25,
+html.dark .border-\[\#9CA3AF\]\/30,
+html.dark .border-\[\#9CA3AF\]\/35,
+html.dark .border-\[\#9CA3AF\]\/40 {
+  border-color: rgba(156, 163, 175, 0.22) !important;
+}
+
+html.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(156, 163, 175, 0.15) !important;
+}
+
+/* Form controls */
+html.dark input,
+html.dark textarea,
+html.dark select {
+  background-color: #1f2937 !important;
+  color: #ededed !important;
+  border-color: rgba(156, 163, 175, 0.3) !important;
+}
+
+/* iOS Glass Dock & TopBar in Dark Mode */
+html.dark .ios-dock-capsule {
+  background: rgba(31, 41, 55, 0.88) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 20px 42px -8px rgba(0, 0, 0, 0.6) !important;
+}
+
+html.dark .ios-floating-pill {
+  background: rgba(31, 41, 55, 0.92) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}

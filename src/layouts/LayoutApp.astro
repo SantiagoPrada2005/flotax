@@ -46,6 +46,7 @@ const isPrivateArea =
   Astro.url.pathname.startsWith('/admin') ||
   Astro.url.pathname.startsWith('/reservas') ||
   Astro.url.pathname.startsWith('/perfil') ||
+  Astro.url.pathname.startsWith('/configuracion') ||
   Astro.url.pathname.startsWith('/notificaciones') ||
   Astro.url.pathname === '/login' ||
   Astro.url.pathname === '/registro' ||
@@ -53,12 +54,22 @@ const isPrivateArea =
   Astro.url.pathname === '/error';
 
 const resolvedNoIndex = noindex !== undefined ? noindex : isPrivateArea;
+
+// Inicialización de idioma y tema persistidos en cookies para renderizado SSR
+const cookieLang = Astro.cookies.get('flotax_lang')?.value;
+const idiomaInicial = cookieLang === 'en' ? 'en' : 'es';
+const cookieTheme = Astro.cookies.get('flotax_theme')?.value;
+const esOscuroInicial = cookieTheme === 'oscuro';
 ---
 
 <!doctype html>
 <html
-  lang="es"
-  class="h-full bg-surface-canvas text-brand-primary antialiased"
+  lang={idiomaInicial}
+  class:list={[
+    "h-full bg-surface-canvas text-brand-primary antialiased",
+    esOscuroInicial ? "dark" : ""
+  ]}
+  data-theme={esOscuroInicial ? "dark" : "light"}
   data-autenticado={Astro.locals.usuario ? 'true' : 'false'}
 >
   <head>
@@ -91,6 +102,50 @@ const resolvedNoIndex = noindex !== undefined ? noindex : isPrivateArea;
       structuredData={structuredData}
     />
     <ClientRouter />
+
+    <!-- Inicialización inmediata anti-FOUC de tema y lenguaje antes del primer pintado -->
+    <script is:inline>
+      (function() {
+        try {
+          var tema = localStorage.getItem('flotax_theme') || 'sistema';
+          var oscuro = tema === 'oscuro' || (tema === 'sistema' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (oscuro) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.setAttribute('data-theme', 'dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.setAttribute('data-theme', 'light');
+          }
+          var lang = localStorage.getItem('flotax_lang');
+          if (lang === 'en' || lang === 'es') {
+            document.documentElement.lang = lang;
+          }
+        } catch (e) {}
+      })();
+    </script>
+
+    <!-- Sincronizador de tema e idioma durante transiciones SPA -->
+    <script>
+      const sincronizarTema = () => {
+        try {
+          const tema = localStorage.getItem('flotax_theme') || 'sistema';
+          const oscuro = tema === 'oscuro' || (tema === 'sistema' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.classList.toggle('dark', oscuro);
+          document.documentElement.setAttribute('data-theme', oscuro ? 'dark' : 'light');
+          const lang = localStorage.getItem('flotax_lang');
+          if (lang) document.documentElement.lang = lang;
+        } catch {}
+      };
+      document.addEventListener('astro:page-load', sincronizarTema);
+      if (typeof window !== 'undefined' && window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+          const tema = localStorage.getItem('flotax_theme') || 'sistema';
+          if (tema === 'sistema') {
+            sincronizarTema();
+          }
+        });
+      }
+    </script>
   </head>
   <body class="flex min-h-full flex-col font-body selection:bg-brand-secondary/20 selection:text-brand-primary">
     <PwaBootSplash />

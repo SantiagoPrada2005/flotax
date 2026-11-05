@@ -10,6 +10,7 @@
 | [`alquiler/`](./alquiler/) | Componentes interactivos para el embudo multi-paso de alquiler de vehículos y calendario editorial de franjas de disponibilidad. | [INDEX.md](./alquiler/INDEX.md) |
 | [`auth/`](./auth/) | Componentes de autenticación, flujos de acceso OTP y wizards de inducción de personal operativo. | [INDEX.md](./auth/INDEX.md) |
 | [`caja/`](./caja/) | Dashboard interactivo de Caja y Finanzas con Bento Grid, gráficos de flujo reales y modales transaccionales. | [INDEX.md](./caja/INDEX.md) |
+| [`configuracion/`](./configuracion/) | Isla interactiva de preferencias del sistema: selección de temas (Claro, Oscuro, Sistema) e internacionalización/formatos regionales. | [INDEX.md](./configuracion/INDEX.md) |
 | [`dashboard/`](./dashboard/) | Componentes modulares del Bento Grid para el panel de control operativo (Hero, Métricas con Sparkline, Operaciones y Categorías). | [INDEX.md](./dashboard/INDEX.md) |
 | [`flota/`](./flota/) | Dominio de Flota, catálogo bento, ficha de estudio 360° y wizard multi-paso. | [INDEX.md](./flota/INDEX.md) |
 | [`landing/`](./landing/) | Componentes visuales y secciones promocionales de la landing page principal de FlotaX. | [INDEX.md](./landing/INDEX.md) |
