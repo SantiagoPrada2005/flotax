@@ -6,6 +6,7 @@ import {
   esRangoDisponibleValido,
   formatearFechaCorta,
   obtenerDiaSemanaEditorial,
+  type BloqueNoDisponible,
   type DiaCalendarioItem,
   type FranjaDisponible,
   type VehiculoItem,
@@ -17,6 +18,7 @@ export interface EditorialAvailabilityCalendarProps {
   fechaInicio: string | null;
   fechaFin: string | null;
   onChangeRango: (inicio: string | null, fin: string | null) => void;
+  bloquesPrecalculados?: BloqueNoDisponible[] | undefined;
 }
 
 export default function EditorialAvailabilityCalendar({
@@ -25,6 +27,7 @@ export default function EditorialAvailabilityCalendar({
   fechaInicio,
   fechaFin,
   onChangeRango,
+  bloquesPrecalculados,
 }: EditorialAvailabilityCalendarProps) {
   const [anioInicial = 2026, mesInicialUno = 10] = hoyISO.split('-').map(Number);
 
@@ -45,9 +48,10 @@ export default function EditorialAvailabilityCalendar({
         vehiculo.id,
         mesCursor.anio,
         mesCursor.mesIndexCero,
-        hoyISO
+        hoyISO,
+        bloquesPrecalculados
       ),
-    [vehiculo.id, mesCursor.anio, mesCursor.mesIndexCero, hoyISO]
+    [vehiculo.id, mesCursor.anio, mesCursor.mesIndexCero, hoyISO, bloquesPrecalculados]
   );
 
   const franjaActivaId = useMemo(() => {
@@ -56,9 +60,9 @@ export default function EditorialAvailabilityCalendar({
     if (diaEnMesActual?.franjaId) return diaEnMesActual.franjaId;
 
     const [y = 2026, m = 10] = fechaInicio.split('-').map(Number);
-    const calInicio = construirCalendarioMes(vehiculo.id, y, m - 1, hoyISO);
+    const calInicio = construirCalendarioMes(vehiculo.id, y, m - 1, hoyISO, bloquesPrecalculados);
     return calInicio.dias.find((d) => d.fechaISO === fechaInicio)?.franjaId;
-  }, [fechaInicio, calendarioMes.dias, vehiculo.id, hoyISO]);
+  }, [fechaInicio, calendarioMes.dias, vehiculo.id, hoyISO, bloquesPrecalculados]);
 
   const diasSeleccionados = useMemo(() => {
     if (!fechaInicio) return 0;
@@ -118,7 +122,8 @@ export default function EditorialAvailabilityCalendar({
       vehiculo.id,
       fechaInicio,
       dia.fechaISO,
-      hoyISO
+      hoyISO,
+      bloquesPrecalculados
     );
 
     if (!esContiguo) {
