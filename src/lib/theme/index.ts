@@ -36,7 +36,21 @@ export function determinarEsOscuro(tema: TipoTema): boolean {
 }
 
 /**
- * Aplica el tema inmediatamente en el DOM (clase 'dark' y atributo data-theme)
+ * Determina si el modo oscuro está actualmente activo en el cliente.
+ * Consulta la clase 'dark' o atributo data-theme en document.documentElement,
+ * o resuelve según la preferencia guardada en localStorage y el sistema.
+ */
+export function esModoOscuroActivo(): boolean {
+  if (typeof document !== 'undefined') {
+    if (document.documentElement.classList.contains('dark')) return true;
+    if (document.documentElement.getAttribute('data-theme') === 'dark') return true;
+  }
+  return determinarEsOscuro(obtenerTemaActual());
+}
+
+/**
+ * Aplica el tema inmediatamente en el DOM (clase 'dark', atributo data-theme y meta theme-color),
+ * utilizando View Transitions para un crossfade suave con halo azul canónico si está soportado,
  * y persiste la selección en localStorage y cookies.
  */
 export function aplicarTema(tema: TipoTema): void {
@@ -51,19 +65,53 @@ export function aplicarTema(tema: TipoTema): void {
     // Storage restringido
   }
 
-  if (esOscuro) {
-    document.documentElement.classList.add('dark');
-    document.documentElement.setAttribute('data-theme', 'dark');
-  } else {
-    document.documentElement.classList.remove('dark');
-    document.documentElement.setAttribute('data-theme', 'light');
-  }
+  const mutarDOM = () => {
+    const html = document.documentElement;
+    if (esOscuro) {
+      html.classList.add('dark');
+      html.setAttribute('data-theme', 'dark');
+      html.style.backgroundColor = '#111827';
+      html.style.colorScheme = 'dark';
+    } else {
+      html.classList.remove('dark');
+      html.setAttribute('data-theme', 'light');
+      html.style.backgroundColor = '#ededed';
+      html.style.colorScheme = 'light';
+    }
 
-  window.dispatchEvent(
-    new CustomEvent('flotax:theme-change', {
-      detail: { tema, esOscuro },
-    })
-  );
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', esOscuro ? '#111827' : '#EDEDED');
+    }
+
+    window.dispatchEvent(
+      new CustomEvent('flotax:theme-change', {
+        detail: { tema, esOscuro },
+      })
+    );
+  };
+
+  // View Transition pericial con animación sutil blanco/azul
+  const reduceMotion =
+    typeof window !== 'undefined' &&
+    window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (
+    !reduceMotion &&
+    typeof document !== 'undefined' &&
+    'startViewTransition' in document
+  ) {
+    document.documentElement.classList.add('flotax-theme-transitioning');
+    const transicion = (document as Document & { startViewTransition: (cb: () => void) => { finished: Promise<void> } }).startViewTransition(() => {
+      mutarDOM();
+    });
+    transicion.finished.finally(() => {
+      document.documentElement.classList.remove('flotax-theme-transitioning');
+    });
+  } else {
+    mutarDOM();
+  }
 }
 
 /**

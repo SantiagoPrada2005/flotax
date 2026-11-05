@@ -119,10 +119,10 @@ export default function ConfiguracionIsland() {
     <div className="mx-auto w-full max-w-5xl px-3 sm:px-6 py-4 sm:py-6">
       {/* Encabezado Principal */}
       <div className="mb-6">
-        <h1 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-[#111827]">
+        <h1 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-[#111827] dark:text-[#EDEDED]">
           {t.configuracion.titulo}
         </h1>
-        <p className="mt-1 text-xs sm:text-sm text-[#4B5563]">
+        <p className="mt-1 text-xs sm:text-sm text-[#4B5563] dark:text-[#D1D5DB]">
           {t.configuracion.subtitulo}
         </p>
       </div>
@@ -151,7 +151,7 @@ export default function ConfiguracionIsland() {
           }`}
         >
           {/* Categoría: General */}
-          <div className="rounded-3xl bg-white p-2.5 shadow-xs border border-gray-200/70 overflow-hidden">
+          <div className="rounded-3xl bg-white dark:bg-[#1F2937] p-2.5 shadow-xs border border-gray-200/70 dark:border-white/10 overflow-hidden">
             <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-[#9CA3AF]">
               {t.configuracion.categorias.general}
             </div>
@@ -210,7 +210,7 @@ export default function ConfiguracionIsland() {
           </div>
 
           {/* Categoría: Cuenta (Estructura lista para el futuro sin opciones deshabilitadas) */}
-          <div className="rounded-3xl bg-white/70 p-3 shadow-2xs border border-gray-200/50">
+          <div className="rounded-3xl bg-white/70 dark:bg-[#1F2937]/70 p-3 shadow-2xs border border-gray-200/50 dark:border-white/10">
             <div className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-[#9CA3AF]">
               {t.configuracion.categorias.cuenta}
             </div>
@@ -258,7 +258,7 @@ export default function ConfiguracionIsland() {
               SECCIÓN 1: GENERAL -> APARIENCIA (TEMAS)
              ======================================================================= */}
           {opcionActiva === 'apariencia' && (
-            <div className="rounded-3xl bg-white p-5 sm:p-7 shadow-xs border border-gray-200/70 space-y-6 animate-fade-in">
+            <div className="rounded-3xl bg-white dark:bg-[#1F2937] p-5 sm:p-7 shadow-xs border border-gray-200/70 dark:border-white/10 space-y-6 animate-fade-in">
               <div>
                 <h2 className="font-display text-lg sm:text-xl font-bold tracking-tight text-[#111827] dark:text-[#EDEDED]">
                   {t.configuracion.apariencia.titulo}
@@ -282,8 +282,8 @@ export default function ConfiguracionIsland() {
                       : 'border-gray-200/80 dark:border-gray-700 bg-white dark:bg-[#1F2937] hover:border-[#9CA3AF] dark:hover:border-gray-500 hover:shadow-xs'
                   }`}
                 >
-                  {/* Vista previa visual interactiva construida con componentes FlotaX */}
-                  <div className="w-full h-24 rounded-xl bg-[#EDEDED] p-2 flex flex-col justify-between border border-black/5 shadow-inner select-none mb-3">
+                  {/* Vista previa visual interactiva protegida con data-preserve-theme */}
+                  <div data-preserve-theme="light" className="w-full h-24 rounded-xl bg-[#EDEDED] p-2 flex flex-col justify-between border border-black/5 shadow-inner select-none mb-3">
                     <div className="flex items-center justify-between pb-1.5 border-b border-black/10">
                       <div className="flex items-center gap-1.5">
                         <div className="h-3 w-3 rounded-full bg-[#111827]" />
@@ -331,8 +331,8 @@ export default function ConfiguracionIsland() {
                       : 'border-gray-200/80 dark:border-gray-700 bg-white dark:bg-[#1F2937] hover:border-[#9CA3AF] dark:hover:border-gray-500 hover:shadow-xs'
                   }`}
                 >
-                  {/* Vista previa visual de modo oscuro */}
-                  <div className="w-full h-24 rounded-xl bg-[#111827] p-2 flex flex-col justify-between border border-white/10 shadow-inner select-none mb-3">
+                  {/* Vista previa visual de modo oscuro protegida */}
+                  <div data-preserve-theme="dark" className="w-full h-24 rounded-xl bg-[#111827] p-2 flex flex-col justify-between border border-white/10 shadow-inner select-none mb-3">
                     <div className="flex items-center justify-between pb-1.5 border-b border-white/10">
                       <div className="flex items-center gap-1.5">
                         <div className="h-3 w-3 rounded-full bg-[#EDEDED]" />
@@ -380,8 +380,8 @@ export default function ConfiguracionIsland() {
                       : 'border-gray-200/80 dark:border-gray-700 bg-white dark:bg-[#1F2937] hover:border-[#9CA3AF] dark:hover:border-gray-500 hover:shadow-xs'
                   }`}
                 >
-                  {/* Vista previa dividida (Split Claro / Oscuro) */}
-                  <div className="w-full h-24 rounded-xl overflow-hidden flex border border-black/10 shadow-inner select-none mb-3">
+                  {/* Vista previa dividida (Split Claro / Oscuro) protegida */}
+                  <div data-preserve-theme="split" className="w-full h-24 rounded-xl overflow-hidden flex border border-black/10 shadow-inner select-none mb-3">
                     {/* Mitad Claro */}
                     <div className="w-1/2 bg-[#EDEDED] p-2 flex flex-col justify-between border-r border-black/10">
                       <div className="flex items-center gap-1">
@@ -433,7 +433,7 @@ export default function ConfiguracionIsland() {
               SECCIÓN 2: GENERAL -> LENGUAJE Y REGIÓN
              ======================================================================= */}
           {opcionActiva === 'lenguajeRegion' && (
-            <div className="rounded-3xl bg-white p-5 sm:p-7 shadow-xs border border-gray-200/70 space-y-7 animate-fade-in">
+            <div className="rounded-3xl bg-white dark:bg-[#1F2937] p-5 sm:p-7 shadow-xs border border-gray-200/70 dark:border-white/10 space-y-7 animate-fade-in">
               <div>
                 <h2 className="font-display text-lg sm:text-xl font-bold tracking-tight text-[#111827] dark:text-[#EDEDED]">
                   {t.configuracion.lenguajeRegion.titulo}

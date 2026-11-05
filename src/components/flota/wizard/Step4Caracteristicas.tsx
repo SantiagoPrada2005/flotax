@@ -20,27 +20,27 @@ export default function Step4Caracteristicas({
     <div className="w-full space-y-6">
       {/* Encabezado Hero */}
       <div className="space-y-2">
-        <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#4B5563] block">
+        <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF] block">
           Paso 04 · Especificaciones Técnicas
         </span>
-        <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#111827] leading-[1.12]">
+        <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#111827] dark:text-[#EDEDED] leading-[1.12]">
           ¿Qué características tiene?
         </h1>
-        <p className="text-xs sm:text-sm text-[#4B5563] font-medium max-w-[50ch]">
+        <p className="text-xs sm:text-sm text-[#4B5563] dark:text-[#9CA3AF] font-medium max-w-[50ch]">
           Configura la propulsión mecánica, el odómetro de patio y la capacidad de la unidad.
         </p>
       </div>
 
       {/* Contenedor Inmersivo de Máximo 4 Entradas */}
-      <div className="rounded-[28px] border border-[#9CA3AF]/40 bg-white p-6 sm:p-8 shadow-xs space-y-6">
+      <div className="rounded-[28px] border border-[#9CA3AF]/40 bg-white p-6 sm:p-8 shadow-xs space-y-6 dark:bg-[#1F2937] dark:border-white/10">
         {/* Entrada 1: Transmisión */}
         {!isPatineta && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827]">
+              <label className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
                 Transmisión
               </label>
-              <span className="font-mono text-[11px] text-[#4B5563]">
+              <span className="font-mono text-[11px] text-[#4B5563] dark:text-[#9CA3AF]">
                 Tipo de caja
               </span>
             </div>
@@ -54,8 +54,8 @@ export default function Step4Caracteristicas({
                     type="button"
                     onClick={() => onChange({ transmision: t })}
                     className={`ios-press-bounce rounded-2xl py-3 px-2 font-mono text-xs sm:text-sm font-bold border transition text-center cursor-pointer ${isSelected
-                        ? 'bg-[#111827] text-white border-[#111827] shadow-xs'
-                        : 'bg-[#EDEDED]/50 text-[#111827] border-[#9CA3AF]/40 hover:bg-white hover:border-[#111827]'
+                        ? 'bg-[#111827] text-white border-[#111827] shadow-xs dark:bg-white dark:text-[#111827] dark:border-white'
+                        : 'bg-[#EDEDED]/50 text-[#111827] border-[#9CA3AF]/40 hover:bg-white hover:border-[#111827] dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20 dark:hover:border-white/40 dark:hover:text-white'
                       }`}
                   >
                     {t}
@@ -68,12 +68,12 @@ export default function Step4Caracteristicas({
 
         {/* Entrada 2: Combustible / Energía */}
         {!isPatineta && (
-          <div className="space-y-2 border-t border-[#EDEDED] pt-5">
+          <div className="space-y-2 border-t border-[#EDEDED] dark:border-white/10 pt-5">
             <div className="flex items-center justify-between">
-              <label className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827]">
+              <label className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
                 Fuente de Energía
               </label>
-              <span className="font-mono text-[11px] text-[#4B5563]">
+              <span className="font-mono text-[11px] text-[#4B5563] dark:text-[#9CA3AF]">
                 Combustible / Motor
               </span>
             </div>
@@ -87,8 +87,8 @@ export default function Step4Caracteristicas({
                     type="button"
                     onClick={() => onChange({ combustible: c })}
                     className={`ios-press-bounce rounded-2xl py-3 px-2 font-mono text-xs sm:text-sm font-bold border transition text-center cursor-pointer ${isSelected
-                        ? 'bg-[#111827] text-white border-[#111827] shadow-xs'
-                        : 'bg-[#EDEDED]/50 text-[#111827] border-[#9CA3AF]/40 hover:bg-white hover:border-[#111827]'
+                        ? 'bg-[#111827] text-white border-[#111827] shadow-xs dark:bg-white dark:text-[#111827] dark:border-white'
+                        : 'bg-[#EDEDED]/50 text-[#111827] border-[#9CA3AF]/40 hover:bg-white hover:border-[#111827] dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20 dark:hover:border-white/40 dark:hover:text-white'
                       }`}
                   >
                     {c}
@@ -100,15 +100,15 @@ export default function Step4Caracteristicas({
         )}
 
         {/* Entrada 3: Odómetro actual de patio */}
-        <div className={`space-y-2 ${!isPatineta ? 'border-t border-[#EDEDED] pt-5' : ''}`}>
+        <div className={`space-y-2 ${!isPatineta ? 'border-t border-[#EDEDED] dark:border-white/10 pt-5' : ''}`}>
           <div className="flex items-center justify-between">
             <label
               htmlFor="input-km-hero"
-              className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827]"
+              className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]"
             >
-              Odómetro Inicial <span className="text-rose-600">*</span>
+              Odómetro Inicial <span className="text-rose-600 dark:text-rose-400">*</span>
             </label>
-            <span className="font-mono text-[11px] text-[#4B5563]">
+            <span className="font-mono text-[11px] text-[#4B5563] dark:text-[#9CA3AF]">
               Kilómetros acumulados
             </span>
           </div>
@@ -121,18 +121,18 @@ export default function Step4Caracteristicas({
               value={data.kilometraje}
               onChange={(e) => onChange({ kilometraje: e.target.value === '' ? '' : Number(e.target.value) })}
               placeholder="0"
-              className={`w-full rounded-2xl bg-[#EDEDED]/50 px-5 py-4 font-mono text-xl sm:text-2xl font-bold text-[#111827] placeholder-[#9CA3AF] border transition-all ${errors.kilometraje
-                  ? 'border-rose-500 bg-rose-50/40 focus:border-rose-600 focus:outline-none'
-                  : 'border-transparent focus:border-[#111827] focus:bg-white focus:outline-none'
+              className={`w-full rounded-2xl bg-[#EDEDED]/50 px-5 py-4 font-mono text-xl sm:text-2xl font-bold text-[#111827] placeholder-[#9CA3AF] border transition-all dark:bg-[#111827] dark:text-[#EDEDED] dark:placeholder-[#9CA3AF]/60 ${errors.kilometraje
+                  ? 'border-rose-500 bg-rose-50/40 focus:border-rose-600 focus:outline-none dark:bg-rose-950/20 dark:border-rose-500'
+                  : 'border-transparent focus:border-[#111827] focus:bg-white focus:outline-none dark:border-white/10 dark:focus:border-white dark:focus:bg-[#111827]'
                 }`}
             />
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 font-mono text-xs font-bold text-[#4B5563]">
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 font-mono text-xs font-bold text-[#4B5563] dark:text-[#9CA3AF]">
               KM
             </span>
           </div>
 
           {errors.kilometraje && (
-            <p className="text-xs font-bold text-rose-600 mt-1 animate-fade-in">
+            <p className="text-xs font-bold text-rose-600 dark:text-rose-400 mt-1 animate-fade-in">
               {errors.kilometraje}
             </p>
           )}

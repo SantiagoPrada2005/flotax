@@ -128,11 +128,11 @@ export default function MetricsInteractiveHub({
                 type="button"
                 onClick={() => openFocus('EARNINGS_FLEET')}
                 aria-label={`Ver ${rentedFleet.rentedAutomobilesCount} de ${rentedFleet.totalAutomobilesCount} automóviles alquilados`}
-                className="ios-press-bounce group flex sm:w-[222px] shrink-0 flex-col justify-between rounded-[22px] bg-white p-4 text-left text-[#111827] shadow-lg transition hover:bg-[#EDEDED] cursor-pointer"
+                className="ios-press-bounce group flex sm:w-[222px] shrink-0 flex-col justify-between rounded-[22px] bg-white dark:bg-[#1F2937] p-4 text-left text-[#111827] dark:text-[#EDEDED] shadow-lg transition hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer"
               >
                 <div className="space-y-3 w-full">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#4B5563]">
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
                       Autos alquilados
                     </span>
 
@@ -165,17 +165,17 @@ export default function MetricsInteractiveHub({
                           strokeDashoffset={miniRingOffset}
                         />
                       </svg>
-                      <span className="absolute font-mono text-xs font-extrabold text-[#111827]">
+                      <span className="absolute font-mono text-xs font-extrabold text-[#111827] dark:text-[#EDEDED]">
                         {rentedFleet.automobilesOccupancyPct}%
                       </span>
                     </div>
                   </div>
 
                   <div className="flex items-baseline gap-1.5 tabular-nums">
-                    <span className="font-display text-3xl font-black tracking-tight text-[#111827]">
+                    <span className="font-display text-3xl font-black tracking-tight text-[#111827] dark:text-[#EDEDED]">
                       {rentedFleet.rentedAutomobilesCount}
                     </span>
-                    <span className="text-sm font-bold text-[#4B5563]">
+                    <span className="text-sm font-bold text-[#4B5563] dark:text-[#9CA3AF]">
                       de {rentedFleet.totalAutomobilesCount} autos
                     </span>
                   </div>
@@ -195,8 +195,8 @@ export default function MetricsInteractiveHub({
                           key={`hero-auto-${idx}`}
                           className={`h-3 rounded-md transition-all ${
                             active
-                              ? 'bg-[#111827]'
-                              : 'bg-[#EDEDED] border border-[#9CA3AF]/45'
+                              ? 'bg-[#111827] dark:bg-white'
+                              : 'bg-[#EDEDED] dark:bg-white/10 border border-[#9CA3AF]/45 dark:border-white/10'
                           }`}
                         />
                       );
@@ -204,9 +204,9 @@ export default function MetricsInteractiveHub({
                   </div>
                 </div>
 
-                <div className="mt-3 flex items-center justify-between border-t border-[#9CA3AF]/25 pt-2.5 text-xs font-bold text-[#1F2937] tabular-nums">
+                <div className="mt-3 flex items-center justify-between border-t border-[#9CA3AF]/25 dark:border-white/10 pt-2.5 text-xs font-bold text-[#1F2937] dark:text-[#EDEDED] tabular-nums">
                   <span>{rentedFleet.availableAutomobilesCount} libres hoy</span>
-                  <span className="inline-flex items-center gap-1 font-extrabold text-[#111827] group-hover:translate-x-0.5 transition-transform">
+                  <span className="inline-flex items-center gap-1 font-extrabold text-[#111827] dark:text-[#EDEDED] group-hover:translate-x-0.5 transition-transform">
                     Ver autos →
                   </span>
                 </div>
@@ -278,12 +278,12 @@ export default function MetricsInteractiveHub({
         <div className="space-y-4">
           <nav
             aria-label="Navegación de detalle de métricas"
-            className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-[24px] bg-white p-3 border border-[#9CA3AF]/40 shadow-xs"
+            className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-[24px] bg-white dark:bg-[#1F2937] p-3 border border-[#9CA3AF]/40 dark:border-white/10 shadow-xs"
           >
             <button
               type="button"
               onClick={() => openFocus('OVERVIEW')}
-              className="ios-press-bounce inline-flex min-h-[44px] items-center justify-center sm:justify-start gap-2 rounded-xl bg-[#EDEDED] px-4 py-2 text-sm font-bold text-[#111827] border border-[#9CA3AF]/35 transition hover:bg-[#9CA3AF]/25 cursor-pointer"
+              className="ios-press-bounce inline-flex min-h-[44px] items-center justify-center sm:justify-start gap-2 rounded-xl bg-[#EDEDED] dark:bg-white/10 px-4 py-2 text-sm font-bold text-[#111827] dark:text-[#EDEDED] border border-[#9CA3AF]/35 dark:border-white/10 transition hover:bg-[#9CA3AF]/25 dark:hover:bg-white/20 cursor-pointer"
             >
               <span aria-hidden="true">←</span>
               <span>Volver al resumen</span>
@@ -292,7 +292,7 @@ export default function MetricsInteractiveHub({
             <div
               role="tablist"
               aria-label="Cambiar vista detallada"
-              className="flex flex-wrap sm:flex-nowrap items-center gap-1.5 rounded-xl bg-[#EDEDED] p-1"
+              className="flex flex-wrap sm:flex-nowrap items-center gap-1.5 rounded-xl bg-[#EDEDED] dark:bg-white/10 p-1"
             >
               {FOCUS_TABS.map((tab) => {
                 const isSelected = activeFocus === tab.id;
@@ -305,8 +305,8 @@ export default function MetricsInteractiveHub({
                     onClick={() => openFocus(tab.id)}
                     className={`ios-press-bounce min-h-[42px] flex-1 sm:flex-initial rounded-lg px-3.5 py-2 text-xs sm:text-sm font-bold transition cursor-pointer ${
                       isSelected
-                        ? 'bg-[#111827] text-white shadow-xs'
-                        : 'text-[#4B5563] hover:text-[#111827]'
+                        ? 'bg-[#111827] dark:bg-white text-white dark:text-[#111827] shadow-xs'
+                        : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
                     }`}
                   >
                     {tab.label}

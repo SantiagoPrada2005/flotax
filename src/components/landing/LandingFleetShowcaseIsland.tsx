@@ -95,19 +95,19 @@ export default function LandingFleetShowcaseIsland({
       {/* 1. Header en 2 Columnas: Título a la izquierda | Descripción y Catálogo a la derecha */}
       <div className="w-full flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-10">
         <div className="max-w-xl">
-          <h2 className="text-3xl sm:text-4xl md:text-[42px] font-medium text-[#111827] tracking-tight leading-[1.12]">
+          <h2 className="text-3xl sm:text-4xl md:text-[42px] font-medium text-[#111827] dark:text-[#EDEDED] tracking-tight leading-[1.12]">
             Vehículos en patio:
-            <span className="block text-[#111827]">Muévete con total libertad</span>
+            <span className="block text-[#111827] dark:text-[#EDEDED]">Muévete con total libertad</span>
           </h2>
         </div>
 
         <div className="max-w-md flex flex-col gap-2.5">
-          <p className="text-sm sm:text-base text-[#4B5563] leading-relaxed">
+          <p className="text-sm sm:text-base text-[#4B5563] dark:text-[#9CA3AF] leading-relaxed">
             Elige la categoría o explora las 3 sugerencias listas en patio con peritaje pericial fotográfico y seguro incluido.
           </p>
           <a
             href="/catalogo"
-            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#111827] hover:text-[#4B5563] transition-colors w-fit"
+            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#111827] dark:text-[#EDEDED] hover:text-[#4B5563] dark:hover:text-white transition-colors w-fit"
           >
             <span>Ver catálogo completo ({pool.length})</span>
             <span aria-hidden="true">→</span>
@@ -128,14 +128,14 @@ export default function LandingFleetShowcaseIsland({
                 onClick={() => setSelectedCategory(cat.id)}
                 className={`h-11 px-4.5 sm:px-5 flex items-center justify-center gap-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer border active:scale-[0.98] ${
                   isSelected
-                    ? 'bg-[#111827] text-white border-[#111827]'
-                    : 'bg-[#F5F5F5] hover:bg-[#EBEBEB] text-[#111827] border-[#E5E5E5] hover:border-[#A3A3A3]'
+                    ? 'bg-[#111827] text-white border-[#111827] dark:bg-white dark:text-[#111827] dark:border-white'
+                    : 'bg-[#F5F5F5] hover:bg-[#EBEBEB] text-[#111827] border-[#E5E5E5] hover:border-[#A3A3A3] dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/10 dark:hover:bg-white/20 dark:hover:border-white/30'
                 }`}
               >
                 <span>{cat.name}</span>
                 <svg
                   className={`w-4 h-4 shrink-0 transition-colors ${
-                    isSelected ? 'text-white' : 'text-[#6B7280]'
+                    isSelected ? 'text-white dark:text-[#111827]' : 'text-[#6B7280] dark:text-[#9CA3AF]'
                   }`}
                   fill="none"
                   stroke="currentColor"
@@ -152,17 +152,17 @@ export default function LandingFleetShowcaseIsland({
       {/* 3. Grid de Previsualización de Vehículos Listos en Patio */}
       <div className="w-full">
         {filteredVehicles.length === 0 ? (
-          <div className="w-full py-16 px-4 flex flex-col items-center justify-center text-center bg-gray-50/50 rounded-[42px] border border-dashed border-gray-200">
-            <p className="text-sm font-bold text-[#111827]">
+          <div className="w-full py-16 px-4 flex flex-col items-center justify-center text-center bg-gray-50/50 dark:bg-[#1F2937] rounded-[42px] border border-dashed border-gray-200 dark:border-white/10">
+            <p className="text-sm font-bold text-[#111827] dark:text-[#EDEDED]">
               No hay unidades disponibles en patio para la categoría seleccionada
             </p>
-            <p className="text-xs text-[#6B7280] mt-1 max-w-md">
+            <p className="text-xs text-[#6B7280] dark:text-[#9CA3AF] mt-1 max-w-md">
               Prueba seleccionando otra categoría o explora el catálogo completo con todas las unidades.
             </p>
             <button
               type="button"
               onClick={() => setSelectedCategory('TODOS')}
-              className="mt-4 px-5 py-2.5 rounded-full bg-[#111827] text-white text-xs font-bold hover:bg-[#1F2937] active:scale-[0.98] transition-all cursor-pointer shadow-xs"
+              className="mt-4 px-5 py-2.5 rounded-full bg-[#111827] text-white dark:bg-white dark:text-[#111827] text-xs font-bold hover:bg-[#1F2937] dark:hover:bg-[#EDEDED] active:scale-[0.98] transition-all cursor-pointer shadow-xs"
             >
               Ver todas las unidades disponibles
             </button>
@@ -176,10 +176,10 @@ export default function LandingFleetShowcaseIsland({
               return (
                 <article
                   key={v.id}
-                  className="group relative bg-white rounded-[42px] overflow-hidden transition-all duration-300 flex flex-col justify-between"
+                  className="group relative bg-white dark:bg-[#1F2937] dark:border dark:border-white/10 rounded-[42px] overflow-hidden transition-all duration-300 flex flex-col justify-between"
                 >
-                  {/* Visual Central: Foto con Fondo Blanco Continuo Limpio */}
-                  <div className="relative w-full aspect-[16/10] bg-white rounded-t-[42px] overflow-hidden flex items-center justify-center">
+                  {/* Visual Central: Foto con Fondo Limpio */}
+                  <div className="relative w-full aspect-[16/10] bg-white dark:bg-[#18202F] rounded-t-[42px] overflow-hidden flex items-center justify-center">
                     <img
                       src={v.imagenUrl}
                       alt={`${v.marca} ${v.modelo}`}
@@ -198,32 +198,32 @@ export default function LandingFleetShowcaseIsland({
                           type="button"
                           onClick={() => setSelectedCategory(v.categoria)}
                           title={`Filtrar por ${v.categoriaEtiqueta}`}
-                          className="px-2.5 py-0.5 rounded-full bg-[#111827]/5 hover:bg-[#111827]/10 active:scale-[0.98] transition-colors text-[11px] font-semibold text-[#111827] cursor-pointer"
+                          className="px-2.5 py-0.5 rounded-full bg-[#111827]/5 hover:bg-[#111827]/10 dark:bg-white/10 dark:hover:bg-white/20 active:scale-[0.98] transition-colors text-[11px] font-semibold text-[#111827] dark:text-[#EDEDED] cursor-pointer"
                         >
                           {v.categoriaEtiqueta}
                         </button>
-                        <span className="text-xs text-[#D1D5DB]">•</span>
-                        <span className="text-xs text-[#6B7280] font-medium">
+                        <span className="text-xs text-[#D1D5DB] dark:text-gray-600">•</span>
+                        <span className="text-xs text-[#6B7280] dark:text-[#9CA3AF] font-medium">
                           Modelo {v.anio}
                         </span>
                       </div>
 
                     {/* Headline Principal */}
-                    <h3 className="font-display font-medium text-lg sm:text-xl text-[#111827] tracking-tight leading-snug truncate">
+                    <h3 className="font-display font-medium text-lg sm:text-xl text-[#111827] dark:text-[#EDEDED] tracking-tight leading-snug truncate">
                       {v.marca} {v.modelo}
                     </h3>
 
                     {/* Barra de Especificaciones Técnicas (Sin Bordes, Espaciado Puro por Flex Gaps) */}
-                    <div className="flex items-center gap-4 sm:gap-5 pt-3 text-xs text-[#4B5563]">
+                    <div className="flex items-center gap-4 sm:gap-5 pt-3 text-xs text-[#4B5563] dark:text-[#9CA3AF]">
                       <div className="flex items-center gap-1.5 min-w-0">
-                        <Users className="w-4 h-4 text-[#4B5563] shrink-0" strokeWidth={1.8} />
+                        <Users className="w-4 h-4 text-[#4B5563] dark:text-[#9CA3AF] shrink-0" strokeWidth={1.8} />
                         <span className="font-medium truncate">
                           {v.capacidadPasajeros} puestos
                         </span>
                       </div>
 
                       <div className="flex items-center gap-1.5 min-w-0">
-                        <Settings2 className="w-4 h-4 text-[#4B5563] shrink-0" strokeWidth={1.8} />
+                        <Settings2 className="w-4 h-4 text-[#4B5563] dark:text-[#9CA3AF] shrink-0" strokeWidth={1.8} />
                         <span className="font-medium truncate">
                           {v.transmision}
                         </span>
@@ -231,9 +231,9 @@ export default function LandingFleetShowcaseIsland({
 
                       <div className="flex items-center gap-1.5 min-w-0">
                         {isElectrico ? (
-                          <Zap className="w-4 h-4 text-[#4B5563] shrink-0" strokeWidth={1.8} />
+                          <Zap className="w-4 h-4 text-[#4B5563] dark:text-[#9CA3AF] shrink-0" strokeWidth={1.8} />
                         ) : (
-                          <Fuel className="w-4 h-4 text-[#4B5563] shrink-0" strokeWidth={1.8} />
+                          <Fuel className="w-4 h-4 text-[#4B5563] dark:text-[#9CA3AF] shrink-0" strokeWidth={1.8} />
                         )}
                         <span className="font-medium truncate">
                           {v.combustible}
@@ -246,24 +246,24 @@ export default function LandingFleetShowcaseIsland({
                   <div className="flex flex-col gap-3.5 pt-1">
                     {/* Tarifa Diaria en Escala Armónica con el Título */}
                     <div className="flex items-baseline gap-1">
-                      <span className="font-display font-bold text-lg sm:text-xl text-[#111827] tracking-tight">
+                      <span className="font-display font-bold text-lg sm:text-xl text-[#111827] dark:text-[#EDEDED] tracking-tight">
                         {formatCop(v.precioDia)}
                       </span>
-                      <span className="text-xs text-[#6B7280] font-normal">/día</span>
+                      <span className="text-xs text-[#6B7280] dark:text-[#9CA3AF] font-normal">/día</span>
                     </div>
 
                     {/* Botones de Acción */}
                     <div className="flex items-center gap-2.5">
                       <a
                         href={`/vehiculos/${v.id}`}
-                        className="flex-1 h-11 flex items-center justify-center rounded-full bg-white border border-[#D1D5DB] hover:border-[#111827] hover:bg-[#F9FAFB] active:scale-[0.99] text-[#111827] text-xs sm:text-sm font-semibold transition-all"
+                        className="flex-1 h-11 flex items-center justify-center rounded-full bg-white dark:bg-white/10 border border-[#D1D5DB] dark:border-white/15 hover:border-[#111827] dark:hover:border-white hover:bg-[#F9FAFB] dark:hover:bg-white/20 active:scale-[0.99] text-[#111827] dark:text-white text-xs sm:text-sm font-semibold transition-all"
                       >
                         Ver Ficha
                       </a>
 
                       <a
                         href={`/alquilar/${v.id}`}
-                        className="flex-1 h-11 flex items-center justify-center gap-1.5 rounded-full bg-[#111827] hover:bg-[#1F2937] active:scale-[0.99] text-white text-xs sm:text-sm font-semibold transition-colors group/btn"
+                        className="flex-1 h-11 flex items-center justify-center gap-1.5 rounded-full bg-[#111827] dark:bg-white hover:bg-[#1F2937] dark:hover:bg-[#EDEDED] active:scale-[0.99] text-white dark:text-[#111827] text-xs sm:text-sm font-semibold transition-colors group/btn"
                       >
                         <span>Alquilar</span>
                         <span className="group-hover/btn:translate-x-0.5 transition-transform">→</span>

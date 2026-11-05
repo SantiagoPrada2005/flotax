@@ -59,7 +59,9 @@ const resolvedNoIndex = noindex !== undefined ? noindex : isPrivateArea;
 const cookieLang = Astro.cookies.get('flotax_lang')?.value;
 const idiomaInicial = cookieLang === 'en' ? 'en' : 'es';
 const cookieTheme = Astro.cookies.get('flotax_theme')?.value;
-const esOscuroInicial = cookieTheme === 'oscuro';
+const prefersDarkHeader = Astro.request.headers.get('sec-ch-prefers-color-scheme') === 'dark';
+const esOscuroInicial = cookieTheme === 'oscuro' || (cookieTheme !== 'claro' && prefersDarkHeader);
+Astro.response.headers.set('Accept-CH', 'Sec-CH-Prefers-Color-Scheme');
 ---
 
 <!doctype html>
@@ -70,6 +72,7 @@ const esOscuroInicial = cookieTheme === 'oscuro';
     esOscuroInicial ? "dark" : ""
   ]}
   data-theme={esOscuroInicial ? "dark" : "light"}
+  style={esOscuroInicial ? "background-color: #111827; color-scheme: dark;" : "background-color: #ededed; color-scheme: light;"}
   data-autenticado={Astro.locals.usuario ? 'true' : 'false'}
 >
   <head>
@@ -78,7 +81,32 @@ const esOscuroInicial = cookieTheme === 'oscuro';
       name="viewport"
       content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content, viewport-fit=cover"
     />
-    <meta name="theme-color" content="#EDEDED" />
+    <meta name="theme-color" content={esOscuroInicial ? "#111827" : "#EDEDED"} />
+    <!-- Anti-FOUC Blocking Script (Ejecución síncrona en el primer byte antes de cualquier pintura) -->
+    <script is:inline>
+      (function() {
+        try {
+          var t = localStorage.getItem('flotax_theme') || 'sistema';
+          var d = t === 'oscuro' || (t === 'sistema' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          var html = document.documentElement;
+          if (d) {
+            html.classList.add('dark');
+            html.setAttribute('data-theme', 'dark');
+            html.style.backgroundColor = '#111827';
+            html.style.colorScheme = 'dark';
+          } else {
+            html.classList.remove('dark');
+            html.setAttribute('data-theme', 'light');
+            html.style.backgroundColor = '#ededed';
+            html.style.colorScheme = 'light';
+          }
+          var metaTc = document.querySelector('meta[name="theme-color"]');
+          if (metaTc) metaTc.setAttribute('content', d ? '#111827' : '#EDEDED');
+          var l = localStorage.getItem('flotax_lang');
+          if (l === 'en' || l === 'es') html.lang = l;
+        } catch (e) {}
+      })();
+    </script>
     <meta name="application-name" content="FlotaX" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -103,39 +131,24 @@ const esOscuroInicial = cookieTheme === 'oscuro';
     />
     <ClientRouter />
 
-    <!-- Inicialización inmediata anti-FOUC de tema y lenguaje antes del primer pintado -->
-    <script is:inline>
-      (function() {
-        try {
-          var tema = localStorage.getItem('flotax_theme') || 'sistema';
-          var oscuro = tema === 'oscuro' || (tema === 'sistema' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-          if (oscuro) {
-            document.documentElement.classList.add('dark');
-            document.documentElement.setAttribute('data-theme', 'dark');
-          } else {
-            document.documentElement.classList.remove('dark');
-            document.documentElement.setAttribute('data-theme', 'light');
-          }
-          var lang = localStorage.getItem('flotax_lang');
-          if (lang === 'en' || lang === 'es') {
-            document.documentElement.lang = lang;
-          }
-        } catch (e) {}
-      })();
-    </script>
-
     <!-- Sincronizador de tema e idioma durante transiciones SPA -->
     <script>
       const sincronizarTema = () => {
         try {
           const tema = localStorage.getItem('flotax_theme') || 'sistema';
           const oscuro = tema === 'oscuro' || (tema === 'sistema' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-          document.documentElement.classList.toggle('dark', oscuro);
-          document.documentElement.setAttribute('data-theme', oscuro ? 'dark' : 'light');
+          const html = document.documentElement;
+          html.classList.toggle('dark', oscuro);
+          html.setAttribute('data-theme', oscuro ? 'dark' : 'light');
+          html.style.backgroundColor = oscuro ? '#111827' : '#ededed';
+          html.style.colorScheme = oscuro ? 'dark' : 'light';
+          const metaTc = document.querySelector('meta[name="theme-color"]');
+          if (metaTc) metaTc.setAttribute('content', oscuro ? '#111827' : '#EDEDED');
           const lang = localStorage.getItem('flotax_lang');
-          if (lang) document.documentElement.lang = lang;
+          if (lang) html.lang = lang;
         } catch {}
       };
+      document.addEventListener('astro:after-swap', sincronizarTema);
       document.addEventListener('astro:page-load', sincronizarTema);
       if (typeof window !== 'undefined' && window.matchMedia) {
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {

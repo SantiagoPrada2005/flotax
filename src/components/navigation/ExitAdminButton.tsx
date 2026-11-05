@@ -1,6 +1,11 @@
 import { useTransition } from 'react';
 import { actions } from 'astro:actions';
 import { navigate } from 'astro:transitions/client';
+import {
+  activarFlotaxLoading,
+  desactivarFlotaxLoading,
+  resolverVarianteTransicionPortal,
+} from '@/lib/pwa';
 
 export interface ExitAdminButtonProps {
   className?: string | undefined;
@@ -11,15 +16,8 @@ export default function ExitAdminButton({ className = '' }: ExitAdminButtonProps
 
   const handleExit = () => {
     if (isPending) return;
-    window.dispatchEvent(
-      new CustomEvent('flotax:loading', {
-        detail: {
-          visible: true,
-          label: 'CONMUTANDO A PORTAL DE CLIENTE',
-          variant: 'orbital',
-        },
-      })
-    );
+    const variante = resolverVarianteTransicionPortal('DUEÑO_A_PERSONAL');
+    activarFlotaxLoading('CONMUTANDO A PORTAL DE CLIENTE', variante);
     startTransition(async () => {
       try {
         const result = await actions.portal.cambiarModoPortal({ modo: 'CLIENTE' });
@@ -29,11 +27,7 @@ export default function ExitAdminButton({ className = '' }: ExitAdminButtonProps
           navigate('/catalogo');
         }
       } catch {
-        window.dispatchEvent(
-          new CustomEvent('flotax:loading', {
-            detail: { visible: false },
-          })
-        );
+        desactivarFlotaxLoading();
         navigate('/catalogo');
       }
     });

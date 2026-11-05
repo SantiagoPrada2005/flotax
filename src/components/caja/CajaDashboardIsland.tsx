@@ -478,7 +478,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               setTipoModalMovimiento('EGRESO');
               setModalMovimientoAbierto(true);
             }}
-            className="ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-[#9CA3AF]/40 bg-white px-4 py-2 text-xs font-bold text-[#111827] shadow-xs transition hover:bg-[#EDEDED] active:scale-95 cursor-pointer"
+            className="ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-[#9CA3AF]/40 dark:border-white/10 bg-white dark:bg-[#1F2937] px-4 py-2 text-xs font-bold text-[#111827] dark:text-[#EDEDED] shadow-xs transition hover:bg-[#EDEDED] dark:hover:bg-white/10 active:scale-95 cursor-pointer"
           >
             <span className="text-rose-600 font-black">−</span>
             Registrar Gasto
@@ -487,7 +487,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
           <button
             type="button"
             onClick={() => setModalTransferenciaAbierto(true)}
-            className="ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-[#9CA3AF]/40 bg-white px-3.5 py-2 text-xs font-bold text-[#4B5563] transition hover:bg-[#EDEDED] active:scale-95 cursor-pointer"
+            className="ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-[#9CA3AF]/40 dark:border-white/10 bg-white dark:bg-[#1F2937] px-3.5 py-2 text-xs font-bold text-[#4B5563] dark:text-[#EDEDED] transition hover:bg-[#EDEDED] dark:hover:bg-white/10 active:scale-95 cursor-pointer"
           >
             ↔ Mover Dinero
           </button>
@@ -506,7 +506,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
       </header>
 
       {/* Pestañas de Navegación del Módulo */}
-      <nav className="flex overflow-x-auto no-scrollbar gap-1 rounded-2xl bg-[#EDEDED] p-1.5 text-xs font-bold text-[#4B5563]">
+      <nav className="flex overflow-x-auto no-scrollbar gap-1 rounded-2xl bg-[#EDEDED] dark:bg-white/10 p-1.5 text-xs font-bold text-[#4B5563] dark:text-[#D1D5DB]">
         {[
           { id: 'resumen', label: 'Resumen' },
           { id: 'movimientos', label: `Movimientos (${data.todosMovimientos.length})` },
@@ -522,7 +522,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
             type="button"
             onClick={() => setActiveTab(tab.id as TabCaja)}
             className={`min-h-[40px] shrink-0 rounded-xl px-3.5 py-2 transition cursor-pointer ${activeTab === tab.id
-                ? 'bg-white text-[#111827] shadow-xs dark:bg-white/15 dark:text-white'
+                ? 'bg-white text-[#111827] shadow-xs dark:bg-white/20 dark:text-white'
                 : 'hover:text-[#111827] hover:bg-white/50 dark:text-[#D1D5DB] dark:hover:text-white dark:hover:bg-white/10'
               }`}
           >

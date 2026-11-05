@@ -30,7 +30,7 @@ export default function StepIndicator({
               onClick={onPrevPaso}
               disabled={isTransitioning}
               aria-label="Volver al paso anterior"
-              className="ios-press-bounce flex h-9 w-9 items-center justify-center rounded-full border border-[#9CA3AF]/60 bg-white text-[#111827] text-sm font-bold hover:bg-[#EDEDED] transition shadow-xs cursor-pointer disabled:opacity-50"
+              className="ios-press-bounce flex h-9 w-9 items-center justify-center rounded-full border border-[#9CA3AF]/60 bg-white text-[#111827] text-sm font-bold hover:bg-[#EDEDED] transition shadow-xs cursor-pointer disabled:opacity-50 dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20"
             >
               ←
             </button>
@@ -38,7 +38,7 @@ export default function StepIndicator({
             <div className="h-9 w-9" />
           )}
 
-          <span className="rounded-full px-3.5 py-1 font-mono text-xs font-bold tracking-wider uppercase bg-white text-[#111827] border border-[#9CA3AF]/50 shadow-xs">
+          <span className="rounded-full px-3.5 py-1 font-mono text-xs font-bold tracking-wider uppercase bg-white text-[#111827] border border-[#9CA3AF]/50 shadow-xs dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15">
             PASO 0{pasoActual} / 0{pasos.length} · {pasoInfo.etiquetaCorta}
           </span>
         </div>
@@ -48,7 +48,7 @@ export default function StepIndicator({
             type="button"
             onClick={onCancelar}
             aria-label="Cerrar y volver al inventario"
-            className="ios-press-bounce flex h-9 w-9 items-center justify-center rounded-full border border-[#9CA3AF]/60 bg-white text-[#111827] text-sm font-bold hover:bg-[#EDEDED] transition shadow-xs cursor-pointer"
+            className="ios-press-bounce flex h-9 w-9 items-center justify-center rounded-full border border-[#9CA3AF]/60 bg-white text-[#111827] text-sm font-bold hover:bg-[#EDEDED] transition shadow-xs cursor-pointer dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20"
           >
             ✕
           </button>

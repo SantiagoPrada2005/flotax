@@ -25,7 +25,7 @@ const { user = null, usuario = null } = Astro.props;
 >
   <div class="max-w-4xl lg:max-w-5xl mx-auto">
     <div
-      class="w-full h-11 sm:h-12 flex items-center justify-between px-3.5 sm:px-4 md:px-5 rounded-full bg-white shadow-xs"
+      class="w-full h-11 sm:h-12 flex items-center justify-between px-3.5 sm:px-4 md:px-5 rounded-full bg-white dark:bg-[#1F2937]/90 dark:border dark:border-white/10 shadow-xs backdrop-blur-md transition-colors"
     >
       <!-- Brand Logo (Sin fondo circular, sin zoom, logo ampliado) -->
       <a
@@ -36,13 +36,13 @@ const { user = null, usuario = null } = Astro.props;
       >
         <div
           data-pencil-name="Logo"
-          class="flex items-center justify-center text-[#111827]"
+          class="flex items-center justify-center text-[#111827] dark:text-white transition-colors"
         >
-          <FlotaxIsotype size={26} fill="#111827" />
+          <FlotaxIsotype size={26} fill="currentColor" />
         </div>
         <span
           data-pencil-name="BrandName"
-          class="text-base sm:text-lg font-extrabold text-[#111827] font-[Manrope,system-ui,sans-serif] tracking-tight"
+          class="text-base sm:text-lg font-extrabold text-[#111827] dark:text-[#EDEDED] font-[Manrope,system-ui,sans-serif] tracking-tight transition-colors"
         >
           Flota<span>X</span>
         </span>
@@ -50,29 +50,29 @@ const { user = null, usuario = null } = Astro.props;
 
       <!-- Desktop Navigation Links (Textos negros con grosor font-medium de Cómo funciona) -->
       <nav
-        class="hidden md:flex items-center gap-5 lg:gap-6 text-xs lg:text-[13px] font-medium text-[#111827]"
+        class="hidden md:flex items-center gap-5 lg:gap-6 text-xs lg:text-[13px] font-medium text-[#111827] dark:text-[#EDEDED]"
         aria-label="Navegación principal"
       >
         <a
           href="#vehiculos"
-          class="hover:text-[#4B5563] transition-colors py-0.5">Vehículos</a
+          class="hover:text-[#4B5563] dark:hover:text-white transition-colors py-0.5">Vehículos</a
         >
         <a
           href="#categorias"
-          class="hover:text-[#4B5563] transition-colors py-0.5">Categorías</a
+          class="hover:text-[#4B5563] dark:hover:text-white transition-colors py-0.5">Categorías</a
         >
         <a
           href="#proceso"
-          class="hover:text-[#4B5563] transition-colors py-0.5"
+          class="hover:text-[#4B5563] dark:hover:text-white transition-colors py-0.5"
           >Cómo funciona</a
         >
         <a
           href="#tarifas"
-          class="hover:text-[#4B5563] transition-colors py-0.5">Tarifas</a
+          class="hover:text-[#4B5563] dark:hover:text-white transition-colors py-0.5">Tarifas</a
         >
         <a
           href="#confianza"
-          class="hover:text-[#4B5563] transition-colors py-0.5">Seguridad</a
+          class="hover:text-[#4B5563] dark:hover:text-white transition-colors py-0.5">Seguridad</a
         >
       </nav>
 
@@ -82,7 +82,7 @@ const { user = null, usuario = null } = Astro.props;
           user ? (
             <a
               href="/home"
-              class="inline-flex h-8 sm:h-8.5 items-center justify-center rounded-full bg-[#0C1120] px-3.5 sm:px-4 text-xs font-bold text-white shadow-xs hover:bg-[#1F2937] active:scale-[0.98] transition-all"
+              class="inline-flex h-8 sm:h-8.5 items-center justify-center rounded-full bg-[#0C1120] dark:bg-white px-3.5 sm:px-4 text-xs font-bold text-white dark:text-[#111827] shadow-xs hover:bg-[#1F2937] dark:hover:bg-[#EDEDED] active:scale-[0.98] transition-all"
             >
               {usuario?.nombre ? `Panel (${usuario.nombre})` : "Ir al Panel"}
               <span class="ml-1 opacity-70">→</span>
@@ -90,7 +90,7 @@ const { user = null, usuario = null } = Astro.props;
           ) : (
             <a
               href="/login"
-              class="inline-flex h-8 sm:h-8.5 items-center justify-center rounded-full bg-[#0C1120] px-3.5 sm:px-4 text-xs font-bold text-white shadow-xs hover:bg-[#1F2937] active:scale-[0.98] transition-all"
+              class="inline-flex h-8 sm:h-8.5 items-center justify-center rounded-full bg-[#0C1120] dark:bg-white px-3.5 sm:px-4 text-xs font-bold text-white dark:text-[#111827] shadow-xs hover:bg-[#1F2937] dark:hover:bg-[#EDEDED] active:scale-[0.98] transition-all"
             >
               Iniciar sesión
             </a>
@@ -101,7 +101,7 @@ const { user = null, usuario = null } = Astro.props;
         <a
           href={user ? "/home" : "/login"}
           data-pencil-name="ProfileBtn"
-          class="md:hidden w-8 h-8 flex items-center justify-center rounded-full bg-white/80 text-[#0C1120] border border-white/60 shadow-xs overflow-hidden active:scale-95 transition-all"
+          class="md:hidden w-8 h-8 flex items-center justify-center rounded-full bg-white/80 dark:bg-white/10 text-[#0C1120] dark:text-white border border-white/60 dark:border-white/10 shadow-xs overflow-hidden active:scale-95 transition-all"
           aria-label={user ? "Abrir panel" : "Iniciar sesión"}
         >
           {user && (usuario?.imagen || user.image) ? (

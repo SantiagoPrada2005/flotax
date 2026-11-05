@@ -7,7 +7,7 @@
 
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
-| [`index.ts`](./index.ts) | Theme Engine | `obtenerTemaActual`, `guardarTema`, `determinarEsOscuro`, `aplicarTema`, `registrarEscuchadorTemaSistema`, `suscribirCambioTema` | - |
+| [`index.ts`](./index.ts) | Theme Engine | `obtenerTemaActual`, `guardarTema`, `determinarEsOscuro`, `esModoOscuroActivo`, `aplicarTema`, `registrarEscuchadorTemaSistema`, `suscribirCambioTema` | - |
 
 ## Invariants & Directory Rules
 

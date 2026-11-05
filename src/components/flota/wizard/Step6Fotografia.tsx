@@ -57,19 +57,19 @@ export default function Step6Fotografia({
     <div className="w-full space-y-6">
       {/* Encabezado Hero */}
       <div className="space-y-2">
-        <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#4B5563] block">
+        <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF] block">
           Paso 06 · Registro Fotográfico
         </span>
-        <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#111827] leading-[1.12]">
+        <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#111827] dark:text-[#EDEDED] leading-[1.12]">
           Muéstranos tu vehículo
         </h1>
-        <p className="text-xs sm:text-sm text-[#4B5563] font-medium max-w-[50ch]">
+        <p className="text-xs sm:text-sm text-[#4B5563] dark:text-[#9CA3AF] font-medium max-w-[50ch]">
           Sube una fotografía de alta calidad de la unidad para el catálogo de flota y la inspección pericial.
         </p>
       </div>
 
       {/* Contenedor Inmersivo de Pantalla Completa (1 Entrada) */}
-      <div className="rounded-[28px] border border-[#9CA3AF]/40 bg-white p-6 sm:p-8 shadow-xs space-y-6">
+      <div className="rounded-[28px] border border-[#9CA3AF]/40 bg-white p-6 sm:p-8 shadow-xs space-y-6 dark:bg-[#1F2937] dark:border-white/10">
         {/* Input Oculto de Archivos */}
         <input
           ref={fileInputRef}
@@ -89,56 +89,56 @@ export default function Step6Fotografia({
           onDragLeave={handleDragLeave}
           onClick={() => fileInputRef.current?.click()}
           className={`rounded-[24px] border-2 border-dashed p-8 text-center transition-all cursor-pointer flex flex-col items-center justify-center space-y-3 ${isDragging
-              ? 'border-[#111827] bg-[#EDEDED] scale-[0.99]'
-              : 'border-[#9CA3AF]/50 bg-[#EDEDED]/30 hover:border-[#111827] hover:bg-[#EDEDED]/60'
+              ? 'border-[#111827] bg-[#EDEDED] scale-[0.99] dark:border-white dark:bg-white/10'
+              : 'border-[#9CA3AF]/50 bg-[#EDEDED]/30 hover:border-[#111827] hover:bg-[#EDEDED]/60 dark:border-white/20 dark:bg-white/5 dark:hover:border-white/40 dark:hover:bg-white/10'
             }`}
         >
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#EDEDED] font-mono text-2xl font-bold text-[#111827] border border-[#9CA3AF]/40 shadow-xs">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#EDEDED] font-mono text-2xl font-bold text-[#111827] border border-[#9CA3AF]/40 shadow-xs dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15">
             ↑
           </div>
 
           <div>
-            <p className="font-display font-bold text-base sm:text-lg text-[#111827]">
+            <p className="font-display font-bold text-base sm:text-lg text-[#111827] dark:text-[#EDEDED]">
               {nombreArchivoLocal
                 ? `Archivo cargado: ${nombreArchivoLocal}`
                 : 'Arrastra una fotografía aquí o haz clic para examinar'}
             </p>
-            <p className="text-xs text-[#4B5563] mt-1">
+            <p className="text-xs text-[#4B5563] dark:text-[#9CA3AF] mt-1">
               Formatos recomendados: JPG, PNG, WEBP (hasta 10 MB)
             </p>
           </div>
 
           <button
             type="button"
-            className="ios-press-bounce mt-1 rounded-full bg-[#111827] hover:bg-[#1F2937] px-6 py-2.5 font-display text-xs font-bold text-white shadow-xs transition cursor-pointer"
+            className="ios-press-bounce mt-1 rounded-full bg-[#111827] hover:bg-[#1F2937] px-6 py-2.5 font-display text-xs font-bold text-white shadow-xs transition cursor-pointer dark:bg-white dark:text-[#111827] dark:hover:bg-[#EDEDED]"
           >
             {data.imagenUrl ? 'Cambiar fotografía' : 'Seleccionar del dispositivo'}
           </button>
         </div>
 
         {errors.imagenUrl && (
-          <p className="text-xs font-bold text-rose-600 animate-fade-in text-center sm:text-left">
+          <p className="text-xs font-bold text-rose-600 dark:text-rose-400 animate-fade-in text-center sm:text-left">
             {errors.imagenUrl}
           </p>
         )}
 
         {/* Vista Previa Protagonista */}
         {data.imagenUrl && (
-          <div className="space-y-3 border-t border-[#EDEDED] pt-5">
+          <div className="space-y-3 border-t border-[#EDEDED] dark:border-white/10 pt-5">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827]">
+              <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
                 Vista Previa de la Ficha
               </span>
               <button
                 type="button"
                 onClick={handleEliminarFoto}
-                className="font-mono text-xs font-bold text-rose-600 hover:text-rose-800 transition cursor-pointer"
+                className="font-mono text-xs font-bold text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-300 transition cursor-pointer"
               >
                 ✕ Quitar fotografía
               </button>
             </div>
 
-            <div className="relative overflow-hidden rounded-[24px] border border-[#9CA3AF]/40 bg-[#EDEDED]/40 h-64 sm:h-80 flex items-center justify-center shadow-xs">
+            <div className="relative overflow-hidden rounded-[24px] border border-[#9CA3AF]/40 bg-[#EDEDED]/40 h-64 sm:h-80 flex items-center justify-center shadow-xs dark:bg-white/5 dark:border-white/10">
               <img
                 src={data.imagenUrl}
                 alt={`${data.marca} ${data.modelo}`}

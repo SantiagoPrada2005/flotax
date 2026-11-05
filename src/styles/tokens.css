@@ -1,6 +1,150 @@
 @import "tailwindcss";
 @import "./fonts.css";
 
+/* Configuración canónica de selector oscuro para Tailwind CSS v4 */
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
+/* ==========================================================================
+   FlotaX Canonical Theme System (CSS Custom Properties)
+   Canonical Palette: #EDEDED | #9CA3AF | #4B5563 | #1F2937 | #111827
+   Brand Accent: #2D6BFF (Canónico)
+   Status Colors: #10B981 (Success), #F59E0B (Warning/Pending), #DC2626 (Danger)
+   ========================================================================== */
+
+:root,
+html[data-theme="light"] {
+  color-scheme: light;
+  --fx-bg-canvas: #ededed;
+  --fx-bg-surface: #ffffff;
+  --fx-bg-surface-subtle: #f9fafb;
+  --fx-bg-surface-elevated: #ededed;
+  --fx-bg-surface-input: #ffffff;
+  --fx-bg-hover: rgba(17, 24, 39, 0.05);
+  --fx-bg-active: rgba(17, 24, 39, 0.08);
+
+  --fx-text-primary: #111827;
+  --fx-text-secondary: #4b5563;
+  --fx-text-muted: #9ca3af;
+  --fx-text-inverted: #ededed;
+
+  --fx-border-subtle: rgba(156, 163, 175, 0.35);
+  --fx-border-card: rgba(156, 163, 175, 0.25);
+  --fx-border-focus: #111827;
+
+  --fx-status-amber-bg: rgba(245, 158, 11, 0.14);
+  --fx-status-amber-text: #92400e;
+  --fx-status-amber-border: rgba(245, 158, 11, 0.35);
+
+  --fx-status-emerald-bg: rgba(16, 185, 129, 0.14);
+  --fx-status-emerald-text: #065f46;
+  --fx-status-emerald-border: rgba(16, 185, 129, 0.35);
+
+  /* FlotaX Canonical Button Semantic Tokens (Light Mode) */
+  --fx-btn-primary-bg: #111827;
+  --fx-btn-primary-text: #ededed;
+  --fx-btn-primary-border: #111827;
+  --fx-btn-primary-hover-bg: #1f2937;
+  --fx-btn-primary-hover-text: #ffffff;
+  --fx-btn-primary-hover-border: #1f2937;
+  --fx-btn-primary-active-bg: #0b0f19;
+
+  --fx-btn-secondary-bg: rgba(237, 237, 237, 0.75);
+  --fx-btn-secondary-text: #111827;
+  --fx-btn-secondary-border: rgba(156, 163, 175, 0.45);
+  --fx-btn-secondary-hover-bg: #ededed;
+  --fx-btn-secondary-hover-text: #111827;
+  --fx-btn-secondary-hover-border: #111827;
+  --fx-btn-secondary-active-bg: rgba(237, 237, 237, 0.95);
+
+  --fx-btn-outline-bg: #ffffff;
+  --fx-btn-outline-text: #111827;
+  --fx-btn-outline-border: rgba(156, 163, 175, 0.45);
+  --fx-btn-outline-hover-bg: #ededed;
+  --fx-btn-outline-hover-text: #111827;
+  --fx-btn-outline-hover-border: #111827;
+  --fx-btn-outline-active-bg: #e5e7eb;
+
+  --fx-btn-ghost-bg: transparent;
+  --fx-btn-ghost-text: #111827;
+  --fx-btn-ghost-border: transparent;
+  --fx-btn-ghost-hover-bg: rgba(17, 24, 39, 0.06);
+  --fx-btn-ghost-hover-text: #111827;
+  --fx-btn-ghost-hover-border: transparent;
+  --fx-btn-ghost-active-bg: rgba(17, 24, 39, 0.10);
+
+  --fx-btn-disabled-bg: rgba(156, 163, 175, 0.20);
+  --fx-btn-disabled-text: #9ca3af;
+  --fx-btn-disabled-border: rgba(156, 163, 175, 0.30);
+  --fx-btn-focus-ring: #111827;
+}
+
+html.dark,
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --fx-bg-canvas: #111827;
+  --fx-bg-surface: #1f2937;
+  --fx-bg-surface-subtle: #111827;
+  --fx-bg-surface-elevated: #111827;
+  --fx-bg-surface-input: #1f2937;
+  --fx-bg-hover: rgba(255, 255, 255, 0.08);
+  --fx-bg-active: rgba(255, 255, 255, 0.14);
+
+  --fx-text-primary: #ededed;
+  --fx-text-secondary: #d1d5db;
+  --fx-text-muted: #9ca3af;
+  --fx-text-inverted: #111827;
+
+  --fx-border-subtle: rgba(156, 163, 175, 0.22);
+  --fx-border-card: rgba(255, 255, 255, 0.10);
+  --fx-border-focus: #ededed;
+
+  --fx-status-amber-bg: rgba(245, 158, 11, 0.20);
+  --fx-status-amber-text: #fcd34d;
+  --fx-status-amber-border: rgba(245, 158, 11, 0.45);
+
+  --fx-status-emerald-bg: rgba(16, 185, 129, 0.20);
+  --fx-status-emerald-text: #6ee7b7;
+  --fx-status-emerald-border: rgba(16, 185, 129, 0.45);
+
+  /* FlotaX Canonical Button Semantic Tokens (Dark Mode) */
+  --fx-btn-primary-bg: #ededed;
+  --fx-btn-primary-text: #111827;
+  --fx-btn-primary-border: #ededed;
+  --fx-btn-primary-hover-bg: #ffffff;
+  --fx-btn-primary-hover-text: #111827;
+  --fx-btn-primary-hover-border: #ffffff;
+  --fx-btn-primary-active-bg: #e5e7eb;
+
+  --fx-btn-secondary-bg: rgba(255, 255, 255, 0.10);
+  --fx-btn-secondary-text: #ededed;
+  --fx-btn-secondary-border: rgba(255, 255, 255, 0.15);
+  --fx-btn-secondary-hover-bg: rgba(255, 255, 255, 0.18);
+  --fx-btn-secondary-hover-text: #ffffff;
+  --fx-btn-secondary-hover-border: rgba(255, 255, 255, 0.35);
+  --fx-btn-secondary-active-bg: rgba(255, 255, 255, 0.24);
+
+  --fx-btn-outline-bg: rgba(31, 41, 55, 0.60);
+  --fx-btn-outline-text: #ededed;
+  --fx-btn-outline-border: rgba(255, 255, 255, 0.15);
+  --fx-btn-outline-hover-bg: rgba(255, 255, 255, 0.12);
+  --fx-btn-outline-hover-text: #ffffff;
+  --fx-btn-outline-hover-border: rgba(255, 255, 255, 0.35);
+  --fx-btn-outline-active-bg: rgba(255, 255, 255, 0.18);
+
+  --fx-btn-ghost-bg: transparent;
+  --fx-btn-ghost-text: #ededed;
+  --fx-btn-ghost-border: transparent;
+  --fx-btn-ghost-hover-bg: rgba(255, 255, 255, 0.08);
+  --fx-btn-ghost-hover-text: #ffffff;
+  --fx-btn-ghost-hover-border: transparent;
+  --fx-btn-ghost-active-bg: rgba(255, 255, 255, 0.14);
+
+  --fx-btn-disabled-bg: rgba(255, 255, 255, 0.05);
+  --fx-btn-disabled-text: #6b7280;
+  --fx-btn-disabled-border: rgba(255, 255, 255, 0.08);
+  --fx-btn-focus-ring: #ededed;
+}
+
 @theme {
   /* Canonical Palette: #EDEDED | #9CA3AF | #4B5563 | #1F2937 | #111827 */
   --color-palette-100: #ededed;
@@ -10,23 +154,33 @@
   --color-palette-900: #111827;
 
   /* Brand & Semantic Hierarchy */
-  --color-brand-primary: #111827;
-  --color-brand-secondary: #1f2937;
-  --color-brand-accent: #1f2937;
+  --color-brand-primary: var(--fx-text-primary);
+  --color-brand-secondary: var(--fx-text-secondary);
+  --color-brand-accent: var(--fx-text-primary);
   --color-brand-coral: #1f2937;
-  --color-brand-blue: #1f2937;
+  --color-brand-blue: #2d6bff;
   --color-status-success: #16a34a;
   --color-status-warning: #f59e0b;
   --color-status-danger: #dc2626;
 
   /* Surfaces & Neutral Hierarchy */
-  --color-surface-canvas: #ededed;
-  --color-surface-card: #ffffff;
-  --color-surface-elevated: #ededed;
-  --color-surface-sidebar: #ededed;
-  --color-border-subtle: #9ca3af;
-  --color-text-muted: #4b5563;
-  --color-text-subtle: #9ca3af;
+  --color-surface-canvas: var(--fx-bg-canvas);
+  --color-surface-card: var(--fx-bg-surface);
+  --color-surface-elevated: var(--fx-bg-surface-elevated);
+  --color-surface-sidebar: var(--fx-bg-canvas);
+  --color-border-subtle: var(--fx-border-subtle);
+  --color-text-muted: var(--fx-text-secondary);
+  --color-text-subtle: var(--fx-text-muted);
+
+  /* Button Semantic Tokens */
+  --color-btn-primary-bg: var(--fx-btn-primary-bg);
+  --color-btn-primary-text: var(--fx-btn-primary-text);
+  --color-btn-secondary-bg: var(--fx-btn-secondary-bg);
+  --color-btn-secondary-text: var(--fx-btn-secondary-text);
+  --color-btn-outline-bg: var(--fx-btn-outline-bg);
+  --color-btn-outline-text: var(--fx-btn-outline-text);
+  --color-btn-ghost-bg: var(--fx-btn-ghost-bg);
+  --color-btn-ghost-text: var(--fx-btn-ghost-text);
 
   /* Typography Scales */
   --font-display: "Space Grotesk", system-ui, sans-serif;
@@ -874,285 +1028,310 @@ html.js-ready .reveal-on-scroll.is-visible {
 /* ==========================================================================
    Dark Mode System (WCAG 2.2 AAA & Contrast Governance)
    Canonical Palette: #EDEDED | #9CA3AF | #4B5563 | #1F2937 | #111827
+   Accents: #2D6BFF (Canónico), #F59E0B (Amber), #10B981 (Emerald), #DC2626 (Rose)
    ========================================================================== */
 html.dark {
   color-scheme: dark;
-  --color-surface-canvas: #111827;
-  --color-surface-card: #1f2937;
-  --color-surface-elevated: #1f2937;
-  --color-surface-sidebar: #111827;
-  --color-brand-primary: #ededed;
-  --color-brand-secondary: #e5e7eb;
-  --color-brand-accent: #ededed;
-  --color-border-subtle: #374151;
-  --color-text-muted: #d1d5db;
-  --color-text-subtle: #9ca3af;
-
-  background-color: #111827;
-  color: #ededed;
+  background-color: var(--fx-bg-canvas);
+  color: var(--fx-text-primary);
 }
 
 html.dark body {
-  background-color: #111827;
-  color: #ededed;
+  background-color: var(--fx-bg-canvas);
+  color: var(--fx-text-primary);
 }
 
-/* Background surface mappings in dark mode */
+/* Background surface mappings in dark mode (con protección para preservación de tema y variantes explícitas) */
 html.dark .bg-surface-canvas {
-  background-color: #111827 !important;
+  background-color: var(--fx-bg-canvas);
 }
 
-html.dark .bg-surface-card,
-html.dark .bg-white {
-  background-color: #1f2937 !important;
+html.dark .bg-surface-card {
+  background-color: var(--fx-bg-surface);
 }
 
 html.dark .bg-surface-elevated,
 html.dark .bg-surface-sidebar {
-  background-color: #111827 !important;
+  background-color: var(--fx-bg-canvas);
 }
 
-/* Gray and subtle backgrounds in dark mode */
-html.dark .bg-\[\#EDEDED\] {
-  background-color: rgba(255, 255, 255, 0.08) !important;
+/* Fallback para contenedores bg-white y bg-[#EDEDED] que no tengan variante dark explícita ni preserve-theme */
+html.dark .bg-white:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *) {
+  background-color: var(--fx-bg-surface);
 }
 
-html.dark .bg-\[\#EDEDED\]\/85,
-html.dark .bg-\[\#EDEDED\]\/80,
-html.dark .bg-\[\#EDEDED\]\/70,
-html.dark .bg-\[\#EDEDED\]\/60,
-html.dark .bg-\[\#EDEDED\]\/50,
-html.dark .bg-\[\#EDEDED\]\/40,
-html.dark .bg-\[\#EDEDED\]\/30,
-html.dark .bg-\[\#EDEDED\]\/20 {
-  background-color: rgba(255, 255, 255, 0.06) !important;
+html.dark .bg-\[\#EDEDED\]:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *) {
+  background-color: rgba(255, 255, 255, 0.08);
 }
 
-html.dark .bg-white\/90,
-html.dark .bg-white\/95,
-html.dark .bg-white\/96,
-html.dark .bg-white\/85,
-html.dark .bg-white\/80,
-html.dark .bg-white\/75,
-html.dark .bg-white\/70,
-html.dark .bg-white\/65,
-html.dark .bg-white\/60,
-html.dark .bg-white\/50 {
-  background-color: rgba(31, 41, 55, 0.96) !important;
+html.dark .bg-white\/90:not([class*="dark:bg-"]),
+html.dark .bg-white\/95:not([class*="dark:bg-"]),
+html.dark .bg-white\/96:not([class*="dark:bg-"]),
+html.dark .bg-white\/85:not([class*="dark:bg-"]),
+html.dark .bg-white\/80:not([class*="dark:bg-"]),
+html.dark .bg-white\/75:not([class*="dark:bg-"]),
+html.dark .bg-white\/70:not([class*="dark:bg-"]) {
+  background-color: rgba(31, 41, 55, 0.94);
 }
 
-/* Vehicle and Car photos: prevent darkening in dark mode */
+html.dark .bg-gray-100:not([class*="dark:bg-"]),
+html.dark .bg-gray-50:not([class*="dark:bg-"]) {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Fotos e imágenes vehiculares: NUNCA oscurecer con mix-blend en modo oscuro */
 html.dark img.mix-blend-multiply,
 html.dark img[class*="mix-blend-multiply"],
 html.dark .mix-blend-multiply {
   mix-blend-mode: normal !important;
 }
 
-html.dark .bg-gray-100,
-html.dark .bg-gray-100\/80,
-html.dark .bg-gray-50,
-html.dark .bg-gray-50\/80 {
-  background-color: rgba(255, 255, 255, 0.06) !important;
+/* Fallback tipográfico seguro: nunca sobrescribir variantes dark:text- ni elementos preservados */
+html.dark .text-brand-primary {
+  color: var(--fx-text-primary);
 }
 
-/* Dark mode active / selected badge tints */
-html.dark .bg-\[\#111827\]\/8,
-html.dark .bg-\[\#111827\]\/6,
-html.dark .bg-\[\#111827\]\/10,
-html.dark .bg-\[\#111827\]\/15 {
-  background-color: rgba(255, 255, 255, 0.12) !important;
+html.dark .text-brand-secondary {
+  color: var(--fx-text-secondary);
 }
 
-/* Text and Foreground mappings */
-html.dark .text-brand-primary,
-html.dark .text-\[\#111827\],
-html.dark .text-\[\#1F2937\],
-html.dark .text-gray-900,
-html.dark .text-neutral-900 {
-  color: #ededed !important;
+html.dark .text-\[\#111827\]:not([class*="dark:text-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .text-\[\#1F2937\]:not([class*="dark:text-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .text-gray-900:not([class*="dark:text-"]):not([data-preserve-theme]):not([data-preserve-theme] *) {
+  color: var(--fx-text-primary);
 }
 
-/* Status buttons and badges in dark mode (prevent white text on light amber / yellow) */
-html.dark .text-amber-900,
-html.dark .text-amber-800,
-html.dark .text-amber-700 {
-  color: #fcd34d !important;
+html.dark .text-\[\#4B5563\]:not([class*="dark:text-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .text-gray-600:not([class*="dark:text-"]):not([data-preserve-theme]):not([data-preserve-theme] *) {
+  color: var(--fx-text-secondary);
 }
 
-html.dark .bg-amber-100,
-html.dark .bg-amber-50,
-html.dark .bg-amber-200 {
-  background-color: rgba(245, 158, 11, 0.22) !important;
-  border-color: rgba(245, 158, 11, 0.45) !important;
-  color: #fcd34d !important;
+html.dark .text-\[\#9CA3AF\]:not([class*="dark:text-"]):not([data-preserve-theme]):not([data-preserve-theme] *) {
+  color: var(--fx-text-muted);
 }
 
-html.dark button.bg-amber-100,
-html.dark a.bg-amber-100,
-html.dark [role="button"].bg-amber-100 {
-  background-color: rgba(245, 158, 11, 0.22) !important;
-  border-color: rgba(245, 158, 11, 0.45) !important;
-  color: #fcd34d !important;
+/* Botones y Badges de Estado en Modo Oscuro (WCAG AAA) */
+html.dark .text-amber-900:not([class*="dark:text-"]),
+html.dark .text-amber-800:not([class*="dark:text-"]),
+html.dark .text-amber-700:not([class*="dark:text-"]) {
+  color: var(--fx-status-amber-text);
 }
 
-html.dark button.bg-amber-100:hover,
-html.dark a.bg-amber-100:hover,
-html.dark [role="button"].bg-amber-100:hover {
-  background-color: rgba(245, 158, 11, 0.32) !important;
+html.dark .bg-amber-100:not([class*="dark:bg-"]),
+html.dark .bg-amber-50:not([class*="dark:bg-"]) {
+  background-color: var(--fx-status-amber-bg);
+  border-color: var(--fx-status-amber-border);
+  color: var(--fx-status-amber-text);
 }
 
-html.dark .text-emerald-900,
-html.dark .text-emerald-800,
-html.dark .text-emerald-700 {
-  color: #6ee7b7 !important;
+html.dark .text-emerald-900:not([class*="dark:text-"]),
+html.dark .text-emerald-800:not([class*="dark:text-"]),
+html.dark .text-emerald-700:not([class*="dark:text-"]) {
+  color: var(--fx-status-emerald-text);
 }
 
-html.dark .bg-emerald-100,
-html.dark .bg-emerald-50,
-html.dark .bg-emerald-200 {
-  background-color: rgba(16, 185, 129, 0.22) !important;
-  border-color: rgba(16, 185, 129, 0.45) !important;
-  color: #6ee7b7 !important;
+html.dark .bg-emerald-100:not([class*="dark:bg-"]),
+html.dark .bg-emerald-50:not([class*="dark:bg-"]) {
+  background-color: var(--fx-status-emerald-bg);
+  border-color: var(--fx-status-emerald-border);
+  color: var(--fx-status-emerald-text);
 }
 
-html.dark button.bg-emerald-100,
-html.dark a.bg-emerald-100,
-html.dark [role="button"].bg-emerald-100 {
-  background-color: rgba(16, 185, 129, 0.22) !important;
-  border-color: rgba(16, 185, 129, 0.45) !important;
-  color: #6ee7b7 !important;
+/* Bordes y Divisores en modo oscuro */
+html.dark .border-border-subtle {
+  border-color: var(--fx-border-subtle);
 }
 
-html.dark button.bg-emerald-100:hover,
-html.dark a.bg-emerald-100:hover,
-html.dark [role="button"].bg-emerald-100:hover {
-  background-color: rgba(16, 185, 129, 0.32) !important;
-}
-
-/* Secondary text in dark mode: use high contrast silver-white (#E5E7EB / #D1D5DB) instead of dark gray */
-html.dark .text-brand-secondary,
-html.dark .text-neutral-600,
-html.dark .text-gray-600,
-html.dark .text-\[\#4B5563\] {
-  color: #e5e7eb !important;
-}
-
-html.dark .text-neutral-500,
-html.dark .text-gray-500,
-html.dark .text-\[\#9CA3AF\] {
-  color: #9ca3af !important;
-}
-
-/* ==========================================================================
-   BUTTON & INTERACTIVE HOVER / ACTIVE STATES IN DARK MODE
-   Bans bright white flashes on hover/active in dark mode
-   ========================================================================== */
-html.dark [class*="hover:bg-[#EDEDED]"]:hover,
-html.dark [class*="hover:bg-white"]:hover,
-html.dark [class*="hover:bg-gray-100"]:hover,
-html.dark [class*="hover:bg-gray-200"]:hover,
-html.dark [class*="hover:bg-gray-50"]:hover,
-html.dark [class*="hover:bg-neutral-100"]:hover,
-html.dark [class*="hover:bg-neutral-50"]:hover,
-html.dark .hover\:bg-white:hover,
-html.dark .hover\:bg-\[\#EDEDED\]:hover,
-html.dark .hover\:bg-\[\#EDEDED\]\/80:hover,
-html.dark .hover\:bg-\[\#EDEDED\]\/70:hover,
-html.dark .hover\:bg-\[\#EDEDED\]\/60:hover,
-html.dark .hover\:bg-\[\#EDEDED\]\/50:hover,
-html.dark .hover\:bg-gray-100:hover,
-html.dark .hover\:bg-gray-200:hover,
-html.dark .hover\:bg-gray-50:hover {
-  background-color: rgba(255, 255, 255, 0.12) !important;
-  color: #ffffff !important;
-}
-
-html.dark [class*="active:bg-[#EDEDED]"]:active,
-html.dark [class*="active:bg-white"]:active,
-html.dark [class*="active:bg-gray-100"]:active,
-html.dark [class*="active:bg-gray-200"]:active,
-html.dark .active\:bg-white:active,
-html.dark .active\:bg-\[\#EDEDED\]:active,
-html.dark .active\:bg-gray-100:active {
-  background-color: rgba(255, 255, 255, 0.18) !important;
-  color: #ffffff !important;
-}
-
-/* Ensure text doesn't turn black on hover in dark mode */
-html.dark [class*="hover:text-[#111827]"]:hover,
-html.dark [class*="hover:text-black"]:hover,
-html.dark [class*="hover:text-gray-900"]:hover,
-html.dark .hover\:text-\[\#111827\]:hover,
-html.dark .hover\:text-black:hover {
-  color: #ffffff !important;
-}
-
-/* Icon containers in buttons / menu items */
-html.dark [role="menuitem"] .bg-\[\#EDEDED\],
-html.dark button .bg-\[\#EDEDED\],
-html.dark a .bg-\[\#EDEDED\] {
-  background-color: rgba(255, 255, 255, 0.10) !important;
-  color: #ededed !important;
-}
-
-/* Selected active items in menus, radios, and tabs */
-html.dark [role="menuitem"][aria-selected="true"],
-html.dark [role="radio"][aria-checked="true"] {
-  border-color: rgba(255, 255, 255, 0.5) !important;
-  background-color: rgba(255, 255, 255, 0.08) !important;
-}
-
-html.dark [role="tab"][aria-selected="false"] {
-  background-color: rgba(255, 255, 255, 0.08) !important;
-  color: #ededed !important;
-}
-
-html.dark [role="tab"][aria-selected="true"] {
-  background-color: #ededed !important;
-  color: #111827 !important;
-}
-
-html.dark [role="radio"][aria-checked="true"] .bg-\[\#111827\] {
-  background-color: #ededed !important;
-}
-
-/* Borders and Dividers */
-html.dark .border-border-subtle,
-html.dark .border-\[\#EDEDED\],
-html.dark .border-gray-200,
-html.dark .border-gray-200\/70,
-html.dark .border-gray-200\/60,
-html.dark .border-gray-200\/80,
-html.dark .border-gray-200\/50,
-html.dark .border-gray-100,
-html.dark .border-\[\#9CA3AF\]\/25,
-html.dark .border-\[\#9CA3AF\]\/30,
-html.dark .border-\[\#9CA3AF\]\/35,
-html.dark .border-\[\#9CA3AF\]\/40 {
-  border-color: rgba(156, 163, 175, 0.22) !important;
+html.dark .border-gray-200:not([class*="dark:border-"]),
+html.dark .border-gray-200\/70:not([class*="dark:border-"]),
+html.dark .border-gray-200\/60:not([class*="dark:border-"]),
+html.dark .border-gray-100:not([class*="dark:border-"]) {
+  border-color: var(--fx-border-subtle);
 }
 
 html.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]) {
-  border-color: rgba(156, 163, 175, 0.15) !important;
+  border-color: rgba(156, 163, 175, 0.15);
 }
 
-/* Form controls */
-html.dark input,
-html.dark textarea,
-html.dark select {
-  background-color: #1f2937 !important;
-  color: #ededed !important;
-  border-color: rgba(156, 163, 175, 0.3) !important;
+/* Controles de Formulario */
+html.dark input:not([data-preserve-theme]),
+html.dark textarea:not([data-preserve-theme]),
+html.dark select:not([data-preserve-theme]) {
+  background-color: var(--fx-bg-surface-input);
+  color: var(--fx-text-primary);
+  border-color: var(--fx-border-subtle);
 }
 
-/* iOS Glass Dock & TopBar in Dark Mode */
+/* iOS Glass Dock & TopBar en Modo Oscuro */
 html.dark .ios-dock-capsule {
-  background: rgba(31, 41, 55, 0.88) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 20px 42px -8px rgba(0, 0, 0, 0.6) !important;
+  background: rgba(31, 41, 55, 0.88);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 42px -8px rgba(0, 0, 0, 0.6);
 }
 
 html.dark .ios-floating-pill {
-  background: rgba(31, 41, 55, 0.92) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(31, 41, 55, 0.92);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ==========================================================================
+   Transición Canónica Pericial de Cambio de Tema (View Transitions API)
+   Halo sutil azul FlotaX #2D6BFF + crossfade suave sin salto de layout
+   ========================================================================== */
+html.flotax-theme-transitioning::view-transition-old(root) {
+  animation: 260ms cubic-bezier(0.22, 1, 0.36, 1) both flotaxThemeCrossfadeOld;
+}
+
+html.flotax-theme-transitioning::view-transition-new(root) {
+  animation: 260ms cubic-bezier(0.22, 1, 0.36, 1) both flotaxThemeCrossfadeNew;
+}
+
+@keyframes flotaxThemeCrossfadeOld {
+  0% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  100% {
+    opacity: 0;
+    filter: brightness(1.03);
+  }
+}
+
+@keyframes flotaxThemeCrossfadeNew {
+  0% {
+    opacity: 0;
+    filter: drop-shadow(0 0 36px rgba(45, 107, 255, 0.3));
+  }
+  100% {
+    opacity: 1;
+    filter: none;
+  }
+}
+
+/* ==========================================================================
+   FlotaX Unified Button Classes (Multi-Theme Adaptive)
+   Canonical implementation guaranteeing WCAG contrast across Light & Dark
+   ========================================================================== */
+
+.fx-btn-primary {
+  background-color: var(--fx-btn-primary-bg);
+  color: var(--fx-btn-primary-text);
+  border: 1px solid var(--fx-btn-primary-border);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.fx-btn-primary:hover:not(:disabled) {
+  background-color: var(--fx-btn-primary-hover-bg);
+  color: var(--fx-btn-primary-hover-text);
+  border-color: var(--fx-btn-primary-hover-border);
+}
+.fx-btn-primary:active:not(:disabled) {
+  background-color: var(--fx-btn-primary-active-bg);
+  transform: scale(0.98);
+}
+.fx-btn-primary:disabled {
+  background-color: var(--fx-btn-disabled-bg);
+  color: var(--fx-btn-disabled-text);
+  border-color: var(--fx-btn-disabled-border);
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.fx-btn-secondary {
+  background-color: var(--fx-btn-secondary-bg);
+  color: var(--fx-btn-secondary-text);
+  border: 1px solid var(--fx-btn-secondary-border);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.fx-btn-secondary:hover:not(:disabled) {
+  background-color: var(--fx-btn-secondary-hover-bg);
+  color: var(--fx-btn-secondary-hover-text);
+  border-color: var(--fx-btn-secondary-hover-border);
+}
+.fx-btn-secondary:active:not(:disabled) {
+  background-color: var(--fx-btn-secondary-active-bg);
+  transform: scale(0.98);
+}
+.fx-btn-secondary:disabled {
+  background-color: var(--fx-btn-disabled-bg);
+  color: var(--fx-btn-disabled-text);
+  border-color: var(--fx-btn-disabled-border);
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.fx-btn-outline {
+  background-color: var(--fx-btn-outline-bg);
+  color: var(--fx-btn-outline-text);
+  border: 1px solid var(--fx-btn-outline-border);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.fx-btn-outline:hover:not(:disabled) {
+  background-color: var(--fx-btn-outline-hover-bg);
+  color: var(--fx-btn-outline-hover-text);
+  border-color: var(--fx-btn-outline-hover-border);
+}
+.fx-btn-outline:active:not(:disabled) {
+  background-color: var(--fx-btn-outline-active-bg);
+  transform: scale(0.98);
+}
+.fx-btn-outline:disabled {
+  background-color: var(--fx-btn-disabled-bg);
+  color: var(--fx-btn-disabled-text);
+  border-color: var(--fx-btn-disabled-border);
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.fx-btn-ghost {
+  background-color: var(--fx-btn-ghost-bg);
+  color: var(--fx-btn-ghost-text);
+  border: 1px solid var(--fx-btn-ghost-border);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.fx-btn-ghost:hover:not(:disabled) {
+  background-color: var(--fx-btn-ghost-hover-bg);
+  color: var(--fx-btn-ghost-hover-text);
+  border-color: var(--fx-btn-ghost-hover-border);
+}
+.fx-btn-ghost:active:not(:disabled) {
+  background-color: var(--fx-btn-ghost-active-bg);
+  transform: scale(0.98);
+}
+.fx-btn-ghost:disabled {
+  color: var(--fx-btn-disabled-text);
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Iconos dentro de botones adaptativos heredan currentColor */
+.fx-btn-primary svg,
+.fx-btn-secondary svg,
+.fx-btn-outline svg,
+.fx-btn-ghost svg {
+  color: inherit;
+}
+
+/* ==========================================================================
+   Blindaje Estructural Global para Botones en Modo Oscuro:
+   Evita que botones con clases de hover claras (ej. hover:bg-white, hover:bg-[#EDEDED])
+   o fondos con alpha (/55, /75) queden con fondo claro y texto blanco al interactuar.
+   ========================================================================== */
+
+html.dark button:not([class*="dark:hover:"]):not([data-preserve-theme]):not([data-preserve-theme] *).hover\:bg-white:hover,
+html.dark a:not([class*="dark:hover:"]):not([data-preserve-theme]):not([data-preserve-theme] *).hover\:bg-white:hover {
+  background-color: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+html.dark button:not([class*="dark:hover:"]):not([data-preserve-theme]):not([data-preserve-theme] *).hover\:bg-\[\#EDEDED\]:hover,
+html.dark a:not([class*="dark:hover:"]):not([data-preserve-theme]):not([data-preserve-theme] *).hover\:bg-\[\#EDEDED\]:hover {
+  background-color: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+html.dark button:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *)[class*="bg-\[\#EDEDED\]\/"],
+html.dark a:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *)[class*="bg-\[\#EDEDED\]\/"] {
+  background-color: rgba(255, 255, 255, 0.10);
+  color: var(--fx-text-primary);
+  border-color: rgba(255, 255, 255, 0.15);
 }

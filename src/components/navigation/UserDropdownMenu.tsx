@@ -151,8 +151,8 @@ export default function UserDropdownMenu({
         absolute right-0 top-[calc(100%+8px)] z-50
         w-[280px] sm:w-[295px] max-w-[calc(100vw-24px)]
         origin-top-right transform-gpu
-        rounded-2xl border border-[#9CA3AF]/30 bg-white/96
-        p-2 shadow-[0_18px_40px_-8px_rgba(17,24,39,0.2),0_4px_12px_rgba(17,24,39,0.06)]
+        rounded-2xl border border-[#9CA3AF]/30 dark:border-white/10 bg-white/96 dark:bg-[#1F2937]/96
+        p-2 shadow-[0_18px_40px_-8px_rgba(17,24,39,0.2),0_4px_12px_rgba(17,24,39,0.06)] dark:shadow-[0_18px_40px_-8px_rgba(0,0,0,0.6)]
         backdrop-blur-2xl
         transition-all duration-200 ease-out
         ${
@@ -166,7 +166,7 @@ export default function UserDropdownMenu({
       {autenticado ? (
         <div className="flex items-center gap-3 px-2.5 py-2">
           {/* Foto de perfil o avatar con iniciales */}
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#111827] dark:bg-white/15 text-xs font-bold text-[#EDEDED] shadow-xs ring-1 ring-[#111827]/10 dark:ring-white/20">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#111827] dark:bg-white text-xs font-bold text-[#EDEDED] dark:text-[#111827] shadow-xs ring-1 ring-[#111827]/10 dark:ring-white/20 transition-colors">
             {usuarioImagen && !avatarError ? (
               <img
                 src={usuarioImagen}
@@ -194,7 +194,7 @@ export default function UserDropdownMenu({
         </div>
       ) : (
         <div className="flex items-center gap-3 px-2.5 py-2">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#111827] dark:bg-white/15 text-xs font-bold text-[#EDEDED] shadow-xs">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#111827] dark:bg-white text-xs font-bold text-[#EDEDED] dark:text-[#111827] shadow-xs transition-colors">
             <span>FX</span>
           </div>
           <div className="min-w-0 flex-1">

@@ -110,8 +110,8 @@ export default function TopBarIsland({
     <header
       className={`fixed top-0 left-0 right-0 z-30 flex h-14 items-center justify-between px-3.5 sm:px-6 transition-all duration-200 ${
         isScrolled
-          ? 'bg-white/90 backdrop-blur-xl border-b border-[#9CA3AF]/25 shadow-[0_4px_18px_-8px_rgba(17,24,39,0.08)]'
-          : 'bg-[#EDEDED]/85 backdrop-blur-md border-b border-transparent'
+          ? 'bg-white/90 dark:bg-[#111827]/90 backdrop-blur-xl border-b border-[#9CA3AF]/25 dark:border-white/10 shadow-[0_4px_18px_-8px_rgba(17,24,39,0.08)] dark:shadow-[0_4px_18px_-8px_rgba(0,0,0,0.4)]'
+          : 'bg-[#EDEDED]/85 dark:bg-[#111827]/85 backdrop-blur-md border-b border-transparent'
       } ${className}`}
     >
       {/* Lado Izquierdo: Navegación Atrás o Marca Minimalista */}
@@ -121,7 +121,7 @@ export default function TopBarIsland({
             href={backHref}
             aria-label="Volver"
             onPointerDown={triggerHaptic}
-            className="ios-press-bounce -ml-2 inline-flex min-h-[44px] min-w-[44px] items-center gap-1.5 rounded-full px-2 text-[#111827] transition-colors hover:bg-[#111827]/6"
+            className="ios-press-bounce -ml-2 inline-flex min-h-[44px] min-w-[44px] items-center gap-1.5 rounded-full px-2 text-[#111827] dark:text-[#EDEDED] transition-colors hover:bg-[#111827]/6 dark:hover:bg-white/10"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -136,7 +136,7 @@ export default function TopBarIsland({
             >
               <path d="m15 18-6-6 6-6" />
             </svg>
-            <span className="font-display text-sm font-bold tracking-tight text-[#111827] truncate max-w-[180px] sm:max-w-[260px]">
+            <span className="font-display text-sm font-bold tracking-tight text-[#111827] dark:text-[#EDEDED] truncate max-w-[180px] sm:max-w-[260px]">
               {brandLabel}
             </span>
           </a>
@@ -147,21 +147,21 @@ export default function TopBarIsland({
               href={brandHref}
               data-astro-prefetch="tap"
               onPointerDown={triggerHaptic}
-              className={`ios-press-bounce inline-flex min-h-[44px] items-center gap-2 rounded-xl pr-2 text-[#111827] transition-opacity hover:opacity-85 ${
+              className={`ios-press-bounce inline-flex min-h-[44px] items-center gap-2 rounded-xl pr-2 text-[#111827] dark:text-[#EDEDED] transition-opacity hover:opacity-85 ${
                 isAdminVariant ? 'md:hidden' : 'flex'
               }`}
             >
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[7px] bg-[#111827] text-[#EDEDED] shadow-2xs">
-                <FlotaxIsotype size={13} fillColor="#EDEDED" />
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[7px] bg-[#111827] dark:bg-white text-white dark:text-[#111827] shadow-2xs transition-colors">
+                <FlotaxIsotype size={13} fillColor="currentColor" />
               </span>
-              <span className="font-display text-[15px] font-extrabold tracking-tight text-[#111827] truncate max-w-[190px]">
+              <span className="font-display text-[15px] font-extrabold tracking-tight text-[#111827] dark:text-[#EDEDED] truncate max-w-[190px]">
                 {brandLabel}
               </span>
             </a>
 
             {/* En escritorio Admin, mostramos el título conciso de la vista */}
             {isAdminVariant && cleanSectionTitle && (
-              <span className="hidden md:inline-block font-display text-sm font-bold tracking-tight text-[#111827] truncate">
+              <span className="hidden md:inline-block font-display text-sm font-bold tracking-tight text-[#111827] dark:text-[#EDEDED] truncate">
                 {cleanSectionTitle}
               </span>
             )}
@@ -227,7 +227,7 @@ export default function TopBarIsland({
           {!isStandalone && !isMenuOpen && (
             <span
               aria-hidden="true"
-              className="absolute right-2 top-2.5 h-1.5 w-1.5 rounded-full bg-[#4B5563]"
+              className="absolute right-2 top-2.5 h-1.5 w-1.5 rounded-full bg-[#4B5563] dark:bg-[#9CA3AF]"
             />
           )}
         </button>

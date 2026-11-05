@@ -7,9 +7,10 @@
 
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
-| [`index.ts`](./index.ts) | Barrel Export | `isStandalonePwa`, `isSpaInterceptableUrl`, `registerPwaServiceWorker`, `detectInstallPlatform`, `isInstallPromptDismissed`, `dismissInstallPromptForDays`, `markAppInstalled`, `isAppMarkedInstalled`, `openInstallPromptModal`, `prefetchHtml`, `prefetchRutasCalientes`, `rutasCalientes`, `BeforeInstallPromptEvent`, `PwaInstallPlatform` | `./standalone`, `./install`, `./navigation-cache` |
+| [`index.ts`](./index.ts) | Barrel Export | `isStandalonePwa`, `isSpaInterceptableUrl`, `registerPwaServiceWorker`, `detectInstallPlatform`, `isInstallPromptDismissed`, `dismissInstallPromptForDays`, `markAppInstalled`, `isAppMarkedInstalled`, `openInstallPromptModal`, `prefetchHtml`, `prefetchRutasCalientes`, `rutasCalientes`, `BeforeInstallPromptEvent`, `PwaInstallPlatform`, `activarFlotaxLoading`, `desactivarFlotaxLoading`, `resolverVarianteTransicionPortal` | `./standalone`, `./install`, `./navigation-cache`, `./loading` |
 | [`cache-policy.ts`](./cache-policy.ts) | Pure HTTP Cache Policy | `NAV_CACHE_ENABLED`, `TTL_CACHE_HTML`, `resolverPoliticaCacheHtml()`, `aplicarPoliticaCacheHtml()` | `Response` estándar |
 | [`install.ts`](./install.ts) | Pure PWA Install Domain Utilities | `detectInstallPlatform()`, `isInstallPromptDismissed()`, `dismissInstallPromptForDays()`, `markAppInstalled()`, `isAppMarkedInstalled()`, `openInstallPromptModal()` | Estándares Web (`beforeinstallprompt`, `localStorage`, `CustomEvent`) |
+| [`loading.ts`](./loading.ts) | Kinetic Loader Dispatcher | `activarFlotaxLoading()`, `desactivarFlotaxLoading()`, `resolverVarianteTransicionPortal()`, `FlotaxLoadingVariant`, `FlotaxLoadingOptions` | `CustomEvent ('flotax:loading')`, `@/lib/theme` |
 | [`navigation-cache.ts`](./navigation-cache.ts) | Client Navigation Warm-up | `prefetchHtml()`, `prefetchRutasCalientes()`, `rutasCalientes()` | Fetch API, Network Information, `requestIdleCallback` |
 | [`push.ts`](./push.ts) | TypeScript / JavaScript Module | - | - |
 | [`revision.ts`](./revision.ts) | Server Cache Revision Cookie | `COOKIE_REVISION_NAVEGACION`, `marcarRevisionNavegacion()` | `AstroCookies`, `crypto.randomUUID()` |

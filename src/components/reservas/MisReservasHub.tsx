@@ -368,18 +368,18 @@ export default function MisReservasHub({
           ===================================================================== */}
       <section
         aria-label="Calendario de reservas"
-        className="w-full max-w-[430px] mx-auto md:mx-0 md:w-[360px] lg:w-[410px] xl:w-[440px] shrink-0 rounded-[28px] sm:rounded-[34px] bg-white px-5 sm:px-6 pt-4 pb-4 shadow-[0_10px_28px_-16px_rgba(17,24,39,0.06)] border border-[#E5E4DF]/60 md:sticky md:top-20"
+        className="w-full max-w-[430px] mx-auto md:mx-0 md:w-[360px] lg:w-[410px] xl:w-[440px] shrink-0 rounded-[28px] sm:rounded-[34px] bg-white dark:bg-[#1F2937] px-5 sm:px-6 pt-4 pb-4 shadow-[0_10px_28px_-16px_rgba(17,24,39,0.06)] border border-[#E5E4DF]/60 dark:border-white/10 md:sticky md:top-20 transition-colors"
       >
         {/* Barra Superior: Píldora Suave de Mes + Acción Rápida Admin + Controles */}
         <div className="flex items-center justify-between gap-2">
-          <div className="inline-flex items-center gap-2 rounded-full bg-[#EDEDED]/80 px-3.5 py-2 text-xs font-semibold text-[#111827]">
+          <div className="inline-flex items-center gap-2 rounded-full bg-[#EDEDED]/80 dark:bg-white/10 px-3.5 py-2 text-xs font-semibold text-[#111827] dark:text-[#EDEDED] transition-colors">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="1.9"
-              className="h-4 w-4 text-[#4B5563]"
+              className="h-4 w-4 text-[#4B5563] dark:text-[#9CA3AF]"
             >
               <rect width="18" height="18" x="3" y="4" rx="2" />
               <line x1="16" x2="16" y1="2" y2="6" />
@@ -396,7 +396,7 @@ export default function MisReservasHub({
               <button
                 type="button"
                 onClick={() => setSheetNuevaAbierto(true)}
-                className="ios-press-bounce mr-1 inline-flex min-h-[40px] items-center gap-1.5 rounded-full bg-[#111827] px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-[#1F2937] cursor-pointer"
+                className="ios-press-bounce mr-1 inline-flex min-h-[40px] items-center gap-1.5 rounded-full bg-[#111827] dark:bg-white dark:text-[#111827] px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-[#1F2937] dark:hover:bg-[#EDEDED] cursor-pointer transition-colors"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -417,7 +417,7 @@ export default function MisReservasHub({
               type="button"
               onClick={() => cambiarMes(-1)}
               aria-label="Mes anterior"
-              className="ios-press-bounce flex h-10 w-10 items-center justify-center rounded-full text-[#111827] hover:bg-[#EDEDED]/70 cursor-pointer"
+              className="ios-press-bounce flex h-10 w-10 items-center justify-center rounded-full text-[#111827] dark:text-[#EDEDED] hover:bg-[#EDEDED]/70 dark:hover:bg-white/10 cursor-pointer transition-colors"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -435,7 +435,7 @@ export default function MisReservasHub({
               type="button"
               onClick={() => cambiarMes(1)}
               aria-label="Mes siguiente"
-              className="ios-press-bounce flex h-10 w-10 items-center justify-center rounded-full text-[#111827] hover:bg-[#EDEDED]/70 cursor-pointer"
+              className="ios-press-bounce flex h-10 w-10 items-center justify-center rounded-full text-[#111827] dark:text-[#EDEDED] hover:bg-[#EDEDED]/70 dark:hover:bg-white/10 cursor-pointer transition-colors"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -503,20 +503,20 @@ export default function MisReservasHub({
             let clasesCirculo = '';
             if (!celda.esMesActual) {
               clasesCirculo = enRangoFiltro
-                ? 'bg-[#1F2937]/75 text-white font-semibold'
+                ? 'bg-[#1F2937]/75 dark:bg-white/20 text-white font-semibold'
                 : 'bg-transparent text-[#9CA3AF]/55 font-normal';
             } else if (esInicioFiltro || esFinFiltro) {
               clasesCirculo =
-                'bg-[#111827] text-white font-bold shadow-xs ring-2 ring-[#111827] ring-offset-1 ring-offset-white z-10';
+                'bg-[#111827] dark:bg-white text-white dark:text-[#111827] font-bold shadow-xs ring-2 ring-[#111827] dark:ring-white ring-offset-1 ring-offset-white dark:ring-offset-[#1F2937] z-10';
             } else if (esIntermedioFiltro) {
-              clasesCirculo = 'bg-[#1F2937] text-white font-semibold z-10';
+              clasesCirculo = 'bg-[#1F2937] dark:bg-white/30 text-white font-semibold z-10';
             } else if (enAlgunAlquiler) {
               clasesCirculo = celda.enReservaActiva
-                ? 'bg-[#9CA3AF]/60 text-[#111827] font-bold ring-1.5 ring-[#4B5563]'
-                : 'bg-[#9CA3AF]/45 text-[#111827] font-semibold ring-1 ring-[#9CA3AF]';
+                ? 'bg-[#9CA3AF]/60 text-[#111827] dark:bg-white/25 dark:text-[#EDEDED] font-bold ring-1.5 ring-[#4B5563] dark:ring-white/40'
+                : 'bg-[#9CA3AF]/45 text-[#111827] dark:bg-white/15 dark:text-[#EDEDED] font-semibold ring-1 ring-[#9CA3AF] dark:ring-white/20';
             } else {
               clasesCirculo =
-                'bg-[#EDEDED]/65 text-[#4B5563] font-medium hover:bg-[#EDEDED]';
+                'bg-[#EDEDED]/65 dark:bg-white/5 text-[#4B5563] dark:text-[#9CA3AF] font-medium hover:bg-[#EDEDED] dark:hover:bg-white/10';
             }
 
             return (
@@ -530,7 +530,7 @@ export default function MisReservasHub({
                   filtroInicioISO !== finFiltroEfectivo && (
                     <div
                       aria-hidden="true"
-                      className={`absolute inset-y-1 bg-[#111827]/12 ${
+                      className={`absolute inset-y-1 bg-[#111827]/12 dark:bg-white/15 ${
                         esInicioFiltro
                           ? 'left-1/2 right-0 rounded-l-full'
                           : esFinFiltro
@@ -557,8 +557,8 @@ export default function MisReservasHub({
                         enRangoFiltro
                           ? 'bg-white/85'
                           : tienePendienteEnDia
-                            ? 'bg-[#111827]'
-                            : 'bg-[#4B5563]'
+                            ? 'bg-[#111827] dark:bg-white'
+                            : 'bg-[#4B5563] dark:text-[#9CA3AF]'
                       }`}
                     />
                   )}
@@ -569,20 +569,20 @@ export default function MisReservasHub({
         </div>
 
         {/* Leyenda compacta + Estado del filtro de doble selección */}
-        <div className="mt-3 flex items-center justify-between gap-2 border-t border-[#EDEDED] pt-2.5 text-[11px] font-medium text-[#4B5563]">
+        <div className="mt-3 flex items-center justify-between gap-2 border-t border-[#EDEDED] dark:border-white/10 pt-2.5 text-[11px] font-medium text-[#4B5563] dark:text-[#9CA3AF]">
           <div className="flex items-center gap-3">
             <span className="inline-flex items-center gap-1.5">
               <span className="h-2.5 w-2.5 rounded-full bg-[#9CA3AF]/60 ring-1 ring-[#4B5563]" />
               <span>{esAdmin ? 'En agenda' : 'Con alquiler'}</span>
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#111827]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#111827] dark:bg-white" />
               <span>Filtro</span>
             </span>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-semibold text-[#111827] tabular-nums">
+            <span className="text-[11px] font-semibold text-[#111827] dark:text-[#EDEDED] tabular-nums">
               {!filtroInicioISO
                 ? 'Toca inicio y fin para filtrar'
                 : !filtroFinISO
@@ -593,7 +593,7 @@ export default function MisReservasHub({
               <button
                 type="button"
                 onClick={limpiarFiltro}
-                className="ios-press-bounce text-[10px] font-bold text-[#111827] underline hover:text-[#4B5563] cursor-pointer"
+                className="ios-press-bounce text-[10px] font-bold text-[#111827] dark:text-[#EDEDED] underline hover:text-[#4B5563] dark:hover:text-white cursor-pointer"
               >
                 Limpiar
               </button>
@@ -679,7 +679,7 @@ export default function MisReservasHub({
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3.5">
             <div className="border-l-2 border-[#9CA3AF]/60 pl-3">
-              <span className="block text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
+              <span className="block text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
                 {hayFiltroActivo
                   ? 'FILTRO'
                   : esAdmin
@@ -688,13 +688,13 @@ export default function MisReservasHub({
               </span>
               <span
                 key={`${infoDiaCabecera.numeroDia}-${infoDiaFinFiltro?.numeroDia ?? ''}`}
-                className="block font-display text-2xl font-black leading-none text-[#111827] tabular-nums"
+                className="block font-display text-2xl font-black leading-none text-[#111827] dark:text-[#EDEDED] tabular-nums"
               >
                 {infoDiaFinFiltro
                   ? `${infoDiaCabecera.numeroDia}–${infoDiaFinFiltro.numeroDia}`
                   : infoDiaCabecera.numeroDia}
               </span>
-              <span className="block text-[11px] font-medium text-[#4B5563]">
+              <span className="block text-[11px] font-medium text-[#4B5563] dark:text-[#9CA3AF]">
                 {infoDiaFinFiltro
                   ? `${infoDiaCabecera.diaSemanaCorto} – ${infoDiaFinFiltro.diaSemanaCorto}`
                   : infoDiaCabecera.diaSemanaCorto}
@@ -702,14 +702,14 @@ export default function MisReservasHub({
             </div>
 
             <div className="space-y-0.5">
-              <p className="text-xs font-semibold text-[#111827]">
+              <p className="text-xs font-semibold text-[#111827] dark:text-[#EDEDED]">
                 {alquileresMostrados.length}{' '}
                 {alquileresMostrados.length === 1
                   ? 'reserva en vista'
                   : 'reservas en lista'}
               </p>
               {esAdmin && conteosPorEstado.pendientes > 0 && (
-                <p className="text-[11px] font-medium text-[#4B5563]">
+                <p className="text-[11px] font-medium text-[#4B5563] dark:text-[#9CA3AF]">
                   {conteosPorEstado.pendientes} por verificar en patio
                 </p>
               )}
@@ -720,7 +720,7 @@ export default function MisReservasHub({
             <button
               type="button"
               onClick={limpiarFiltro}
-              className="ios-press-bounce rounded-full bg-[#111827] px-3.5 py-1.5 text-[11px] font-semibold text-white cursor-pointer"
+              className="ios-press-bounce rounded-full bg-[#111827] dark:bg-white dark:text-[#111827] px-3.5 py-1.5 text-[11px] font-semibold text-white cursor-pointer"
             >
               Ver todos
             </button>
@@ -751,14 +751,14 @@ export default function MisReservasHub({
                       abrirDetalle(item);
                     }
                   }}
-                  className={`group w-full rounded-[22px] p-4 transition-all duration-200 cursor-pointer animate-fade-up bg-white border ${
+                  className={`group w-full rounded-[22px] p-4 transition-all duration-200 cursor-pointer animate-fade-up bg-white dark:bg-[#1F2937] border ${
                     esActiva
-                      ? 'border-[#111827]/15 shadow-sm ring-1 ring-[#111827]/10'
-                      : 'border-[#E5E4DF] hover:border-[#111827]/25 shadow-2xs hover:shadow-md'
+                      ? 'border-[#111827]/15 dark:border-white/20 shadow-sm ring-1 ring-[#111827]/10 dark:ring-white/10'
+                      : 'border-[#E5E4DF] dark:border-white/10 hover:border-[#111827]/25 dark:hover:border-white/20 shadow-2xs hover:shadow-md'
                   }`}
                 >
                   <div className="flex items-center gap-4 min-w-0">
-                    {/* Silueta vehicular sin recuadro ni relieve (fondo blanco puro 100% integrado) */}
+                    {/* Silueta vehicular con transparencia y brillo fiel */}
                     <div className="relative h-20 w-28 sm:h-22 sm:w-32 shrink-0 flex items-center justify-center">
                       <img
                         src={item.vehiculo.imagenUrl}
@@ -770,7 +770,7 @@ export default function MisReservasHub({
 
                     {/* Contenido e información de la reserva */}
                     <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-medium text-[#4B5563]">
+                      <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-medium text-[#4B5563] dark:text-[#9CA3AF]">
                         <span className="tabular-nums">
                           {formatearRangoReservaHumano(
                             item.fechaInicio,
@@ -790,30 +790,30 @@ export default function MisReservasHub({
                           {ETIQUETA_ESTADO[item.estado]}
                         </span>
                         {esAdmin && (
-                          <span className="font-mono text-[10px] text-[#4B5563]">
+                          <span className="font-mono text-[10px] text-[#4B5563] dark:text-[#9CA3AF]">
                             #{item.codigo}
                           </span>
                         )}
                       </div>
 
-                      <h3 className="mt-1 font-display text-sm sm:text-base font-extrabold tracking-tight text-[#111827] uppercase truncate">
+                      <h3 className="mt-1 font-display text-sm sm:text-base font-extrabold tracking-tight text-[#111827] dark:text-[#EDEDED] uppercase truncate">
                         {item.vehiculo.marca} {item.vehiculo.modelo}
                       </h3>
 
                       {esAdmin ? (
                         <div className="mt-1 space-y-0.5">
-                          <p className="text-[11px] font-semibold text-[#1F2937] truncate">
+                          <p className="text-[11px] font-semibold text-[#1F2937] dark:text-[#EDEDED] truncate">
                             {item.conductor.nombreCompleto} ·{' '}
-                            <span className="font-normal text-[#4B5563]">
+                            <span className="font-normal text-[#4B5563] dark:text-[#9CA3AF]">
                               {item.conductor.tipoDocumento}{' '}
                               {item.conductor.numeroDocumento} · Lic.{' '}
                               {item.conductor.categoriaLicencia}
                             </span>
                           </p>
                           <div className="flex items-center justify-between gap-2">
-                            <p className="text-[11px] text-[#4B5563] tabular-nums">
+                            <p className="text-[11px] text-[#4B5563] dark:text-[#9CA3AF] tabular-nums">
                               {item.vehiculo.placa} · Abonado {pctAbono}% ·{' '}
-                              <span className="font-semibold text-[#111827]">
+                              <span className="font-semibold text-[#111827] dark:text-[#EDEDED]">
                                 {formatCop(item.totalAlquiler)}
                               </span>
                             </p>
@@ -824,7 +824,7 @@ export default function MisReservasHub({
                                   e.stopPropagation();
                                   aprobarSolicitudRapida(item);
                                 }}
-                                className="ios-press-bounce min-h-[32px] rounded-full bg-[#111827] px-3 py-1 text-[11px] font-bold text-white hover:bg-[#1F2937] cursor-pointer"
+                                className="ios-press-bounce min-h-[32px] rounded-full bg-[#111827] dark:bg-white dark:text-[#111827] px-3 py-1 text-[11px] font-bold text-white hover:bg-[#1F2937] dark:hover:bg-[#EDEDED] cursor-pointer"
                               >
                                 Aprobar
                               </button>
@@ -832,9 +832,9 @@ export default function MisReservasHub({
                           </div>
                         </div>
                       ) : (
-                        <p className="mt-1 text-[12px] text-[#4B5563] tabular-nums">
+                        <p className="mt-1 text-[12px] text-[#4B5563] dark:text-[#9CA3AF] tabular-nums">
                           {item.vehiculo.placa} ·{' '}
-                          <span className="font-bold text-[#111827]">
+                          <span className="font-bold text-[#111827] dark:text-[#EDEDED]">
                             {formatCop(item.totalAlquiler)}
                           </span>
                         </p>
@@ -846,8 +846,8 @@ export default function MisReservasHub({
             })}
           </div>
         ) : (
-          <div className="rounded-[22px] bg-white/70 px-4 py-5 text-center space-y-2">
-            <p className="text-xs font-medium text-[#4B5563]">
+          <div className="rounded-[22px] bg-white/70 dark:bg-[#1F2937]/70 px-4 py-5 text-center space-y-2 border border-transparent dark:border-white/10">
+            <p className="text-xs font-medium text-[#4B5563] dark:text-[#9CA3AF]">
               {filtroFinISO
                 ? 'Sin reservas en este rango de fechas'
                 : 'Sin reservas para el filtro seleccionado'}
