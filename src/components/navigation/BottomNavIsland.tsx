@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, type ReactNode, type MouseEvent, type PointerEvent } from 'react';
 import { navigate } from 'astro:transitions/client';
+import { DICCIONARIOS, obtenerIdiomaActual, type Idioma } from '@/lib/i18n';
 
 export interface BottomNavIslandProps {
   currentPath: string;
@@ -25,6 +26,22 @@ export default function BottomNavIsland({
   className = '',
 }: BottomNavIslandProps) {
   const [livePath, setLivePath] = useState(currentPath);
+  const [idioma, setIdioma] = useState<Idioma>('es');
+
+  useEffect(() => {
+    setIdioma(obtenerIdiomaActual());
+    const handleI18nChange = (e: Event) => {
+      const custom = e as CustomEvent<{ idioma: Idioma }>;
+      if (custom.detail?.idioma) {
+        setIdioma(custom.detail.idioma);
+      }
+    };
+    window.addEventListener('flotax:i18n-change', handleI18nChange);
+    return () => window.removeEventListener('flotax:i18n-change', handleI18nChange);
+  }, []);
+
+  const t = DICCIONARIOS[idioma];
+
   const isInitialPath = livePath === currentPath;
   const effectiveTab = isInitialPath ? activeTab : undefined;
   const isAdmin =
@@ -62,7 +79,7 @@ export default function BottomNavIsland({
   const adminItems: NavItem[] = [
     {
       key: 'home',
-      label: 'Panel de Patio',
+      label: t.nav.panelPatio,
       href: '/admin',
       isActive: isAdminHome,
       icon: (active) => (
@@ -83,7 +100,7 @@ export default function BottomNavIsland({
     },
     {
       key: 'metrics',
-      label: 'Métricas y Telemetría',
+      label: t.nav.metricas,
       href: '/admin/metricas',
       isActive: isAdminMetrics,
       icon: (active) => (
@@ -105,7 +122,7 @@ export default function BottomNavIsland({
     },
     {
       key: 'fleet',
-      label: 'Control de Flota',
+      label: t.nav.flota,
       href: '/admin/flota',
       isActive: isAdminFleet,
       icon: (active) => (
@@ -128,7 +145,7 @@ export default function BottomNavIsland({
     },
     {
       key: 'ops',
-      label: 'Reservas y Peritaje',
+      label: t.nav.reservas,
       href: '/admin/reservas',
       isActive: isAdminOps,
       icon: (active) => (
@@ -148,7 +165,7 @@ export default function BottomNavIsland({
     },
     {
       key: 'cash',
-      label: 'Caja y Finanzas',
+      label: t.nav.caja,
       href: '/admin/caja',
       isActive: isAdminCash,
       icon: (active) => (
@@ -172,7 +189,7 @@ export default function BottomNavIsland({
   const clientItems: NavItem[] = [
     {
       key: 'catalog',
-      label: 'Catálogo',
+      label: t.nav.catalogo,
       href: '/catalogo',
       isActive: isClientCatalog,
       icon: (active) => (
@@ -193,7 +210,7 @@ export default function BottomNavIsland({
     },
     {
       key: 'bookings',
-      label: 'Mis Reservas',
+      label: t.nav.reservas,
       href: '/reservas',
       isActive: isClientBookings,
       icon: (active) => (
@@ -216,7 +233,7 @@ export default function BottomNavIsland({
     },
     {
       key: 'profile',
-      label: 'Mi Perfil',
+      label: t.nav.perfil,
       href: '/perfil',
       isActive: isClientProfile,
       icon: (active) => (
@@ -428,7 +445,6 @@ export default function BottomNavIsland({
   const activePosition = isDragging ? dragOffset : selectedIndex * ITEM_STEP;
 
   // Ocultar la barra de navegación flotante inferior en páginas de formularios y wizards
-  // para evitar superposiciones con los botones de acción inferior ("Continuar" / "Anterior")
   const isFormPage =
     livePath.startsWith('/admin/flota/nuevo') ||
     (livePath.startsWith('/admin/flota/') && livePath.includes('/editar')) ||
@@ -441,7 +457,7 @@ export default function BottomNavIsland({
 
   return (
     <nav
-      aria-label="Navegación principal móvil"
+      aria-label={t.nav.inicio}
       style={{ viewTransitionName: 'flotax-bottom-nav' }}
       className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-40 md:hidden pointer-events-auto select-none ${className}`}
     >
@@ -457,7 +473,7 @@ export default function BottomNavIsland({
         {/* Sliding Fluid Indicator Capsule with Non-Linear Spring Physics */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute left-1.5 top-1.5 h-11 w-11 rounded-full bg-[#111827] shadow-[0_6px_18px_-2px_rgba(17,24,39,0.38)] ring-1 ring-white/20 will-change-transform"
+          className="pointer-events-none absolute left-1.5 top-1.5 h-11 w-11 rounded-full bg-[#111827] dark:bg-white/20 shadow-[0_6px_18px_-2px_rgba(17,24,39,0.38)] ring-1 ring-white/20 will-change-transform"
           style={{
             transform: `translate3d(${activePosition}px, 0, 0) ${isDragging ? 'scale(0.96) scaleX(1.12)' : 'scale(1) scaleX(1)'
               }`,
@@ -487,7 +503,7 @@ export default function BottomNavIsland({
               style={{ touchAction: 'none', WebkitUserSelect: 'none', userSelect: 'none' }}
               className={`ios-press-bounce group relative z-10 flex h-11 w-11 items-center justify-center rounded-full transition-colors duration-200 ${isCurrentVisual
                 ? 'text-white'
-                : 'text-[#4B5563] hover:text-[#111827] hover:bg-[#EDEDED]/60'
+                : 'text-[#4B5563] dark:text-[#E5E7EB] hover:text-[#111827] dark:hover:text-white hover:bg-[#EDEDED]/60 dark:hover:bg-white/10'
                 }`}
             >
               {item.icon(isCurrentVisual)}

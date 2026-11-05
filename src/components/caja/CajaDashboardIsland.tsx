@@ -546,11 +546,10 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
           <button
             type="button"
             onClick={() => setModalArqueoAbierto(true)}
-            className={`ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-bold transition cursor-pointer ${
-              data.sesionCajaActiva
-                ? 'border-amber-500/50 bg-amber-50 text-amber-900 hover:bg-amber-100'
-                : 'border-emerald-600/40 bg-emerald-50 text-emerald-900 hover:bg-emerald-100'
-            }`}
+            className={`ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition active:scale-95 cursor-pointer ${data.sesionCajaActiva
+                ? 'bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40 dark:hover:bg-amber-500/30'
+                : 'bg-emerald-100 text-emerald-900 border border-emerald-300 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/40 dark:hover:bg-emerald-500/30'
+              }`}
           >
             <span>
               {data.sesionCajaActiva ? 'Cierre de Turno' : 'Abrir Turno'}
@@ -564,55 +563,10 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
         {canScrollTabsLeft && (
           <button
             type="button"
-            onClick={() => desplazarTabs('izq')}
-            aria-label="Ver pestañas anteriores"
-            className="ios-press-bounce flex h-10 w-8 shrink-0 items-center justify-center rounded-xl border border-[#9CA3AF]/35 bg-white text-[#111827] shadow-xs transition hover:bg-[#EDEDED] cursor-pointer z-10"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-              className="h-4 w-4"
-            >
-              <path d="m15 18-6-6 6-6" />
-            </svg>
-          </button>
-        )}
-
-        <nav
-          ref={navTabsRef}
-          onScroll={actualizarEstadoScrollTabs}
-          aria-label="Secciones de Finanzas y Pagos"
-          className="flex flex-1 min-w-0 overflow-x-auto no-scrollbar gap-1 scroll-smooth text-xs font-bold text-[#4B5563]"
-        >
-          {(
-            [
-              { id: 'resumen', label: 'Resumen' },
-              { id: 'movimientos', label: `Movimientos (${data.todosMovimientos.length})` },
-              { id: 'arqueo', label: 'Cierre de Turno' },
-              { id: 'cartera', label: `Cuentas por Cobrar (${data.carteraContratos.length})` },
-              { id: 'garantias', label: `Garantías (${data.depositosGarantia.length})` },
-              { id: 'gastos', label: 'Gastos' },
-              { id: 'cuentas', label: `Cuentas & Cajas (${data.cuentas.length})` },
-              { id: 'reportes', label: 'Reportes' },
-            ] satisfies readonly { readonly id: TabCaja; readonly label: string }[]
-          ).map((tab) => (
-            <button
-              key={tab.id}
-              ref={(el) => {
-                tabBtnRefs.current[tab.id] = el;
-              }}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={`min-h-[40px] shrink-0 whitespace-nowrap rounded-xl px-3.5 py-2 transition cursor-pointer ${
-                activeTab === tab.id
-                  ? 'bg-white text-[#111827] shadow-xs'
-                  : 'hover:text-[#111827] hover:bg-white/50'
+            onClick={() => setActiveTab(tab.id as TabCaja)}
+            className={`min-h-[40px] shrink-0 rounded-xl px-3.5 py-2 transition cursor-pointer ${activeTab === tab.id
+                ? 'bg-white text-[#111827] shadow-xs dark:bg-white/15 dark:text-white'
+                : 'hover:text-[#111827] hover:bg-white/50 dark:text-[#D1D5DB] dark:hover:text-white dark:hover:bg-white/10'
               }`}
             >
               {tab.label}

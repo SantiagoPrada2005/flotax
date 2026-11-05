@@ -1,6 +1,6 @@
 # Index: `/`
 
-**Responsibility**: Punto de entrada principal del proyecto Movix (Flotax). Configuración del stack tecnológico (Astro 5 + Cloudflare Workers + D1 + Drizzle ORM + Better Auth + Tailwind CSS v4).
+**Responsibility**: Punto de entrada principal del proyecto Movix (Flotax). Configuración del stack tecnológico (Astro 7 + Cloudflare Workers + D1 + Drizzle ORM + Better Auth + Tailwind CSS v4).
 **Architectural Layer**: Root / Orchestration Layer
 
 ## Subdirectories & Child Modules

@@ -1,3 +1,8 @@
+import type { DrizzleD1Database } from 'drizzle-orm/d1';
+import type { AppDb } from '@/lib/db';
+import { logFalloD1 } from '@/lib/db/diagnostics';
+import { mantenimientosVehiculo, reservas } from '@/db/schema';
+import { and, eq, gte, inArray, lte } from 'drizzle-orm';
 import { toClientISODate } from '@/lib/time/client-time';
 import type {
   BloqueNoDisponible,
@@ -144,6 +149,96 @@ export function obtenerBloquesNoDisponibles(
   ];
 }
 
+/**
+ * Consulta en Cloudflare D1 los bloques reales de indisponibilidad para un vehículo:
+ * 1. Reservas activas ('CONFIRMADA', 'PENDIENTE', 'EN_CURSO') dentro del horizonte temporal.
+ * 2. Mantenimientos u órdenes de taller activas ('PROGRAMADO', 'EN_TALLER') dentro del horizonte temporal.
+ *
+ * Mapea cada registro al tipo canónico `BloqueNoDisponible`:
+ * - Reservas: motivo = 'RESERVADO', etiqueta = 'Reserva confirmada en patio'
+ * - Mantenimientos: motivo = 'MANTENIMIENTO', etiqueta = mantenimiento.etiqueta
+ */
+export async function obtenerBloquesNoDisponiblesD1(
+  db: DrizzleD1Database | AppDb,
+  vehiculoId: string,
+  hoyISO: string = toClientISODate(),
+  horizonteDias: number = 120
+): Promise<BloqueNoDisponible[]> {
+  if (!db || !vehiculoId) {
+    return [];
+  }
+
+  const fechaLimite = sumarDiasISO(hoyISO, horizonteDias);
+
+  try {
+    const [reservasRows, mantenimientosRows] = await Promise.all([
+      db
+        .select({
+          id: reservas.id,
+          fechaInicio: reservas.fechaInicio,
+          fechaFin: reservas.fechaFin,
+        })
+        .from(reservas)
+        .where(
+          and(
+            eq(reservas.vehiculoId, vehiculoId),
+            inArray(reservas.estado, ['CONFIRMADA', 'PENDIENTE', 'EN_CURSO']),
+            gte(reservas.fechaFin, hoyISO),
+            lte(reservas.fechaInicio, fechaLimite)
+          )
+        )
+        .orderBy(reservas.fechaInicio),
+
+      db
+        .select({
+          id: mantenimientosVehiculo.id,
+          fechaInicio: mantenimientosVehiculo.fechaInicio,
+          fechaFin: mantenimientosVehiculo.fechaFin,
+          etiqueta: mantenimientosVehiculo.etiqueta,
+        })
+        .from(mantenimientosVehiculo)
+        .where(
+          and(
+            eq(mantenimientosVehiculo.vehiculoId, vehiculoId),
+            inArray(mantenimientosVehiculo.estado, ['PROGRAMADO', 'EN_TALLER']),
+            gte(mantenimientosVehiculo.fechaFin, hoyISO),
+            lte(mantenimientosVehiculo.fechaInicio, fechaLimite)
+          )
+        )
+        .orderBy(mantenimientosVehiculo.fechaInicio),
+    ]);
+
+    const bloquesReservas: BloqueNoDisponible[] = reservasRows.map((r) => ({
+      id: r.id,
+      vehiculoId,
+      fechaInicio: r.fechaInicio,
+      fechaFin: r.fechaFin,
+      motivo: 'RESERVADO',
+      etiqueta: 'Reserva confirmada en patio',
+    }));
+
+    const bloquesMantenimientos: BloqueNoDisponible[] = mantenimientosRows.map((m) => ({
+      id: m.id,
+      vehiculoId,
+      fechaInicio: m.fechaInicio,
+      fechaFin: m.fechaFin,
+      motivo: 'MANTENIMIENTO',
+      etiqueta: m.etiqueta,
+    }));
+
+    return [...bloquesReservas, ...bloquesMantenimientos].sort((a, b) =>
+      a.fechaInicio.localeCompare(b.fechaInicio)
+    );
+  } catch (error) {
+    logFalloD1('disponibilidad.obtenerBloquesNoDisponiblesD1', error, {
+      vehiculoId,
+      hoyISO,
+      horizonteDias,
+    });
+    return [];
+  }
+}
+
 export interface CalendarioMesResultado {
   anio: number;
   mesIndexCero: number; // 0 = Enero .. 11 = Diciembre
@@ -157,14 +252,17 @@ export interface CalendarioMesResultado {
  * Construye la matriz del mes solicitado junto con sus franjas contiguas de disponibilidad.
  * Asigna un `franjaId` global (sobre un horizonte de 90 días) para que las franjas que
  * cruzan fin de mes sigan siendo contiguas.
+ * Acepta opcionalmente `bloquesPrecalculados` (ej. obtenidos desde D1 con `obtenerBloquesNoDisponiblesD1`);
+ * de no proveerse, recurre a `obtenerBloquesNoDisponibles(vehiculoId, hoyISO)` para retrocompatibilidad síncrona.
  */
 export function construirCalendarioMes(
   vehiculoId: string,
   anio: number,
   mesIndexCero: number,
-  hoyISO: string = toClientISODate()
+  hoyISO: string = toClientISODate(),
+  bloquesPrecalculados?: BloqueNoDisponible[]
 ): CalendarioMesResultado {
-  const bloques = obtenerBloquesNoDisponibles(vehiculoId, hoyISO);
+  const bloques = bloquesPrecalculados ?? obtenerBloquesNoDisponibles(vehiculoId, hoyISO);
 
   // Construimos un mapa de franjas contiguas desde hoy hasta +90 días
   const mapaFranjaPorFecha = new Map<string, string>();
@@ -293,17 +391,20 @@ export function construirCalendarioMes(
 
 /**
  * Verifica que todas las fechas en [fechaInicio, fechaFin] estén libres de bloques ocupados.
+ * Acepta opcionalmente `bloquesPrecalculados` (ej. obtenidos desde D1 con `obtenerBloquesNoDisponiblesD1`);
+ * de no proveerse, recurre a `obtenerBloquesNoDisponibles(vehiculoId, hoyISO)`.
  */
 export function esRangoDisponibleValido(
   vehiculoId: string,
   fechaInicio: string,
   fechaFin: string,
-  hoyISO: string = toClientISODate()
+  hoyISO: string = toClientISODate(),
+  bloquesPrecalculados?: BloqueNoDisponible[]
 ): boolean {
   if (fechaInicio > fechaFin || fechaInicio < hoyISO) {
     return false;
   }
-  const bloques = obtenerBloquesNoDisponibles(vehiculoId, hoyISO);
+  const bloques = bloquesPrecalculados ?? obtenerBloquesNoDisponibles(vehiculoId, hoyISO);
   return !bloques.some(
     (b) => b.fechaInicio <= fechaFin && b.fechaFin >= fechaInicio
   );

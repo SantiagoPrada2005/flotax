@@ -7,6 +7,7 @@
 
 | Subdirectory | Responsibility | Index |
 | :--- | :--- | :--- |
+| [`disponibilidad/`](./disponibilidad/) | Componentes de cabecera, tarjeta de taller activo y tablero de disponibilidad mensual con calendario. | [INDEX.md](./disponibilidad/INDEX.md) |
 | [`wizard/`](./wizard/) | Componentes atómicos del asistente multi-paso de creación/edición de vehículos (Stepper, Steps 1-8). | [INDEX.md](./wizard/INDEX.md) |
 
 ## File Manifest
