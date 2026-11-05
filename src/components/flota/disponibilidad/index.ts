@@ -12,3 +12,6 @@ export type { MaintenanceWizardFlowProps } from './MaintenanceWizardFlow';
 
 export { default as CompleteMaintenanceModal } from './CompleteMaintenanceModal';
 export type { CompleteMaintenanceModalProps } from './CompleteMaintenanceModal';
+
+export { default as VehicleAvailabilityIsland } from './VehicleAvailabilityIsland';
+export type { VehicleAvailabilityIslandProps } from './VehicleAvailabilityIsland';
