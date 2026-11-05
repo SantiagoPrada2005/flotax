@@ -1075,8 +1075,10 @@ html.dark .bg-white\/70:not([class*="dark:bg-"]) {
 }
 
 html.dark .bg-gray-100:not([class*="dark:bg-"]),
-html.dark .bg-gray-50:not([class*="dark:bg-"]) {
-  background-color: rgba(255, 255, 255, 0.06);
+html.dark .bg-gray-50:not([class*="dark:bg-"]),
+html.dark .bg-neutral-200:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-neutral-100:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *) {
+  background-color: rgba(255, 255, 255, 0.08);
 }
 
 /* Fotos e imágenes vehiculares: NUNCA oscurecer con mix-blend en modo oscuro */

@@ -150,7 +150,7 @@ export function ModalGarantia({
           <button
             type="button"
             onClick={() => setAccion('RECIBIR')}
-            className={`flex-1 min-h-[38px] rounded-lg transition ${accion === 'RECIBIR' ? 'bg-[#111827] text-white shadow-xs dark:bg-white dark:text-[#111827]' : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
+            className={`flex-1 min-h-[38px] rounded-lg transition ${accion === 'RECIBIR' ? 'bg-[#111827] text-white shadow-xs dark:!bg-white dark:!text-[#111827]' : 'text-[#4B5563] dark:!text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
               }`}
           >
             Recibir Custodia

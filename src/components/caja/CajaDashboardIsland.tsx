@@ -1386,10 +1386,10 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                         Contrato #{g.contratoId}
                       </span>
                       <span
-                        className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${
-                          g.estado === 'RECIBIDO_CUSTODIA'
-                            ? 'bg-neutral-200 text-[#111827] dark:bg-emerald-500/20 dark:text-emerald-300 dark:border dark:border-emerald-500/30'
-                            : 'bg-neutral-200 text-[#111827] dark:bg-white/10 dark:text-[#EDEDED] dark:border dark:border-white/10'
+                        className={`rounded-full px-2 py-0.5 text-[9px] font-bold border border-transparent ${
+                          String(g.estado).toUpperCase().includes('CUSTODIA')
+                            ? 'bg-neutral-200 text-[#111827] dark:!bg-emerald-500/20 dark:!text-emerald-300 dark:!border-emerald-500/30'
+                            : 'bg-neutral-200 text-[#111827] dark:!bg-white/10 dark:!text-[#EDEDED] dark:!border-white/10'
                         }`}
                       >
                         {g.estado}
