@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { actions } from 'astro:actions';
 import {
   formatearMonedaCOP,
@@ -25,7 +25,11 @@ import {
   CajaBentoSparklineCard,
   CajaBentoPillCard,
 } from './CajaKpiCard';
-import { CajaGraficos } from './CajaGraficos';
+import { CajaGraficosHorizontal } from './CajaGraficosHorizontal';
+import {
+  CajaMovimientosFilterBar,
+  CajaCustomSelect,
+} from './CajaMovimientosFilterBar';
 import { CajaBarraFlujo } from './CajaBarraFlujo';
 import { ModalMovimiento } from './ModalMovimiento';
 import { ModalTransferencia } from './ModalTransferencia';
@@ -91,9 +95,52 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
   const [filtroCuenta, setFiltroCuenta] = useState<string>('TODAS');
   const [filtroEstado, setFiltroEstado] = useState<string>('TODOS');
 
-  // Filtro de Reportes
+  // Filtro de Reportes y Control de Desplazamiento de Pestañas
   const [reporteSeleccionado, setReporteSeleccionado] = useState<number>(1);
-  const [mostrarGraficos, setMostrarGraficos] = useState(false);
+  const navTabsRef = useRef<HTMLElement | null>(null);
+  const tabBtnRefs = useRef<Partial<Record<TabCaja, HTMLButtonElement | null>>>({});
+  const [canScrollTabsLeft, setCanScrollTabsLeft] = useState(false);
+  const [canScrollTabsRight, setCanScrollTabsRight] = useState(false);
+
+  const actualizarEstadoScrollTabs = useCallback(() => {
+    const nav = navTabsRef.current;
+    if (!nav) return;
+    setCanScrollTabsLeft(nav.scrollLeft > 6);
+    setCanScrollTabsRight(
+      nav.scrollLeft + nav.clientWidth < nav.scrollWidth - 6
+    );
+  }, []);
+
+  useEffect(() => {
+    actualizarEstadoScrollTabs();
+    window.addEventListener('resize', actualizarEstadoScrollTabs);
+    return () => window.removeEventListener('resize', actualizarEstadoScrollTabs);
+  }, [actualizarEstadoScrollTabs, data.todosMovimientos.length]);
+
+  useEffect(() => {
+    const nav = navTabsRef.current;
+    const activeBtn = tabBtnRefs.current[activeTab];
+    if (nav && activeBtn) {
+      const targetScrollLeft =
+        activeBtn.offsetLeft - nav.clientWidth / 2 + activeBtn.offsetWidth / 2;
+      nav.scrollTo({
+        left: Math.max(0, targetScrollLeft),
+        behavior: 'smooth',
+      });
+    }
+    const timer = window.setTimeout(actualizarEstadoScrollTabs, 220);
+    return () => window.clearTimeout(timer);
+  }, [activeTab, actualizarEstadoScrollTabs]);
+
+  const desplazarTabs = (direccion: 'izq' | 'der') => {
+    const nav = navTabsRef.current;
+    if (!nav) return;
+    const paso = Math.max(160, Math.round(nav.clientWidth * 0.65));
+    nav.scrollBy({
+      left: direccion === 'der' ? paso : -paso,
+      behavior: 'smooth',
+    });
+  };
 
   // Toasts
   const [toast, setToast] = useState<{ tipo: 'ok' | 'err'; mensaje: string } | null>(null);
@@ -441,35 +488,38 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
         </div>
       )}
 
-      {/* Cabecera Principal y Barra de Acciones Operativas */}
-      <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-[#9CA3AF]/20 pb-4">
-        <div>
+      {/* Cabecera Principal con Progressive Disclosure (Sin Sobrecarga Visual) */}
+      <header className="flex flex-col gap-3.5 lg:flex-row lg:items-center lg:justify-between border-b border-[#9CA3AF]/20 pb-4">
+        <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-600 animate-pulse"></span>
-            <p className="text-xs font-semibold uppercase tracking-wider text-[#4B5563]">
-              Sistema Operativo Financiero · Patio Central
+            <span
+              className={`h-2 w-2 rounded-full ${
+                data.sesionCajaActiva
+                  ? 'bg-emerald-600 animate-pulse'
+                  : 'bg-[#9CA3AF]'
+              }`}
+            />
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#4B5563] truncate">
+              Patio Central · {data.sesionCajaActiva ? 'Turno Activo' : 'Turno Cerrado'}
             </p>
           </div>
           <h1 className="font-display text-2xl font-black tracking-tight text-[#111827] sm:text-3xl">
             Finanzas y Pagos
           </h1>
-          <p className="text-xs text-[#4B5563] mt-0.5">
-            Gestión de tesorería, saldos de caja, depósitos de garantía, cuentas por cobrar y gastos operativos.
-          </p>
         </div>
 
-        {/* Acciones Rápidas (Thumb-friendly & Mobile First) */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+        {/* Acciones Operativas Directas de Caja */}
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={() => {
               setTipoModalMovimiento('INGRESO');
               setModalMovimientoAbierto(true);
             }}
-            className="ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-emerald-700 active:scale-95 cursor-pointer"
+            className="ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-emerald-700 cursor-pointer"
           >
             <span className="font-black">+</span>
-            Registrar Ingreso
+            <span>Registrar Ingreso</span>
           </button>
 
           <button
@@ -478,58 +528,121 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               setTipoModalMovimiento('EGRESO');
               setModalMovimientoAbierto(true);
             }}
-            className="ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-[#9CA3AF]/40 bg-white px-4 py-2 text-xs font-bold text-[#111827] shadow-xs transition hover:bg-[#EDEDED] active:scale-95 cursor-pointer"
+            className="ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-[#9CA3AF]/40 bg-white px-4 py-2 text-xs font-bold text-[#111827] shadow-xs transition hover:bg-[#EDEDED] cursor-pointer"
           >
             <span className="text-rose-600 font-black">−</span>
-            Registrar Gasto
+            <span>Registrar Gasto</span>
           </button>
 
           <button
             type="button"
             onClick={() => setModalTransferenciaAbierto(true)}
-            className="ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-[#9CA3AF]/40 bg-white px-3.5 py-2 text-xs font-bold text-[#4B5563] transition hover:bg-[#EDEDED] active:scale-95 cursor-pointer"
+            className="ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-[#9CA3AF]/40 bg-[#EDEDED]/80 px-3.5 py-2 text-xs font-bold text-[#111827] transition hover:bg-[#EDEDED] cursor-pointer"
           >
-            ↔ Mover Dinero
+            <span aria-hidden="true" className="font-mono">↔</span>
+            <span>Mover Dinero</span>
           </button>
 
           <button
             type="button"
             onClick={() => setModalArqueoAbierto(true)}
-            className={`ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition active:scale-95 cursor-pointer ${data.sesionCajaActiva
-                ? 'bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200'
-                : 'bg-emerald-100 text-emerald-900 border border-emerald-300 hover:bg-emerald-200'
-              }`}
+            className={`ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-bold transition cursor-pointer ${
+              data.sesionCajaActiva
+                ? 'border-amber-500/50 bg-amber-50 text-amber-900 hover:bg-amber-100'
+                : 'border-emerald-600/40 bg-emerald-50 text-emerald-900 hover:bg-emerald-100'
+            }`}
           >
-            {data.sesionCajaActiva ? 'Cierre de Turno' : 'Abrir Turno'}
+            <span>
+              {data.sesionCajaActiva ? 'Cierre de Turno' : 'Abrir Turno'}
+            </span>
           </button>
         </div>
       </header>
 
-      {/* Pestañas de Navegación del Módulo */}
-      <nav className="flex overflow-x-auto no-scrollbar gap-1 rounded-2xl bg-[#EDEDED] p-1.5 text-xs font-bold text-[#4B5563]">
-        {[
-          { id: 'resumen', label: 'Resumen' },
-          { id: 'movimientos', label: `Movimientos (${data.todosMovimientos.length})` },
-          { id: 'arqueo', label: 'Cierre de Turno' },
-          { id: 'cartera', label: `Cuentas por Cobrar (${data.carteraContratos.length})` },
-          { id: 'garantias', label: `Garantías (${data.depositosGarantia.length})` },
-          { id: 'gastos', label: 'Gastos' },
-          { id: 'cuentas', label: `Cuentas & Cajas (${data.cuentas.length})` },
-          { id: 'reportes', label: 'Reportes' },
-        ].map((tab) => (
+      {/* Pestañas de Navegación del Módulo con Auto-Centrado y Controles de Desplazamiento */}
+      <div className="relative flex items-center gap-1 rounded-2xl bg-[#EDEDED] p-1.5 border border-[#9CA3AF]/20">
+        {canScrollTabsLeft && (
           <button
-            key={tab.id}
             type="button"
-            onClick={() => setActiveTab(tab.id as TabCaja)}
-            className={`min-h-[40px] shrink-0 rounded-xl px-3.5 py-2 transition cursor-pointer ${activeTab === tab.id
-                ? 'bg-white text-[#111827] shadow-xs'
-                : 'hover:text-[#111827] hover:bg-white/50'
-              }`}
+            onClick={() => desplazarTabs('izq')}
+            aria-label="Ver pestañas anteriores"
+            className="ios-press-bounce flex h-10 w-8 shrink-0 items-center justify-center rounded-xl border border-[#9CA3AF]/35 bg-white text-[#111827] shadow-xs transition hover:bg-[#EDEDED] cursor-pointer z-10"
           >
-            {tab.label}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              className="h-4 w-4"
+            >
+              <path d="m15 18-6-6 6-6" />
+            </svg>
           </button>
-        ))}
-      </nav>
+        )}
+
+        <nav
+          ref={navTabsRef}
+          onScroll={actualizarEstadoScrollTabs}
+          aria-label="Secciones de Finanzas y Pagos"
+          className="flex flex-1 min-w-0 overflow-x-auto no-scrollbar gap-1 scroll-smooth text-xs font-bold text-[#4B5563]"
+        >
+          {(
+            [
+              { id: 'resumen', label: 'Resumen' },
+              { id: 'movimientos', label: `Movimientos (${data.todosMovimientos.length})` },
+              { id: 'arqueo', label: 'Cierre de Turno' },
+              { id: 'cartera', label: `Cuentas por Cobrar (${data.carteraContratos.length})` },
+              { id: 'garantias', label: `Garantías (${data.depositosGarantia.length})` },
+              { id: 'gastos', label: 'Gastos' },
+              { id: 'cuentas', label: `Cuentas & Cajas (${data.cuentas.length})` },
+              { id: 'reportes', label: 'Reportes' },
+            ] satisfies readonly { readonly id: TabCaja; readonly label: string }[]
+          ).map((tab) => (
+            <button
+              key={tab.id}
+              ref={(el) => {
+                tabBtnRefs.current[tab.id] = el;
+              }}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`min-h-[40px] shrink-0 whitespace-nowrap rounded-xl px-3.5 py-2 transition cursor-pointer ${
+                activeTab === tab.id
+                  ? 'bg-white text-[#111827] shadow-xs'
+                  : 'hover:text-[#111827] hover:bg-white/50'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+
+        {canScrollTabsRight && (
+          <button
+            type="button"
+            onClick={() => desplazarTabs('der')}
+            aria-label="Ver más pestañas"
+            className="ios-press-bounce flex h-10 w-8 shrink-0 items-center justify-center rounded-xl border border-[#9CA3AF]/35 bg-white text-[#111827] shadow-xs transition hover:bg-[#EDEDED] cursor-pointer z-10"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              className="h-4 w-4"
+            >
+              <path d="m9 18 6-6-6-6" />
+            </svg>
+          </button>
+        )}
+      </div>
 
       {/* Selector de Período Global Funcional con Sincronización en Tiempo Real */}
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#9CA3AF]/30 bg-white p-1.5 sm:p-2 shadow-2xs">
@@ -646,7 +759,15 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                   onClick={() => setActiveTab('gastos')}
                 />
 
-                {/* Segunda Fila - Tarjeta Inferior de Ancho Completo: Balance Financiero */}
+                {/* Segunda Fila: Tarjeta horizontal de distribución financiera (siempre visible, sin acordeón) */}
+                <CajaGraficosHorizontal
+                  distribucionMetodos={estadoPeriodo.graficoMetodosPago}
+                  distribucionGastos={estadoPeriodo.graficoGastosCategorias}
+                  ingresosPeriodo={estadoPeriodo.indicadores.ingresosPeriodo}
+                  egresosPeriodo={estadoPeriodo.indicadores.egresosPeriodo}
+                />
+
+                {/* Tercera Fila: Balance Financiero Neto (Superávit / Déficit) debajo de la gráfica */}
                 <CajaBentoPillCard
                   variante="BALANCE"
                   titulo="Balance Financiero Neto"
@@ -660,48 +781,6 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                   onClick={() => setActiveTab('reportes')}
                 />
               </div>
-
-              {/* Acceso para mostrar u ocultar las gráficas */}
-              <div className="flex justify-center pt-1">
-                <button
-                  type="button"
-                  onClick={() => setMostrarGraficos(!mostrarGraficos)}
-                  className="ios-press-bounce inline-flex items-center gap-2 rounded-full border border-[#9CA3AF]/40 bg-white px-4 py-2 text-xs font-bold text-[#111827] shadow-xs hover:bg-[#EDEDED] transition cursor-pointer"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-3.5 w-3.5 text-[#2D6BFF]"
-                  >
-                    <line x1="18" x2="18" y1="20" y2="10" />
-                    <line x1="12" x2="12" y1="20" y2="4" />
-                    <line x1="6" x2="6" y1="20" y2="14" />
-                  </svg>
-                  <span>
-                    {mostrarGraficos
-                      ? 'Ocultar distribución financiera'
-                      : 'Ver distribución financiera (Gastos y Canales de Pago)'}
-                  </span>
-                  <span className="text-[10px] text-[#4B5563]">
-                    {mostrarGraficos ? '▴' : '▾'}
-                  </span>
-                </button>
-              </div>
-
-              {/* Despliegue de las gráficas financieras */}
-              {mostrarGraficos && (
-                <div className="animate-in fade-in duration-200 pt-1">
-                  <CajaGraficos
-                    distribucionMetodos={estadoPeriodo.graficoMetodosPago}
-                    distribucionGastos={estadoPeriodo.graficoGastosCategorias}
-                  />
-                </div>
-              )}
             </div>
           </section>
 
@@ -880,85 +959,28 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
       {/* ============================================================== */}
       {activeTab === 'movimientos' && (
         <div className="space-y-4">
-          {/* Barra de Filtros */}
-          <div className="rounded-[24px] border border-[#9CA3AF]/30 bg-white p-4 shadow-xs space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
-              {/* Buscador */}
-              <div className="lg:col-span-2">
-                <input
-                  type="text"
-                  placeholder="Buscar por concepto, cliente, contrato, referencia..."
-                  value={filtroBusqueda}
-                  onChange={(e) => setFiltroBusqueda(e.target.value)}
-                  className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 bg-white px-3 py-2 text-base text-[#111827] focus:border-[#111827] focus:outline-hidden"
-                />
-              </div>
-
-              {/* Filtro Tipo */}
-              <select
-                value={filtroTipo}
-                onChange={(e) => setFiltroTipo(e.target.value)}
-                className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 bg-white px-3 py-2 text-base text-[#111827] focus:border-[#111827] focus:outline-hidden"
-              >
-                <option value="TODOS">Todos los Tipos</option>
-                <option value="INGRESO">Solo Ingresos (+)</option>
-                <option value="EGRESO">Solo Egresos (-)</option>
-                <option value="TRANSFERENCIA">Solo Transferencias (↔)</option>
-              </select>
-
-              {/* Filtro Método */}
-              <select
-                value={filtroMetodo}
-                onChange={(e) => setFiltroMetodo(e.target.value)}
-                className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 bg-white px-3 py-2 text-base text-[#111827] focus:border-[#111827] focus:outline-hidden"
-              >
-                <option value="TODOS">Todos los Métodos</option>
-                <option value="efectivo">Efectivo</option>
-                <option value="transferencia">Transferencia</option>
-                <option value="tarjeta">Tarjeta</option>
-                <option value="especie">En Especie</option>
-              </select>
-
-              {/* Filtro Cuenta */}
-              <select
-                value={filtroCuenta}
-                onChange={(e) => setFiltroCuenta(e.target.value)}
-                className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 bg-white px-3 py-2 text-base text-[#111827] focus:border-[#111827] focus:outline-hidden"
-              >
-                <option value="TODAS">Todas las Cuentas</option>
-                {data.cuentas.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.nombre}
-                  </option>
-                ))}
-              </select>
-
-              {/* Filtro Estado */}
-              <select
-                value={filtroEstado}
-                onChange={(e) => setFiltroEstado(e.target.value)}
-                className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 bg-white px-3 py-2 text-base text-[#111827] focus:border-[#111827] focus:outline-hidden"
-              >
-                <option value="TODOS">Todos los Estados</option>
-                <option value="CONFIRMADO">Confirmados</option>
-                <option value="PENDIENTE">Pendientes</option>
-                <option value="ANULADO">Anulados</option>
-              </select>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-between text-xs text-[#4B5563] pt-2 border-t border-[#9CA3AF]/15">
-              <span>
-                Mostrando <b>{movimientosFiltrados.length}</b> de <b>{data.todosMovimientos.length}</b> movimientos
-              </span>
-              <button
-                type="button"
-                onClick={() => descargarCsv(exportarMovimientosCsv(movimientosFiltrados), 'movimientos_flotax_filtrados.csv')}
-                className="font-bold text-[#111827] hover:underline"
-              >
-                ⬇ Descargar CSV filtrado
-              </button>
-            </div>
-          </div>
+          {/* Barra de Filtros con Segmented Control + Dropdowns Personalizados + Progressive Disclosure */}
+          <CajaMovimientosFilterBar
+            filtroBusqueda={filtroBusqueda}
+            onChangeBusqueda={setFiltroBusqueda}
+            filtroTipo={filtroTipo}
+            onChangeTipo={setFiltroTipo}
+            filtroMetodo={filtroMetodo}
+            onChangeMetodo={setFiltroMetodo}
+            filtroCuenta={filtroCuenta}
+            onChangeCuenta={setFiltroCuenta}
+            filtroEstado={filtroEstado}
+            onChangeEstado={setFiltroEstado}
+            cuentas={data.cuentas}
+            totalFiltrados={movimientosFiltrados.length}
+            totalMovimientos={data.todosMovimientos.length}
+            onDescargarCsv={() =>
+              descargarCsv(
+                exportarMovimientosCsv(movimientosFiltrados),
+                'movimientos_flotax_filtrados.csv'
+              )
+            }
+          />
 
           {/* Lista Adaptativa de Movimientos (Mobile friendly cards + Desktop clean rows) */}
           <div className="rounded-[24px] border border-[#9CA3AF]/30 bg-white overflow-hidden shadow-xs">
@@ -1870,20 +1892,20 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#4B5563] mb-1">
-                  Tipo de Cuenta *
-                </label>
-                <select
-                  value={tipoNuevaCuenta}
-                  onChange={(e) => setTipoNuevaCuenta(e.target.value as any)}
-                  className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 bg-white px-3 py-2 text-base text-[#111827]"
-                >
-                  <option value="BANCO">Cuenta Bancaria</option>
-                  <option value="CAJA_EFECTIVO">Caja Física de Efectivo</option>
-                  <option value="BILLETERA_DIGITAL">Billetera Digital (Nequi/Daviplata)</option>
-                </select>
-              </div>
+              <CajaCustomSelect<TipoCuentaFinanciera>
+                label="Tipo de Cuenta *"
+                ariaLabel="Seleccionar tipo de cuenta financiera"
+                value={tipoNuevaCuenta}
+                options={[
+                  { value: 'BANCO', label: 'Cuenta Bancaria' },
+                  { value: 'CAJA_EFECTIVO', label: 'Caja Física de Efectivo' },
+                  {
+                    value: 'BILLETERA_DIGITAL',
+                    label: 'Billetera Digital (Nequi/Daviplata)',
+                  },
+                ]}
+                onChange={setTipoNuevaCuenta}
+              />
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-[#4B5563] mb-1">

@@ -3,3 +3,4 @@ export * from './calculos';
 export * from './semillas';
 export * from './repositorio';
 export * from './exportar';
+export * from './graficos';
