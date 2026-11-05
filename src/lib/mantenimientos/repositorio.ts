@@ -203,150 +203,186 @@ export async function crearOrdenMantenimiento(
   db: AppDb,
   params: CrearMantenimientoParams
 ): Promise<ResultadoCrearMantenimiento> {
-  const advertenciasReservas = await detectarReservasSolapadas(
-    db,
-    params.vehiculoId,
-    params.fechaInicio,
-    params.fechaFin
-  );
+  try {
+    const advertenciasReservas = await detectarReservasSolapadas(
+      db,
+      params.vehiculoId,
+      params.fechaInicio,
+      params.fechaFin
+    );
 
-  const hoyISO = toClientISODate();
-  const enVentanaHoy = params.fechaInicio <= hoyISO && hoyISO <= params.fechaFin;
-  const estadoInicial: EstadoMantenimientoVehiculo =
-    params.estado ?? (enVentanaHoy ? 'EN_TALLER' : 'PROGRAMADO');
+    const hoyISO = toClientISODate();
+    const enVentanaHoy = params.fechaInicio <= hoyISO && hoyISO <= params.fechaFin;
+    const estadoInicial: EstadoMantenimientoVehiculo =
+      params.estado ?? (enVentanaHoy ? 'EN_TALLER' : 'PROGRAMADO');
 
-  const id = `mant-${crypto.randomUUID().slice(0, 10)}`;
-  const ahora = new Date();
+    const id = `mant-${crypto.randomUUID().slice(0, 10)}`;
+    const ahora = new Date();
 
-  const nuevaOrden: MantenimientoVehiculoInsert = {
-    id,
-    localId: params.localId,
-    vehiculoId: params.vehiculoId,
-    tipo: params.tipo,
-    estado: estadoInicial,
-    etiqueta: params.etiqueta.trim(),
-    descripcion: params.descripcion?.trim() || null,
-    tallerProveedor: params.tallerProveedor?.trim() || null,
-    fechaInicio: params.fechaInicio,
-    fechaFin: params.fechaFin,
-    kilometrajeRegistro: params.kilometrajeRegistro ?? null,
-    costoTotal: params.costoTotal ?? 0,
-    creadoPorId: params.creadoPorId,
-    creadoEn: ahora,
-    actualizadoEn: ahora,
-  };
+    const nuevaOrden: MantenimientoVehiculoInsert = {
+      id,
+      localId: params.localId,
+      vehiculoId: params.vehiculoId,
+      tipo: params.tipo,
+      estado: estadoInicial,
+      etiqueta: params.etiqueta.trim(),
+      descripcion: params.descripcion?.trim() || null,
+      tallerProveedor: params.tallerProveedor?.trim() || null,
+      fechaInicio: params.fechaInicio,
+      fechaFin: params.fechaFin,
+      kilometrajeRegistro: params.kilometrajeRegistro ?? null,
+      costoTotal: params.costoTotal ?? 0,
+      creadoPorId: params.creadoPorId,
+      creadoEn: ahora,
+      actualizadoEn: ahora,
+    };
 
-  await db.insert(mantenimientosVehiculo).values(nuevaOrden);
+    await db.insert(mantenimientosVehiculo).values(nuevaOrden);
 
-  if (params.kilometrajeRegistro !== undefined && params.kilometrajeRegistro > 0) {
-    await db
-      .update(vehiculos)
-      .set({
-        kilometraje: params.kilometrajeRegistro,
-        actualizadoEn: ahora,
-      })
-      .where(
-        and(
-          eq(vehiculos.id, params.vehiculoId),
-          lt(vehiculos.kilometraje, params.kilometrajeRegistro)
-        )
-      );
+    if (params.kilometrajeRegistro !== undefined && params.kilometrajeRegistro > 0) {
+      await db
+        .update(vehiculos)
+        .set({
+          kilometraje: params.kilometrajeRegistro,
+          actualizadoEn: ahora,
+        })
+        .where(
+          and(
+            eq(vehiculos.id, params.vehiculoId),
+            lt(vehiculos.kilometraje, params.kilometrajeRegistro)
+          )
+        );
+    }
+
+    // Sincronizar estado operativo del vehículo con respecto a la orden activa
+    await resolverEstadoActualVehiculo(db, params.vehiculoId, hoyISO);
+
+    const [ordenCreada] = await db
+      .select()
+      .from(mantenimientosVehiculo)
+      .where(eq(mantenimientosVehiculo.id, id))
+      .limit(1);
+
+    if (!ordenCreada) {
+      throw new Error(`Fallo al recuperar la orden #${id} tras su inserción en D1.`);
+    }
+
+    return {
+      orden: ordenCreada,
+      advertenciasReservas,
+    };
+  } catch (error) {
+    logFalloD1('mantenimientos.crear', error, {
+      vehiculoId: params.vehiculoId,
+      localId: params.localId,
+      tipo: params.tipo,
+    });
+    throw error;
   }
-
-  // Sincronizar estado operativo del vehículo con respecto a la orden activa
-  await resolverEstadoActualVehiculo(db, params.vehiculoId, hoyISO);
-
-  const [ordenCreada] = await db
-    .select()
-    .from(mantenimientosVehiculo)
-    .where(eq(mantenimientosVehiculo.id, id))
-    .limit(1);
-
-  if (!ordenCreada) {
-    throw new Error(`Fallo al recuperar la orden #${id} tras su inserción en D1.`);
-  }
-
-  return {
-    orden: ordenCreada,
-    advertenciasReservas,
-  };
 }
 
 /**
  * Actualiza el estado técnico de una orden (ej. COMPLETADO, CANCELADO, EN_TALLER).
  * Actualiza kilometraje y costos finales si se proporcionan, y conmuta automáticamente
  * el estado operativo del vehículo en D1 invocando `resolverEstadoActualVehiculo`.
+ * Aplica aislamiento estricto multi-tenant por localId.
  */
 export async function actualizarEstadoOrdenMantenimiento(
   db: AppDb,
   params: ActualizarEstadoMantenimientoParams
 ): Promise<ResultadoActualizarEstadoMantenimiento> {
-  const [ordenExistente] = await db
-    .select()
-    .from(mantenimientosVehiculo)
-    .where(eq(mantenimientosVehiculo.id, params.id))
-    .limit(1);
-
-  if (!ordenExistente) {
-    throw new Error(`Orden de mantenimiento #${params.id} no encontrada en D1.`);
-  }
-
-  const ahora = new Date();
-  const updatePayload: Partial<MantenimientoVehiculoInsert> = {
-    estado: params.nuevoEstado,
-    actualizadoEn: ahora,
-  };
-
-  if (params.kilometrajeFinal !== undefined) {
-    updatePayload.kilometrajeRegistro = params.kilometrajeFinal;
-  }
-
-  if (params.costoFinal !== undefined) {
-    updatePayload.costoTotal = params.costoFinal;
-  }
-
-  await db
-    .update(mantenimientosVehiculo)
-    .set(updatePayload)
-    .where(eq(mantenimientosVehiculo.id, params.id));
-
-  // Actualizar odómetro del vehículo si el valor final es superior
-  if (params.kilometrajeFinal !== undefined && params.kilometrajeFinal > 0) {
-    await db
-      .update(vehiculos)
-      .set({
-        kilometraje: params.kilometrajeFinal,
-        actualizadoEn: ahora,
-      })
+  try {
+    const [ordenExistente] = await db
+      .select()
+      .from(mantenimientosVehiculo)
       .where(
         and(
-          eq(vehiculos.id, ordenExistente.vehiculoId),
-          lt(vehiculos.kilometraje, params.kilometrajeFinal)
+          eq(mantenimientosVehiculo.id, params.id),
+          eq(mantenimientosVehiculo.localId, params.localId)
+        )
+      )
+      .limit(1);
+
+    if (!ordenExistente) {
+      throw new Error(
+        `Orden de mantenimiento #${params.id} no encontrada en D1 para el local activo.`
+      );
+    }
+
+    const ahora = new Date();
+    const updatePayload: Partial<MantenimientoVehiculoInsert> = {
+      estado: params.nuevoEstado,
+      actualizadoEn: ahora,
+    };
+
+    if (params.kilometrajeFinal !== undefined) {
+      updatePayload.kilometrajeRegistro = params.kilometrajeFinal;
+    }
+
+    if (params.costoFinal !== undefined) {
+      updatePayload.costoTotal = params.costoFinal;
+    }
+
+    await db
+      .update(mantenimientosVehiculo)
+      .set(updatePayload)
+      .where(
+        and(
+          eq(mantenimientosVehiculo.id, params.id),
+          eq(mantenimientosVehiculo.localId, params.localId)
         )
       );
-  }
 
-  const hoyISO = params.hoyISO || toClientISODate();
-  const nuevoEstadoVehiculo = await resolverEstadoActualVehiculo(
-    db,
-    ordenExistente.vehiculoId,
-    hoyISO
-  );
+    // Actualizar odómetro del vehículo si el valor final es superior
+    if (params.kilometrajeFinal !== undefined && params.kilometrajeFinal > 0) {
+      await db
+        .update(vehiculos)
+        .set({
+          kilometraje: params.kilometrajeFinal,
+          actualizadoEn: ahora,
+        })
+        .where(
+          and(
+            eq(vehiculos.id, ordenExistente.vehiculoId),
+            lt(vehiculos.kilometraje, params.kilometrajeFinal)
+          )
+        );
+    }
 
-  const [ordenActualizada] = await db
-    .select()
-    .from(mantenimientosVehiculo)
-    .where(eq(mantenimientosVehiculo.id, params.id))
-    .limit(1);
-
-  if (!ordenActualizada) {
-    throw new Error(
-      `Fallo al recuperar la orden #${params.id} tras actualizar su estado en D1.`
+    const hoyISO = params.hoyISO || toClientISODate();
+    const nuevoEstadoVehiculo = await resolverEstadoActualVehiculo(
+      db,
+      ordenExistente.vehiculoId,
+      hoyISO
     );
-  }
 
-  return {
-    orden: ordenActualizada,
-    nuevoEstadoVehiculo,
-  };
+    const [ordenActualizada] = await db
+      .select()
+      .from(mantenimientosVehiculo)
+      .where(
+        and(
+          eq(mantenimientosVehiculo.id, params.id),
+          eq(mantenimientosVehiculo.localId, params.localId)
+        )
+      )
+      .limit(1);
+
+    if (!ordenActualizada) {
+      throw new Error(
+        `Fallo al recuperar la orden #${params.id} tras actualizar su estado en D1.`
+      );
+    }
+
+    return {
+      orden: ordenActualizada,
+      nuevoEstadoVehiculo,
+    };
+  } catch (error) {
+    logFalloD1('mantenimientos.actualizarEstado', error, {
+      id: params.id,
+      localId: params.localId,
+      nuevoEstado: params.nuevoEstado,
+    });
+    throw error;
+  }
 }
