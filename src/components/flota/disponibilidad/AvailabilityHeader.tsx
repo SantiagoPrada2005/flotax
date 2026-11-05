@@ -32,7 +32,7 @@ const ESTADOS_INFO: Record<
   MANTENIMIENTO: {
     label: 'EN TALLER',
     dotClass: 'bg-status-warning ring-2 ring-status-warning/40 animate-pulse',
-    badgeClass: 'bg-[#EDEDED] text-[#111827] border border-[#f59e0b]/70',
+    badgeClass: 'bg-[#EDEDED] text-[#111827] border border-status-warning/70',
     ariaText: 'Vehículo en mantenimiento o bloqueo técnico',
   },
   FUERA_SERVICIO: {
@@ -84,7 +84,7 @@ export default function AvailabilityHeader({ vehiculo, onBack }: AvailabilityHea
           <div className="flex items-center gap-2">
             {/* Odómetro */}
             <div
-              className="hidden xs:inline-flex sm:inline-flex items-center gap-1.5 rounded-full bg-[#EDEDED]/70 border border-[#9CA3AF]/30 px-3 py-1 text-xs font-semibold text-[#4B5563]"
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-[#EDEDED]/70 border border-[#9CA3AF]/30 px-3 py-1 text-xs font-semibold text-[#4B5563]"
               title="Kilometraje actual del vehículo"
             >
               <svg
@@ -144,7 +144,7 @@ export default function AvailabilityHeader({ vehiculo, onBack }: AvailabilityHea
           </div>
 
           {/* Odómetro en móvil si la pantalla es muy pequeña */}
-          <div className="flex xs:hidden items-center gap-1.5 text-xs text-[#4B5563] pt-0.5">
+          <div className="flex sm:hidden items-center gap-1.5 text-xs text-[#4B5563] pt-0.5">
             <span className="text-[10px] uppercase font-bold text-[#9CA3AF]">Odómetro:</span>
             <span className="font-mono tabular-nums text-[#111827] font-bold">
               {vehiculo.kilometraje.toLocaleString('es-CO')} km

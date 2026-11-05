@@ -34,16 +34,16 @@ export default function ActiveMaintenanceCard({
   return (
     <article
       aria-label="Orden técnica activa en taller"
-      className={`relative overflow-hidden rounded-[26px] bg-white border-2 border-[#f59e0b]/55 p-4 sm:p-5 shadow-xs transition-shadow hover:shadow-md ${className}`}
+      className={`relative overflow-hidden rounded-[26px] bg-white border-2 border-status-warning/55 p-4 sm:p-5 shadow-xs transition-shadow hover:shadow-md ${className}`}
     >
       {/* Indicador de acento superior sutil */}
-      <div className="absolute top-0 inset-x-0 h-1 bg-[#f59e0b]" aria-hidden="true" />
+      <div className="absolute top-0 inset-x-0 h-1 bg-status-warning" aria-hidden="true" />
 
       {/* Cabecera de la orden */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span
-            className="inline-flex items-center gap-1.5 rounded-full bg-[#EDEDED] border border-[#f59e0b]/60 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-[#111827]"
+            className="inline-flex items-center gap-1.5 rounded-full bg-[#EDEDED] border border-status-warning/60 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-[#111827]"
             role="status"
           >
             <span className="h-2 w-2 rounded-full bg-status-warning animate-pulse ring-2 ring-status-warning/30" />
