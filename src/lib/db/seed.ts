@@ -42,6 +42,10 @@ import { eq } from 'drizzle-orm';
 export const SEED_LOCAL_PATIO_NORTE_ID = 'local-patio-norte';
 export const SEED_DUENO_USER_ID = 'usr-dueno-patio-norte';
 export const SEED_SANTIAGO_USER_ID = '0jST3HpxfeawMCXTErSeGVU5PVJGNVQT';
+export const SEED_JHON_USER_ID = 'usr-jalzate-intep';
+export const SEED_JULIAN_USER_ID = 'usr-juliandavidosorio10';
+export const SEED_JULIAN_GMAIL_USER_ID = 'usr-juliandavidosorio10-gmail';
+export const SEED_SOFIA_USER_ID = 'usr-sofiaamontes101';
 
 /**
  * Ejecuta el seed idempotente de demostración en Cloudflare D1 (local, preview o producción).
@@ -57,9 +61,25 @@ export async function ejecutarSeedDemostracionD1(
   const ahora = new Date();
 
   // 1. Usuarios semilla (Dueño y Clientes de demostración)
+  const usuariosExistentes = await db
+    .select({ id: user.id, email: user.email })
+    .from(user);
+  const mapaUsuarios = new Map(
+    usuariosExistentes.map((u) => [u.email.trim().toLowerCase(), u.id])
+  );
+
+  const santiagoId = mapaUsuarios.get('santiagopradamoreno@gmail.com') ?? SEED_SANTIAGO_USER_ID;
+  const jhonId = mapaUsuarios.get('jalzate_usistemas@intep.edu.co') ?? SEED_JHON_USER_ID;
+  const julianGmailId =
+    mapaUsuarios.get('juliandavidosorio10@gmail.com') ?? SEED_JULIAN_GMAIL_USER_ID;
+  const julianGamilId =
+    mapaUsuarios.get('juliandavidosorio10@gamil.com') ?? SEED_JULIAN_USER_ID;
+  const sofiaId = mapaUsuarios.get('sofiaamontes101@gmail.com') ?? SEED_SOFIA_USER_ID;
+  const duenoId = mapaUsuarios.get('operaciones@flotax.innovaweb.pro') ?? SEED_DUENO_USER_ID;
+
   const usuariosSemilla: (typeof user.$inferInsert)[] = [
     {
-      id: SEED_DUENO_USER_ID,
+      id: duenoId,
       name: 'Santiago Operador Principal',
       email: 'operaciones@flotax.innovaweb.pro',
       emailVerified: true,
@@ -73,13 +93,69 @@ export async function ejecutarSeedDemostracionD1(
       updatedAt: ahora,
     },
     {
-      id: SEED_SANTIAGO_USER_ID,
+      id: santiagoId,
       name: 'Santiago Prada Moreno',
       email: 'santiagopradamoreno@gmail.com',
       emailVerified: true,
       telefono: '+57 300 450 8890',
       tipoDocumento: 'CC',
       numeroDocumento: '1037600100',
+      esSuperAdmin: true,
+      localOrigenId: SEED_LOCAL_PATIO_NORTE_ID,
+      activo: true,
+      createdAt: ahora,
+      updatedAt: ahora,
+    },
+    {
+      id: jhonId,
+      name: 'Jhon Alzate',
+      email: 'jalzate_usistemas@intep.edu.co',
+      emailVerified: true,
+      telefono: '+57 311 000 0001',
+      tipoDocumento: 'CC',
+      numeroDocumento: '1000000001',
+      esSuperAdmin: true,
+      localOrigenId: SEED_LOCAL_PATIO_NORTE_ID,
+      activo: true,
+      createdAt: ahora,
+      updatedAt: ahora,
+    },
+    {
+      id: julianGamilId,
+      name: 'Julián David Osorio',
+      email: 'juliandavidosorio10@gamil.com',
+      emailVerified: true,
+      telefono: '+57 311 000 0002',
+      tipoDocumento: 'CC',
+      numeroDocumento: '1000000002',
+      esSuperAdmin: true,
+      localOrigenId: SEED_LOCAL_PATIO_NORTE_ID,
+      activo: true,
+      createdAt: ahora,
+      updatedAt: ahora,
+    },
+    {
+      id: julianGmailId,
+      name: 'Julián David Osorio',
+      email: 'juliandavidosorio10@gmail.com',
+      emailVerified: true,
+      telefono: '+57 311 000 0002',
+      tipoDocumento: 'CC',
+      numeroDocumento: '1000000002',
+      esSuperAdmin: true,
+      localOrigenId: SEED_LOCAL_PATIO_NORTE_ID,
+      activo: true,
+      createdAt: ahora,
+      updatedAt: ahora,
+    },
+    {
+      id: sofiaId,
+      name: 'Sofía Montes',
+      email: 'sofiaamontes101@gmail.com',
+      emailVerified: true,
+      telefono: '+57 311 000 0003',
+      tipoDocumento: 'CC',
+      numeroDocumento: '1000000003',
       esSuperAdmin: true,
       localOrigenId: SEED_LOCAL_PATIO_NORTE_ID,
       activo: true,
@@ -131,7 +207,18 @@ export async function ejecutarSeedDemostracionD1(
   ];
 
   for (const usr of usuariosSemilla) {
-    await db.insert(user).values(usr).onConflictDoNothing();
+    if (mapaUsuarios.has(usr.email.trim().toLowerCase())) {
+      await db
+        .update(user)
+        .set({
+          esSuperAdmin: usr.esSuperAdmin,
+          activo: true,
+          localOrigenId: usr.localOrigenId,
+        })
+        .where(eq(user.id, usr.id));
+    } else {
+      await db.insert(user).values(usr).onConflictDoNothing();
+    }
   }
 
   // 2. Locales de alquiler y membresía del dueño
@@ -143,7 +230,7 @@ export async function ejecutarSeedDemostracionD1(
       ciudad: 'Medellín',
       direccion: 'Cra. 43A #18 Sur-135, El Poblado, Medellín',
       telefono: '+57 300 910 2030',
-      duenoId: SEED_DUENO_USER_ID,
+      duenoId: santiagoId,
       activo: true,
       creadoEn: ahora,
       actualizadoEn: ahora,
@@ -155,7 +242,7 @@ export async function ejecutarSeedDemostracionD1(
       ciudad: 'Medellín',
       direccion: 'Av. El Poblado #10-45, Medellín',
       telefono: '+57 300 910 2030',
-      duenoId: SEED_DUENO_USER_ID,
+      duenoId: santiagoId,
       activo: true,
       creadoEn: ahora,
       actualizadoEn: ahora,
@@ -170,19 +257,55 @@ export async function ejecutarSeedDemostracionD1(
     .insert(miembrosLocal)
     .values([
       {
-        id: 'mbr-dueno-patio-norte',
+        id: `mbr-${duenoId.slice(0, 8)}-patio-norte`,
         localId: SEED_LOCAL_PATIO_NORTE_ID,
-        usuarioId: SEED_DUENO_USER_ID,
+        usuarioId: duenoId,
         rol: 'DUENO',
         activo: true,
         onboardingCompletado: true,
         creadoEn: ahora,
       },
       {
-        id: 'mbr-santiago-patio-norte',
+        id: `mbr-${santiagoId.slice(0, 8)}-patio-norte`,
         localId: SEED_LOCAL_PATIO_NORTE_ID,
-        usuarioId: SEED_SANTIAGO_USER_ID,
+        usuarioId: santiagoId,
         rol: 'DUENO',
+        activo: true,
+        onboardingCompletado: true,
+        creadoEn: ahora,
+      },
+      {
+        id: `mbr-${jhonId.slice(0, 8)}-patio-norte`,
+        localId: SEED_LOCAL_PATIO_NORTE_ID,
+        usuarioId: jhonId,
+        rol: 'ADMIN',
+        activo: true,
+        onboardingCompletado: true,
+        creadoEn: ahora,
+      },
+      {
+        id: `mbr-${julianGmailId.slice(0, 8)}-patio-norte`,
+        localId: SEED_LOCAL_PATIO_NORTE_ID,
+        usuarioId: julianGmailId,
+        rol: 'ADMIN',
+        activo: true,
+        onboardingCompletado: true,
+        creadoEn: ahora,
+      },
+      {
+        id: `mbr-${julianGamilId.slice(0, 8)}-patio-norte`,
+        localId: SEED_LOCAL_PATIO_NORTE_ID,
+        usuarioId: julianGamilId,
+        rol: 'ADMIN',
+        activo: true,
+        onboardingCompletado: true,
+        creadoEn: ahora,
+      },
+      {
+        id: `mbr-${sofiaId.slice(0, 8)}-patio-norte`,
+        localId: SEED_LOCAL_PATIO_NORTE_ID,
+        usuarioId: sofiaId,
+        rol: 'ADMIN',
         activo: true,
         onboardingCompletado: true,
         creadoEn: ahora,
@@ -1211,8 +1334,33 @@ export async function ejecutarSeedDemostracionD1(
   // 14. Sincronización y configuración base para todos los locales del entorno
   try {
     const todosLocales = await db.select().from(localesAlquiler);
+    const operadoresEquipo = [
+      { id: santiagoId, rol: 'DUENO' as const },
+      { id: jhonId, rol: 'ADMIN' as const },
+      { id: julianGmailId, rol: 'ADMIN' as const },
+      { id: julianGamilId, rol: 'ADMIN' as const },
+      { id: sofiaId, rol: 'ADMIN' as const },
+      { id: duenoId, rol: 'DUENO' as const },
+    ];
+
     for (const loc of todosLocales) {
       await asegurarConfiguracionBaseLocal(db, loc.id);
+
+      // Asegurar membresía administrativa de los operadores en cada local detectado
+      for (const op of operadoresEquipo) {
+        await db
+          .insert(miembrosLocal)
+          .values({
+            id: `mbr-${op.id.slice(0, 10)}-${loc.id.slice(0, 8)}`,
+            localId: loc.id,
+            usuarioId: op.id,
+            rol: op.rol,
+            activo: true,
+            onboardingCompletado: true,
+            creadoEn: ahora,
+          })
+          .onConflictDoNothing();
+      }
 
       // Si el local no tiene vehículos registrados, asociarle una réplica de la flota demostrativa
       const vehsLocal = await db

@@ -7,7 +7,7 @@ import { ejecutarSeedDemostracionD1 } from '@/lib/db/seed';
  * Endpoint administrativo para inicializar o sincronizar datos de demostración en Cloudflare D1.
  * Utilizado durante etapas de desarrollo, preview y pruebas de patio.
  */
-export const ALL: APIRoute = async ({ locals }) => {
+export const ALL: APIRoute = async ({ locals, request }) => {
   if (!env.DB) {
     return new Response(
       JSON.stringify({
@@ -18,11 +18,21 @@ export const ALL: APIRoute = async ({ locals }) => {
     );
   }
 
-  // Permitir en desarrollo local o para usuarios administradores / super admin en producción
+  // Permitir en desarrollo local, usuarios administradores o token secreto en producción
   const esDesarrollo = import.meta.env.DEV;
   const usuario = locals.usuario;
+  const authHeader = request.headers.get('authorization') ?? '';
+  const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+  const secret = (env.BETTER_AUTH_SECRET as string) || '';
+  const esAutorizadoPorSecret = Boolean(secret && token === secret);
 
-  if (!esDesarrollo && (!usuario || (!usuario.esSuperAdmin && usuario.localActivo?.rol !== 'DUENO' && usuario.localActivo?.rol !== 'ADMIN'))) {
+  const esAdmin =
+    usuario &&
+    (usuario.esSuperAdmin ||
+      usuario.localActivo?.rol === 'DUENO' ||
+      usuario.localActivo?.rol === 'ADMIN');
+
+  if (!esDesarrollo && !esAdmin && !esAutorizadoPorSecret) {
     return new Response(
       JSON.stringify({
         ok: false,
