@@ -96,7 +96,7 @@ export default function TopBarSearch({
             triggerHaptic(8);
             onOpen();
           }}
-          className={`ios-press-bounce flex h-11 w-11 items-center justify-center rounded-full text-[#4B5563] hover:text-[#111827] border ${pillClass}`}
+          className={`fx-press flex h-11 w-11 items-center justify-center rounded-full text-[#4B5563] hover:text-[#111827] border ${pillClass}`}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -118,7 +118,7 @@ export default function TopBarSearch({
       {isOpen && (
         <div className="fixed inset-x-3 sm:inset-x-6 top-2 h-11 z-50 flex items-center gap-2.5 animate-in fade-in duration-200">
           <div
-            className={`flex-1 h-11 flex items-center px-3.5 gap-2.5 rounded-full border border-white/80 ${pillClass} ios-search-morph shadow-[0_14px_32px_-6px_rgba(17,24,39,0.22)]`}
+            className={`[--fx-border-focus:#111827] flex-1 h-11 flex items-center px-3.5 gap-2.5 rounded-full border border-white/80 ${pillClass} ios-search-morph shadow-[0_14px_32px_-6px_rgba(17,24,39,0.22)]`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -144,7 +144,7 @@ export default function TopBarSearch({
                   ? `Buscar en ${localCaptacionNombre}...`
                   : 'Buscar por auto, moto, placa o tipo...'
               }
-              className="flex-1 bg-transparent text-base text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none min-w-0"
+              className="flex-1 bg-transparent text-base text-[#111827] placeholder:text-[#9CA3AF] min-w-0"
             />
 
             {query && (
@@ -152,7 +152,7 @@ export default function TopBarSearch({
                 type="button"
                 onClick={() => setQuery('')}
                 aria-label="Limpiar texto"
-                className="ios-press-bounce flex h-6 w-6 items-center justify-center rounded-full bg-[#9CA3AF]/30 text-[#4B5563] hover:text-[#111827]"
+                className="fx-press relative flex h-6 w-6 items-center justify-center rounded-full bg-[#9CA3AF]/30 text-[#4B5563] hover:text-[#111827] after:absolute after:-inset-2.5 after:content-['']"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="h-3.5 w-3.5">
                   <line x1="18" y1="6" x2="6" y2="18" />
@@ -165,7 +165,7 @@ export default function TopBarSearch({
           <button
             type="button"
             onClick={handleClose}
-            className="ios-press-bounce shrink-0 px-2.5 py-1 text-sm font-semibold text-[#111827] hover:text-[#4B5563] active:opacity-60 transition"
+            className="fx-press shrink-0 px-2.5 py-1 text-sm font-semibold text-[#111827] hover:text-[#4B5563]"
           >
             Cancelar
           </button>

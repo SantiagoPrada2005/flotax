@@ -236,7 +236,7 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
   };
 
   return (
-    <div className="relative w-full min-h-[100dvh] flex flex-col items-center bg-[#111827] px-4 pt-4 pb-6 sm:px-6 overflow-x-hidden">
+    <div className="[--fx-border-focus:#EDEDED] relative w-full min-h-[100dvh] flex flex-col items-center bg-[#111827] px-4 pt-4 pb-6 sm:px-6 overflow-x-hidden">
       {/* =========================================================================
           FONDO VECTORIAL PURO Y EVOLUTIVO (SVG Nativo, encuadre 456x500 proporcional)
           Ocupa el 88% del ancho de la pantalla y el tercio/mitad superior, idéntico a pen.dev
@@ -266,7 +266,7 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
               setError(null);
               setInfoMessage(null);
             }}
-            className="flex items-center gap-1 font-body text-xs font-semibold text-[#EDEDED] hover:text-white transition-colors py-1.5 px-3.5 rounded-full bg-[#1F2937] border border-[#374151] active:scale-[0.98]"
+            className="fx-press flex items-center gap-1 font-body text-xs font-semibold text-[#EDEDED] hover:text-white py-1.5 px-3.5 rounded-full bg-[#1F2937] border border-[#374151]"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="m15 18-6-6 6-6" />
@@ -338,7 +338,7 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
             <button
               type="button"
               onClick={() => setRole('cliente')}
-              className={`flex-1 py-2 text-xs font-semibold rounded-full transition-all duration-150 ${
+              className={`flex-1 py-2 text-xs font-semibold rounded-full transition-colors duration-150 ${
                 role === 'cliente'
                   ? 'bg-[#EDEDED] text-[#111827] shadow-xs'
                   : 'text-[#9CA3AF] hover:text-[#EDEDED]'
@@ -349,7 +349,7 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
             <button
               type="button"
               onClick={() => setRole('operador')}
-              className={`flex-1 py-2 text-xs font-semibold rounded-full transition-all duration-150 ${
+              className={`flex-1 py-2 text-xs font-semibold rounded-full transition-colors duration-150 ${
                 role === 'operador'
                   ? 'bg-[#EDEDED] text-[#111827] shadow-xs'
                   : 'text-[#9CA3AF] hover:text-[#EDEDED]'
@@ -370,7 +370,7 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
               type="button"
               onClick={handleGoogleSignIn}
               disabled={isLoading}
-              className="w-full h-[52px] flex items-center justify-center gap-3 rounded-full bg-[#EDEDED] px-4 font-body text-[15px] font-semibold text-[#111827] shadow-sm transition hover:bg-white active:scale-[0.985] disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+              className="fx-press w-full h-[52px] flex items-center justify-center gap-3 rounded-full bg-[#EDEDED] px-4 font-body text-[15px] font-semibold text-[#111827] shadow-sm hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <svg className="animate-spin h-5 w-5 text-[#111827]" fill="none" viewBox="0 0 24 24">
@@ -409,7 +409,7 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
                 setStep('email');
                 setError(null);
               }}
-              className="w-full h-[52px] flex items-center justify-center gap-2.5 rounded-full bg-[#1F2937] border border-[#374151] px-4 font-body text-[14px] sm:text-[15px] font-medium text-[#EDEDED] transition hover:bg-[#283548] hover:border-[#4B5563] active:scale-[0.985] focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/40"
+              className="fx-press w-full h-[52px] flex items-center justify-center gap-2.5 rounded-full bg-[#1F2937] border border-[#374151] px-4 font-body text-[14px] sm:text-[15px] font-medium text-[#EDEDED] hover:bg-[#283548] hover:border-[#4B5563]"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4.5 w-4.5 text-[#9CA3AF]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect width="20" height="16" x="2" y="4" rx="2" />
@@ -426,7 +426,7 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
               <button
                 type="button"
                 onClick={toggleMode}
-                className="font-bold text-[#EDEDED] hover:underline focus:outline-none"
+                className="font-bold text-[#EDEDED] hover:underline"
               >
                 {mode === 'login' ? 'Crea tu cuenta' : 'Inicia sesión'}
               </button>
@@ -453,14 +453,14 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="operador@flotax.co"
-                className="w-full h-[50px] px-4 bg-[#1F2937] border border-[#374151] rounded-2xl text-[#EDEDED] placeholder-[#9CA3AF] text-base transition focus:outline-none focus:border-white/50 focus:ring-2 focus:ring-white/10"
+                className="w-full h-[50px] px-4 bg-[#1F2937] border border-[#374151] rounded-2xl text-[#EDEDED] placeholder-[#9CA3AF] text-base transition focus:border-white/50"
               />
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full h-[50px] flex items-center justify-center gap-2 rounded-full bg-[#EDEDED] px-4 font-body text-[15px] font-bold text-[#111827] shadow-sm transition hover:bg-white active:scale-[0.985] disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+              className="fx-press w-full h-[50px] flex items-center justify-center gap-2 rounded-full bg-[#EDEDED] px-4 font-body text-[15px] font-bold text-[#111827] shadow-sm hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <svg className="animate-spin h-5 w-5 text-[#111827]" fill="none" viewBox="0 0 24 24">
@@ -476,7 +476,7 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
               <button
                 type="button"
                 onClick={handleGoogleSignIn}
-                className="text-xs text-[#9CA3AF] hover:text-[#EDEDED] underline focus:outline-none"
+                className="text-xs text-[#9CA3AF] hover:text-[#EDEDED] underline"
               >
                 ¿Prefieres acceder al instante? Continuar con Google
               </button>
@@ -514,7 +514,7 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
               </label>
 
               <div
-                className="relative flex items-center justify-between gap-2 cursor-pointer"
+                className="relative flex items-center justify-between gap-2 cursor-pointer rounded-2xl focus-within:ring-2 focus-within:ring-[#EDEDED]/60 focus-within:ring-offset-2 focus-within:ring-offset-[#111827]"
                 onClick={() => otpInputRef.current?.focus()}
               >
                 {[0, 1, 2, 3, 4, 5].map((idx) => {
@@ -523,7 +523,7 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
                   return (
                     <div
                       key={idx}
-                      className={`flex-1 h-[54px] rounded-xl flex items-center justify-center font-mono text-xl font-bold transition-all duration-150 ${
+                      className={`flex-1 h-[54px] rounded-xl flex items-center justify-center font-mono text-xl font-bold transition-colors duration-150 ${
                         digit
                           ? 'bg-[#1F2937] border-2 border-[#EDEDED] text-[#EDEDED]'
                           : isCurrent
@@ -556,7 +556,7 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
             <button
               type="submit"
               disabled={isLoading || otp.length < 6}
-              className="w-full h-[50px] flex items-center justify-center gap-2 rounded-full bg-[#EDEDED] px-4 font-body text-[15px] font-bold text-[#111827] shadow-sm transition hover:bg-white active:scale-[0.985] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+              className="fx-press w-full h-[50px] flex items-center justify-center gap-2 rounded-full bg-[#EDEDED] px-4 font-body text-[15px] font-bold text-[#111827] shadow-sm hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <svg className="animate-spin h-5 w-5 text-[#111827]" fill="none" viewBox="0 0 24 24">
@@ -574,7 +574,7 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
                 type="button"
                 onClick={handleResendCode}
                 disabled={isLoading || countdown > 0}
-                className="font-body font-semibold text-[#9CA3AF] hover:text-[#EDEDED] disabled:opacity-40 transition-colors focus:outline-none"
+                className="font-body font-semibold text-[#9CA3AF] hover:text-[#EDEDED] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 {countdown > 0
                   ? `Reenviar código en ${countdown}s`
