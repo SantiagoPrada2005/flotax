@@ -480,7 +480,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
       {/* Toast Notificación */}
       {toast && (
         <div
-          className={`fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold text-white shadow-xl transition-all ${toast.tipo === 'ok' ? 'bg-[#111827] border border-emerald-500' : 'bg-rose-700'
+          className={`fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold text-white shadow-xl ${toast.tipo === 'ok' ? 'bg-[#111827] border border-emerald-500' : 'bg-rose-700'
             }`}
         >
           <span>{toast.tipo === 'ok' ? '✓' : '⚠'}</span>
@@ -516,7 +516,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               setTipoModalMovimiento('INGRESO');
               setModalMovimientoAbierto(true);
             }}
-            className="ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-emerald-700 cursor-pointer"
+            className="fx-press inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-emerald-700 cursor-pointer"
           >
             <span className="font-black">+</span>
             <span>Registrar Ingreso</span>
@@ -528,7 +528,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               setTipoModalMovimiento('EGRESO');
               setModalMovimientoAbierto(true);
             }}
-            className="ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-[#9CA3AF]/40 dark:border-white/10 bg-white dark:bg-[#1F2937] px-4 py-2 text-xs font-bold text-[#111827] dark:text-[#EDEDED] shadow-xs transition hover:bg-[#EDEDED] dark:hover:bg-white/10 active:scale-95 cursor-pointer"
+            className="fx-press inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-[#9CA3AF]/40 dark:border-white/10 bg-white dark:bg-[#1F2937] px-4 py-2 text-xs font-bold text-[#111827] dark:text-[#EDEDED] shadow-xs hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer"
           >
             <span className="text-rose-600 font-black">−</span>
             <span>Registrar Gasto</span>
@@ -537,7 +537,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
           <button
             type="button"
             onClick={() => setModalTransferenciaAbierto(true)}
-            className="ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-[#9CA3AF]/40 dark:border-white/10 bg-[#EDEDED]/80 dark:bg-[#1F2937] px-3.5 py-2 text-xs font-bold text-[#111827] dark:text-[#EDEDED] transition hover:bg-[#EDEDED] dark:hover:bg-white/10 active:scale-95 cursor-pointer"
+            className="fx-press inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-[#9CA3AF]/40 dark:border-white/10 bg-[#EDEDED]/80 dark:bg-[#1F2937] px-3.5 py-2 text-xs font-bold text-[#111827] dark:text-[#EDEDED] hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer"
           >
             <span aria-hidden="true" className="font-mono">↔</span>
             <span>Mover Dinero</span>
@@ -546,7 +546,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
           <button
             type="button"
             onClick={() => setModalArqueoAbierto(true)}
-            className={`ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition active:scale-95 cursor-pointer ${data.sesionCajaActiva
+            className={`fx-press inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold cursor-pointer ${data.sesionCajaActiva
                 ? 'bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40 dark:hover:bg-amber-500/30'
                 : 'bg-emerald-100 text-emerald-900 border border-emerald-300 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/40 dark:hover:bg-emerald-500/30'
               }`}
@@ -565,7 +565,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
             type="button"
             onClick={() => desplazarTabs('izq')}
             aria-label="Ver pestañas anteriores"
-            className="ios-press-bounce flex h-10 w-8 shrink-0 items-center justify-center rounded-xl border border-[#9CA3AF]/35 dark:border-white/10 bg-white dark:bg-[#1F2937] text-[#111827] dark:text-[#EDEDED] shadow-xs transition hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer z-10"
+            className="fx-press flex h-10 w-8 shrink-0 items-center justify-center rounded-xl border border-[#9CA3AF]/35 dark:border-white/10 bg-white dark:bg-[#1F2937] text-[#111827] dark:text-[#EDEDED] shadow-xs hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer z-10"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -608,7 +608,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               }}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`min-h-[40px] shrink-0 whitespace-nowrap rounded-xl px-3.5 py-2 transition cursor-pointer ${
+              className={`min-h-[40px] shrink-0 whitespace-nowrap rounded-xl px-3.5 py-2 transition-colors cursor-pointer ${
                 activeTab === tab.id
                   ? 'bg-white text-[#111827] shadow-xs dark:bg-white/20 dark:text-white'
                   : 'hover:text-[#111827] hover:bg-white/50 dark:text-[#D1D5DB] dark:hover:text-white dark:hover:bg-white/10'
@@ -624,7 +624,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
             type="button"
             onClick={() => desplazarTabs('der')}
             aria-label="Ver más pestañas"
-            className="ios-press-bounce flex h-10 w-8 shrink-0 items-center justify-center rounded-xl border border-[#9CA3AF]/35 dark:border-white/10 bg-white dark:bg-[#1F2937] text-[#111827] dark:text-[#EDEDED] shadow-xs transition hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer z-10"
+            className="fx-press flex h-10 w-8 shrink-0 items-center justify-center rounded-xl border border-[#9CA3AF]/35 dark:border-white/10 bg-white dark:bg-[#1F2937] text-[#111827] dark:text-[#EDEDED] shadow-xs hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer z-10"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -654,7 +654,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               key={id}
               type="button"
               onClick={() => setPeriodo(id)}
-              className={`ios-press-bounce rounded-lg px-2.5 sm:px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${periodo === id
+              className={`fx-press rounded-lg px-2.5 sm:px-3 py-1.5 text-xs font-semibold cursor-pointer ${periodo === id
                   ? 'bg-[#111827] text-white shadow-xs'
                   : 'bg-[#EDEDED] text-[#4B5563] hover:text-[#111827]'
                 }`}
@@ -689,7 +689,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                 `flotax_movimientos_${periodo}.csv`
               )
             }
-            className="ios-press-bounce inline-flex items-center gap-1 rounded-lg border border-[#9CA3AF]/30 bg-[#EDEDED]/60 px-2.5 sm:px-3 py-1.5 text-xs font-bold text-[#111827] transition hover:bg-[#EDEDED] cursor-pointer"
+            className="fx-press inline-flex items-center gap-1 rounded-lg border border-[#9CA3AF]/30 bg-[#EDEDED]/60 px-2.5 sm:px-3 py-1.5 text-xs font-bold text-[#111827] hover:bg-[#EDEDED] cursor-pointer"
             title="Exportar a CSV"
           >
             <span>⬇</span>
@@ -873,7 +873,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                         onClick={() => {
                           if (alt.accionTab) setActiveTab(alt.accionTab as TabCaja);
                         }}
-                        className="inline-flex min-h-[32px] shrink-0 items-center justify-center rounded-full border border-[#9CA3AF]/40 bg-[#EDEDED]/50 px-3 text-xs font-bold text-[#111827] transition hover:bg-[#EDEDED] cursor-pointer"
+                        className="inline-flex min-h-[32px] shrink-0 items-center justify-center rounded-full border border-[#9CA3AF]/40 bg-[#EDEDED]/50 px-3 text-xs font-bold text-[#111827] transition-colors hover:bg-[#EDEDED] cursor-pointer"
                       >
                         {alt.accionTexto} →
                       </button>
@@ -897,7 +897,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                 <button
                   type="button"
                   onClick={() => setActiveTab('movimientos')}
-                  className="ios-press-bounce text-xs font-bold text-[#111827] hover:underline cursor-pointer"
+                  className="fx-press text-xs font-bold text-[#111827] hover:underline cursor-pointer"
                 >
                   Ver libro completo ({data.todosMovimientos.length}) →
                 </button>
@@ -905,10 +905,11 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
 
               <div className="mt-2 divide-y divide-[#9CA3AF]/15">
                 {data.movimientosRecientes.slice(0, 6).map((m) => (
-                  <div
+                  <button
                     key={m.id}
+                    type="button"
                     onClick={() => setMovimientoDetalle(m)}
-                    className="flex items-center justify-between py-2.5 hover:bg-[#EDEDED]/40 rounded-xl px-2 cursor-pointer transition"
+                    className="fx-pressable flex w-full items-center justify-between py-2.5 hover:bg-[#EDEDED]/40 rounded-xl px-2 text-left cursor-pointer"
                   >
                     <div className="flex items-center gap-3">
                       <span
@@ -945,7 +946,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                       </span>
                       <p className="text-[10px] text-[#9CA3AF] uppercase font-mono">{m.estado}</p>
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
@@ -992,7 +993,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                 {movimientosFiltrados.map((m) => (
                   <div
                     key={m.id}
-                    className="p-4 hover:bg-[#EDEDED]/40 transition flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                    className="p-4 hover:bg-[#EDEDED]/40 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                   >
                     <div className="flex items-start gap-3">
                       <span
@@ -1049,7 +1050,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                         <button
                           type="button"
                           onClick={() => setMovimientoDetalle(m)}
-                          className="min-h-[38px] rounded-lg border border-[#9CA3AF]/40 px-3 text-xs font-semibold text-[#111827] hover:bg-[#EDEDED]"
+                          className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg border border-[#9CA3AF]/40 px-3 text-xs font-semibold text-[#111827] hover:bg-[#EDEDED]"
                         >
                           Detalle
                         </button>
@@ -1060,7 +1061,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                               setMovimientoDetalle(m);
                               setModalAnularAbierto(true);
                             }}
-                            className="min-h-[38px] rounded-lg border border-rose-300 px-2.5 text-xs font-semibold text-rose-700 hover:bg-rose-50"
+                            className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg border border-rose-300 px-2.5 text-xs font-semibold text-rose-700 hover:bg-rose-50"
                             title="Anular movimiento con motivo obligatorio"
                           >
                             Anular
@@ -1145,7 +1146,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                     <button
                       type="button"
                       onClick={() => setModalArqueoAbierto(true)}
-                      className="min-h-[44px] rounded-full bg-[#111827] px-6 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#1F2937] active:scale-95 cursor-pointer"
+                      className="fx-press min-h-[44px] rounded-full bg-[#111827] px-6 py-2 text-xs font-bold text-white shadow-sm hover:bg-[#1F2937] cursor-pointer"
                     >
                       Realizar Cierre de Caja
                     </button>
@@ -1161,7 +1162,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                   <button
                     type="button"
                     onClick={() => setModalArqueoAbierto(true)}
-                    className="min-h-[44px] shrink-0 rounded-full bg-emerald-700 px-6 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-800 active:scale-95 cursor-pointer"
+                    className="fx-press min-h-[44px] shrink-0 rounded-full bg-emerald-700 px-6 py-2 text-xs font-bold text-white shadow-sm hover:bg-emerald-800 cursor-pointer"
                   >
                     Abrir Turno de Caja
                   </button>
@@ -1252,7 +1253,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
             <button
               type="button"
               onClick={() => descargarCsv(exportarCarteraContratosCsv(data.carteraContratos), 'cartera_flotax_alquileres.csv')}
-              className="inline-flex min-h-[38px] items-center gap-1.5 rounded-lg border border-[#9CA3AF]/40 px-3 text-xs font-bold text-[#111827] hover:bg-[#EDEDED]"
+              className="fx-press inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-lg border border-[#9CA3AF]/40 px-3 text-xs font-bold text-[#111827] hover:bg-[#EDEDED]"
             >
               ⬇ Exportar Cartera CSV
             </button>
@@ -1262,7 +1263,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
             {data.carteraContratos.map((c) => (
               <div
                 key={c.codigoContrato}
-                className="p-4 hover:bg-[#EDEDED]/40 transition flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+                className="p-4 hover:bg-[#EDEDED]/40 transition-colors flex flex-col lg:flex-row lg:items-center justify-between gap-4"
               >
                 <div>
                   <div className="flex items-center gap-2">
@@ -1317,7 +1318,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                           setTipoModalMovimiento('INGRESO');
                           setModalMovimientoAbierto(true);
                         }}
-                        className="min-h-[38px] rounded-lg bg-[#111827] px-3 text-xs font-bold text-white hover:bg-[#1F2937] transition"
+                        className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg bg-[#111827] px-3 text-xs font-bold text-white hover:bg-[#1F2937]"
                       >
                         Registrar Abono
                       </button>
@@ -1325,7 +1326,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                     <button
                       type="button"
                       onClick={() => abrirComprobanteContrato(c)}
-                      className="min-h-[38px] rounded-lg border border-[#9CA3AF]/40 px-3 text-xs font-semibold text-[#111827] hover:bg-[#EDEDED] transition"
+                      className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg border border-[#9CA3AF]/40 px-3 text-xs font-semibold text-[#111827] hover:bg-[#EDEDED]"
                     >
                       Comprobante
                     </button>
@@ -1355,7 +1356,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               <button
                 type="button"
                 onClick={() => descargarCsv(exportarGarantiasCsv(data.depositosGarantia), 'depositos_garantia_flotax.csv')}
-                className="inline-flex min-h-[38px] items-center gap-1.5 rounded-lg border border-[#9CA3AF]/40 px-3 text-xs font-bold text-[#111827] hover:bg-[#EDEDED]"
+                className="fx-press inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-lg border border-[#9CA3AF]/40 px-3 text-xs font-bold text-[#111827] hover:bg-[#EDEDED]"
               >
                 ⬇ Exportar Garantías CSV
               </button>
@@ -1378,7 +1379,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               return (
                 <div
                   key={g.id}
-                  className="p-4 hover:bg-[#EDEDED]/40 transition flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+                  className="p-4 hover:bg-[#EDEDED]/40 transition-colors flex flex-col lg:flex-row lg:items-center justify-between gap-4"
                 >
                   <div>
                     <div className="flex items-center gap-2">
@@ -1428,7 +1429,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                             setAccionGarantia('RECIBIR');
                             setModalGarantiaAbierto(true);
                           }}
-                          className="min-h-[38px] rounded-lg bg-[#111827] px-3 text-xs font-bold text-white hover:bg-[#1F2937]"
+                          className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg bg-[#111827] px-3 text-xs font-bold text-white hover:bg-[#1F2937]"
                         >
                           Recibir Fianza
                         </button>
@@ -1443,7 +1444,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                               setAccionGarantia('DEVOLVER');
                               setModalGarantiaAbierto(true);
                             }}
-                            className="min-h-[38px] rounded-lg bg-emerald-700 px-3 text-xs font-bold text-white hover:bg-emerald-800"
+                            className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg bg-emerald-700 px-3 text-xs font-bold text-white hover:bg-emerald-800"
                           >
                             Devolver a Cliente
                           </button>
@@ -1454,7 +1455,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                               setAccionGarantia('RETENER_CARGOS');
                               setModalGarantiaAbierto(true);
                             }}
-                            className="min-h-[38px] rounded-lg border border-rose-300 px-3 text-xs font-bold text-rose-700 hover:bg-rose-50"
+                            className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg border border-rose-300 px-3 text-xs font-bold text-rose-700 hover:bg-rose-50"
                           >
                             Retener Daño
                           </button>
@@ -1501,7 +1502,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
             {data.todosMovimientos
               .filter((m) => m.tipo === 'EGRESO')
               .map((g) => (
-                <div key={g.id} className="p-4 hover:bg-[#EDEDED]/40 transition flex items-center justify-between gap-3">
+                <div key={g.id} className="p-4 hover:bg-[#EDEDED]/40 transition-colors flex items-center justify-between gap-3">
                   <div>
                     <h4 className="text-xs font-bold text-[#111827]">{g.concepto}</h4>
                     <p className="text-[11px] text-[#4B5563] mt-0.5">
@@ -1561,7 +1562,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               return (
                 <div
                   key={c.id}
-                  className="ios-press-bounce rounded-[26px] border border-[#9CA3AF]/30 bg-white p-5 shadow-md transition-all duration-200 hover:shadow-lg flex flex-col justify-between"
+                  className="rounded-[26px] border border-[#9CA3AF]/30 bg-white p-5 shadow-md flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-center justify-between">
@@ -1644,17 +1645,19 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                 { id: 8, titulo: '8. Pagos por Método Recaudado', desc: 'Efectivo, transferencias y tarjetas' },
                 { id: 9, titulo: '9. Cierres de Caja y Arqueos', desc: 'Diferencias y faltantes de turno' },
               ].map((rep) => (
-                <div
+                <button
                   key={rep.id}
+                  type="button"
                   onClick={() => setReporteSeleccionado(rep.id)}
-                  className={`cursor-pointer rounded-2xl border p-4 transition ${reporteSeleccionado === rep.id
+                  aria-pressed={reporteSeleccionado === rep.id}
+                  className={`fx-pressable w-full cursor-pointer text-left rounded-2xl border p-4 ${reporteSeleccionado === rep.id
                       ? 'border-[#111827] bg-[#EDEDED]/40 shadow-xs'
                       : 'border-[#9CA3AF]/20 hover:border-[#9CA3AF]/60'
                     }`}
                 >
                   <h4 className="text-xs font-bold text-[#111827]">{rep.titulo}</h4>
                   <p className="text-[11px] text-[#4B5563] mt-1">{rep.desc}</p>
-                </div>
+                </button>
               ))}
             </div>
 
@@ -1839,7 +1842,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                 placeholder="Explica la causa por la cual se revierte este movimiento..."
                 value={motivoAnulacion}
                 onChange={(e) => setMotivoAnulacion(e.target.value)}
-                className="w-full rounded-xl border border-rose-300 bg-white px-3 py-2 text-base text-[#111827] focus:outline-hidden"
+                className="w-full rounded-xl border border-rose-300 bg-white px-3 py-2 text-base text-[#111827]"
                 required
               />
             </div>
