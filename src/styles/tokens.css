@@ -145,6 +145,17 @@ html[data-theme="dark"] {
   --fx-btn-focus-ring: #ededed;
 }
 
+/* Interaction Contract: motion scale (theme-independent) */
+:root {
+  --fx-duration-press: 120ms;
+  --fx-duration-hover: 120ms;
+  --fx-duration-reveal: 180ms;
+  --fx-duration-sheet: 240ms;
+  --fx-duration-page: 320ms;
+  --fx-ease-out: cubic-bezier(0.2, 0.8, 0.3, 1);
+  --fx-ease-in-out: cubic-bezier(0.75, 0, 0.25, 1);
+}
+
 @theme {
   /* Canonical Palette: #EDEDED | #9CA3AF | #4B5563 | #1F2937 | #111827 */
   --color-palette-100: #ededed;
@@ -194,6 +205,12 @@ html[data-theme="dark"] {
   --radius-input: 12px;
 }
 
+/* Global focus contract: unlayered so utilities cannot hide the ring. */
+:where(button, a[href], [role="button"], [role="switch"], summary, input, select, textarea):focus-visible {
+  outline: 2px solid var(--fx-border-focus);
+  outline-offset: 2px;
+}
+
 /* Universal Mobile Ergonomics Shielding (iOS WebKit Anti-Zoom) */
 @media screen and (max-width: 768px) {
   input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
@@ -232,14 +249,35 @@ select {
   --ease-fluid-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Interaction Contract: canonical press feedback */
+.fx-press,
+.fx-pressable {
+  transition:
+    transform var(--fx-duration-press) var(--fx-ease-out),
+    background-color var(--fx-duration-press) var(--fx-ease-out),
+    border-color var(--fx-duration-press) var(--fx-ease-out),
+    color var(--fx-duration-press) var(--fx-ease-out);
+}
+
+.fx-press:active,
+.fx-pressable:active {
+  transform: scale(0.98);
+}
+
+/*
+ * Deprecated alias kept for the current consumers until migration.
+ * Same contract as .fx-press; remove once every usage is renamed.
+ */
 .ios-press-bounce {
-  transition: transform 340ms var(--ease-spring-ios), opacity 200ms ease, background-color 200ms ease, color 200ms ease, box-shadow 340ms var(--ease-spring-ios);
-  will-change: transform;
+  transition:
+    transform var(--fx-duration-press) var(--fx-ease-out),
+    background-color var(--fx-duration-press) var(--fx-ease-out),
+    border-color var(--fx-duration-press) var(--fx-ease-out),
+    color var(--fx-duration-press) var(--fx-ease-out);
 }
 
 .ios-press-bounce:active {
-  transform: scale(0.88) translateY(1px);
-  transition-duration: 90ms;
+  transform: scale(0.98);
 }
 
 .ios-dock-capsule {
@@ -936,6 +974,8 @@ html.js-ready .reveal-on-scroll.is-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .fx-press,
+  .fx-pressable,
   .ios-press-bounce,
   .ios-search-morph,
   .animate-fade-up,
@@ -1219,7 +1259,11 @@ html.flotax-theme-transitioning::view-transition-new(root) {
   background-color: var(--fx-btn-primary-bg);
   color: var(--fx-btn-primary-text);
   border: 1px solid var(--fx-btn-primary-border);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    background-color var(--fx-duration-press) var(--fx-ease-out),
+    border-color var(--fx-duration-press) var(--fx-ease-out),
+    color var(--fx-duration-press) var(--fx-ease-out),
+    box-shadow var(--fx-duration-press) var(--fx-ease-out);
 }
 .fx-btn-primary:hover:not(:disabled) {
   background-color: var(--fx-btn-primary-hover-bg);
@@ -1228,13 +1272,13 @@ html.flotax-theme-transitioning::view-transition-new(root) {
 }
 .fx-btn-primary:active:not(:disabled) {
   background-color: var(--fx-btn-primary-active-bg);
-  transform: scale(0.98);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.28);
 }
 .fx-btn-primary:disabled {
   background-color: var(--fx-btn-disabled-bg);
   color: var(--fx-btn-disabled-text);
   border-color: var(--fx-btn-disabled-border);
-  opacity: 0.6;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
@@ -1242,7 +1286,11 @@ html.flotax-theme-transitioning::view-transition-new(root) {
   background-color: var(--fx-btn-secondary-bg);
   color: var(--fx-btn-secondary-text);
   border: 1px solid var(--fx-btn-secondary-border);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    background-color var(--fx-duration-press) var(--fx-ease-out),
+    border-color var(--fx-duration-press) var(--fx-ease-out),
+    color var(--fx-duration-press) var(--fx-ease-out),
+    box-shadow var(--fx-duration-press) var(--fx-ease-out);
 }
 .fx-btn-secondary:hover:not(:disabled) {
   background-color: var(--fx-btn-secondary-hover-bg);
@@ -1251,13 +1299,13 @@ html.flotax-theme-transitioning::view-transition-new(root) {
 }
 .fx-btn-secondary:active:not(:disabled) {
   background-color: var(--fx-btn-secondary-active-bg);
-  transform: scale(0.98);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.16);
 }
 .fx-btn-secondary:disabled {
   background-color: var(--fx-btn-disabled-bg);
   color: var(--fx-btn-disabled-text);
   border-color: var(--fx-btn-disabled-border);
-  opacity: 0.6;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
@@ -1265,7 +1313,11 @@ html.flotax-theme-transitioning::view-transition-new(root) {
   background-color: var(--fx-btn-outline-bg);
   color: var(--fx-btn-outline-text);
   border: 1px solid var(--fx-btn-outline-border);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    background-color var(--fx-duration-press) var(--fx-ease-out),
+    border-color var(--fx-duration-press) var(--fx-ease-out),
+    color var(--fx-duration-press) var(--fx-ease-out),
+    box-shadow var(--fx-duration-press) var(--fx-ease-out);
 }
 .fx-btn-outline:hover:not(:disabled) {
   background-color: var(--fx-btn-outline-hover-bg);
@@ -1274,13 +1326,13 @@ html.flotax-theme-transitioning::view-transition-new(root) {
 }
 .fx-btn-outline:active:not(:disabled) {
   background-color: var(--fx-btn-outline-active-bg);
-  transform: scale(0.98);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.16);
 }
 .fx-btn-outline:disabled {
   background-color: var(--fx-btn-disabled-bg);
   color: var(--fx-btn-disabled-text);
   border-color: var(--fx-btn-disabled-border);
-  opacity: 0.6;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
@@ -1288,7 +1340,11 @@ html.flotax-theme-transitioning::view-transition-new(root) {
   background-color: var(--fx-btn-ghost-bg);
   color: var(--fx-btn-ghost-text);
   border: 1px solid var(--fx-btn-ghost-border);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    background-color var(--fx-duration-press) var(--fx-ease-out),
+    border-color var(--fx-duration-press) var(--fx-ease-out),
+    color var(--fx-duration-press) var(--fx-ease-out),
+    box-shadow var(--fx-duration-press) var(--fx-ease-out);
 }
 .fx-btn-ghost:hover:not(:disabled) {
   background-color: var(--fx-btn-ghost-hover-bg);
@@ -1297,11 +1353,11 @@ html.flotax-theme-transitioning::view-transition-new(root) {
 }
 .fx-btn-ghost:active:not(:disabled) {
   background-color: var(--fx-btn-ghost-active-bg);
-  transform: scale(0.98);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.16);
 }
 .fx-btn-ghost:disabled {
   color: var(--fx-btn-disabled-text);
-  opacity: 0.6;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
