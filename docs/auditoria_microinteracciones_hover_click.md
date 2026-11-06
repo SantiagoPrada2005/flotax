@@ -514,7 +514,7 @@ Cada PR de fase debe pasar esta matriz antes de merge. No se sustituye por `pnpm
 | Desktop teclado | Tab/Enter/Space/Esc | Orden lógico; foco visible; sin trampas; modales cierran con Esc |
 | `prefers-reduced-motion` | CTA, hero, sheets | Sin transforms ni bucles; la información sigue completa |
 | Zoom 200 % / texto grande | Layout y targets | Sin solapamientos; 44 px se mantienen |
-| Tema claro / oscuro | Contraste del foco y disabled | Anillo ≥ 3:1 contra el fondo adyacente |
+| Tema claro / oscuro, superficies fijas | Contraste del foco y disabled sobre superficie normal, tarjeta fija oscura y tarjeta fija clara | Anillo + halo ≥ 3:1 contra el fondo adyacente en ambos temas, incluso en tarjetas oscuras dentro del tema claro y tarjetas blancas dentro del tema oscuro |
 | Lista larga (caja, flota) | Scroll con hover/press | Sin jank; sin `will-change` masivo |
 
 **Evidencia requerida:** un video corto (o GIF) por superficie crítica, no capturas estáticas. El press es temporal; una captura no lo demuestra.
@@ -600,13 +600,13 @@ Antes de declarar un componente terminado:
 | **2** | Tokens de motion, regla global `:focus-visible`, reescritura de `.fx-btn-*`, `.fx-press`, `.fx-pressable` y alias `.ios-press-bounce` a 120 ms / `scale(0.98)`. | ✅ |
 | **3** | Primitiva `Button` con `href`/`loading`, nueva `IconButton` y barrel sin las primitivas muertas. | ✅ |
 | **4** | `CajaKpiCard`: halo y `animate-pulse` retirados, hover de elevación eliminado, teclado y press canónicos. | ✅ |
-| **5** | `CajaDashboardIsland`: filas nativas con teclado, targets de 44 px, press unificado y `transition-all` retirado. | ✅ |
+| **5** | `CajaDashboardIsland`: filas nativas con teclado y `transition-all` retirado; press y targets parciales (ver residuales §13.3). | ✅ |
 | **6** | `PerfilEditorCard` y `ConfiguracionIsland`: press canónico, foco visible y switches con `aria-checked`. | ✅ |
 | **7** | `FleetInventoryManager` y `LocalCatalogShareCard`: zoom/hover de elevación retirados, press y foco unificados. | ✅ |
 | **8** | `VehicleCatalogCard` (favorito fuera del `<a>`), `LocalCatalogShowcase` y `BottomNavIsland` sin `group-hover:scale`. | ✅ |
-| **9** | `LoginFlow`, `TopBarSearch`, `PortalSwitchCard` y `MisReservasHub`: foco restaurado, press y targets corregidos. | ✅ |
+| **9** | `LoginFlow`, `TopBarSearch`, `PortalSwitchCard` y `MisReservasHub`: foco restaurado; press y targets parciales (ver residuales §13.3). | ✅ |
 | **10** | Landing de-slop: CTA sólido, retirada de `.shiny-*` y del brillo/borde animado; footer sin `href="#"`. | ✅ |
-| **10b** | Barrido de la landing viva (`LandingHeader`, `LandingBookingIsland`, `LandingFleetShowcaseIsland`, `LandingFeatured`, `LandingSteps`, `LandingTrust`, `LandingFaq`, `LandingFinalCta`, `LandingPriceBreakdown`). | ✅ |
+| **10b** | Barrido de los componentes de landing (incluye standby no importados por `/`): `LandingHeader`, `LandingBookingIsland`, `LandingFleetShowcaseIsland`, `LandingFeatured`, `LandingSteps`, `LandingTrust`, `LandingFaq`, `LandingFinalCta` y `LandingPriceBreakdown`. | ✅ |
 | **11** | Regla [`RUL-FLX-024`](../.agents/rules/interaction-states.md), baseline final, sección de estado, endurecimiento de primitivas y corrección del reset de `prefers-reduced-motion`. | ✅ |
 
 ### 13.2 Conteos antes / después
@@ -648,9 +648,22 @@ El baseline final escanea 142 archivos y conserva deuda en 56 de ellos. **No se 
 | [`LandingCategories.astro`](../src/components/landing/LandingCategories.astro) | `group-hover-transform=1` | Código muerto: no lo importa ninguna página ni componente. |
 | [`LandingHeroIsland.tsx`](../src/components/landing/LandingHeroIsland.tsx) | `transition-all=1`, `duration-over-320=1` | Código muerto: `index.astro` usa `LandingHero.astro`, no este island. |
 
+**Residuales de press y touch target en archivos ya tocados.** No se hizo un barrido completo de 44 px ni de press; estos controles se dejaron como deuda declarada:
+
+| Archivo | Control (línea) | Residual |
+| :--- | :--- | :--- |
+| `CajaDashboardIsland` | Tabs de sección (L611) | Target de 40 px (`min-h-[40px]`); press cubierto con `.fx-press`. |
+| `CajaDashboardIsland` | "Vista Imprimible" (L1665) y "Exportar Reporte a CSV" (L1672) | Target de 40 px y sin `.fx-press`; se difieren para no ampliar el barrido de esta ola. |
+| `CajaDashboardIsland` | Cierre del modal de movimiento (L1736; clase en L1739) | 32 px (`h-8 w-8`) con `.fx-press`; el target no se amplió. |
+| `CajaDashboardIsland` | Acciones secundarias de alternativas, gastos, cuentas y pie del modal "Nueva Cuenta" (L871, L1488, L1541, L1548, L1938, L1942) | Sin `.fx-press`; varias por debajo de 44 px (L871 32 px; L1541/L1548 40 px). |
+| `LocalCatalogShowcase` | Limpiar búsqueda (L225, 32 px), filtros (L235, 36 px), tabs (L307/L323, 34 px), CTA del hero (L649, 42 px) y flecha siguiente (L725, 28 px) | Targets < 44 px; el press ya existe (`fx-pressable`). |
+| `FleetInventoryManager` | Toggle grid/lista (L348; clase en L349) | 36 px (`h-9 w-9`) con `.fx-press`; target < 44 px. |
+| `MisReservasHub` | Celda del calendario (L550) | 36 px (`h-9 w-9`) con extensión vertical `after:-inset-y-1` (44 px de alto, 36 px de ancho). |
+| `PortalSwitchCard` | Switch de portal (L110–L117) | Código muerto sin consumidores; no se migró. |
+
 **Capa de parche de hover en modo oscuro.** Sigue en [`tokens.css`](../src/styles/tokens.css#L1146-L1172) (`html.dark button/a ... .hover\:bg-white:hover` y `.hover\:bg-\[\#EDEDED\]:hover`). Existe porque hay hover claros sin variante oscura; su retirada exige un barrido completo de modo oscuro y quedó fuera de este milestone. No se deben añadir nuevas dependencias de ese parche.
 
-**Código muerto pendiente.** Además de las tres primitivas eliminadas en la Tarea 1, siguen sin consumidores [`LandingHeroIsland.tsx`](../src/components/landing/LandingHeroIsland.tsx), [`LandingCategories.astro`](../src/components/landing/LandingCategories.astro) y [`Button.astro`](../src/components/ui/Button.astro). [`Button.tsx`](../src/components/ui/Button.tsx) e [`IconButton.tsx`](../src/components/ui/IconButton.tsx) están exportados y endurecidos, pero hoy **no tienen consumidores reales**: las migraciones usaron las clases CSS canónicas (`.fx-btn-*`, `.fx-press`, `.fx-pressable`). La adopción del primitivo queda como deuda de una fase posterior.
+**Código muerto y standby pendiente.** Además de las tres primitivas eliminadas en la Tarea 1, siguen sin consumidores [`LandingHeroIsland.tsx`](../src/components/landing/LandingHeroIsland.tsx), [`LandingCategories.astro`](../src/components/landing/LandingCategories.astro), [`Button.astro`](../src/components/ui/Button.astro), [`TopBarSearch.tsx`](../src/components/navigation/TopBarSearch.tsx) y [`PortalSwitchCard.tsx`](../src/components/perfil/PortalSwitchCard.tsx). La landing no se limita a los componentes que importa `/`: [`src/pages/index.astro`](../src/pages/index.astro) importa `LandingHeader`, `LandingHero`, `LandingFleetShowcase`, `LandingSteps`, `LandingRequirements`, `LandingPriceBreakdown`, `LandingFinalCta` y `LandingFooter`; [`LandingFeatured.astro`](../src/components/landing/LandingFeatured.astro), [`LandingTrust.astro`](../src/components/landing/LandingTrust.astro) y [`LandingFaq.astro`](../src/components/landing/LandingFaq.astro) son standby no importados por `/` (se barrieron en la Tarea 10b por si se reactivan). En flota, [`VehicleCatalogCard.tsx`](../src/components/flota/VehicleCatalogCard.tsx) solo lo importa [`FleetCatalogList.tsx`](../src/components/flota/FleetCatalogList.tsx), y `FleetCatalogList` no tiene consumidores: ambos están huérfanos. [`Button.tsx`](../src/components/ui/Button.tsx) e [`IconButton.tsx`](../src/components/ui/IconButton.tsx) están exportados y endurecidos, pero hoy **no tienen consumidores reales**: las migraciones usaron las clases CSS canónicas (`.fx-btn-*`, `.fx-press`, `.fx-pressable`). La adopción del primitivo queda como deuda de una fase posterior.
 
 **Menores diferidos que afectan al contrato.**
 
@@ -658,8 +671,8 @@ El baseline final escanea 142 archivos y conserva deuda en 56 de ellos. **No se 
 - No hay CI porque el repositorio no tiene `.github/`; `pnpm audit:interactions`, `pnpm check` y `pnpm build` son la puerta local documentada en `RUL-FLX-024`.
 - El guardrail es un contador de texto: cuenta comentarios y strings, y evalúa `onKeyDown` por archivo, no por elemento. Sus cifras son un presupuesto de deuda, no un censo exacto.
 - La rama `<a>` de `Button` no reenvía props arbitrarias de ancla (`target`, `rel`, `data-*`); está documentado en su JSDoc y debe resolverse antes de que un consumidor las necesite.
-- Algunos botones operativos ya migrados (por ejemplo, los de `PerfilEditorCard`) usan `.fx-press` (`scale`) en lugar de `.fx-btn-*` (sombra interna). Es una desviación menor del contrato de press de botón; no se corrigió aquí porque implicaría tocar componentes ya migrados. En Tier C el `scale(0.98)` sí es el press canónico.
-- El reset de `prefers-reduced-motion` ya no fuerza `opacity: 1` en `.fx-press`/`.fx-pressable`/`.ios-press-bounce`; el 40 % de un control `disabled` se conserva. La verificación es estática sobre el CSS, no una captura en dispositivo.
+- **Modelo dual de press deliberado.** La mayoría de los botones operativos migrados son controles crudos y usan `.fx-press` (`scale(0.98)`); `.fx-btn-*` (sombra interna) no tiene consumidores en producción. `RUL-FLX-024` documenta ambos modelos: `.fx-btn-*` para la primitiva y `.fx-press` para controles crudos/heredados que no la usan, sin mezclarlos en el mismo elemento. No es una desviación del contrato.
+- El reset de `prefers-reduced-motion` ya no fuerza `opacity: 1` en `.fx-press`/`.fx-pressable`/`.ios-press-bounce`; el 40 % de un control `disabled` se conserva. Bajo reduced motion el press mantiene una señal no motora: `opacity: 0.92` en `:active:not(:disabled)`. La verificación es estática sobre el CSS, no una captura en dispositivo.
 
 ### 13.4 Verificación de cierre
 
@@ -668,5 +681,7 @@ node scripts/audit-interactions.mjs  → exit 0 · 142 archivos escaneados · 56
 pnpm check                           → Result (257 files): 0 errors, 0 warnings, 0 hints
 pnpm build                           → Complete! (SSR Cloudflare, sin errores)
 ```
+
+**Contraste de foco:** verificar en ambos temas sobre superficie normal, tarjeta fija oscura (tema claro) y tarjeta fija clara (tema oscuro). El anillo de 2 px usa `--fx-border-focus` y se refuerza con un halo interno de 1 px del tono opuesto (`--fx-focus-halo`); en las superficies de color fijo el anillo puede mezclarse, pero el halo mantiene la señal.
 
 **Fin del informe.**

@@ -1078,7 +1078,7 @@ export default function MisReservasHub({
                       prev === 'CONFIRMADA' ? 'PENDIENTE' : 'CONFIRMADA'
                     )
                   }
-                  className="min-h-[44px] rounded-[16px] bg-[#EDEDED]/80 px-3 py-2 text-left cursor-pointer"
+                  className="fx-press min-h-[44px] rounded-[16px] bg-[#EDEDED]/80 px-3 py-2 text-left cursor-pointer"
                 >
                   <span className="block text-[10px] font-medium text-[#4B5563]">
                     Estado inicial
@@ -1095,7 +1095,7 @@ export default function MisReservasHub({
                   onClick={() =>
                     setFormPorcentajeAbono((prev) => (prev === 100 ? 30 : 100))
                   }
-                  className="min-h-[44px] rounded-[16px] bg-[#EDEDED]/80 px-3 py-2 text-left cursor-pointer"
+                  className="fx-press min-h-[44px] rounded-[16px] bg-[#EDEDED]/80 px-3 py-2 text-left cursor-pointer"
                 >
                   <span className="block text-[10px] font-medium text-[#4B5563]">
                     Recaudo en caja

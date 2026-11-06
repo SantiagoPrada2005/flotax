@@ -30,6 +30,7 @@ html[data-theme="light"] {
   --fx-border-subtle: rgba(156, 163, 175, 0.35);
   --fx-border-card: rgba(156, 163, 175, 0.25);
   --fx-border-focus: #111827;
+  --fx-focus-halo: #ededed;
 
   --fx-status-amber-bg: rgba(245, 158, 11, 0.14);
   --fx-status-amber-text: #92400e;
@@ -97,6 +98,7 @@ html[data-theme="dark"] {
   --fx-border-subtle: rgba(156, 163, 175, 0.22);
   --fx-border-card: rgba(255, 255, 255, 0.10);
   --fx-border-focus: #ededed;
+  --fx-focus-halo: #111827;
 
   --fx-status-amber-bg: rgba(245, 158, 11, 0.20);
   --fx-status-amber-text: #fcd34d;
@@ -205,10 +207,16 @@ html[data-theme="dark"] {
   --radius-input: 12px;
 }
 
-/* Global focus contract: unlayered so utilities cannot hide the ring. */
+/*
+ * Global focus contract: unlayered so utilities cannot hide the ring.
+ * The 2px outline uses the theme foreground; the 1px halo uses the opposite
+ * tone so the ring stays visible on fixed-color surfaces (dark cards in light
+ * theme, light cards in dark theme) where a single token would blend in.
+ */
 :where(button, a[href], [role="button"], [role="switch"], summary, input, select, textarea):focus-visible {
   outline: 2px solid var(--fx-border-focus);
   outline-offset: 2px;
+  box-shadow: 0 0 0 1px var(--fx-focus-halo);
 }
 
 /* Universal Mobile Ergonomics Shielding (iOS WebKit Anti-Zoom) */
@@ -738,7 +746,8 @@ html.js-ready .reveal-on-scroll.is-visible {
   /*
    * Press feedback: remove motion, but never force opacity here.
    * Disabled controls (.fx-btn-*:disabled, disabled:opacity-40) must keep
-   * their 40% opacity under reduced motion.
+   * their 40% opacity under reduced motion. Enabled controls keep a non-motion
+   * press signal (opacity 0.92) so the tap still gets feedback.
    */
   .fx-press,
   .fx-pressable,
@@ -746,6 +755,12 @@ html.js-ready .reveal-on-scroll.is-visible {
     animation: none !important;
     transform: none !important;
     transition: none !important;
+  }
+
+  .fx-press:active:not(:disabled),
+  .fx-pressable:active:not(:disabled),
+  .ios-press-bounce:active:not(:disabled) {
+    opacity: 0.92;
   }
 
   .ios-search-morph,

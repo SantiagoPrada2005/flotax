@@ -23,7 +23,7 @@ Regla de oro: **un estado, una señal, una propiedad**. Press y hover de operaci
 | :--- | :--- | :--- | :--- | :--- |
 | **Rest** | — | Fondo, borde y texto con tokens canónicos; sin animación decorativa. | Superficie con borde de 1 px; sin sombra de espera. | Igual que Tier B; una sola entrada orquestada permitida. |
 | **Hover** | Solo puntero fino: `@media (hover: hover) and (pointer: fine)`. | Cambia fondo, borde o color, 120 ms. Sombra solo si la define el CSS canónico `.fx-btn-*`. | Cambia solo borde o tinte, 120 ms. **Prohibido** sombra, escala o desplazamiento. | Máximo 1 propiedad visual (color, borde o tinte), 180 ms; el movimiento de hero es el único momento orquestado. |
-| **Active** | Pointer o touch. | Botones `.fx-btn-*`: sombra interna, **sin `transform`**, 120 ms. Otros controles: `.fx-press`, 120 ms. | `.fx-pressable`: `transform: scale(0.98)`, sin sombra, 120 ms. Toda la tarjeta o fila es un solo target. | `scale(0.98)` en CTA y enlaces interactivos, 120 ms; sin sombra añadida. |
+| **Active** | Pointer o touch. | `.fx-btn-*`: sombra interna, **sin `transform`**, 120 ms (press de la primitiva). Controles crudos/heredados que no usan `.fx-btn-*`: `.fx-press` con `transform: scale(0.98)`, 120 ms. **No usar ambos modelos en el mismo elemento.** | `.fx-pressable`: `transform: scale(0.98)`, sin sombra, 120 ms. Toda la tarjeta o fila es un solo target. | `scale(0.98)` en CTA y enlaces interactivos, 120 ms; sin sombra añadida. |
 | **Focus-visible** | Teclado (`Tab`). | Anillo de 2 px con `outline-offset: 2px`; visible en claro y oscuro. | Anillo de 2 px; la tarjeta enfocada se distingue del resto. | Anillo de 2 px; nunca se elimina en CTAs, selects ni inputs. |
 | **Disabled** | Atributo `disabled` o `aria-disabled`. | 40 % de opacidad, `cursor: not-allowed`, sin hover ni press. El 40 % debe sobrevivir a `prefers-reduced-motion`. | 40 % de opacidad y `cursor: not-allowed`; no reacciona a hover ni press. | n/a: la landing no deshabilita CTAs. |
 | **Loading** | Operación asíncrona en curso. | Spinner de 16 px + label visible + `aria-busy="true"`; el ancho no salta. | Skeleton con la forma final del contenido; sin layout shift. | n/a: sin controles asíncronos. |
@@ -57,7 +57,7 @@ Los tiempos viven en [`tokens.css`](../../src/styles/tokens.css) y no se escribe
 2. Press y hover de operación: 120 ms; hover de landing: 180 ms. Ninguna interacción supera 320 ms.
 3. Sin `will-change` en listas ni en elementos repetidos.
 4. Sin animación infinita en un CTA primario ni bucles decorativos en la landing.
-5. `prefers-reduced-motion: reduce` desactiva animaciones, transforms y transiciones decorativas; conserva spinners y cambios de opacidad esenciales. **No fuerza `opacity: 1` en controles deshabilitados**: el 40 % de disabled es información, no decoración.
+5. `prefers-reduced-motion: reduce` desactiva animaciones, transforms y transiciones decorativas; conserva spinners y cambios de opacidad esenciales. El press conserva una señal no motora (`opacity: 0.92` en `:active:not(:disabled)`). **No fuerza `opacity: 1` en controles deshabilitados**: el 40 % de disabled es información, no decoración.
 6. Hover solo bajo `@media (hover: hover) and (pointer: fine)` en CSS propio.
 
 ---
@@ -78,9 +78,9 @@ También se rechazan en revisión: `active:scale-*` sueltos fuera de `.fx-press`
 
 ## 5. Implementación Canónica
 
-- **Botones:** `.fx-btn-primary`, `.fx-btn-secondary`, `.fx-btn-outline` y `.fx-btn-ghost` gobiernan color, hover, press y disabled. No añadir `transform` ni `transition-all` encima. Los botones nuevos de operación deben usar estas clases; `.fx-press` no sustituye el press de sombra interna de un botón canónico.
-- **Press genérico:** `.fx-press` para controles y enlaces que no usen `.fx-btn-*`; `.fx-pressable` para tarjetas y filas. Ambos tienen `scale(0.98)` a 120 ms y se desactivan con `prefers-reduced-motion`.
-- **Foco global:** la regla `:where(button, a[href], [role="button"], [role="switch"], summary, input, select, textarea):focus-visible` de `tokens.css` es el fallback. No sustituirla por `outline-none`.
+- **Botones (Tier A, dos modelos explícitos):** `.fx-btn-primary`, `.fx-btn-secondary`, `.fx-btn-outline` y `.fx-btn-ghost` son el press canónico de la primitiva: sombra interna (`inset`), sin `transform`, 120 ms; no añadir `transform` ni `transition-all` encima. `.fx-press` es el press canónico de los controles crudos/heredados que no usan `.fx-btn-*`: `transform: scale(0.98)`, 120 ms. No usar ambos modelos en el mismo elemento. La mayoría de los botones migrados son crudos y usan `.fx-press`; `.fx-btn-*` aún no tiene consumidores en producción. Es un modelo dual deliberado, no una desviación del contrato.
+- **Press genérico:** `.fx-press` para controles crudos/heredados y enlaces que no usen `.fx-btn-*`; `.fx-pressable` para tarjetas y filas. Ambos tienen `scale(0.98)` a 120 ms y se desactivan con `prefers-reduced-motion` (donde el press cae a `opacity: 0.92`).
+- **Foco global:** la regla `:where(button, a[href], [role="button"], [role="switch"], summary, input, select, textarea):focus-visible` de `tokens.css` es el fallback: anillo de 2 px (`--fx-border-focus`) + halo interno de 1 px (`--fx-focus-halo`) para que siga visible sobre superficies de color fijo. No sustituirla por `outline-none`.
 - **Disabled:** 40 % de opacidad + `cursor: not-allowed`; ningún hover debe alcanzar a un control deshabilitado (`:hover:not(:disabled)`).
 - **Primitivas React:** [`Button.tsx`](../../src/components/ui/Button.tsx) e [`IconButton.tsx`](../../src/components/ui/IconButton.tsx) renderizan `<button type="button">`. El spread de props va **antes** de `type` y `disabled`: un caller no puede convertir el botón en `submit` ni saltarse el estado bloqueado. En la rama `<a>` de `Button`, solo se reenvían `href`, `className`, `aria-label`, `aria-busy`, `aria-disabled`, `tabIndex` y el guard de `onClick`; props arbitrarias de ancla (`target`, `rel`, `data-*`) **no** se reenvían hoy (ver JSDoc del componente antes de depender de ellas).
 - **Touch targets:** mínimo 44×44 px; un control visual de 36 px solo se acepta si extiende su área táctil a 44 px.
@@ -111,7 +111,7 @@ No hay CI configurado en este repositorio (no existe `.github/`); los tres coman
 ## 7. Checklist de un Componente Nuevo
 
 - [ ] Tiene rest, hover (solo pointer), active, focus-visible y disabled; loading si es asíncrono.
-- [ ] El press dura 120 ms y cambia una sola propiedad: sombra interna en botón, `scale(0.98)` en tarjeta/fila.
+- [ ] El press dura 120 ms y cambia una sola propiedad: sombra interna en `.fx-btn-*`, `scale(0.98)` en `.fx-press` de controles crudos y en tarjeta/fila.
 - [ ] El hover no mueve ni eleva nada en Tier A/B y no escala imágenes.
 - [ ] El foco se ve en claro y oscuro, con anillo de 2 px y offset 2 px.
 - [ ] El target táctil mide al menos 44×44 px.

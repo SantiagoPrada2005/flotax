@@ -608,7 +608,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               }}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`min-h-[40px] shrink-0 whitespace-nowrap rounded-xl px-3.5 py-2 transition-colors cursor-pointer ${
+              className={`fx-press min-h-[40px] shrink-0 whitespace-nowrap rounded-xl px-3.5 py-2 transition-colors cursor-pointer ${
                 activeTab === tab.id
                   ? 'bg-white text-[#111827] shadow-xs dark:bg-white/20 dark:text-white'
                   : 'hover:text-[#111827] hover:bg-white/50 dark:text-[#D1D5DB] dark:hover:text-white dark:hover:bg-white/10'
@@ -1180,7 +1180,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               <button
                 type="button"
                 onClick={() => descargarCsv(exportarSesionesCajaCsv(data.historialSesionesCaja), 'historial_arqueos_caja.csv')}
-                className="text-xs font-bold text-[#111827] hover:underline"
+                className="fx-press text-xs font-bold text-[#111827] hover:underline"
               >
                 ⬇ Exportar Historial CSV
               </button>
@@ -1736,7 +1736,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               <button
                 type="button"
                 onClick={() => setMovimientoDetalle(null)}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-[#EDEDED] text-[#4B5563] hover:bg-[#9CA3AF]/30"
+                className="fx-press flex h-8 w-8 items-center justify-center rounded-full bg-[#EDEDED] text-[#4B5563] hover:bg-[#9CA3AF]/30"
               >
                 ✕
               </button>
@@ -1804,7 +1804,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               <button
                 type="button"
                 onClick={() => setMovimientoDetalle(null)}
-                className="min-h-[40px] rounded-full border border-[#9CA3AF]/40 px-4 text-xs font-semibold text-[#4B5563]"
+                className="fx-press min-h-[40px] rounded-full border border-[#9CA3AF]/40 px-4 text-xs font-semibold text-[#4B5563]"
               >
                 Cerrar
               </button>
@@ -1812,7 +1812,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                 <button
                   type="button"
                   onClick={() => setModalAnularAbierto(true)}
-                  className="min-h-[40px] rounded-full bg-rose-700 px-4 text-xs font-bold text-white hover:bg-rose-800"
+                  className="fx-press min-h-[40px] rounded-full bg-rose-700 px-4 text-xs font-bold text-white hover:bg-rose-800"
                 >
                   Anular Movimiento
                 </button>
@@ -1851,7 +1851,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               <button
                 type="button"
                 onClick={() => setModalAnularAbierto(false)}
-                className="min-h-[40px] rounded-full border border-[#9CA3AF]/40 px-4 text-xs font-semibold text-[#4B5563]"
+                className="fx-press min-h-[40px] rounded-full border border-[#9CA3AF]/40 px-4 text-xs font-semibold text-[#4B5563]"
               >
                 Cancelar
               </button>
@@ -1859,7 +1859,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                 type="button"
                 onClick={handleConfirmarAnulacion}
                 disabled={!motivoAnulacion.trim() || motivoAnulacion.trim().length < 5}
-                className="min-h-[40px] rounded-full bg-rose-700 px-5 text-xs font-bold text-white hover:bg-rose-800 disabled:opacity-50"
+                className="fx-press min-h-[40px] rounded-full bg-rose-700 px-5 text-xs font-bold text-white hover:bg-rose-800 disabled:opacity-50"
               >
                 Confirmar Anulación
               </button>
@@ -1879,7 +1879,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               <button
                 type="button"
                 onClick={() => setModalNuevaCuentaAbierto(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-[#EDEDED] text-[#4B5563]"
+                className="fx-press flex h-8 w-8 items-center justify-center rounded-full bg-[#EDEDED] text-[#4B5563]"
               >
                 ✕
               </button>

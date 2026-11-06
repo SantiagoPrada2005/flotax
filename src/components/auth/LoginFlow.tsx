@@ -338,7 +338,7 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
             <button
               type="button"
               onClick={() => setRole('cliente')}
-              className={`flex-1 py-2 text-xs font-semibold rounded-full transition-colors duration-150 ${
+              className={`fx-press flex-1 py-2 text-xs font-semibold rounded-full transition-colors duration-150 ${
                 role === 'cliente'
                   ? 'bg-[#EDEDED] text-[#111827] shadow-xs'
                   : 'text-[#9CA3AF] hover:text-[#EDEDED]'
@@ -349,7 +349,7 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
             <button
               type="button"
               onClick={() => setRole('operador')}
-              className={`flex-1 py-2 text-xs font-semibold rounded-full transition-colors duration-150 ${
+              className={`fx-press flex-1 py-2 text-xs font-semibold rounded-full transition-colors duration-150 ${
                 role === 'operador'
                   ? 'bg-[#EDEDED] text-[#111827] shadow-xs'
                   : 'text-[#9CA3AF] hover:text-[#EDEDED]'
@@ -426,7 +426,7 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
               <button
                 type="button"
                 onClick={toggleMode}
-                className="font-bold text-[#EDEDED] hover:underline"
+                className="fx-press font-bold text-[#EDEDED] hover:underline"
               >
                 {mode === 'login' ? 'Crea tu cuenta' : 'Inicia sesión'}
               </button>
@@ -476,7 +476,7 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
               <button
                 type="button"
                 onClick={handleGoogleSignIn}
-                className="text-xs text-[#9CA3AF] hover:text-[#EDEDED] underline"
+                className="fx-press text-xs text-[#9CA3AF] hover:text-[#EDEDED] underline"
               >
                 ¿Prefieres acceder al instante? Continuar con Google
               </button>
@@ -501,7 +501,7 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
                   setError(null);
                   setInfoMessage(null);
                 }}
-                className="text-xs font-semibold text-[#9CA3AF] hover:text-[#EDEDED] ml-2 shrink-0 underline"
+                className="fx-press text-xs font-semibold text-[#9CA3AF] hover:text-[#EDEDED] ml-2 shrink-0 underline"
               >
                 Cambiar
               </button>
@@ -574,7 +574,7 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
                 type="button"
                 onClick={handleResendCode}
                 disabled={isLoading || countdown > 0}
-                className="font-body font-semibold text-[#9CA3AF] hover:text-[#EDEDED] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="fx-press font-body font-semibold text-[#9CA3AF] hover:text-[#EDEDED] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 {countdown > 0
                   ? `Reenviar código en ${countdown}s`
