@@ -1265,10 +1265,12 @@ html.flotax-theme-transitioning::view-transition-new(root) {
     color var(--fx-duration-press) var(--fx-ease-out),
     box-shadow var(--fx-duration-press) var(--fx-ease-out);
 }
-.fx-btn-primary:hover:not(:disabled) {
-  background-color: var(--fx-btn-primary-hover-bg);
-  color: var(--fx-btn-primary-hover-text);
-  border-color: var(--fx-btn-primary-hover-border);
+@media (hover: hover) and (pointer: fine) {
+  .fx-btn-primary:hover:not(:disabled) {
+    background-color: var(--fx-btn-primary-hover-bg);
+    color: var(--fx-btn-primary-hover-text);
+    border-color: var(--fx-btn-primary-hover-border);
+  }
 }
 .fx-btn-primary:active:not(:disabled) {
   background-color: var(--fx-btn-primary-active-bg);
@@ -1292,10 +1294,12 @@ html.flotax-theme-transitioning::view-transition-new(root) {
     color var(--fx-duration-press) var(--fx-ease-out),
     box-shadow var(--fx-duration-press) var(--fx-ease-out);
 }
-.fx-btn-secondary:hover:not(:disabled) {
-  background-color: var(--fx-btn-secondary-hover-bg);
-  color: var(--fx-btn-secondary-hover-text);
-  border-color: var(--fx-btn-secondary-hover-border);
+@media (hover: hover) and (pointer: fine) {
+  .fx-btn-secondary:hover:not(:disabled) {
+    background-color: var(--fx-btn-secondary-hover-bg);
+    color: var(--fx-btn-secondary-hover-text);
+    border-color: var(--fx-btn-secondary-hover-border);
+  }
 }
 .fx-btn-secondary:active:not(:disabled) {
   background-color: var(--fx-btn-secondary-active-bg);
@@ -1319,10 +1323,12 @@ html.flotax-theme-transitioning::view-transition-new(root) {
     color var(--fx-duration-press) var(--fx-ease-out),
     box-shadow var(--fx-duration-press) var(--fx-ease-out);
 }
-.fx-btn-outline:hover:not(:disabled) {
-  background-color: var(--fx-btn-outline-hover-bg);
-  color: var(--fx-btn-outline-hover-text);
-  border-color: var(--fx-btn-outline-hover-border);
+@media (hover: hover) and (pointer: fine) {
+  .fx-btn-outline:hover:not(:disabled) {
+    background-color: var(--fx-btn-outline-hover-bg);
+    color: var(--fx-btn-outline-hover-text);
+    border-color: var(--fx-btn-outline-hover-border);
+  }
 }
 .fx-btn-outline:active:not(:disabled) {
   background-color: var(--fx-btn-outline-active-bg);
@@ -1346,10 +1352,12 @@ html.flotax-theme-transitioning::view-transition-new(root) {
     color var(--fx-duration-press) var(--fx-ease-out),
     box-shadow var(--fx-duration-press) var(--fx-ease-out);
 }
-.fx-btn-ghost:hover:not(:disabled) {
-  background-color: var(--fx-btn-ghost-hover-bg);
-  color: var(--fx-btn-ghost-hover-text);
-  border-color: var(--fx-btn-ghost-hover-border);
+@media (hover: hover) and (pointer: fine) {
+  .fx-btn-ghost:hover:not(:disabled) {
+    background-color: var(--fx-btn-ghost-hover-bg);
+    color: var(--fx-btn-ghost-hover-text);
+    border-color: var(--fx-btn-ghost-hover-border);
+  }
 }
 .fx-btn-ghost:active:not(:disabled) {
   background-color: var(--fx-btn-ghost-active-bg);
