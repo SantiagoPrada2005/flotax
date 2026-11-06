@@ -366,6 +366,34 @@ Estos valores son obligatorios en todas las tareas. El revisor los recibe textua
 
 ---
 
+## Task 10b: Barrido de interacción en la landing viva
+
+**Fase:** 5 (hallazgo de alcance)
+**Archivos:** `src/components/landing/LandingHeader.astro`, `LandingBookingIsland.tsx`, `LandingFleetShowcaseIsland.tsx`, `LandingFeatured.astro`, `LandingSteps.astro`, `LandingTrust.astro`, `LandingFaq.astro`, `LandingFinalCta.astro`, `LandingPriceBreakdown.astro`.
+
+**Contexto:** la Tarea 10 limpió `LandingHeroIsland` y `LandingCategories`, pero el implementer descubrió que la página `/` usa `LandingHero.astro`; el island era código muerto. Los componentes vivos de la landing conservan `active:scale-*`, `transition-all`, `group-hover:scale` y `focus:outline-none`. Esta tarea completa la Fase 5 sobre la superficie real, sin rediseño.
+
+**Requisitos:**
+
+1. Reemplazar `active:scale-*` por `.fx-press` en controles interactivos; no aplicar press a superficies estáticas.
+2. Sustituir `transition-all`:
+   - En el header sticky, el `transition-all` gobierna la ocultación por scroll (transform/opacity). Cambiarlo a `transition-[transform,opacity]` y conservar la duración; no es un hover.
+   - En tarjetas, CTAs y selects, usar `transition-colors` o propiedades concretas; si `.fx-press`/`.fx-btn-*` ya gobierna la transición, eliminar la utilidad (quedaría enmascarada).
+3. Eliminar `group-hover:scale-*` y cualquier hover de elevación. Dejar un solo property de hover (tinte/borde) salvo que el contraste exija un par fondo+texto; documentar ese caso.
+4. Quitar `focus:outline-none` de selects/inputs/CTAs; el anillo global de 2 px es el fallback. Si el input vive dentro de una cápsula con overflow, añadir `focus-within:ring-2` en la cápsula.
+5. Llevar a 44×44 los targets por debajo de 44 px (header CTA, chips, botones de icono) con `min-h` o pseudo-elemento; no agrandar el círculo visible si rompe el layout.
+6. No cambiar copy, rutas, datos, la animación GSAP del hero ni el orden de secciones.
+7. No tocar `LandingHero.astro` (sin slop), `LandingFooter.astro`, `LandingHeroIsland.tsx` ni `LandingCategories.astro` (ya migrados).
+
+**Criterios de aceptación:**
+
+- `grep -nE "active:scale|group-hover:scale|focus:outline-none"` en los nueve archivos devuelve 0.
+- `transition-all` solo aparece, como máximo, en el header funcional y ya convertido a `transition-[transform,opacity]`; 0 en el resto.
+- Todo control interactivo tiene press y foco visibles; targets ≥44 px o área extendida.
+- `pnpm audit:interactions`, `pnpm check` (0/0/0), `pnpm build` verdes.
+
+---
+
 ## Task 11: Regla de interacción, baseline final y documentación
 
 **Fase:** 6
