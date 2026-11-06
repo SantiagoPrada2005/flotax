@@ -587,7 +587,7 @@ export default function LocalCatalogShareCard({
                   <button
                     type="submit"
                     disabled={isPending}
-                    className="fx-press min-h-[46px] rounded-full bg-[#111827] text-xs font-extrabold text-[#EDEDED] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer dark:bg-white dark:text-[#111827] dark:hover:bg-[#EDEDED]"
+                    className="fx-press min-h-[46px] rounded-full bg-[#111827] text-xs font-extrabold text-[#EDEDED] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer dark:bg-white dark:text-[#111827] dark:enabled:hover:bg-[#EDEDED]"
                   >
                     {isPending ? 'Guardando...' : 'Guardar Cambios'}
                   </button>

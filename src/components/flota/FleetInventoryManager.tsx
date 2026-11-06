@@ -845,7 +845,7 @@ export default function FleetInventoryManager({
                 type="button"
                 disabled={isPending}
                 onClick={confirmarEliminar}
-                className="fx-press min-h-[44px] rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
+                className="fx-press min-h-[44px] rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white enabled:hover:bg-[#1F2937] cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {isPending ? 'Retirando...' : 'Sí, retirar unidad'}
               </button>
