@@ -111,6 +111,7 @@ export default function PortalSwitchCard({
           role="switch"
           aria-checked={false}
           aria-label="Cambiar a Modo Operador"
+          aria-busy={isPending}
           disabled={isPending}
           onClick={handleToggle}
           className="group relative flex shrink-0 cursor-pointer items-center px-1 py-2 disabled:opacity-40 disabled:cursor-not-allowed"

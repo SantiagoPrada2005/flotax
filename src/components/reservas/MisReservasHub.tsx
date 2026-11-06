@@ -547,7 +547,7 @@ export default function MisReservasHub({
                     enAlgunAlquiler ? ' (Día con alquiler)' : ''
                   }`}
                   aria-pressed={enRangoFiltro}
-                  className={`fx-press relative flex h-9 w-9 flex-col items-center justify-center rounded-full text-xs tabular-nums select-none cursor-pointer after:absolute after:-inset-1 after:content-[''] ${clasesCirculo}`}
+                  className={`fx-press relative flex h-9 w-9 flex-col items-center justify-center rounded-full text-xs tabular-nums select-none cursor-pointer after:absolute after:-inset-y-1 after:inset-x-0 after:content-[''] ${clasesCirculo}`}
                 >
                   <span>{celda.numeroDia}</span>
                   {enAlgunAlquiler && (
@@ -746,12 +746,13 @@ export default function MisReservasHub({
                   tabIndex={0}
                   onClick={() => abrirDetalle(item)}
                   onKeyDown={(e) => {
+                    if (e.target !== e.currentTarget) return;
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
                       abrirDetalle(item);
                     }
                   }}
-                  className={`fx-pressable group w-full rounded-[22px] p-4 cursor-pointer animate-fade-up bg-white dark:bg-[#1F2937] border ${
+                  className={`fx-pressable group w-full rounded-[22px] p-4 cursor-pointer bg-white dark:bg-[#1F2937] border ${
                     esActiva
                       ? 'border-[#111827]/15 dark:border-white/20 shadow-sm ring-1 ring-[#111827]/10 dark:ring-white/10'
                       : 'border-[#E5E4DF] dark:border-white/10 hover:border-[#111827]/25 dark:hover:border-white/20 shadow-2xs'
@@ -824,6 +825,7 @@ export default function MisReservasHub({
                                   e.stopPropagation();
                                   aprobarSolicitudRapida(item);
                                 }}
+                                onKeyDown={(e) => e.stopPropagation()}
                                 className="fx-press inline-flex min-h-[44px] items-center rounded-full bg-[#111827] dark:bg-white dark:text-[#111827] px-3.5 py-1 text-[11px] font-bold text-white hover:bg-[#1F2937] dark:hover:bg-[#EDEDED] cursor-pointer"
                               >
                                 Aprobar

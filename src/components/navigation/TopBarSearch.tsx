@@ -118,7 +118,7 @@ export default function TopBarSearch({
       {isOpen && (
         <div className="fixed inset-x-3 sm:inset-x-6 top-2 h-11 z-50 flex items-center gap-2.5 animate-in fade-in duration-200">
           <div
-            className={`[--fx-border-focus:#111827] flex-1 h-11 flex items-center px-3.5 gap-2.5 rounded-full border border-white/80 ${pillClass} ios-search-morph shadow-[0_14px_32px_-6px_rgba(17,24,39,0.22)]`}
+            className={`flex-1 h-11 flex items-center px-3.5 gap-2.5 rounded-full border border-white/80 ${pillClass} ios-search-morph shadow-[0_14px_32px_-6px_rgba(17,24,39,0.22)]`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -139,6 +139,7 @@ export default function TopBarSearch({
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              aria-label="Buscar vehículos"
               placeholder={
                 localCaptacionNombre
                   ? `Buscar en ${localCaptacionNombre}...`
