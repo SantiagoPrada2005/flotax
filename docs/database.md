@@ -383,6 +383,8 @@ Historial longitudinal fotográfico y de video en Cloudflare R2 (`BUCKET_MULTIME
 | `creado_en` | TIMESTAMP | NOT NULL | Creación. |
 | `actualizado_en` | TIMESTAMP | NOT NULL | Última modificación. |
 
+Índices: `mantenimientos_vehiculo_fechas_idx (vehiculo_id, estado, fecha_inicio, fecha_fin)` y `mantenimientos_local_estado_idx (local_id, estado)`.
+
 ---
 
 ### 5. Módulo de Reservas Comerciales, Contratos de Alquiler y Peritaje R2
@@ -769,6 +771,7 @@ erDiagram
     locales_alquiler ||--o{ plantillas_inspeccion : "protocolos periciales"
     locales_alquiler ||--o{ reservas : "recibe solicitudes"
     locales_alquiler ||--o{ contratos_alquiler : "emite contratos"
+    locales_alquiler ||--o{ mantenimientos_vehiculo : "programa taller"
 
     vehiculos ||--o{ documentos_vehiculo : "SOAT / RTM / polizas"
     vehiculos ||--o{ multimedia_vehiculo : "historial fotos y videos R2"
@@ -1039,8 +1042,11 @@ erDiagram
         string tipo
         string estado
         string etiqueta
+        string descripcion
+        string taller_proveedor
         string fecha_inicio
         string fecha_fin
+        integer kilometraje_registro
         integer costo_total
         string movimiento_caja_id FK
         string creado_por_id FK

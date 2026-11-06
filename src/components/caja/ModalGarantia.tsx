@@ -1,6 +1,18 @@
 import { useState } from 'react';
 import type { DepositoGarantiaSelect, CuentaFinancieraSelect, MetodoPagoFinanciero } from '@/lib/caja';
 import { formatearMonedaCOP } from '@/lib/caja';
+import {
+  CajaCustomSelect,
+  type CajaSelectOption,
+} from './CajaMovimientosFilterBar';
+
+const OPCIONES_METODO_GARANTIA: readonly CajaSelectOption<MetodoPagoFinanciero>[] = [
+  { value: 'transferencia', label: 'Transferencia Bancaria' },
+  { value: 'efectivo', label: 'Efectivo' },
+  { value: 'tarjeta', label: 'Tarjeta Débito / Crédito' },
+  { value: 'especie', label: 'En Especie' },
+  { value: 'otro', label: 'Otro medio' },
+];
 
 export interface ModalGarantiaProps {
   isOpen: boolean;
@@ -134,11 +146,11 @@ export function ModalGarantia({
         </div>
 
         {/* Selector de Acción */}
-        <div className="mt-4 flex rounded-xl bg-[#EDEDED] p-1 text-xs font-bold">
+        <div className="mt-4 flex rounded-xl bg-[#EDEDED] dark:bg-white/10 p-1 text-xs font-bold">
           <button
             type="button"
             onClick={() => setAccion('RECIBIR')}
-            className={`flex-1 min-h-[38px] rounded-lg transition ${accion === 'RECIBIR' ? 'bg-[#111827] text-white shadow-xs' : 'text-[#4B5563]'
+            className={`flex-1 min-h-[38px] rounded-lg transition ${accion === 'RECIBIR' ? 'bg-[#111827] text-white shadow-xs dark:!bg-white dark:!text-[#111827]' : 'text-[#4B5563] dark:!text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
               }`}
           >
             Recibir Custodia
@@ -146,7 +158,7 @@ export function ModalGarantia({
           <button
             type="button"
             onClick={() => setAccion('DEVOLVER')}
-            className={`flex-1 min-h-[38px] rounded-lg transition ${accion === 'DEVOLVER' ? 'bg-emerald-700 text-white shadow-xs' : 'text-[#4B5563]'
+            className={`flex-1 min-h-[38px] rounded-lg transition ${accion === 'DEVOLVER' ? 'bg-emerald-700 text-white shadow-xs' : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
               }`}
           >
             Restituir a Cliente
@@ -154,7 +166,7 @@ export function ModalGarantia({
           <button
             type="button"
             onClick={() => setAccion('RETENER_CARGOS')}
-            className={`flex-1 min-h-[38px] rounded-lg transition ${accion === 'RETENER_CARGOS' ? 'bg-rose-700 text-white shadow-xs' : 'text-[#4B5563]'
+            className={`flex-1 min-h-[38px] rounded-lg transition ${accion === 'RETENER_CARGOS' ? 'bg-rose-700 text-white shadow-xs' : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
               }`}
           >
             Aplicar a Daños
@@ -188,32 +200,32 @@ export function ModalGarantia({
               <label className="block text-xs font-bold uppercase tracking-wider text-[#4B5563] mb-1">
                 Método de Pago
               </label>
-              <select
+              <CajaCustomSelect<MetodoPagoFinanciero>
+                ariaLabel="Método de pago de garantía"
                 value={metodoPago}
-                onChange={(e) => setMetodoPago(e.target.value as MetodoPagoFinanciero)}
-                className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/50 bg-white px-3 py-2 text-base text-[#111827] focus:border-[#111827] focus:outline-hidden"
-              >
-                <option value="transferencia">Transferencia Bancaria</option>
-                <option value="efectivo">Efectivo</option>
-                <option value="tarjeta">Tarjeta</option>
-                <option value="otro">Otro</option>
-              </select>
+                options={OPCIONES_METODO_GARANTIA}
+                onChange={setMetodoPago}
+              />
             </div>
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-[#4B5563] mb-1">
                 Cuenta / Caja
               </label>
-              <select
+              <CajaCustomSelect
+                ariaLabel="Cuenta o caja de garantía"
                 value={cuentaId}
-                onChange={(e) => setCuentaId(e.target.value)}
-                className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/50 bg-white px-3 py-2 text-base text-[#111827] focus:border-[#111827] focus:outline-hidden"
-              >
-                {cuentas.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.nombre}
-                  </option>
-                ))}
-              </select>
+                options={cuentas.map((c) => ({
+                  value: c.id,
+                  label: c.nombre,
+                  badge:
+                    c.tipo === 'CAJA_EFECTIVO'
+                      ? 'Efectivo'
+                      : c.tipo === 'BANCO'
+                        ? 'Banco'
+                        : 'Billetera',
+                }))}
+                onChange={setCuentaId}
+              />
             </div>
           </div>
 

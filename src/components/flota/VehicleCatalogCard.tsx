@@ -28,21 +28,40 @@ export default function VehicleCatalogCard({ vehiculo }: VehicleCatalogCardProps
   };
 
   return (
-    <a
-      href={`/vehiculos/${vehiculo.id}`}
-      data-astro-prefetch="tap"
-      className="group ios-press-bounce flex flex-col justify-between h-full rounded-[28px] bg-white border border-[#E4E4E7]/70 p-5 sm:p-6 shadow-[0_10px_30px_-5px_rgba(24,24,27,0.06)] hover:shadow-[0_18px_38px_-6px_rgba(24,24,27,0.12)] hover:border-[#A1A1AA]/50 transition-all cursor-pointer relative"
-    >
+    <article className="fx-pressable relative flex h-full flex-col justify-between rounded-[28px] border border-[#E4E4E7]/70 bg-white p-5 shadow-[0_10px_30px_-5px_rgba(24,24,27,0.06)] sm:p-6">
+      {/*
+        Enlace estirado: cubre toda la tarjeta, pero es hermano del botón de
+        favorito (nunca su ancestro), así que no hay interactivos anidados.
+      */}
+      <a
+        href={`/vehiculos/${vehiculo.id}`}
+        data-astro-prefetch="tap"
+        aria-label={`Ver ${vehiculo.marca} ${vehiculo.modelo}`}
+        className="absolute inset-0 z-10 rounded-[28px]"
+      />
+
       {/* 1. Cabecera de la Tarjeta (Nombre, Año + Icono Combustible, Tarifa) */}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="font-display text-base sm:text-lg font-bold tracking-tight text-[#18181B] group-hover:text-black truncate">
+          <h3 className="font-display text-base sm:text-lg font-bold tracking-tight text-[#18181B] truncate">
             {vehiculo.marca} {vehiculo.modelo}
           </h3>
 
-          <p className="mt-0.5 text-xs text-[#A1A1AA] font-normal">
-            {vehiculo.anio}
-          </p>
+          <div className="mt-0.5 flex items-center gap-2">
+            <span className="text-xs text-[#A1A1AA] font-normal">
+              {vehiculo.anio}
+            </span>
+            {vehiculo.estado === 'RESERVADO' && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wide bg-[#F4F4F5] text-[#71717A] border border-[#E4E4E7]">
+                Reservado
+              </span>
+            )}
+            {vehiculo.estado === 'MANTENIMIENTO' && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wide bg-[#F4F4F5] text-[#71717A] border border-[#E4E4E7]">
+                Taller
+              </span>
+            )}
+          </div>
 
           <div className="mt-1 flex items-center gap-1.5 text-xs text-[#A1A1AA]">
             {isElectrico ? (
@@ -74,18 +93,22 @@ export default function VehicleCatalogCard({ vehiculo }: VehicleCatalogCardProps
             type="button"
             onClick={toggleFavorite}
             aria-label="Marcar como favorito"
-            className="ios-press-bounce flex h-8 w-8 items-center justify-center rounded-full bg-[#F4F4F5] hover:bg-[#EAEAEB] text-[#71717A] transition -mt-1 cursor-pointer"
+            aria-pressed={isFavorite}
+            className="fx-pressable group/fav relative z-20 -mt-2.5 -mb-1.5 -ml-1.5 -mr-1.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill={isFavorite ? '#DC2626' : 'none'}
-              stroke={isFavorite ? '#DC2626' : 'currentColor'}
-              strokeWidth="2"
-              className="h-4 w-4 transition-colors"
-            >
-              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-            </svg>
+            {/* Círculo visual de 32 px dentro de una zona táctil de 44×44 px */}
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F4F4F5] text-[#71717A] transition-colors group-hover/fav:bg-[#EAEAEB]">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill={isFavorite ? '#DC2626' : 'none'}
+                stroke={isFavorite ? '#DC2626' : 'currentColor'}
+                strokeWidth="2"
+                className="h-4 w-4 transition-colors"
+              >
+                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+              </svg>
+            </span>
           </button>
         </div>
       </div>
@@ -95,7 +118,7 @@ export default function VehicleCatalogCard({ vehiculo }: VehicleCatalogCardProps
         <img
           src={vehiculo.imagenUrl}
           alt={`${vehiculo.marca} ${vehiculo.modelo}`}
-          className="w-full max-h-44 sm:max-h-52 object-contain mx-auto transition-transform duration-300 group-hover:scale-[1.03]"
+          className="mx-auto w-full max-h-44 object-contain sm:max-h-52"
           loading="lazy"
         />
         <div className="h-4 w-4/5 mx-auto -mt-3.5 rounded-full bg-[radial-gradient(ellipse_at_center,_rgba(24,24,27,0.20)_0%,_transparent_75%)]" />
@@ -135,6 +158,6 @@ export default function VehicleCatalogCard({ vehiculo }: VehicleCatalogCardProps
           </span>
         </div>
       </div>
-    </a>
+    </article>
   );
 }

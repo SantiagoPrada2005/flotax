@@ -18,7 +18,10 @@ import {
   tiposDocumentoIdentidad,
   nivelesCalificacionServicio,
   nivelesDesempenoVehiculo,
+  reservas,
+  mantenimientosVehiculo,
 } from '@/db/schema';
+import { and, eq, gte, inArray, lte } from 'drizzle-orm';
 import { crearServicioNotificaciones } from '@/lib/notificaciones';
 import { requireAuth, requireLocalAuth, PERMISOS } from '@/lib/auth';
 
@@ -75,6 +78,48 @@ export const crearReservaAction = defineAction({
       context.locals.localCaptacion?.id ||
       usuario?.localActivo?.id ||
       'local-patio-norte';
+
+    // 1. Validar solapamiento con reservas activas (CONFIRMADA, PENDIENTE, EN_CURSO)
+    const reservaSolapada = await db
+      .select({ id: reservas.id, codigo: reservas.codigo })
+      .from(reservas)
+      .where(
+        and(
+          eq(reservas.vehiculoId, input.vehiculoId),
+          inArray(reservas.estado, ['CONFIRMADA', 'PENDIENTE', 'EN_CURSO']),
+          lte(reservas.fechaInicio, input.fechaFin),
+          gte(reservas.fechaFin, input.fechaInicio)
+        )
+      )
+      .limit(1);
+
+    if (reservaSolapada.length > 0) {
+      throw new ActionError({
+        code: 'CONFLICT',
+        message: 'El vehículo ya no se encuentra disponible en las fechas seleccionadas.',
+      });
+    }
+
+    // 2. Validar solapamiento con mantenimientos programados o en taller
+    const mantenimientoSolapado = await db
+      .select({ id: mantenimientosVehiculo.id })
+      .from(mantenimientosVehiculo)
+      .where(
+        and(
+          eq(mantenimientosVehiculo.vehiculoId, input.vehiculoId),
+          inArray(mantenimientosVehiculo.estado, ['PROGRAMADO', 'EN_TALLER']),
+          lte(mantenimientosVehiculo.fechaInicio, input.fechaFin),
+          gte(mantenimientosVehiculo.fechaFin, input.fechaInicio)
+        )
+      )
+      .limit(1);
+
+    if (mantenimientoSolapado.length > 0) {
+      throw new ActionError({
+        code: 'CONFLICT',
+        message: 'El vehículo tiene programado un alistamiento o mantenimiento en las fechas seleccionadas.',
+      });
+    }
 
     const reserva = await crearReservaD1(db, input, localId, usuario?.id);
 

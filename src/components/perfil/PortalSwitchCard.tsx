@@ -1,6 +1,11 @@
 import { useState, useTransition } from 'react';
 import { actions } from 'astro:actions';
 import { navigate } from 'astro:transitions/client';
+import {
+  activarFlotaxLoading,
+  desactivarFlotaxLoading,
+  resolverVarianteTransicionPortal,
+} from '@/lib/pwa';
 import type { MembresiaLocalResumen } from '@/lib/auth/session';
 
 export interface PortalSwitchCardProps {
@@ -25,25 +30,14 @@ export default function PortalSwitchCard({
   const handleToggle = () => {
     if (!tieneAccesoOperativo || isPending) return;
     setErrorMsg(null);
-    window.dispatchEvent(
-      new CustomEvent('flotax:loading', {
-        detail: {
-          visible: true,
-          label: 'INICIALIZANDO ENTORNO OPERATIVO DE PATIO',
-          variant: 'cad',
-        },
-      })
-    );
+    const variante = resolverVarianteTransicionPortal('PERSONAL_A_DUEÑO');
+    activarFlotaxLoading('INICIALIZANDO ENTORNO OPERATIVO DE PATIO', variante);
 
     startTransition(async () => {
       try {
         const result = await actions.portal.cambiarModoPortal({ modo: 'ADMIN' });
         if (result.error) {
-          window.dispatchEvent(
-            new CustomEvent('flotax:loading', {
-              detail: { visible: false },
-            })
-          );
+          desactivarFlotaxLoading();
           setErrorMsg(result.error.message || 'No fue posible cambiar al modo operador.');
           return;
         }
@@ -52,11 +46,7 @@ export default function PortalSwitchCard({
           navigate(result.data.rutaDestino);
         }
       } catch {
-        window.dispatchEvent(
-          new CustomEvent('flotax:loading', {
-            detail: { visible: false },
-          })
-        );
+        desactivarFlotaxLoading();
         setErrorMsg('Ocurrió un error inesperado al conectar con el servidor.');
       }
     });
@@ -64,7 +54,7 @@ export default function PortalSwitchCard({
 
   if (!tieneAccesoOperativo) {
     return (
-      <div className="rounded-[28px] bg-gradient-to-br from-[#111827] to-[#1F2937] p-6 text-white shadow-lg border border-[#4B5563]/40">
+      <div className="[--fx-border-focus:#EDEDED] rounded-[28px] bg-gradient-to-br from-[#111827] to-[#1F2937] p-6 text-white shadow-lg border border-[#4B5563]/40">
         <div className="space-y-3">
           <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold tracking-wide text-white">
             <span>✨</span>
@@ -82,7 +72,7 @@ export default function PortalSwitchCard({
           <div className="pt-2">
             <a
               href="/admin/onboarding?modo=crear"
-              className="ios-press-bounce inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-bold text-[#111827] shadow-md hover:bg-[#EDEDED] transition-colors"
+              className="fx-press inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-bold text-[#111827] shadow-md hover:bg-[#EDEDED]"
             >
               <span>Comenzar a alquilar</span>
               <span>→</span>
@@ -94,23 +84,23 @@ export default function PortalSwitchCard({
   }
 
   return (
-    <div className="rounded-[28px] bg-white p-6 border border-[#9CA3AF]/30 shadow-md transition-all">
+    <div className="rounded-[28px] bg-white dark:bg-[#1F2937] p-6 border border-[#9CA3AF]/30 dark:border-white/10 shadow-md">
       <div className="flex items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#111827]/5 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#111827]">
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#111827]/5 dark:bg-white/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
               Modo Operativo
             </span>
             {membresias.length > 1 && (
-              <span className="text-[10px] font-medium text-[#4B5563]">
+              <span className="text-[10px] font-medium text-[#4B5563] dark:text-[#9CA3AF]">
                 ({membresias.length} sedes)
               </span>
             )}
           </div>
-          <h3 className="font-display text-base font-bold text-[#111827]">
+          <h3 className="font-display text-base font-bold text-[#111827] dark:text-[#EDEDED]">
             Entorno de Patio y Vehículos
           </h3>
-          <p className="text-xs text-[#4B5563]">
+          <p className="text-xs text-[#4B5563] dark:text-[#9CA3AF]">
             📍 {nombreSede} · <span className="font-medium">{rolSede}</span>
           </p>
         </div>
@@ -121,13 +111,14 @@ export default function PortalSwitchCard({
           role="switch"
           aria-checked={false}
           aria-label="Cambiar a Modo Operador"
+          aria-busy={isPending}
           disabled={isPending}
           onClick={handleToggle}
-          className="group relative flex shrink-0 cursor-pointer items-center p-1 focus:outline-hidden disabled:opacity-60"
+          className="group relative flex shrink-0 cursor-pointer items-center px-1 py-2 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <div
             className={`h-[28px] w-[50px] rounded-[14px] transition-colors duration-200 relative ${
-              isPending ? 'bg-[#4B5563]' : 'bg-[#E5E4DF] group-hover:bg-[#D8D6D0]'
+              isPending ? 'bg-[#4B5563]' : 'bg-[#E5E4DF] dark:bg-white/20 group-hover:bg-[#D8D6D0] dark:group-hover:bg-white/30'
             }`}
           >
             <div
@@ -143,13 +134,13 @@ export default function PortalSwitchCard({
         </button>
       </div>
 
-      <div className="mt-4 pt-3 border-t border-[#9CA3AF]/15 flex items-center justify-between text-[11px] text-[#4B5563]">
+      <div className="mt-4 pt-3 border-t border-[#9CA3AF]/15 dark:border-white/10 flex items-center justify-between text-[11px] text-[#4B5563] dark:text-[#9CA3AF]">
         <span>Acceso a entregas, peritajes R2 y flota</span>
         <button
           type="button"
           onClick={handleToggle}
           disabled={isPending}
-          className="font-bold text-[#111827] hover:underline disabled:opacity-50"
+          className="font-bold text-[#111827] dark:text-[#EDEDED] hover:underline disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {isPending ? 'Conectando...' : 'Entrar a patio →'}
         </button>

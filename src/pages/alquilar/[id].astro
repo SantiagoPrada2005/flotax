@@ -1,7 +1,7 @@
 ---
 import LayoutApp from '@/layouts/LayoutApp.astro';
 import RentalWizardFlow from '@/components/alquiler/RentalWizardFlow';
-import { obtenerVehiculoAsync } from '@/lib/flota';
+import { obtenerVehiculoAsync, obtenerBloquesNoDisponiblesD1 } from '@/lib/flota';
 import { resolveClientTimeContext } from '@/lib/time/client-time';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
@@ -13,11 +13,16 @@ const vehiculo = id
   ? await obtenerVehiculoAsync(id, db, localCautivo?.id)
   : undefined;
 
-if (!vehiculo) {
+if (!vehiculo || vehiculo.estado === 'FUERA_SERVICIO') {
   return Astro.redirect(localCautivo ? `/c/${localCautivo.slug}` : '/catalogo');
 }
 
 const { dateString: hoyISO } = resolveClientTimeContext(Astro.request);
+
+// Obtener bloques reales de indisponibilidad (reservas activas y órdenes de taller) desde D1
+const bloques = db
+  ? await obtenerBloquesNoDisponiblesD1(db, vehiculo.id, hoyISO, 180)
+  : [];
 
 const desdeParam = Astro.url.searchParams.get('desde') ?? undefined;
 const hastaParam = Astro.url.searchParams.get('hasta') ?? undefined;
@@ -49,6 +54,7 @@ const usuarioActual = usuarioLocals
       client:load
       vehiculo={vehiculo}
       hoyISO={hoyISO}
+      bloquesIniciales={bloques}
       usuarioActual={usuarioActual}
       fechaInicioInicial={desdeParam}
       fechaFinInicial={hastaParam}

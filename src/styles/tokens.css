@@ -1,6 +1,163 @@
 @import "tailwindcss";
 @import "./fonts.css";
 
+/* Configuración canónica de selector oscuro para Tailwind CSS v4 */
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
+/* ==========================================================================
+   FlotaX Canonical Theme System (CSS Custom Properties)
+   Canonical Palette: #EDEDED | #9CA3AF | #4B5563 | #1F2937 | #111827
+   Brand Accent: #2D6BFF (Canónico)
+   Status Colors: #10B981 (Success), #F59E0B (Warning/Pending), #DC2626 (Danger)
+   ========================================================================== */
+
+:root,
+html[data-theme="light"] {
+  color-scheme: light;
+  --fx-bg-canvas: #ededed;
+  --fx-bg-surface: #ffffff;
+  --fx-bg-surface-subtle: #f9fafb;
+  --fx-bg-surface-elevated: #ededed;
+  --fx-bg-surface-input: #ffffff;
+  --fx-bg-hover: rgba(17, 24, 39, 0.05);
+  --fx-bg-active: rgba(17, 24, 39, 0.08);
+
+  --fx-text-primary: #111827;
+  --fx-text-secondary: #4b5563;
+  --fx-text-muted: #9ca3af;
+  --fx-text-inverted: #ededed;
+
+  --fx-border-subtle: rgba(156, 163, 175, 0.35);
+  --fx-border-card: rgba(156, 163, 175, 0.25);
+  --fx-border-focus: #111827;
+  --fx-focus-halo: #ededed;
+
+  --fx-status-amber-bg: rgba(245, 158, 11, 0.14);
+  --fx-status-amber-text: #92400e;
+  --fx-status-amber-border: rgba(245, 158, 11, 0.35);
+
+  --fx-status-emerald-bg: rgba(16, 185, 129, 0.14);
+  --fx-status-emerald-text: #065f46;
+  --fx-status-emerald-border: rgba(16, 185, 129, 0.35);
+
+  /* FlotaX Canonical Button Semantic Tokens (Light Mode) */
+  --fx-btn-primary-bg: #111827;
+  --fx-btn-primary-text: #ededed;
+  --fx-btn-primary-border: #111827;
+  --fx-btn-primary-hover-bg: #1f2937;
+  --fx-btn-primary-hover-text: #ffffff;
+  --fx-btn-primary-hover-border: #1f2937;
+  --fx-btn-primary-active-bg: #0b0f19;
+
+  --fx-btn-secondary-bg: rgba(237, 237, 237, 0.75);
+  --fx-btn-secondary-text: #111827;
+  --fx-btn-secondary-border: rgba(156, 163, 175, 0.45);
+  --fx-btn-secondary-hover-bg: #ededed;
+  --fx-btn-secondary-hover-text: #111827;
+  --fx-btn-secondary-hover-border: #111827;
+  --fx-btn-secondary-active-bg: rgba(237, 237, 237, 0.95);
+
+  --fx-btn-outline-bg: #ffffff;
+  --fx-btn-outline-text: #111827;
+  --fx-btn-outline-border: rgba(156, 163, 175, 0.45);
+  --fx-btn-outline-hover-bg: #ededed;
+  --fx-btn-outline-hover-text: #111827;
+  --fx-btn-outline-hover-border: #111827;
+  --fx-btn-outline-active-bg: #e5e7eb;
+
+  --fx-btn-ghost-bg: transparent;
+  --fx-btn-ghost-text: #111827;
+  --fx-btn-ghost-border: transparent;
+  --fx-btn-ghost-hover-bg: rgba(17, 24, 39, 0.06);
+  --fx-btn-ghost-hover-text: #111827;
+  --fx-btn-ghost-hover-border: transparent;
+  --fx-btn-ghost-active-bg: rgba(17, 24, 39, 0.10);
+
+  --fx-btn-disabled-bg: rgba(156, 163, 175, 0.20);
+  --fx-btn-disabled-text: #9ca3af;
+  --fx-btn-disabled-border: rgba(156, 163, 175, 0.30);
+  --fx-btn-focus-ring: #111827;
+}
+
+html.dark,
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --fx-bg-canvas: #111827;
+  --fx-bg-surface: #1f2937;
+  --fx-bg-surface-subtle: #111827;
+  --fx-bg-surface-elevated: #111827;
+  --fx-bg-surface-input: #1f2937;
+  --fx-bg-hover: rgba(255, 255, 255, 0.08);
+  --fx-bg-active: rgba(255, 255, 255, 0.14);
+
+  --fx-text-primary: #ededed;
+  --fx-text-secondary: #d1d5db;
+  --fx-text-muted: #9ca3af;
+  --fx-text-inverted: #111827;
+
+  --fx-border-subtle: rgba(156, 163, 175, 0.22);
+  --fx-border-card: rgba(255, 255, 255, 0.10);
+  --fx-border-focus: #ededed;
+  --fx-focus-halo: #111827;
+
+  --fx-status-amber-bg: rgba(245, 158, 11, 0.20);
+  --fx-status-amber-text: #fcd34d;
+  --fx-status-amber-border: rgba(245, 158, 11, 0.45);
+
+  --fx-status-emerald-bg: rgba(16, 185, 129, 0.20);
+  --fx-status-emerald-text: #6ee7b7;
+  --fx-status-emerald-border: rgba(16, 185, 129, 0.45);
+
+  /* FlotaX Canonical Button Semantic Tokens (Dark Mode) */
+  --fx-btn-primary-bg: #ededed;
+  --fx-btn-primary-text: #111827;
+  --fx-btn-primary-border: #ededed;
+  --fx-btn-primary-hover-bg: #ffffff;
+  --fx-btn-primary-hover-text: #111827;
+  --fx-btn-primary-hover-border: #ffffff;
+  --fx-btn-primary-active-bg: #e5e7eb;
+
+  --fx-btn-secondary-bg: rgba(255, 255, 255, 0.10);
+  --fx-btn-secondary-text: #ededed;
+  --fx-btn-secondary-border: rgba(255, 255, 255, 0.15);
+  --fx-btn-secondary-hover-bg: rgba(255, 255, 255, 0.18);
+  --fx-btn-secondary-hover-text: #ffffff;
+  --fx-btn-secondary-hover-border: rgba(255, 255, 255, 0.35);
+  --fx-btn-secondary-active-bg: rgba(255, 255, 255, 0.24);
+
+  --fx-btn-outline-bg: rgba(31, 41, 55, 0.60);
+  --fx-btn-outline-text: #ededed;
+  --fx-btn-outline-border: rgba(255, 255, 255, 0.15);
+  --fx-btn-outline-hover-bg: rgba(255, 255, 255, 0.12);
+  --fx-btn-outline-hover-text: #ffffff;
+  --fx-btn-outline-hover-border: rgba(255, 255, 255, 0.35);
+  --fx-btn-outline-active-bg: rgba(255, 255, 255, 0.18);
+
+  --fx-btn-ghost-bg: transparent;
+  --fx-btn-ghost-text: #ededed;
+  --fx-btn-ghost-border: transparent;
+  --fx-btn-ghost-hover-bg: rgba(255, 255, 255, 0.08);
+  --fx-btn-ghost-hover-text: #ffffff;
+  --fx-btn-ghost-hover-border: transparent;
+  --fx-btn-ghost-active-bg: rgba(255, 255, 255, 0.14);
+
+  --fx-btn-disabled-bg: rgba(255, 255, 255, 0.05);
+  --fx-btn-disabled-text: #6b7280;
+  --fx-btn-disabled-border: rgba(255, 255, 255, 0.08);
+  --fx-btn-focus-ring: #ededed;
+}
+
+/* Interaction Contract: motion scale (theme-independent) */
+:root {
+  --fx-duration-press: 120ms;
+  --fx-duration-hover: 120ms;
+  --fx-duration-reveal: 180ms;
+  --fx-duration-sheet: 240ms;
+  --fx-duration-page: 320ms;
+  --fx-ease-out: cubic-bezier(0.2, 0.8, 0.3, 1);
+  --fx-ease-in-out: cubic-bezier(0.75, 0, 0.25, 1);
+}
+
 @theme {
   /* Canonical Palette: #EDEDED | #9CA3AF | #4B5563 | #1F2937 | #111827 */
   --color-palette-100: #ededed;
@@ -10,23 +167,33 @@
   --color-palette-900: #111827;
 
   /* Brand & Semantic Hierarchy */
-  --color-brand-primary: #111827;
-  --color-brand-secondary: #1f2937;
-  --color-brand-accent: #1f2937;
+  --color-brand-primary: var(--fx-text-primary);
+  --color-brand-secondary: var(--fx-text-secondary);
+  --color-brand-accent: var(--fx-text-primary);
   --color-brand-coral: #1f2937;
-  --color-brand-blue: #1f2937;
+  --color-brand-blue: #2d6bff;
   --color-status-success: #16a34a;
   --color-status-warning: #f59e0b;
   --color-status-danger: #dc2626;
 
   /* Surfaces & Neutral Hierarchy */
-  --color-surface-canvas: #ededed;
-  --color-surface-card: #ffffff;
-  --color-surface-elevated: #ededed;
-  --color-surface-sidebar: #ededed;
-  --color-border-subtle: #9ca3af;
-  --color-text-muted: #4b5563;
-  --color-text-subtle: #9ca3af;
+  --color-surface-canvas: var(--fx-bg-canvas);
+  --color-surface-card: var(--fx-bg-surface);
+  --color-surface-elevated: var(--fx-bg-surface-elevated);
+  --color-surface-sidebar: var(--fx-bg-canvas);
+  --color-border-subtle: var(--fx-border-subtle);
+  --color-text-muted: var(--fx-text-secondary);
+  --color-text-subtle: var(--fx-text-muted);
+
+  /* Button Semantic Tokens */
+  --color-btn-primary-bg: var(--fx-btn-primary-bg);
+  --color-btn-primary-text: var(--fx-btn-primary-text);
+  --color-btn-secondary-bg: var(--fx-btn-secondary-bg);
+  --color-btn-secondary-text: var(--fx-btn-secondary-text);
+  --color-btn-outline-bg: var(--fx-btn-outline-bg);
+  --color-btn-outline-text: var(--fx-btn-outline-text);
+  --color-btn-ghost-bg: var(--fx-btn-ghost-bg);
+  --color-btn-ghost-text: var(--fx-btn-ghost-text);
 
   /* Typography Scales */
   --font-display: "Space Grotesk", system-ui, sans-serif;
@@ -38,6 +205,18 @@
   --radius-touch: 20px;
   --radius-card: 16px;
   --radius-input: 12px;
+}
+
+/*
+ * Global focus contract: unlayered so utilities cannot hide the ring.
+ * The 2px outline uses the theme foreground; the 1px halo uses the opposite
+ * tone so the ring stays visible on fixed-color surfaces (dark cards in light
+ * theme, light cards in dark theme) where a single token would blend in.
+ */
+:where(button, a[href], [role="button"], [role="switch"], summary, input, select, textarea):focus-visible {
+  outline: 2px solid var(--fx-border-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 1px var(--fx-focus-halo);
 }
 
 /* Universal Mobile Ergonomics Shielding (iOS WebKit Anti-Zoom) */
@@ -78,14 +257,36 @@ select {
   --ease-fluid-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Interaction Contract: canonical press feedback */
+.fx-press,
+.fx-pressable {
+  transition:
+    transform var(--fx-duration-press) var(--fx-ease-out),
+    background-color var(--fx-duration-press) var(--fx-ease-out),
+    border-color var(--fx-duration-press) var(--fx-ease-out),
+    color var(--fx-duration-press) var(--fx-ease-out);
+}
+
+.fx-press:active,
+.fx-pressable:active {
+  transform: scale(0.98);
+}
+
+/*
+ * Deprecated alias kept for the current consumers until migration.
+ * Same contract as .fx-press: keep both declarations in sync until this
+ * alias is deleted.
+ */
 .ios-press-bounce {
-  transition: transform 340ms var(--ease-spring-ios), opacity 200ms ease, background-color 200ms ease, color 200ms ease, box-shadow 340ms var(--ease-spring-ios);
-  will-change: transform;
+  transition:
+    transform var(--fx-duration-press) var(--fx-ease-out),
+    background-color var(--fx-duration-press) var(--fx-ease-out),
+    border-color var(--fx-duration-press) var(--fx-ease-out),
+    color var(--fx-duration-press) var(--fx-ease-out);
 }
 
 .ios-press-bounce:active {
-  transform: scale(0.88) translateY(1px);
-  transition-duration: 90ms;
+  transform: scale(0.98);
 }
 
 .ios-dock-capsule {
@@ -250,246 +451,6 @@ html.js-ready .reveal-on-scroll.is-visible {
   opacity: 1;
   transform: translateY(0);
   transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* ==========================================================================
-   Shiny Button CTA Effect
-   ========================================================================== */
-
-@property --gradient-angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-
-@property --gradient-angle-offset {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-
-@property --gradient-percent {
-  syntax: "<percentage>";
-  initial-value: 5%;
-  inherits: false;
-}
-
-@property --gradient-shine {
-  syntax: "<color>";
-  initial-value: white;
-  inherits: false;
-}
-
-.shiny-cta {
-  --shiny-cta-bg: #0C1120;
-  --shiny-cta-bg-subtle: #1F2937;
-  --shiny-cta-fg: #ffffff;
-  --shiny-cta-highlight: #2E4E8F;
-  --shiny-cta-highlight-subtle: #A7C9FF;
-  --animation: gradient-angle linear infinite;
-  --duration: 3s;
-  --shadow-size: 2px;
-  --transition: 800ms cubic-bezier(0.25, 1, 0.5, 1);
-
-  isolation: isolate;
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-  outline-offset: 4px;
-  padding: 0.875rem 1.75rem;
-  font-family: inherit;
-  font-size: 1rem;
-  line-height: 1.2;
-  font-weight: 600;
-  border: 1px solid transparent;
-  border-radius: 9999px;
-  color: var(--shiny-cta-fg);
-  background: linear-gradient(var(--shiny-cta-bg), var(--shiny-cta-bg)) padding-box,
-    conic-gradient(
-      from calc(var(--gradient-angle) - var(--gradient-angle-offset)),
-      transparent,
-      var(--shiny-cta-highlight) var(--gradient-percent),
-      var(--gradient-shine) calc(var(--gradient-percent) * 2),
-      var(--shiny-cta-highlight) calc(var(--gradient-percent) * 3),
-      transparent calc(var(--gradient-percent) * 4)
-    ) border-box;
-  box-shadow: inset 0 0 0 1px var(--shiny-cta-bg-subtle);
-  transition: var(--transition);
-  transition-property: --gradient-angle-offset, --gradient-percent, --gradient-shine;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.shiny-cta::before,
-.shiny-cta::after,
-.shiny-cta span::before {
-  content: "";
-  pointer-events: none;
-  position: absolute;
-  inset-inline-start: 50%;
-  inset-block-start: 50%;
-  translate: -50% -50%;
-  z-index: -1;
-}
-
-.shiny-cta:active {
-  translate: 0 1px;
-}
-
-/* Dots pattern */
-.shiny-cta::before {
-  --size: calc(100% - var(--shadow-size) * 3);
-  --position: 2px;
-  --space: calc(var(--position) * 2);
-  width: var(--size);
-  height: var(--size);
-  background: radial-gradient(
-    circle at var(--position) var(--position),
-    white calc(var(--position) / 4),
-    transparent 0
-  ) padding-box;
-  background-size: var(--space) var(--space);
-  background-repeat: space;
-  mask-image: conic-gradient(
-    from calc(var(--gradient-angle) + 45deg),
-    black,
-    transparent 10% 90%,
-    black
-  );
-  border-radius: inherit;
-  opacity: 0.3;
-  z-index: -1;
-}
-
-/* Inner shimmer */
-.shiny-cta::after {
-  --animation: shimmer linear infinite;
-  width: 100%;
-  aspect-ratio: 1;
-  background: linear-gradient(
-    -50deg,
-    transparent,
-    var(--shiny-cta-highlight),
-    transparent
-  );
-  mask-image: radial-gradient(circle at bottom, transparent 40%, black);
-  opacity: 0.5;
-}
-
-.shiny-cta span {
-  z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.shiny-cta span::before {
-  --size: calc(100% + 1rem);
-  width: var(--size);
-  height: var(--size);
-  box-shadow: inset 0 -1ex 2rem 4px var(--shiny-cta-highlight);
-  opacity: 0;
-  transition: opacity var(--transition);
-  animation: calc(var(--duration) * 1.5) breathe linear infinite;
-}
-
-/* Animate */
-.shiny-cta,
-.shiny-cta::before,
-.shiny-cta::after {
-  animation: var(--animation) var(--duration),
-    var(--animation) calc(var(--duration) / 0.4) reverse paused;
-  animation-composition: add;
-}
-
-.shiny-cta:is(:hover, :focus-visible) {
-  --gradient-percent: 20%;
-  --gradient-angle-offset: 95deg;
-  --gradient-shine: var(--shiny-cta-highlight-subtle);
-}
-
-.shiny-cta:is(:hover, :focus-visible),
-.shiny-cta:is(:hover, :focus-visible)::before,
-.shiny-cta:is(:hover, :focus-visible)::after {
-  animation-play-state: running;
-}
-
-.shiny-cta:is(:hover, :focus-visible) span::before {
-  opacity: 1;
-}
-
-@keyframes gradient-angle {
-  to {
-    --gradient-angle: 360deg;
-  }
-}
-
-@keyframes shimmer {
-  to {
-    rotate: 360deg;
-  }
-}
-
-@keyframes breathe {
-  from, to {
-    scale: 1;
-  }
-  50% {
-    scale: 1.2;
-  }
-}
-
-/* ==========================================================================
-   Shiny Text Effect (Hero Title Luxury Shimmer)
-   ========================================================================== */
-
-.shiny-text {
-  background: linear-gradient(
-    115deg,
-    #0C1120 0%,
-    #162A5A 25%,
-    #2E4E8F 45%,
-    #7FB4FF 50%,
-    #2E4E8F 55%,
-    #162A5A 75%,
-    #0C1120 100%
-  );
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: shiny-text-sweep 6s ease-in-out infinite;
-}
-
-@keyframes shiny-text-sweep {
-  0% {
-    background-position: 100% 0;
-  }
-  50%, 100% {
-    background-position: -100% 0;
-  }
-}
-
-/* ==========================================================================
-   Shiny Card Effect (HUD Floating Glass Cards with Animated Perimeter)
-   ========================================================================== */
-
-.shiny-card {
-  border: 1px solid transparent;
-  background: linear-gradient(rgba(12, 17, 32, 0.90), rgba(12, 17, 32, 0.90)) padding-box,
-    conic-gradient(
-      from var(--gradient-angle),
-      transparent 0%,
-      rgba(46, 78, 143, 0.5) 12%,
-      rgba(167, 201, 255, 0.95) 25%,
-      rgba(46, 78, 143, 0.5) 38%,
-      transparent 50%
-    ) border-box;
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  animation: gradient-angle 7s linear infinite;
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.6), inset 0 0 20px -5px rgba(46, 78, 143, 0.3);
 }
 
 /* ==========================================================================
@@ -782,7 +743,26 @@ html.js-ready .reveal-on-scroll.is-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ios-press-bounce,
+  /*
+   * Press feedback: remove motion, but never force opacity here.
+   * Disabled controls (.fx-btn-*:disabled, disabled:opacity-40) must keep
+   * their 40% opacity under reduced motion. Enabled controls keep a non-motion
+   * press signal (opacity 0.92) so the tap still gets feedback.
+   */
+  .fx-press,
+  .fx-pressable,
+  .ios-press-bounce {
+    animation: none !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .fx-press:active:not(:disabled),
+  .fx-pressable:active:not(:disabled),
+  .ios-press-bounce:active:not(:disabled) {
+    opacity: 0.92;
+  }
+
   .ios-search-morph,
   .animate-fade-up,
   .animate-fade-in,
@@ -791,11 +771,6 @@ html.js-ready .reveal-on-scroll.is-visible {
   .reveal-on-scroll,
   html.js-ready .reveal-on-scroll,
   html.js-ready .reveal-on-scroll:not(.is-visible),
-  .shiny-cta,
-  .shiny-cta::before,
-  .shiny-cta::after,
-  .shiny-text,
-  .shiny-card,
   .flotax-loader-m1,
   .flotax-loader-m2,
   .flotax-loader-m3,
@@ -870,3 +845,340 @@ html.js-ready .reveal-on-scroll.is-visible {
   animation: auth-step-in 260ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+
+/* ==========================================================================
+   Dark Mode System (WCAG 2.2 AAA & Contrast Governance)
+   Canonical Palette: #EDEDED | #9CA3AF | #4B5563 | #1F2937 | #111827
+   Accents: #2D6BFF (Canónico), #F59E0B (Amber), #10B981 (Emerald), #DC2626 (Rose)
+   ========================================================================== */
+html.dark {
+  color-scheme: dark;
+  background-color: var(--fx-bg-canvas);
+  color: var(--fx-text-primary);
+}
+
+html.dark body {
+  background-color: var(--fx-bg-canvas);
+  color: var(--fx-text-primary);
+}
+
+/* Background surface mappings in dark mode (con protección para preservación de tema y variantes explícitas) */
+html.dark .bg-surface-canvas {
+  background-color: var(--fx-bg-canvas);
+}
+
+html.dark .bg-surface-card {
+  background-color: var(--fx-bg-surface);
+}
+
+html.dark .bg-surface-elevated,
+html.dark .bg-surface-sidebar {
+  background-color: var(--fx-bg-canvas);
+}
+
+/* Fallback para contenedores bg-white y bg-[#EDEDED] que no tengan variante dark explícita ni preserve-theme */
+html.dark .bg-white:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *) {
+  background-color: var(--fx-bg-surface);
+}
+
+html.dark .bg-\[\#EDEDED\]:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *) {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+html.dark .bg-white\/90:not([class*="dark:bg-"]),
+html.dark .bg-white\/95:not([class*="dark:bg-"]),
+html.dark .bg-white\/96:not([class*="dark:bg-"]),
+html.dark .bg-white\/85:not([class*="dark:bg-"]),
+html.dark .bg-white\/80:not([class*="dark:bg-"]),
+html.dark .bg-white\/75:not([class*="dark:bg-"]),
+html.dark .bg-white\/70:not([class*="dark:bg-"]) {
+  background-color: rgba(31, 41, 55, 0.94);
+}
+
+html.dark .bg-gray-100:not([class*="dark:bg-"]),
+html.dark .bg-gray-50:not([class*="dark:bg-"]),
+html.dark .bg-neutral-200:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-neutral-100:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *) {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Fotos e imágenes vehiculares: NUNCA oscurecer con mix-blend en modo oscuro */
+html.dark img.mix-blend-multiply,
+html.dark img[class*="mix-blend-multiply"],
+html.dark .mix-blend-multiply {
+  mix-blend-mode: normal !important;
+}
+
+/* Fallback tipográfico seguro: nunca sobrescribir variantes dark:text- ni elementos preservados */
+html.dark .text-brand-primary {
+  color: var(--fx-text-primary);
+}
+
+html.dark .text-brand-secondary {
+  color: var(--fx-text-secondary);
+}
+
+html.dark .text-\[\#111827\]:not([class*="dark:text-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .text-\[\#1F2937\]:not([class*="dark:text-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .text-gray-900:not([class*="dark:text-"]):not([data-preserve-theme]):not([data-preserve-theme] *) {
+  color: var(--fx-text-primary);
+}
+
+html.dark .text-\[\#4B5563\]:not([class*="dark:text-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .text-gray-600:not([class*="dark:text-"]):not([data-preserve-theme]):not([data-preserve-theme] *) {
+  color: var(--fx-text-secondary);
+}
+
+html.dark .text-\[\#9CA3AF\]:not([class*="dark:text-"]):not([data-preserve-theme]):not([data-preserve-theme] *) {
+  color: var(--fx-text-muted);
+}
+
+/* Botones y Badges de Estado en Modo Oscuro (WCAG AAA) */
+html.dark .text-amber-900:not([class*="dark:text-"]),
+html.dark .text-amber-800:not([class*="dark:text-"]),
+html.dark .text-amber-700:not([class*="dark:text-"]) {
+  color: var(--fx-status-amber-text);
+}
+
+html.dark .bg-amber-100:not([class*="dark:bg-"]),
+html.dark .bg-amber-50:not([class*="dark:bg-"]) {
+  background-color: var(--fx-status-amber-bg);
+  border-color: var(--fx-status-amber-border);
+  color: var(--fx-status-amber-text);
+}
+
+html.dark .text-emerald-900:not([class*="dark:text-"]),
+html.dark .text-emerald-800:not([class*="dark:text-"]),
+html.dark .text-emerald-700:not([class*="dark:text-"]) {
+  color: var(--fx-status-emerald-text);
+}
+
+html.dark .bg-emerald-100:not([class*="dark:bg-"]),
+html.dark .bg-emerald-50:not([class*="dark:bg-"]) {
+  background-color: var(--fx-status-emerald-bg);
+  border-color: var(--fx-status-emerald-border);
+  color: var(--fx-status-emerald-text);
+}
+
+/* Bordes y Divisores en modo oscuro */
+html.dark .border-border-subtle {
+  border-color: var(--fx-border-subtle);
+}
+
+html.dark .border-gray-200:not([class*="dark:border-"]),
+html.dark .border-gray-200\/70:not([class*="dark:border-"]),
+html.dark .border-gray-200\/60:not([class*="dark:border-"]),
+html.dark .border-gray-100:not([class*="dark:border-"]) {
+  border-color: var(--fx-border-subtle);
+}
+
+html.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(156, 163, 175, 0.15);
+}
+
+/* Controles de Formulario */
+html.dark input:not([data-preserve-theme]),
+html.dark textarea:not([data-preserve-theme]),
+html.dark select:not([data-preserve-theme]) {
+  background-color: var(--fx-bg-surface-input);
+  color: var(--fx-text-primary);
+  border-color: var(--fx-border-subtle);
+}
+
+/* iOS Glass Dock & TopBar en Modo Oscuro */
+html.dark .ios-dock-capsule {
+  background: rgba(31, 41, 55, 0.88);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 42px -8px rgba(0, 0, 0, 0.6);
+}
+
+html.dark .ios-floating-pill {
+  background: rgba(31, 41, 55, 0.92);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ==========================================================================
+   Transición Canónica Pericial de Cambio de Tema (View Transitions API)
+   Halo sutil azul FlotaX #2D6BFF + crossfade suave sin salto de layout
+   ========================================================================== */
+html.flotax-theme-transitioning::view-transition-old(root) {
+  animation: 260ms cubic-bezier(0.22, 1, 0.36, 1) both flotaxThemeCrossfadeOld;
+}
+
+html.flotax-theme-transitioning::view-transition-new(root) {
+  animation: 260ms cubic-bezier(0.22, 1, 0.36, 1) both flotaxThemeCrossfadeNew;
+}
+
+@keyframes flotaxThemeCrossfadeOld {
+  0% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  100% {
+    opacity: 0;
+    filter: brightness(1.03);
+  }
+}
+
+@keyframes flotaxThemeCrossfadeNew {
+  0% {
+    opacity: 0;
+    filter: drop-shadow(0 0 36px rgba(45, 107, 255, 0.3));
+  }
+  100% {
+    opacity: 1;
+    filter: none;
+  }
+}
+
+/* ==========================================================================
+   FlotaX Unified Button Classes (Multi-Theme Adaptive)
+   Canonical implementation guaranteeing WCAG contrast across Light & Dark
+   ========================================================================== */
+
+.fx-btn-primary {
+  background-color: var(--fx-btn-primary-bg);
+  color: var(--fx-btn-primary-text);
+  border: 1px solid var(--fx-btn-primary-border);
+  transition:
+    background-color var(--fx-duration-press) var(--fx-ease-out),
+    border-color var(--fx-duration-press) var(--fx-ease-out),
+    color var(--fx-duration-press) var(--fx-ease-out),
+    box-shadow var(--fx-duration-press) var(--fx-ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .fx-btn-primary:hover:not(:disabled) {
+    background-color: var(--fx-btn-primary-hover-bg);
+    color: var(--fx-btn-primary-hover-text);
+    border-color: var(--fx-btn-primary-hover-border);
+  }
+}
+.fx-btn-primary:active:not(:disabled) {
+  background-color: var(--fx-btn-primary-active-bg);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.28);
+}
+.fx-btn-primary:disabled {
+  background-color: var(--fx-btn-disabled-bg);
+  color: var(--fx-btn-disabled-text);
+  border-color: var(--fx-btn-disabled-border);
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.fx-btn-secondary {
+  background-color: var(--fx-btn-secondary-bg);
+  color: var(--fx-btn-secondary-text);
+  border: 1px solid var(--fx-btn-secondary-border);
+  transition:
+    background-color var(--fx-duration-press) var(--fx-ease-out),
+    border-color var(--fx-duration-press) var(--fx-ease-out),
+    color var(--fx-duration-press) var(--fx-ease-out),
+    box-shadow var(--fx-duration-press) var(--fx-ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .fx-btn-secondary:hover:not(:disabled) {
+    background-color: var(--fx-btn-secondary-hover-bg);
+    color: var(--fx-btn-secondary-hover-text);
+    border-color: var(--fx-btn-secondary-hover-border);
+  }
+}
+.fx-btn-secondary:active:not(:disabled) {
+  background-color: var(--fx-btn-secondary-active-bg);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.16);
+}
+.fx-btn-secondary:disabled {
+  background-color: var(--fx-btn-disabled-bg);
+  color: var(--fx-btn-disabled-text);
+  border-color: var(--fx-btn-disabled-border);
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.fx-btn-outline {
+  background-color: var(--fx-btn-outline-bg);
+  color: var(--fx-btn-outline-text);
+  border: 1px solid var(--fx-btn-outline-border);
+  transition:
+    background-color var(--fx-duration-press) var(--fx-ease-out),
+    border-color var(--fx-duration-press) var(--fx-ease-out),
+    color var(--fx-duration-press) var(--fx-ease-out),
+    box-shadow var(--fx-duration-press) var(--fx-ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .fx-btn-outline:hover:not(:disabled) {
+    background-color: var(--fx-btn-outline-hover-bg);
+    color: var(--fx-btn-outline-hover-text);
+    border-color: var(--fx-btn-outline-hover-border);
+  }
+}
+.fx-btn-outline:active:not(:disabled) {
+  background-color: var(--fx-btn-outline-active-bg);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.16);
+}
+.fx-btn-outline:disabled {
+  background-color: var(--fx-btn-disabled-bg);
+  color: var(--fx-btn-disabled-text);
+  border-color: var(--fx-btn-disabled-border);
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.fx-btn-ghost {
+  background-color: var(--fx-btn-ghost-bg);
+  color: var(--fx-btn-ghost-text);
+  border: 1px solid var(--fx-btn-ghost-border);
+  transition:
+    background-color var(--fx-duration-press) var(--fx-ease-out),
+    border-color var(--fx-duration-press) var(--fx-ease-out),
+    color var(--fx-duration-press) var(--fx-ease-out),
+    box-shadow var(--fx-duration-press) var(--fx-ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .fx-btn-ghost:hover:not(:disabled) {
+    background-color: var(--fx-btn-ghost-hover-bg);
+    color: var(--fx-btn-ghost-hover-text);
+    border-color: var(--fx-btn-ghost-hover-border);
+  }
+}
+.fx-btn-ghost:active:not(:disabled) {
+  background-color: var(--fx-btn-ghost-active-bg);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.16);
+}
+.fx-btn-ghost:disabled {
+  color: var(--fx-btn-disabled-text);
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Iconos dentro de botones adaptativos heredan currentColor */
+.fx-btn-primary svg,
+.fx-btn-secondary svg,
+.fx-btn-outline svg,
+.fx-btn-ghost svg {
+  color: inherit;
+}
+
+/* ==========================================================================
+   Blindaje Estructural Global para Botones en Modo Oscuro:
+   Evita que botones con clases de hover claras (ej. hover:bg-white, hover:bg-[#EDEDED])
+   o fondos con alpha (/55, /75) queden con fondo claro y texto blanco al interactuar.
+   ========================================================================== */
+
+html.dark button:not([class*="dark:hover:"]):not([data-preserve-theme]):not([data-preserve-theme] *).hover\:bg-white:hover,
+html.dark a:not([class*="dark:hover:"]):not([data-preserve-theme]):not([data-preserve-theme] *).hover\:bg-white:hover {
+  background-color: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+html.dark button:not([class*="dark:hover:"]):not([data-preserve-theme]):not([data-preserve-theme] *).hover\:bg-\[\#EDEDED\]:hover,
+html.dark a:not([class*="dark:hover:"]):not([data-preserve-theme]):not([data-preserve-theme] *).hover\:bg-\[\#EDEDED\]:hover {
+  background-color: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+html.dark button:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *)[class*="bg-\[\#EDEDED\]\/"],
+html.dark a:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *)[class*="bg-\[\#EDEDED\]\/"] {
+  background-color: rgba(255, 255, 255, 0.10);
+  color: var(--fx-text-primary);
+  border-color: rgba(255, 255, 255, 0.15);
+}

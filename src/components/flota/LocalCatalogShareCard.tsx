@@ -208,7 +208,7 @@ export default function LocalCatalogShareCard({
     <>
       <section
         aria-label="Enlace del catálogo del local"
-        className={`relative overflow-hidden rounded-[24px] bg-white border border-[#9CA3AF]/35 ${
+        className={`relative overflow-hidden rounded-[24px] bg-white border border-[#9CA3AF]/35 dark:bg-[#1F2937] dark:border-white/10 ${
           compact ? 'p-3.5' : 'p-3.5 sm:p-4'
         } shadow-[0_10px_26px_-10px_rgba(17,24,39,0.08)]`}
       >
@@ -217,7 +217,7 @@ export default function LocalCatalogShareCard({
           <div className="flex min-w-0 items-center gap-3">
             <div
               aria-hidden="true"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-[#111827] text-[#EDEDED]"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-[#111827] text-[#EDEDED] dark:bg-white/15 dark:text-white"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -235,11 +235,11 @@ export default function LocalCatalogShareCard({
             </div>
 
             <div className="min-w-0">
-              <h2 className="font-display text-sm sm:text-base font-extrabold tracking-tight text-[#111827] truncate">
+              <h2 className="font-display text-sm sm:text-base font-extrabold tracking-tight text-[#111827] dark:text-[#EDEDED] truncate">
                 Catálogo · {local.nombre}
               </h2>
-              <p className="mt-0.5 flex items-center gap-1.5 text-xs text-[#4B5563] truncate">
-                <span className="font-mono font-semibold text-[#111827] truncate">
+              <p className="mt-0.5 flex items-center gap-1.5 text-xs text-[#4B5563] dark:text-[#9CA3AF] truncate">
+                <span className="font-mono font-semibold text-[#111827] dark:text-[#EDEDED] truncate">
                   /c/{local.slug}
                 </span>
                 <span aria-hidden="true">•</span>
@@ -254,7 +254,7 @@ export default function LocalCatalogShareCard({
             <button
               type="button"
               onClick={compartirNativoOol}
-              className="ios-press-bounce inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-1.5 rounded-full bg-[#111827] px-3.5 sm:px-4 py-2 text-xs font-bold text-[#EDEDED] shadow-2xs transition hover:bg-[#1F2937]"
+              className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-1.5 rounded-full bg-[#111827] px-3.5 sm:px-4 py-2 text-xs font-bold text-[#EDEDED] shadow-2xs hover:bg-[#1F2937] dark:bg-white dark:text-[#111827] dark:hover:bg-[#EDEDED]"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -286,10 +286,10 @@ export default function LocalCatalogShareCard({
                 triggerHaptic(6);
                 setOpcionesAbiertas((prev) => !prev);
               }}
-              className={`ios-press-bounce flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border transition-colors ${
+              className={`fx-press flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border ${
                 opcionesAbiertas
-                  ? 'border-[#111827] bg-[#1F2937] text-[#EDEDED]'
-                  : 'border-[#9CA3AF]/40 bg-[#EDEDED]/75 text-[#111827] hover:bg-[#EDEDED]'
+                  ? 'border-[#111827] bg-[#1F2937] text-[#EDEDED] dark:border-white/30 dark:bg-white/20 dark:text-white'
+                  : 'border-[#9CA3AF]/40 bg-[#EDEDED]/75 text-[#111827] hover:bg-[#EDEDED] dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20'
               }`}
             >
               <svg
@@ -300,7 +300,7 @@ export default function LocalCatalogShareCard({
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className={`h-4 w-4 transition-transform duration-200 ${
+                className={`h-4 w-4 transition-transform duration-150 ${
                   opcionesAbiertas ? 'rotate-180' : ''
                 }`}
                 aria-hidden="true"
@@ -313,15 +313,15 @@ export default function LocalCatalogShareCard({
 
         {/* NIVEL 2 (Progressive Disclosure): Bandeja de Acciones Secundarias Bajo Demanda */}
         {opcionesAbiertas && (
-          <div className="mt-3 border-t border-[#EDEDED] pt-3 space-y-2.5">
+          <div className="mt-3 border-t border-[#EDEDED] dark:border-white/10 pt-3 space-y-2.5">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <button
                 type="button"
                 onClick={copiarEnlace}
-                className={`ios-press-bounce inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-1.5 rounded-full border px-3 py-2 text-xs font-bold transition ${
+                className={`fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-1.5 rounded-full border px-3 py-2 text-xs font-bold ${
                   copiado
-                    ? 'border-[#111827] bg-[#1F2937] text-[#EDEDED]'
-                    : 'border-[#9CA3AF]/45 bg-[#EDEDED]/55 text-[#111827] hover:bg-[#EDEDED]'
+                    ? 'border-[#111827] bg-[#1F2937] text-[#EDEDED] dark:border-white dark:bg-white dark:text-[#111827]'
+                    : 'border-[#9CA3AF]/45 bg-[#EDEDED]/55 text-[#111827] hover:bg-[#EDEDED] hover:border-[#111827] dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20 dark:hover:border-white/30 dark:hover:text-white'
                 }`}
               >
                 {copiado ? (
@@ -353,7 +353,7 @@ export default function LocalCatalogShareCard({
                   triggerHaptic(8);
                   setModalAbierto('qr');
                 }}
-                className="ios-press-bounce inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-1.5 rounded-full border border-[#9CA3AF]/45 bg-[#EDEDED]/55 px-3 py-2 text-xs font-bold text-[#111827] transition hover:bg-[#EDEDED]"
+                className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-1.5 rounded-full border border-[#9CA3AF]/45 bg-[#EDEDED]/55 px-3 py-2 text-xs font-bold text-[#111827] hover:bg-[#EDEDED] hover:border-[#111827] dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20 dark:hover:border-white/30 dark:hover:text-white"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -381,7 +381,7 @@ export default function LocalCatalogShareCard({
                   triggerHaptic(6);
                   setModalAbierto('editar');
                 }}
-                className="ios-press-bounce inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-1.5 rounded-full border border-[#9CA3AF]/45 bg-[#EDEDED]/55 px-3 py-2 text-xs font-bold text-[#111827] transition hover:bg-[#EDEDED]"
+                className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-1.5 rounded-full border border-[#9CA3AF]/45 bg-[#EDEDED]/55 px-3 py-2 text-xs font-bold text-[#111827] hover:bg-[#EDEDED] hover:border-[#111827] dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20 dark:hover:border-white/30 dark:hover:text-white"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -403,7 +403,7 @@ export default function LocalCatalogShareCard({
                 href={pathRelativo}
                 data-astro-prefetch="tap"
                 onClick={() => triggerHaptic(6)}
-                className="ios-press-bounce inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-full border border-[#9CA3AF]/45 bg-white px-3 py-2 text-xs font-bold text-[#111827] transition hover:bg-[#EDEDED]/60"
+                className="fx-press inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-full border border-[#9CA3AF]/45 bg-white px-3 py-2 text-xs font-bold text-[#111827] hover:bg-[#EDEDED]/60 hover:border-[#111827] dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20 dark:hover:border-white/30 dark:hover:text-white"
               >
                 <span>Abrir vista</span>
                 <svg
@@ -414,7 +414,7 @@ export default function LocalCatalogShareCard({
                   strokeWidth="1.9"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="h-3.5 w-3.5 shrink-0 text-[#4B5563]"
+                  className="h-3.5 w-3.5 shrink-0 text-[#4B5563] dark:text-[#9CA3AF]"
                   aria-hidden="true"
                 >
                   <path d="M7 17 17 7" />
@@ -441,11 +441,11 @@ export default function LocalCatalogShareCard({
           }}
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#111827]/60 backdrop-blur-md p-0 sm:p-4"
         >
-          <div className="w-full max-w-md rounded-t-[32px] sm:rounded-[32px] bg-white border border-white/20 p-5 sm:p-6 shadow-2xl space-y-4 safe-bottom">
-            <div className="w-10 h-1 bg-[#9CA3AF]/50 rounded-full mx-auto -mt-1 sm:hidden" />
+          <div className="w-full max-w-md rounded-t-[32px] sm:rounded-[32px] bg-white border border-white/20 p-5 sm:p-6 shadow-2xl space-y-4 safe-bottom dark:bg-[#1F2937] dark:border-white/10">
+            <div className="w-10 h-1 bg-[#9CA3AF]/50 rounded-full mx-auto -mt-1 sm:hidden dark:bg-white/20" />
 
             <div className="flex items-center justify-between">
-              <h3 className="font-display text-lg font-black text-[#111827]">
+              <h3 className="font-display text-lg font-black text-[#111827] dark:text-[#EDEDED]">
                 {modalAbierto === 'qr'
                   ? 'Código QR de Mostrador'
                   : 'Personalizar Enlace del Local'}
@@ -457,7 +457,7 @@ export default function LocalCatalogShareCard({
                   setFeedback(null);
                 }}
                 aria-label="Cerrar ventana"
-                className="ios-press-bounce flex h-11 w-11 items-center justify-center rounded-full bg-[#EDEDED] text-[#111827] font-bold text-xs cursor-pointer"
+                className="fx-press flex h-11 w-11 items-center justify-center rounded-full bg-[#EDEDED] text-[#111827] font-bold text-xs cursor-pointer dark:bg-white/10 dark:text-[#EDEDED] dark:hover:bg-white/20"
               >
                 ✕
               </button>
@@ -465,10 +465,10 @@ export default function LocalCatalogShareCard({
 
             {modalAbierto === 'qr' ? (
               <div className="space-y-4 text-center">
-                <div className="mx-auto w-52 h-52 rounded-[28px] bg-[#EDEDED]/50 border border-[#9CA3AF]/35 p-4 flex items-center justify-center shadow-inner">
+                <div className="mx-auto w-52 h-52 rounded-[28px] bg-[#EDEDED]/50 border border-[#9CA3AF]/35 p-4 flex items-center justify-center shadow-inner dark:bg-white/10 dark:border-white/15">
                   <svg
                     viewBox="0 0 21 21"
-                    className="w-full h-full text-[#111827]"
+                    className="w-full h-full text-[#111827] dark:text-white"
                     shapeRendering="crispEdges"
                     aria-label={`Código QR para ${local.nombre}`}
                   >
@@ -490,13 +490,13 @@ export default function LocalCatalogShareCard({
                 </div>
 
                 <div>
-                  <p className="font-display text-base font-extrabold text-[#111827]">
+                  <p className="font-display text-base font-extrabold text-[#111827] dark:text-[#EDEDED]">
                     {local.nombre}
                   </p>
-                  <p className="font-mono text-xs font-semibold text-[#4B5563] mt-0.5">
+                  <p className="font-mono text-xs font-semibold text-[#4B5563] dark:text-[#9CA3AF] mt-0.5">
                     /c/{local.slug}
                   </p>
-                  <p className="text-xs text-[#4B5563] mt-2 max-w-xs mx-auto">
+                  <p className="text-xs text-[#4B5563] dark:text-[#9CA3AF] mt-2 max-w-xs mx-auto">
                     Tus clientes verán directamente los vehículos disponibles de tu patio al escanear este código.
                   </p>
                 </div>
@@ -505,13 +505,13 @@ export default function LocalCatalogShareCard({
                   <button
                     type="button"
                     onClick={copiarEnlace}
-                    className="ios-press-bounce min-h-[46px] rounded-full bg-[#EDEDED] text-xs font-extrabold text-[#111827] cursor-pointer"
+                    className="fx-press min-h-[46px] rounded-full bg-[#EDEDED] text-xs font-extrabold text-[#111827] cursor-pointer dark:bg-white/10 dark:text-[#EDEDED] dark:hover:bg-white/20"
                   >
                     {copiado ? '✓ Copiado' : 'Copiar URL'}
                   </button>
                   <a
                     href={pathRelativo}
-                    className="ios-press-bounce min-h-[46px] inline-flex items-center justify-center rounded-full bg-[#111827] text-xs font-extrabold text-[#EDEDED]"
+                    className="fx-press min-h-[46px] inline-flex items-center justify-center rounded-full bg-[#111827] text-xs font-extrabold text-[#EDEDED] dark:bg-white dark:text-[#111827] dark:hover:bg-[#EDEDED]"
                   >
                     Abrir Catálogo
                   </a>
@@ -520,11 +520,11 @@ export default function LocalCatalogShareCard({
             ) : (
               <form onSubmit={guardarPersonalizacion} className="space-y-3.5">
                 <div>
-                  <label className="block text-xs font-bold text-[#111827] mb-1">
+                  <label className="block text-xs font-bold text-[#111827] dark:text-[#EDEDED] mb-1">
                     Identificador del enlace
                   </label>
-                  <div className="flex items-center rounded-2xl bg-[#EDEDED]/70 border border-[#9CA3AF]/45 px-3.5 min-h-[46px] focus-within:border-[#111827]">
-                    <span className="font-mono text-sm text-[#4B5563] select-none">
+                  <div className="flex items-center rounded-2xl bg-[#EDEDED]/70 border border-[#9CA3AF]/45 px-3.5 min-h-[46px] focus-within:border-[#111827] dark:bg-[#111827] dark:border-white/15 dark:focus-within:border-white">
+                    <span className="font-mono text-sm text-[#4B5563] dark:text-[#9CA3AF] select-none">
                       /c/
                     </span>
                     <input
@@ -532,14 +532,14 @@ export default function LocalCatalogShareCard({
                       value={slugInput}
                       onChange={(e) => setSlugInput(e.target.value)}
                       placeholder="mi-agencia-medellin"
-                      className="flex-1 bg-transparent text-base font-mono font-bold text-[#111827] focus:outline-none ml-1"
+                      className="flex-1 bg-transparent text-base font-mono font-bold text-[#111827] dark:text-[#EDEDED] ml-1"
                       required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#111827] mb-1">
+                  <label className="block text-xs font-bold text-[#111827] dark:text-[#EDEDED] mb-1">
                     WhatsApp / Teléfono de atención en catálogo
                   </label>
                   <input
@@ -547,12 +547,12 @@ export default function LocalCatalogShareCard({
                     value={telefonoInput}
                     onChange={(e) => setTelefonoInput(e.target.value)}
                     placeholder="+57 300 000 0000"
-                    className="w-full rounded-2xl bg-[#EDEDED]/70 border border-[#9CA3AF]/45 px-3.5 min-h-[46px] text-base text-[#111827] focus:border-[#111827] focus:outline-none"
+                    className="w-full rounded-2xl bg-[#EDEDED]/70 border border-[#9CA3AF]/45 px-3.5 min-h-[46px] text-base text-[#111827] focus:border-[#111827] dark:bg-[#111827] dark:border-white/15 dark:text-[#EDEDED] dark:focus:border-white dark:placeholder-[#9CA3AF]/60"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#111827] mb-1">
+                  <label className="block text-xs font-bold text-[#111827] dark:text-[#EDEDED] mb-1">
                     Dirección visible para recogida en patio
                   </label>
                   <input
@@ -560,7 +560,7 @@ export default function LocalCatalogShareCard({
                     value={direccionInput}
                     onChange={(e) => setDireccionInput(e.target.value)}
                     placeholder="Av. El Poblado #10-45"
-                    className="w-full rounded-2xl bg-[#EDEDED]/70 border border-[#9CA3AF]/45 px-3.5 min-h-[46px] text-base text-[#111827] focus:border-[#111827] focus:outline-none"
+                    className="w-full rounded-2xl bg-[#EDEDED]/70 border border-[#9CA3AF]/45 px-3.5 min-h-[46px] text-base text-[#111827] focus:border-[#111827] dark:bg-[#111827] dark:border-white/15 dark:text-[#EDEDED] dark:focus:border-white dark:placeholder-[#9CA3AF]/60"
                   />
                 </div>
 
@@ -568,8 +568,8 @@ export default function LocalCatalogShareCard({
                   <p
                     className={`rounded-xl px-3 py-2 text-xs font-bold ${
                       feedback.tipo === 'ok'
-                        ? 'bg-[#111827] text-[#EDEDED]'
-                        : 'bg-[#EDEDED] text-[#111827] border border-[#111827]/30'
+                        ? 'bg-[#111827] text-[#EDEDED] dark:bg-emerald-500/20 dark:text-emerald-300 dark:border dark:border-emerald-500/30'
+                        : 'bg-[#EDEDED] text-[#111827] border border-[#111827]/30 dark:bg-rose-500/20 dark:text-rose-300 dark:border-rose-500/30'
                     }`}
                   >
                     {feedback.texto}
@@ -580,14 +580,14 @@ export default function LocalCatalogShareCard({
                   <button
                     type="button"
                     onClick={() => setModalAbierto(null)}
-                    className="ios-press-bounce min-h-[46px] rounded-full bg-[#EDEDED] text-xs font-extrabold text-[#111827] cursor-pointer"
+                    className="fx-press min-h-[46px] rounded-full bg-[#EDEDED] text-xs font-extrabold text-[#111827] cursor-pointer dark:bg-white/10 dark:text-[#EDEDED] dark:hover:bg-white/20"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
                     disabled={isPending}
-                    className="ios-press-bounce min-h-[46px] rounded-full bg-[#111827] text-xs font-extrabold text-[#EDEDED] disabled:opacity-50 cursor-pointer"
+                    className="fx-press min-h-[46px] rounded-full bg-[#111827] text-xs font-extrabold text-[#EDEDED] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer dark:bg-white dark:text-[#111827] dark:enabled:hover:bg-[#EDEDED]"
                   >
                     {isPending ? 'Guardando...' : 'Guardar Cambios'}
                   </button>

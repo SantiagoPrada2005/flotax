@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { SesionCajaSelect, CuentaFinancieraSelect, MovimientoCajaSelect } from '@/lib/caja';
 import { formatearMonedaCOP } from '@/lib/caja';
+import { CajaCustomSelect } from './CajaMovimientosFilterBar';
 
 export interface ModalArqueoCierreProps {
   isOpen: boolean;
@@ -285,20 +286,18 @@ export function ModalArqueoCierre({
               <label className="block text-xs font-bold uppercase tracking-wider text-[#4B5563] mb-1">
                 Punto Operativo / Caja Física *
               </label>
-              <select
+              <CajaCustomSelect
+                ariaLabel="Punto operativo o caja física"
                 value={cuentaId}
-                onChange={(e) => setCuentaId(e.target.value)}
-                className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/50 bg-white px-3 py-2 text-base text-[#111827] focus:border-[#111827] focus:outline-hidden"
-                required
-              >
-                {cuentas
+                options={cuentas
                   .filter((c) => c.tipo === 'CAJA_EFECTIVO')
-                  .map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.nombre}
-                    </option>
-                  ))}
-              </select>
+                  .map((c) => ({
+                    value: c.id,
+                    label: c.nombre,
+                    badge: 'Efectivo',
+                  }))}
+                onChange={setCuentaId}
+              />
             </div>
 
             <div>

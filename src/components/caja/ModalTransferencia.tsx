@@ -1,5 +1,6 @@
 import { useState, useId } from 'react';
 import type { CuentaFinancieraSelect } from '@/lib/caja';
+import { CajaCustomSelect } from './CajaMovimientosFilterBar';
 
 export interface ModalTransferenciaProps {
   isOpen: boolean;
@@ -149,19 +150,22 @@ export function ModalTransferencia({
                 <span>Desde (Sale dinero)</span>
                 <span className="text-rose-600 font-bold">−</span>
               </label>
-              <select
+              <CajaCustomSelect
                 id={cuentaOrigenIdAttr}
+                ariaLabel="Cuenta desde donde sale el dinero"
                 value={cuentaOrigenId}
-                onChange={(e) => setCuentaOrigenId(e.target.value)}
-                className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 bg-white px-3 py-2 text-base text-[#111827] focus:border-[#111827] focus:outline-hidden"
-                required
-              >
-                {cuentas.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.nombre} ({c.tipo === 'CAJA_EFECTIVO' ? 'Efectivo en Patio' : 'Banco'})
-                  </option>
-                ))}
-              </select>
+                options={cuentas.map((c) => ({
+                  value: c.id,
+                  label: c.nombre,
+                  badge:
+                    c.tipo === 'CAJA_EFECTIVO'
+                      ? 'Efectivo'
+                      : c.tipo === 'BANCO'
+                        ? 'Banco'
+                        : 'Billetera',
+                }))}
+                onChange={setCuentaOrigenId}
+              />
             </div>
 
             <div className="flex justify-center -my-1 text-[#4B5563]">
@@ -178,19 +182,22 @@ export function ModalTransferencia({
                 <span>Hacia (Entra dinero)</span>
                 <span className="text-emerald-600 font-bold">+</span>
               </label>
-              <select
+              <CajaCustomSelect
                 id={cuentaDestinoIdAttr}
+                ariaLabel="Cuenta hacia donde entra el dinero"
                 value={cuentaDestinoId}
-                onChange={(e) => setCuentaDestinoId(e.target.value)}
-                className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 bg-white px-3 py-2 text-base text-[#111827] focus:border-[#111827] focus:outline-hidden"
-                required
-              >
-                {cuentas.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.nombre} ({c.tipo === 'CAJA_EFECTIVO' ? 'Efectivo en Patio' : 'Banco'})
-                  </option>
-                ))}
-              </select>
+                options={cuentas.map((c) => ({
+                  value: c.id,
+                  label: c.nombre,
+                  badge:
+                    c.tipo === 'CAJA_EFECTIVO'
+                      ? 'Efectivo'
+                      : c.tipo === 'BANCO'
+                        ? 'Banco'
+                        : 'Billetera',
+                }))}
+                onChange={setCuentaDestinoId}
+              />
             </div>
           </div>
 

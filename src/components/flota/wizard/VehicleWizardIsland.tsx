@@ -431,7 +431,7 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
   };
 
   return (
-    <div className="min-h-screen bg-[#EDEDED] flex flex-col justify-between py-6 px-4 sm:px-8 max-w-4xl mx-auto w-full select-none">
+    <div className="min-h-screen bg-[#EDEDED] dark:bg-transparent flex flex-col justify-between py-6 px-4 sm:px-8 max-w-4xl mx-auto w-full select-none">
       {/* 1. Encabezado de Navegación y HUD Discreto (sin barra de progreso) */}
       <StepIndicator
         pasos={PASOS_CONFIG}
@@ -447,17 +447,17 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
       {borradorPendiente && pasoActual === 1 && (
         <div
           role="status"
-          className="my-4 rounded-[24px] border border-[#111827] bg-[#111827] p-4 text-white shadow-lg space-y-2 animate-fade-in"
+          className="my-4 rounded-[24px] border border-[#111827] bg-[#111827] p-4 text-white shadow-lg space-y-2 animate-fade-in dark:border-white/20 dark:bg-[#1F2937]"
         >
           <div className="flex items-center justify-between">
-            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-gray-300">
+            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-gray-300 dark:text-gray-400">
               Borrador Encontrado
             </span>
             <span className="font-mono text-[9px] font-bold px-2 py-0.5 rounded-full bg-white text-[#111827]">
               AUTO-SAVE
             </span>
           </div>
-          <p className="text-xs text-gray-300">
+          <p className="text-xs text-gray-300 dark:text-gray-300">
             Tienes un registro previo para{' '}
             <strong className="text-white">
               {borradorPendiente.marca || 'Vehículo'} {borradorPendiente.modelo} ({borradorPendiente.placa || 'Sin placa'})
@@ -475,7 +475,7 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
             <button
               type="button"
               onClick={handleDescartarBorrador}
-              className="ios-press-bounce rounded-full border border-gray-600 px-3 py-1.5 font-display text-xs font-medium text-gray-300 hover:text-white transition cursor-pointer"
+              className="ios-press-bounce rounded-full border border-gray-600 px-3 py-1.5 font-display text-xs font-medium text-gray-300 hover:text-white transition cursor-pointer dark:border-gray-500"
             >
               Descartar
             </button>
@@ -489,9 +489,9 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
           ref={containerRef}
           animate={{ height: containerHeight }}
           transition={{ duration: 0.4, ease: MOTION_EASE }}
-          className="w-full relative overflow-hidden bg-[#EDEDED]"
+          className="w-full relative overflow-hidden bg-[#EDEDED] dark:bg-transparent"
         >
-          <div className="grid grid-cols-1 grid-rows-1 items-start w-full bg-[#EDEDED]">
+          <div className="grid grid-cols-1 grid-rows-1 items-start w-full bg-[#EDEDED] dark:bg-transparent">
             <AnimatePresence mode="sync" custom={direction} initial={false}>
               <motion.div
                 key={pasoActual}
@@ -514,7 +514,7 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
                     setContainerHeight('auto');
                   }
                 }}
-                className="col-start-1 row-start-1 w-full bg-[#EDEDED]"
+                className="col-start-1 row-start-1 w-full bg-[#EDEDED] dark:bg-transparent"
                 style={{ willChange: 'transform' }}
               >
                 {renderPaso(pasoActual)}
@@ -525,11 +525,11 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
       </main>
 
       {/* 3. Zona Inferior de Acciones Principales */}
-      <footer className="w-full space-y-3 pt-4 border-t border-[#EDEDED]">
+      <footer className="w-full space-y-3 pt-4 border-t border-[#EDEDED] dark:border-white/10">
         {errorMsgGeneral && (
           <p
             role="alert"
-            className="text-center font-mono text-xs font-bold text-rose-600 animate-fade-in"
+            className="text-center font-mono text-xs font-bold text-rose-600 dark:text-rose-400 animate-fade-in"
           >
             {errorMsgGeneral}
           </p>
@@ -538,7 +538,7 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
         {mensajeExito && (
           <p
             role="status"
-            className="text-center font-mono text-xs font-bold text-emerald-600 animate-fade-in"
+            className="text-center font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400 animate-fade-in"
           >
             {mensajeExito}
           </p>
@@ -550,7 +550,7 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
               type="button"
               onClick={retrocederPaso}
               disabled={isPending || isTransitioning}
-              className="ios-press-bounce h-14 px-6 rounded-2xl border border-[#9CA3AF]/50 bg-white font-display text-sm font-bold text-[#111827] hover:bg-[#EDEDED] transition shadow-xs cursor-pointer disabled:opacity-50"
+              className="ios-press-bounce h-14 px-6 rounded-2xl border border-[#9CA3AF]/50 bg-white font-display text-sm font-bold text-[#111827] hover:bg-[#EDEDED] transition shadow-xs cursor-pointer disabled:opacity-50 dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20"
             >
               Atrás
             </button>
@@ -561,7 +561,7 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
               type="button"
               onClick={avanzarPaso}
               disabled={isPending || isTransitioning}
-              className="ios-press-bounce flex-1 h-14 rounded-2xl bg-[#111827] hover:bg-[#1F2937] active:scale-[0.99] font-display text-base font-bold text-white shadow-xl transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="ios-press-bounce flex-1 h-14 rounded-2xl bg-[#111827] hover:bg-[#1F2937] active:scale-[0.99] font-display text-base font-bold text-white shadow-xl transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 dark:bg-white dark:text-[#111827] dark:hover:bg-[#EDEDED]"
             >
               <span>Continuar</span>
               <span className="font-mono text-sm">→</span>
@@ -571,7 +571,7 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
               type="button"
               onClick={handleGuardarVehiculo}
               disabled={isPending || isTransitioning}
-              className="ios-press-bounce flex-1 h-14 rounded-2xl bg-[#111827] hover:bg-[#1F2937] active:scale-[0.99] font-display text-base font-bold text-white shadow-xl transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="ios-press-bounce flex-1 h-14 rounded-2xl bg-[#111827] hover:bg-[#1F2937] active:scale-[0.99] font-display text-base font-bold text-white shadow-xl transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 dark:bg-white dark:text-[#111827] dark:hover:bg-[#EDEDED]"
             >
               {isPending ? (
                 <span className="font-mono text-sm">Guardando en patio...</span>

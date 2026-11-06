@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { actions } from 'astro:actions';
 import {
   formatearMonedaCOP,
@@ -25,7 +25,11 @@ import {
   CajaBentoSparklineCard,
   CajaBentoPillCard,
 } from './CajaKpiCard';
-import { CajaGraficos } from './CajaGraficos';
+import { CajaGraficosHorizontal } from './CajaGraficosHorizontal';
+import {
+  CajaMovimientosFilterBar,
+  CajaCustomSelect,
+} from './CajaMovimientosFilterBar';
 import { CajaBarraFlujo } from './CajaBarraFlujo';
 import { ModalMovimiento } from './ModalMovimiento';
 import { ModalTransferencia } from './ModalTransferencia';
@@ -91,9 +95,52 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
   const [filtroCuenta, setFiltroCuenta] = useState<string>('TODAS');
   const [filtroEstado, setFiltroEstado] = useState<string>('TODOS');
 
-  // Filtro de Reportes
+  // Filtro de Reportes y Control de Desplazamiento de Pestañas
   const [reporteSeleccionado, setReporteSeleccionado] = useState<number>(1);
-  const [mostrarGraficos, setMostrarGraficos] = useState(false);
+  const navTabsRef = useRef<HTMLElement | null>(null);
+  const tabBtnRefs = useRef<Partial<Record<TabCaja, HTMLButtonElement | null>>>({});
+  const [canScrollTabsLeft, setCanScrollTabsLeft] = useState(false);
+  const [canScrollTabsRight, setCanScrollTabsRight] = useState(false);
+
+  const actualizarEstadoScrollTabs = useCallback(() => {
+    const nav = navTabsRef.current;
+    if (!nav) return;
+    setCanScrollTabsLeft(nav.scrollLeft > 6);
+    setCanScrollTabsRight(
+      nav.scrollLeft + nav.clientWidth < nav.scrollWidth - 6
+    );
+  }, []);
+
+  useEffect(() => {
+    actualizarEstadoScrollTabs();
+    window.addEventListener('resize', actualizarEstadoScrollTabs);
+    return () => window.removeEventListener('resize', actualizarEstadoScrollTabs);
+  }, [actualizarEstadoScrollTabs, data.todosMovimientos.length]);
+
+  useEffect(() => {
+    const nav = navTabsRef.current;
+    const activeBtn = tabBtnRefs.current[activeTab];
+    if (nav && activeBtn) {
+      const targetScrollLeft =
+        activeBtn.offsetLeft - nav.clientWidth / 2 + activeBtn.offsetWidth / 2;
+      nav.scrollTo({
+        left: Math.max(0, targetScrollLeft),
+        behavior: 'smooth',
+      });
+    }
+    const timer = window.setTimeout(actualizarEstadoScrollTabs, 220);
+    return () => window.clearTimeout(timer);
+  }, [activeTab, actualizarEstadoScrollTabs]);
+
+  const desplazarTabs = (direccion: 'izq' | 'der') => {
+    const nav = navTabsRef.current;
+    if (!nav) return;
+    const paso = Math.max(160, Math.round(nav.clientWidth * 0.65));
+    nav.scrollBy({
+      left: direccion === 'der' ? paso : -paso,
+      behavior: 'smooth',
+    });
+  };
 
   // Toasts
   const [toast, setToast] = useState<{ tipo: 'ok' | 'err'; mensaje: string } | null>(null);
@@ -433,7 +480,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
       {/* Toast Notificación */}
       {toast && (
         <div
-          className={`fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold text-white shadow-xl transition-all ${toast.tipo === 'ok' ? 'bg-[#111827] border border-emerald-500' : 'bg-rose-700'
+          className={`fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold text-white shadow-xl ${toast.tipo === 'ok' ? 'bg-[#111827] border border-emerald-500' : 'bg-rose-700'
             }`}
         >
           <span>{toast.tipo === 'ok' ? '✓' : '⚠'}</span>
@@ -441,35 +488,38 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
         </div>
       )}
 
-      {/* Cabecera Principal y Barra de Acciones Operativas */}
-      <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-[#9CA3AF]/20 pb-4">
-        <div>
+      {/* Cabecera Principal con Progressive Disclosure (Sin Sobrecarga Visual) */}
+      <header className="flex flex-col gap-3.5 lg:flex-row lg:items-center lg:justify-between border-b border-[#9CA3AF]/20 pb-4">
+        <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-600 animate-pulse"></span>
-            <p className="text-xs font-semibold uppercase tracking-wider text-[#4B5563]">
-              Sistema Operativo Financiero · Patio Central
+            <span
+              className={`h-2 w-2 rounded-full ${
+                data.sesionCajaActiva
+                  ? 'bg-emerald-600 animate-pulse'
+                  : 'bg-[#9CA3AF]'
+              }`}
+            />
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#4B5563] truncate">
+              Patio Central · {data.sesionCajaActiva ? 'Turno Activo' : 'Turno Cerrado'}
             </p>
           </div>
           <h1 className="font-display text-2xl font-black tracking-tight text-[#111827] sm:text-3xl">
             Finanzas y Pagos
           </h1>
-          <p className="text-xs text-[#4B5563] mt-0.5">
-            Gestión de tesorería, saldos de caja, depósitos de garantía, cuentas por cobrar y gastos operativos.
-          </p>
         </div>
 
-        {/* Acciones Rápidas (Thumb-friendly & Mobile First) */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+        {/* Acciones Operativas Directas de Caja */}
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={() => {
               setTipoModalMovimiento('INGRESO');
               setModalMovimientoAbierto(true);
             }}
-            className="ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-emerald-700 active:scale-95 cursor-pointer"
+            className="fx-press inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-emerald-700 cursor-pointer"
           >
             <span className="font-black">+</span>
-            Registrar Ingreso
+            <span>Registrar Ingreso</span>
           </button>
 
           <button
@@ -478,58 +528,120 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               setTipoModalMovimiento('EGRESO');
               setModalMovimientoAbierto(true);
             }}
-            className="ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-[#9CA3AF]/40 bg-white px-4 py-2 text-xs font-bold text-[#111827] shadow-xs transition hover:bg-[#EDEDED] active:scale-95 cursor-pointer"
+            className="fx-press inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-[#9CA3AF]/40 dark:border-white/10 bg-white dark:bg-[#1F2937] px-4 py-2 text-xs font-bold text-[#111827] dark:text-[#EDEDED] shadow-xs hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer"
           >
             <span className="text-rose-600 font-black">−</span>
-            Registrar Gasto
+            <span>Registrar Gasto</span>
           </button>
 
           <button
             type="button"
             onClick={() => setModalTransferenciaAbierto(true)}
-            className="ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-[#9CA3AF]/40 bg-white px-3.5 py-2 text-xs font-bold text-[#4B5563] transition hover:bg-[#EDEDED] active:scale-95 cursor-pointer"
+            className="fx-press inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-[#9CA3AF]/40 dark:border-white/10 bg-[#EDEDED]/80 dark:bg-[#1F2937] px-3.5 py-2 text-xs font-bold text-[#111827] dark:text-[#EDEDED] hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer"
           >
-            ↔ Mover Dinero
+            <span aria-hidden="true" className="font-mono">↔</span>
+            <span>Mover Dinero</span>
           </button>
 
           <button
             type="button"
             onClick={() => setModalArqueoAbierto(true)}
-            className={`ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition active:scale-95 cursor-pointer ${data.sesionCajaActiva
-                ? 'bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200'
-                : 'bg-emerald-100 text-emerald-900 border border-emerald-300 hover:bg-emerald-200'
+            className={`fx-press inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold cursor-pointer ${data.sesionCajaActiva
+                ? 'bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40 dark:hover:bg-amber-500/30'
+                : 'bg-emerald-100 text-emerald-900 border border-emerald-300 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/40 dark:hover:bg-emerald-500/30'
               }`}
           >
-            {data.sesionCajaActiva ? 'Cierre de Turno' : 'Abrir Turno'}
+            <span>
+              {data.sesionCajaActiva ? 'Cierre de Turno' : 'Abrir Turno'}
+            </span>
           </button>
         </div>
       </header>
 
-      {/* Pestañas de Navegación del Módulo */}
-      <nav className="flex overflow-x-auto no-scrollbar gap-1 rounded-2xl bg-[#EDEDED] p-1.5 text-xs font-bold text-[#4B5563]">
-        {[
-          { id: 'resumen', label: 'Resumen' },
-          { id: 'movimientos', label: `Movimientos (${data.todosMovimientos.length})` },
-          { id: 'arqueo', label: 'Cierre de Turno' },
-          { id: 'cartera', label: `Cuentas por Cobrar (${data.carteraContratos.length})` },
-          { id: 'garantias', label: `Garantías (${data.depositosGarantia.length})` },
-          { id: 'gastos', label: 'Gastos' },
-          { id: 'cuentas', label: `Cuentas & Cajas (${data.cuentas.length})` },
-          { id: 'reportes', label: 'Reportes' },
-        ].map((tab) => (
+      {/* Pestañas de Navegación del Módulo con Auto-Centrado y Controles de Desplazamiento */}
+      <div className="relative flex items-center gap-1 rounded-2xl bg-[#EDEDED] dark:bg-white/10 p-1.5 border border-[#9CA3AF]/20 dark:border-white/10">
+        {canScrollTabsLeft && (
           <button
-            key={tab.id}
             type="button"
-            onClick={() => setActiveTab(tab.id as TabCaja)}
-            className={`min-h-[40px] shrink-0 rounded-xl px-3.5 py-2 transition cursor-pointer ${activeTab === tab.id
-                ? 'bg-white text-[#111827] shadow-xs'
-                : 'hover:text-[#111827] hover:bg-white/50'
-              }`}
+            onClick={() => desplazarTabs('izq')}
+            aria-label="Ver pestañas anteriores"
+            className="fx-press flex h-10 w-8 shrink-0 items-center justify-center rounded-xl border border-[#9CA3AF]/35 dark:border-white/10 bg-white dark:bg-[#1F2937] text-[#111827] dark:text-[#EDEDED] shadow-xs hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer z-10"
           >
-            {tab.label}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              className="h-4 w-4"
+            >
+              <path d="m15 18-6-6 6-6" />
+            </svg>
           </button>
-        ))}
-      </nav>
+        )}
+
+        <nav
+          ref={navTabsRef}
+          onScroll={actualizarEstadoScrollTabs}
+          aria-label="Secciones de Finanzas y Pagos"
+          className="flex flex-1 min-w-0 overflow-x-auto no-scrollbar gap-1 scroll-smooth text-xs font-bold text-[#4B5563] dark:text-[#D1D5DB]"
+        >
+          {(
+            [
+              { id: 'resumen', label: 'Resumen' },
+              { id: 'movimientos', label: `Movimientos (${data.todosMovimientos.length})` },
+              { id: 'arqueo', label: 'Cierre de Turno' },
+              { id: 'cartera', label: `Cuentas por Cobrar (${data.carteraContratos.length})` },
+              { id: 'garantias', label: `Garantías (${data.depositosGarantia.length})` },
+              { id: 'gastos', label: 'Gastos' },
+              { id: 'cuentas', label: `Cuentas & Cajas (${data.cuentas.length})` },
+              { id: 'reportes', label: 'Reportes' },
+            ] satisfies readonly { readonly id: TabCaja; readonly label: string }[]
+          ).map((tab) => (
+            <button
+              key={tab.id}
+              ref={(el) => {
+                tabBtnRefs.current[tab.id] = el;
+              }}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`fx-press min-h-[40px] shrink-0 whitespace-nowrap rounded-xl px-3.5 py-2 transition-colors cursor-pointer ${
+                activeTab === tab.id
+                  ? 'bg-white text-[#111827] shadow-xs dark:bg-white/20 dark:text-white'
+                  : 'hover:text-[#111827] hover:bg-white/50 dark:text-[#D1D5DB] dark:hover:text-white dark:hover:bg-white/10'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+
+        {canScrollTabsRight && (
+          <button
+            type="button"
+            onClick={() => desplazarTabs('der')}
+            aria-label="Ver más pestañas"
+            className="fx-press flex h-10 w-8 shrink-0 items-center justify-center rounded-xl border border-[#9CA3AF]/35 dark:border-white/10 bg-white dark:bg-[#1F2937] text-[#111827] dark:text-[#EDEDED] shadow-xs hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer z-10"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              className="h-4 w-4"
+            >
+              <path d="m9 18 6-6-6-6" />
+            </svg>
+          </button>
+        )}
+      </div>
 
       {/* Selector de Período Global Funcional con Sincronización en Tiempo Real */}
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#9CA3AF]/30 bg-white p-1.5 sm:p-2 shadow-2xs">
@@ -542,7 +654,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               key={id}
               type="button"
               onClick={() => setPeriodo(id)}
-              className={`ios-press-bounce rounded-lg px-2.5 sm:px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${periodo === id
+              className={`fx-press rounded-lg px-2.5 sm:px-3 py-1.5 text-xs font-semibold cursor-pointer ${periodo === id
                   ? 'bg-[#111827] text-white shadow-xs'
                   : 'bg-[#EDEDED] text-[#4B5563] hover:text-[#111827]'
                 }`}
@@ -577,7 +689,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                 `flotax_movimientos_${periodo}.csv`
               )
             }
-            className="ios-press-bounce inline-flex items-center gap-1 rounded-lg border border-[#9CA3AF]/30 bg-[#EDEDED]/60 px-2.5 sm:px-3 py-1.5 text-xs font-bold text-[#111827] transition hover:bg-[#EDEDED] cursor-pointer"
+            className="fx-press inline-flex items-center gap-1 rounded-lg border border-[#9CA3AF]/30 bg-[#EDEDED]/60 px-2.5 sm:px-3 py-1.5 text-xs font-bold text-[#111827] hover:bg-[#EDEDED] cursor-pointer"
             title="Exportar a CSV"
           >
             <span>⬇</span>
@@ -646,7 +758,15 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                   onClick={() => setActiveTab('gastos')}
                 />
 
-                {/* Segunda Fila - Tarjeta Inferior de Ancho Completo: Balance Financiero */}
+                {/* Segunda Fila: Tarjeta horizontal de distribución financiera (siempre visible, sin acordeón) */}
+                <CajaGraficosHorizontal
+                  distribucionMetodos={estadoPeriodo.graficoMetodosPago}
+                  distribucionGastos={estadoPeriodo.graficoGastosCategorias}
+                  ingresosPeriodo={estadoPeriodo.indicadores.ingresosPeriodo}
+                  egresosPeriodo={estadoPeriodo.indicadores.egresosPeriodo}
+                />
+
+                {/* Tercera Fila: Balance Financiero Neto (Superávit / Déficit) debajo de la gráfica */}
                 <CajaBentoPillCard
                   variante="BALANCE"
                   titulo="Balance Financiero Neto"
@@ -660,48 +780,6 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                   onClick={() => setActiveTab('reportes')}
                 />
               </div>
-
-              {/* Acceso para mostrar u ocultar las gráficas */}
-              <div className="flex justify-center pt-1">
-                <button
-                  type="button"
-                  onClick={() => setMostrarGraficos(!mostrarGraficos)}
-                  className="ios-press-bounce inline-flex items-center gap-2 rounded-full border border-[#9CA3AF]/40 bg-white px-4 py-2 text-xs font-bold text-[#111827] shadow-xs hover:bg-[#EDEDED] transition cursor-pointer"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-3.5 w-3.5 text-[#2D6BFF]"
-                  >
-                    <line x1="18" x2="18" y1="20" y2="10" />
-                    <line x1="12" x2="12" y1="20" y2="4" />
-                    <line x1="6" x2="6" y1="20" y2="14" />
-                  </svg>
-                  <span>
-                    {mostrarGraficos
-                      ? 'Ocultar distribución financiera'
-                      : 'Ver distribución financiera (Gastos y Canales de Pago)'}
-                  </span>
-                  <span className="text-[10px] text-[#4B5563]">
-                    {mostrarGraficos ? '▴' : '▾'}
-                  </span>
-                </button>
-              </div>
-
-              {/* Despliegue de las gráficas financieras */}
-              {mostrarGraficos && (
-                <div className="animate-in fade-in duration-200 pt-1">
-                  <CajaGraficos
-                    distribucionMetodos={estadoPeriodo.graficoMetodosPago}
-                    distribucionGastos={estadoPeriodo.graficoGastosCategorias}
-                  />
-                </div>
-              )}
             </div>
           </section>
 
@@ -795,7 +873,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                         onClick={() => {
                           if (alt.accionTab) setActiveTab(alt.accionTab as TabCaja);
                         }}
-                        className="inline-flex min-h-[32px] shrink-0 items-center justify-center rounded-full border border-[#9CA3AF]/40 bg-[#EDEDED]/50 px-3 text-xs font-bold text-[#111827] transition hover:bg-[#EDEDED] cursor-pointer"
+                        className="inline-flex min-h-[32px] shrink-0 items-center justify-center rounded-full border border-[#9CA3AF]/40 bg-[#EDEDED]/50 px-3 text-xs font-bold text-[#111827] transition-colors hover:bg-[#EDEDED] cursor-pointer"
                       >
                         {alt.accionTexto} →
                       </button>
@@ -819,7 +897,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                 <button
                   type="button"
                   onClick={() => setActiveTab('movimientos')}
-                  className="ios-press-bounce text-xs font-bold text-[#111827] hover:underline cursor-pointer"
+                  className="fx-press text-xs font-bold text-[#111827] hover:underline cursor-pointer"
                 >
                   Ver libro completo ({data.todosMovimientos.length}) →
                 </button>
@@ -827,10 +905,11 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
 
               <div className="mt-2 divide-y divide-[#9CA3AF]/15">
                 {data.movimientosRecientes.slice(0, 6).map((m) => (
-                  <div
+                  <button
                     key={m.id}
+                    type="button"
                     onClick={() => setMovimientoDetalle(m)}
-                    className="flex items-center justify-between py-2.5 hover:bg-[#EDEDED]/40 rounded-xl px-2 cursor-pointer transition"
+                    className="fx-pressable flex w-full items-center justify-between py-2.5 hover:bg-[#EDEDED]/40 rounded-xl px-2 text-left cursor-pointer"
                   >
                     <div className="flex items-center gap-3">
                       <span
@@ -867,7 +946,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                       </span>
                       <p className="text-[10px] text-[#9CA3AF] uppercase font-mono">{m.estado}</p>
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
@@ -880,85 +959,28 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
       {/* ============================================================== */}
       {activeTab === 'movimientos' && (
         <div className="space-y-4">
-          {/* Barra de Filtros */}
-          <div className="rounded-[24px] border border-[#9CA3AF]/30 bg-white p-4 shadow-xs space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
-              {/* Buscador */}
-              <div className="lg:col-span-2">
-                <input
-                  type="text"
-                  placeholder="Buscar por concepto, cliente, contrato, referencia..."
-                  value={filtroBusqueda}
-                  onChange={(e) => setFiltroBusqueda(e.target.value)}
-                  className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 bg-white px-3 py-2 text-base text-[#111827] focus:border-[#111827] focus:outline-hidden"
-                />
-              </div>
-
-              {/* Filtro Tipo */}
-              <select
-                value={filtroTipo}
-                onChange={(e) => setFiltroTipo(e.target.value)}
-                className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 bg-white px-3 py-2 text-base text-[#111827] focus:border-[#111827] focus:outline-hidden"
-              >
-                <option value="TODOS">Todos los Tipos</option>
-                <option value="INGRESO">Solo Ingresos (+)</option>
-                <option value="EGRESO">Solo Egresos (-)</option>
-                <option value="TRANSFERENCIA">Solo Transferencias (↔)</option>
-              </select>
-
-              {/* Filtro Método */}
-              <select
-                value={filtroMetodo}
-                onChange={(e) => setFiltroMetodo(e.target.value)}
-                className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 bg-white px-3 py-2 text-base text-[#111827] focus:border-[#111827] focus:outline-hidden"
-              >
-                <option value="TODOS">Todos los Métodos</option>
-                <option value="efectivo">Efectivo</option>
-                <option value="transferencia">Transferencia</option>
-                <option value="tarjeta">Tarjeta</option>
-                <option value="especie">En Especie</option>
-              </select>
-
-              {/* Filtro Cuenta */}
-              <select
-                value={filtroCuenta}
-                onChange={(e) => setFiltroCuenta(e.target.value)}
-                className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 bg-white px-3 py-2 text-base text-[#111827] focus:border-[#111827] focus:outline-hidden"
-              >
-                <option value="TODAS">Todas las Cuentas</option>
-                {data.cuentas.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.nombre}
-                  </option>
-                ))}
-              </select>
-
-              {/* Filtro Estado */}
-              <select
-                value={filtroEstado}
-                onChange={(e) => setFiltroEstado(e.target.value)}
-                className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 bg-white px-3 py-2 text-base text-[#111827] focus:border-[#111827] focus:outline-hidden"
-              >
-                <option value="TODOS">Todos los Estados</option>
-                <option value="CONFIRMADO">Confirmados</option>
-                <option value="PENDIENTE">Pendientes</option>
-                <option value="ANULADO">Anulados</option>
-              </select>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-between text-xs text-[#4B5563] pt-2 border-t border-[#9CA3AF]/15">
-              <span>
-                Mostrando <b>{movimientosFiltrados.length}</b> de <b>{data.todosMovimientos.length}</b> movimientos
-              </span>
-              <button
-                type="button"
-                onClick={() => descargarCsv(exportarMovimientosCsv(movimientosFiltrados), 'movimientos_flotax_filtrados.csv')}
-                className="font-bold text-[#111827] hover:underline"
-              >
-                ⬇ Descargar CSV filtrado
-              </button>
-            </div>
-          </div>
+          {/* Barra de Filtros con Segmented Control + Dropdowns Personalizados + Progressive Disclosure */}
+          <CajaMovimientosFilterBar
+            filtroBusqueda={filtroBusqueda}
+            onChangeBusqueda={setFiltroBusqueda}
+            filtroTipo={filtroTipo}
+            onChangeTipo={setFiltroTipo}
+            filtroMetodo={filtroMetodo}
+            onChangeMetodo={setFiltroMetodo}
+            filtroCuenta={filtroCuenta}
+            onChangeCuenta={setFiltroCuenta}
+            filtroEstado={filtroEstado}
+            onChangeEstado={setFiltroEstado}
+            cuentas={data.cuentas}
+            totalFiltrados={movimientosFiltrados.length}
+            totalMovimientos={data.todosMovimientos.length}
+            onDescargarCsv={() =>
+              descargarCsv(
+                exportarMovimientosCsv(movimientosFiltrados),
+                'movimientos_flotax_filtrados.csv'
+              )
+            }
+          />
 
           {/* Lista Adaptativa de Movimientos (Mobile friendly cards + Desktop clean rows) */}
           <div className="rounded-[24px] border border-[#9CA3AF]/30 bg-white overflow-hidden shadow-xs">
@@ -971,7 +993,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                 {movimientosFiltrados.map((m) => (
                   <div
                     key={m.id}
-                    className="p-4 hover:bg-[#EDEDED]/40 transition flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                    className="p-4 hover:bg-[#EDEDED]/40 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                   >
                     <div className="flex items-start gap-3">
                       <span
@@ -1028,7 +1050,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                         <button
                           type="button"
                           onClick={() => setMovimientoDetalle(m)}
-                          className="min-h-[38px] rounded-lg border border-[#9CA3AF]/40 px-3 text-xs font-semibold text-[#111827] hover:bg-[#EDEDED]"
+                          className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg border border-[#9CA3AF]/40 px-3 text-xs font-semibold text-[#111827] hover:bg-[#EDEDED]"
                         >
                           Detalle
                         </button>
@@ -1039,7 +1061,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                               setMovimientoDetalle(m);
                               setModalAnularAbierto(true);
                             }}
-                            className="min-h-[38px] rounded-lg border border-rose-300 px-2.5 text-xs font-semibold text-rose-700 hover:bg-rose-50"
+                            className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg border border-rose-300 px-2.5 text-xs font-semibold text-rose-700 hover:bg-rose-50"
                             title="Anular movimiento con motivo obligatorio"
                           >
                             Anular
@@ -1124,7 +1146,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                     <button
                       type="button"
                       onClick={() => setModalArqueoAbierto(true)}
-                      className="min-h-[44px] rounded-full bg-[#111827] px-6 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#1F2937] active:scale-95 cursor-pointer"
+                      className="fx-press min-h-[44px] rounded-full bg-[#111827] px-6 py-2 text-xs font-bold text-white shadow-sm hover:bg-[#1F2937] cursor-pointer"
                     >
                       Realizar Cierre de Caja
                     </button>
@@ -1140,7 +1162,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                   <button
                     type="button"
                     onClick={() => setModalArqueoAbierto(true)}
-                    className="min-h-[44px] shrink-0 rounded-full bg-emerald-700 px-6 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-800 active:scale-95 cursor-pointer"
+                    className="fx-press min-h-[44px] shrink-0 rounded-full bg-emerald-700 px-6 py-2 text-xs font-bold text-white shadow-sm hover:bg-emerald-800 cursor-pointer"
                   >
                     Abrir Turno de Caja
                   </button>
@@ -1158,7 +1180,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               <button
                 type="button"
                 onClick={() => descargarCsv(exportarSesionesCajaCsv(data.historialSesionesCaja), 'historial_arqueos_caja.csv')}
-                className="text-xs font-bold text-[#111827] hover:underline"
+                className="fx-press text-xs font-bold text-[#111827] hover:underline"
               >
                 ⬇ Exportar Historial CSV
               </button>
@@ -1231,7 +1253,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
             <button
               type="button"
               onClick={() => descargarCsv(exportarCarteraContratosCsv(data.carteraContratos), 'cartera_flotax_alquileres.csv')}
-              className="inline-flex min-h-[38px] items-center gap-1.5 rounded-lg border border-[#9CA3AF]/40 px-3 text-xs font-bold text-[#111827] hover:bg-[#EDEDED]"
+              className="fx-press inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-lg border border-[#9CA3AF]/40 px-3 text-xs font-bold text-[#111827] hover:bg-[#EDEDED]"
             >
               ⬇ Exportar Cartera CSV
             </button>
@@ -1241,7 +1263,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
             {data.carteraContratos.map((c) => (
               <div
                 key={c.codigoContrato}
-                className="p-4 hover:bg-[#EDEDED]/40 transition flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+                className="p-4 hover:bg-[#EDEDED]/40 transition-colors flex flex-col lg:flex-row lg:items-center justify-between gap-4"
               >
                 <div>
                   <div className="flex items-center gap-2">
@@ -1296,7 +1318,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                           setTipoModalMovimiento('INGRESO');
                           setModalMovimientoAbierto(true);
                         }}
-                        className="min-h-[38px] rounded-lg bg-[#111827] px-3 text-xs font-bold text-white hover:bg-[#1F2937] transition"
+                        className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg bg-[#111827] px-3 text-xs font-bold text-white hover:bg-[#1F2937]"
                       >
                         Registrar Abono
                       </button>
@@ -1304,7 +1326,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                     <button
                       type="button"
                       onClick={() => abrirComprobanteContrato(c)}
-                      className="min-h-[38px] rounded-lg border border-[#9CA3AF]/40 px-3 text-xs font-semibold text-[#111827] hover:bg-[#EDEDED] transition"
+                      className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg border border-[#9CA3AF]/40 px-3 text-xs font-semibold text-[#111827] hover:bg-[#EDEDED]"
                     >
                       Comprobante
                     </button>
@@ -1334,7 +1356,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               <button
                 type="button"
                 onClick={() => descargarCsv(exportarGarantiasCsv(data.depositosGarantia), 'depositos_garantia_flotax.csv')}
-                className="inline-flex min-h-[38px] items-center gap-1.5 rounded-lg border border-[#9CA3AF]/40 px-3 text-xs font-bold text-[#111827] hover:bg-[#EDEDED]"
+                className="fx-press inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-lg border border-[#9CA3AF]/40 px-3 text-xs font-bold text-[#111827] hover:bg-[#EDEDED]"
               >
                 ⬇ Exportar Garantías CSV
               </button>
@@ -1357,14 +1379,20 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               return (
                 <div
                   key={g.id}
-                  className="p-4 hover:bg-[#EDEDED]/40 transition flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+                  className="p-4 hover:bg-[#EDEDED]/40 transition-colors flex flex-col lg:flex-row lg:items-center justify-between gap-4"
                 >
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-xs font-black text-[#111827]">
                         Contrato #{g.contratoId}
                       </span>
-                      <span className="rounded-full bg-neutral-200 px-2 py-0.5 text-[9px] font-bold text-[#111827]">
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[9px] font-bold border border-transparent ${
+                          String(g.estado).toUpperCase().includes('CUSTODIA')
+                            ? 'bg-neutral-200 text-[#111827] dark:!bg-emerald-500/20 dark:!text-emerald-300 dark:!border-emerald-500/30'
+                            : 'bg-neutral-200 text-[#111827] dark:!bg-white/10 dark:!text-[#EDEDED] dark:!border-white/10'
+                        }`}
+                      >
                         {g.estado}
                       </span>
                     </div>
@@ -1401,7 +1429,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                             setAccionGarantia('RECIBIR');
                             setModalGarantiaAbierto(true);
                           }}
-                          className="min-h-[38px] rounded-lg bg-[#111827] px-3 text-xs font-bold text-white hover:bg-[#1F2937]"
+                          className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg bg-[#111827] px-3 text-xs font-bold text-white hover:bg-[#1F2937]"
                         >
                           Recibir Fianza
                         </button>
@@ -1416,7 +1444,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                               setAccionGarantia('DEVOLVER');
                               setModalGarantiaAbierto(true);
                             }}
-                            className="min-h-[38px] rounded-lg bg-emerald-700 px-3 text-xs font-bold text-white hover:bg-emerald-800"
+                            className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg bg-emerald-700 px-3 text-xs font-bold text-white hover:bg-emerald-800"
                           >
                             Devolver a Cliente
                           </button>
@@ -1427,7 +1455,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                               setAccionGarantia('RETENER_CARGOS');
                               setModalGarantiaAbierto(true);
                             }}
-                            className="min-h-[38px] rounded-lg border border-rose-300 px-3 text-xs font-bold text-rose-700 hover:bg-rose-50"
+                            className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg border border-rose-300 px-3 text-xs font-bold text-rose-700 hover:bg-rose-50"
                           >
                             Retener Daño
                           </button>
@@ -1474,7 +1502,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
             {data.todosMovimientos
               .filter((m) => m.tipo === 'EGRESO')
               .map((g) => (
-                <div key={g.id} className="p-4 hover:bg-[#EDEDED]/40 transition flex items-center justify-between gap-3">
+                <div key={g.id} className="p-4 hover:bg-[#EDEDED]/40 transition-colors flex items-center justify-between gap-3">
                   <div>
                     <h4 className="text-xs font-bold text-[#111827]">{g.concepto}</h4>
                     <p className="text-[11px] text-[#4B5563] mt-0.5">
@@ -1534,7 +1562,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               return (
                 <div
                   key={c.id}
-                  className="ios-press-bounce rounded-[26px] border border-[#9CA3AF]/30 bg-white p-5 shadow-md transition-all duration-200 hover:shadow-lg flex flex-col justify-between"
+                  className="rounded-[26px] border border-[#9CA3AF]/30 bg-white p-5 shadow-md flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-center justify-between">
@@ -1617,17 +1645,19 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                 { id: 8, titulo: '8. Pagos por Método Recaudado', desc: 'Efectivo, transferencias y tarjetas' },
                 { id: 9, titulo: '9. Cierres de Caja y Arqueos', desc: 'Diferencias y faltantes de turno' },
               ].map((rep) => (
-                <div
+                <button
                   key={rep.id}
+                  type="button"
                   onClick={() => setReporteSeleccionado(rep.id)}
-                  className={`cursor-pointer rounded-2xl border p-4 transition ${reporteSeleccionado === rep.id
+                  aria-pressed={reporteSeleccionado === rep.id}
+                  className={`fx-pressable w-full cursor-pointer text-left rounded-2xl border p-4 ${reporteSeleccionado === rep.id
                       ? 'border-[#111827] bg-[#EDEDED]/40 shadow-xs'
                       : 'border-[#9CA3AF]/20 hover:border-[#9CA3AF]/60'
                     }`}
                 >
                   <h4 className="text-xs font-bold text-[#111827]">{rep.titulo}</h4>
                   <p className="text-[11px] text-[#4B5563] mt-1">{rep.desc}</p>
-                </div>
+                </button>
               ))}
             </div>
 
@@ -1706,7 +1736,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               <button
                 type="button"
                 onClick={() => setMovimientoDetalle(null)}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-[#EDEDED] text-[#4B5563] hover:bg-[#9CA3AF]/30"
+                className="fx-press flex h-8 w-8 items-center justify-center rounded-full bg-[#EDEDED] text-[#4B5563] hover:bg-[#9CA3AF]/30"
               >
                 ✕
               </button>
@@ -1774,7 +1804,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               <button
                 type="button"
                 onClick={() => setMovimientoDetalle(null)}
-                className="min-h-[40px] rounded-full border border-[#9CA3AF]/40 px-4 text-xs font-semibold text-[#4B5563]"
+                className="fx-press min-h-[40px] rounded-full border border-[#9CA3AF]/40 px-4 text-xs font-semibold text-[#4B5563]"
               >
                 Cerrar
               </button>
@@ -1782,7 +1812,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                 <button
                   type="button"
                   onClick={() => setModalAnularAbierto(true)}
-                  className="min-h-[40px] rounded-full bg-rose-700 px-4 text-xs font-bold text-white hover:bg-rose-800"
+                  className="fx-press min-h-[40px] rounded-full bg-rose-700 px-4 text-xs font-bold text-white hover:bg-rose-800"
                 >
                   Anular Movimiento
                 </button>
@@ -1812,7 +1842,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                 placeholder="Explica la causa por la cual se revierte este movimiento..."
                 value={motivoAnulacion}
                 onChange={(e) => setMotivoAnulacion(e.target.value)}
-                className="w-full rounded-xl border border-rose-300 bg-white px-3 py-2 text-base text-[#111827] focus:outline-hidden"
+                className="w-full rounded-xl border border-rose-300 bg-white px-3 py-2 text-base text-[#111827]"
                 required
               />
             </div>
@@ -1821,7 +1851,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               <button
                 type="button"
                 onClick={() => setModalAnularAbierto(false)}
-                className="min-h-[40px] rounded-full border border-[#9CA3AF]/40 px-4 text-xs font-semibold text-[#4B5563]"
+                className="fx-press min-h-[40px] rounded-full border border-[#9CA3AF]/40 px-4 text-xs font-semibold text-[#4B5563]"
               >
                 Cancelar
               </button>
@@ -1829,7 +1859,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                 type="button"
                 onClick={handleConfirmarAnulacion}
                 disabled={!motivoAnulacion.trim() || motivoAnulacion.trim().length < 5}
-                className="min-h-[40px] rounded-full bg-rose-700 px-5 text-xs font-bold text-white hover:bg-rose-800 disabled:opacity-50"
+                className="fx-press min-h-[40px] rounded-full bg-rose-700 px-5 text-xs font-bold text-white hover:bg-rose-800 disabled:opacity-50"
               >
                 Confirmar Anulación
               </button>
@@ -1849,7 +1879,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               <button
                 type="button"
                 onClick={() => setModalNuevaCuentaAbierto(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-[#EDEDED] text-[#4B5563]"
+                className="fx-press flex h-8 w-8 items-center justify-center rounded-full bg-[#EDEDED] text-[#4B5563]"
               >
                 ✕
               </button>
@@ -1870,20 +1900,20 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#4B5563] mb-1">
-                  Tipo de Cuenta *
-                </label>
-                <select
-                  value={tipoNuevaCuenta}
-                  onChange={(e) => setTipoNuevaCuenta(e.target.value as any)}
-                  className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 bg-white px-3 py-2 text-base text-[#111827]"
-                >
-                  <option value="BANCO">Cuenta Bancaria</option>
-                  <option value="CAJA_EFECTIVO">Caja Física de Efectivo</option>
-                  <option value="BILLETERA_DIGITAL">Billetera Digital (Nequi/Daviplata)</option>
-                </select>
-              </div>
+              <CajaCustomSelect<TipoCuentaFinanciera>
+                label="Tipo de Cuenta *"
+                ariaLabel="Seleccionar tipo de cuenta financiera"
+                value={tipoNuevaCuenta}
+                options={[
+                  { value: 'BANCO', label: 'Cuenta Bancaria' },
+                  { value: 'CAJA_EFECTIVO', label: 'Caja Física de Efectivo' },
+                  {
+                    value: 'BILLETERA_DIGITAL',
+                    label: 'Billetera Digital (Nequi/Daviplata)',
+                  },
+                ]}
+                onChange={setTipoNuevaCuenta}
+              />
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-[#4B5563] mb-1">

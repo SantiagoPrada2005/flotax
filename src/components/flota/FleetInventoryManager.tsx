@@ -42,15 +42,6 @@ const ESTADOS_INFO: Record<
   },
 };
 
-function esEstadoVehiculo(valor: string): valor is EstadoVehiculo {
-  return (
-    valor === 'DISPONIBLE' ||
-    valor === 'RESERVADO' ||
-    valor === 'MANTENIMIENTO' ||
-    valor === 'FUERA_SERVICIO'
-  );
-}
-
 export default function FleetInventoryManager({
   initialVehiculos,
   nuevaUnidadHref = '/admin/flota/nuevo',
@@ -104,44 +95,6 @@ export default function FleetInventoryManager({
     return true;
   });
 
-  const cambiarEstadoRapido = async (id: string, nuevoEstado: EstadoVehiculo) => {
-    const estadoPrevio = vehiculos.find((v) => v.id === id)?.estado;
-    if (estadoPrevio === nuevoEstado) return;
-
-    setVehiculos((prev) =>
-      prev.map((v) => (v.id === id ? { ...v, estado: nuevoEstado } : v))
-    );
-
-    startTransition(async () => {
-      try {
-        const { error, data } = await actions.flota.cambiarEstadoVehiculo({
-          id,
-          estado: nuevoEstado,
-        });
-
-        if (error || !data?.ok) {
-          if (estadoPrevio) {
-            setVehiculos((prev) =>
-              prev.map((v) => (v.id === id ? { ...v, estado: estadoPrevio } : v))
-            );
-          }
-          mostrarToast('No se pudo actualizar el estado de la unidad.', 'err');
-          return;
-        }
-
-        const info = ESTADOS_INFO[nuevoEstado];
-        mostrarToast(`Estado actualizado: ${info.label}.`);
-      } catch {
-        if (estadoPrevio) {
-          setVehiculos((prev) =>
-            prev.map((v) => (v.id === id ? { ...v, estado: estadoPrevio } : v))
-          );
-        }
-        mostrarToast('Error de conexión al actualizar estado.', 'err');
-      }
-    });
-  };
-
   const confirmarEliminar = async () => {
     if (!vehiculoAEliminar) return;
     const id = vehiculoAEliminar.id;
@@ -177,7 +130,7 @@ export default function FleetInventoryManager({
       {mensajeToast && (
         <div
           role="status"
-          className="fixed bottom-24 sm:bottom-12 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 rounded-full px-5 py-3 text-xs font-bold shadow-2xl backdrop-blur-xl border transition-all bg-[#111827] text-white border-[#4B5563]"
+          className="fixed bottom-24 sm:bottom-12 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 rounded-full px-5 py-3 text-xs font-bold shadow-2xl backdrop-blur-xl border bg-[#111827] text-white border-[#4B5563]"
         >
           {mensajeToast.tipo === 'ok' ? (
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-status-success/20 text-status-success">
@@ -206,7 +159,7 @@ export default function FleetInventoryManager({
             onClick={() =>
               setEstadoSeleccionado((prev) => (prev === 'DISPONIBLE' ? 'TODOS' : 'DISPONIBLE'))
             }
-            className={`ios-press-bounce text-left rounded-2xl p-3 border transition-all cursor-pointer ${
+            className={`fx-press text-left rounded-2xl p-3 border cursor-pointer ${
               estadoSeleccionado === 'DISPONIBLE'
                 ? 'bg-[#111827] text-white border-[#111827] shadow-md'
                 : 'bg-white text-[#111827] border-[#9CA3AF]/35 hover:border-[#111827] shadow-xs'
@@ -232,7 +185,7 @@ export default function FleetInventoryManager({
             onClick={() =>
               setEstadoSeleccionado((prev) => (prev === 'RESERVADO' ? 'TODOS' : 'RESERVADO'))
             }
-            className={`ios-press-bounce text-left rounded-2xl p-3 border transition-all cursor-pointer ${
+            className={`fx-press text-left rounded-2xl p-3 border cursor-pointer ${
               estadoSeleccionado === 'RESERVADO'
                 ? 'bg-[#111827] text-white border-[#111827] shadow-md'
                 : 'bg-white text-[#111827] border-[#9CA3AF]/35 hover:border-[#111827] shadow-xs'
@@ -262,7 +215,7 @@ export default function FleetInventoryManager({
             onClick={() =>
               setEstadoSeleccionado((prev) => (prev === 'MANTENIMIENTO' ? 'TODOS' : 'MANTENIMIENTO'))
             }
-            className={`ios-press-bounce text-left rounded-2xl p-3 border transition-all cursor-pointer ${
+            className={`fx-press text-left rounded-2xl p-3 border cursor-pointer ${
               estadoSeleccionado === 'MANTENIMIENTO'
                 ? 'bg-[#111827] text-white border-[#111827] shadow-md'
                 : 'bg-white text-[#111827] border-[#9CA3AF]/35 hover:border-[#111827] shadow-xs'
@@ -288,7 +241,7 @@ export default function FleetInventoryManager({
             onClick={() =>
               setEstadoSeleccionado((prev) => (prev === 'FUERA_SERVICIO' ? 'TODOS' : 'FUERA_SERVICIO'))
             }
-            className={`ios-press-bounce text-left rounded-2xl p-3 border transition-all cursor-pointer ${
+            className={`fx-press text-left rounded-2xl p-3 border cursor-pointer ${
               estadoSeleccionado === 'FUERA_SERVICIO'
                 ? 'bg-[#111827] text-white border-[#111827] shadow-md'
                 : 'bg-white text-[#111827] border-[#9CA3AF]/35 hover:border-[#111827] shadow-xs'
@@ -338,13 +291,13 @@ export default function FleetInventoryManager({
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               placeholder="Placa o modelo..."
-              className="w-full min-h-[44px] rounded-full bg-[#EDEDED]/65 pl-10 pr-9 py-2 text-base text-[#111827] placeholder-[#9CA3AF] border border-transparent focus:border-[#111827] focus:bg-white focus:outline-none transition-all"
+              className="w-full min-h-[44px] rounded-full bg-[#EDEDED]/65 pl-10 pr-9 py-2 text-base text-[#111827] placeholder-[#9CA3AF] border border-transparent focus:border-[#111827] focus:bg-white transition-colors duration-150"
             />
             {busqueda && (
               <button
                 type="button"
                 onClick={() => setBusqueda('')}
-                className="ios-press-bounce absolute right-2 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-[#9CA3AF]/30 text-xs text-[#111827] hover:bg-[#9CA3AF]/50 cursor-pointer"
+                className="fx-press absolute right-2 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-[#9CA3AF]/30 text-xs text-[#111827] hover:bg-[#9CA3AF]/50 cursor-pointer before:absolute before:-inset-2 before:content-['']"
                 aria-label="Limpiar búsqueda"
               >
                 ✕
@@ -358,7 +311,7 @@ export default function FleetInventoryManager({
             aria-expanded={mostrarPanelCategorias}
             aria-label="Filtrar por categoría"
             onClick={() => setFiltrosAbiertos((prev) => !prev)}
-            className={`ios-press-bounce relative flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border transition-colors ${
+            className={`fx-press relative flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border ${
               mostrarPanelCategorias
                 ? 'border-[#111827] bg-[#1F2937] text-[#EDEDED]'
                 : 'border-[#9CA3AF]/40 bg-[#EDEDED]/75 text-[#111827] hover:bg-[#EDEDED]'
@@ -393,7 +346,7 @@ export default function FleetInventoryManager({
               type="button"
               onClick={() => setVistaModo('grid')}
               aria-label="Vista de cuadrícula"
-              className={`ios-press-bounce flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold transition cursor-pointer ${
+              className={`fx-press flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold cursor-pointer ${
                 vistaModo === 'grid'
                   ? 'bg-white text-[#111827] shadow-xs'
                   : 'text-[#4B5563] hover:text-[#111827]'
@@ -410,7 +363,7 @@ export default function FleetInventoryManager({
               type="button"
               onClick={() => setVistaModo('lista')}
               aria-label="Vista de lista"
-              className={`ios-press-bounce flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold transition cursor-pointer ${
+              className={`fx-press flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold cursor-pointer ${
                 vistaModo === 'lista'
                   ? 'bg-white text-[#111827] shadow-xs'
                   : 'text-[#4B5563] hover:text-[#111827]'
@@ -431,7 +384,7 @@ export default function FleetInventoryManager({
           <a
             href={nuevaUnidadHref}
             data-astro-prefetch="tap"
-            className="ios-press-bounce inline-flex min-h-[44px] shrink-0 items-center justify-center gap-1.5 rounded-full bg-[#111827] px-4 py-2.5 text-xs font-bold text-[#EDEDED] shadow-2xs transition hover:bg-[#1F2937]"
+            className="fx-press inline-flex min-h-[44px] shrink-0 items-center justify-center gap-1.5 rounded-full bg-[#111827] px-4 py-2.5 text-xs font-bold text-[#EDEDED] shadow-2xs hover:bg-[#1F2937]"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -460,7 +413,7 @@ export default function FleetInventoryManager({
                 key={cat.id}
                 type="button"
                 onClick={() => setCategoriaSeleccionada(cat.id)}
-                className={`ios-press-bounce min-h-[38px] whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-bold transition cursor-pointer ${
+                className={`fx-press min-h-[44px] whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-bold cursor-pointer ${
                   categoriaSeleccionada === cat.id
                     ? 'bg-[#111827] text-white shadow-xs'
                     : 'bg-[#EDEDED] text-[#111827] hover:bg-[#9CA3AF]/35'
@@ -497,7 +450,7 @@ export default function FleetInventoryManager({
               setEstadoSeleccionado('TODOS');
               setFiltrosAbiertos(false);
             }}
-            className="ios-press-bounce inline-flex min-h-[44px] items-center rounded-full bg-[#111827] px-6 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#1F2937] cursor-pointer"
+            className="fx-press inline-flex min-h-[44px] items-center rounded-full bg-[#111827] px-6 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#1F2937] cursor-pointer"
           >
             Restablecer todos los filtros
           </button>
@@ -510,7 +463,11 @@ export default function FleetInventoryManager({
             return (
               <div
                 key={vehiculo.id}
-                className="group relative rounded-[28px] border border-[#9CA3AF]/40 bg-white p-4 sm:p-5 shadow-xs hover:border-[#111827] hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden"
+                className={`relative rounded-[28px] border bg-white p-4 sm:p-5 shadow-xs transition-colors duration-150 flex flex-col justify-between overflow-hidden ${
+                  vehiculo.estado === 'MANTENIMIENTO'
+                    ? 'border-status-warning/70 ring-1 ring-status-warning/30 hover:border-status-warning'
+                    : 'border-[#9CA3AF]/40 hover:border-[#111827]'
+                }`}
               >
                 <div>
                   <div className="flex items-center justify-between gap-2">
@@ -524,6 +481,16 @@ export default function FleetInventoryManager({
                     </div>
 
                     <div className="flex items-center gap-1.5">
+                      {vehiculo.estado === 'MANTENIMIENTO' && (
+                        <a
+                          href={`/admin/flota/${vehiculo.id}/disponibilidad`}
+                          className="fx-press relative inline-flex items-center gap-1.5 rounded-full bg-[#EDEDED] border border-status-warning/70 px-2.5 py-1 text-[10px] font-mono font-bold uppercase tracking-wider text-[#111827] hover:bg-status-warning/10 before:absolute before:inset-x-0 before:-inset-y-[11px] before:content-['']"
+                          title="Unidad en taller — Ver gestión y salida técnica"
+                        >
+                          <span className="h-2 w-2 rounded-full bg-status-warning animate-pulse ring-2 ring-status-warning/30" />
+                          <span>EN TALLER</span>
+                        </a>
+                      )}
                       {vehiculo.destacado && (
                         <span className="font-mono text-[10px] font-bold text-[#111827] bg-[#EDEDED] px-2.5 py-1 rounded-full border border-[#9CA3AF]/50 flex items-center gap-1">
                           <span>★</span>
@@ -537,7 +504,7 @@ export default function FleetInventoryManager({
                     <img
                       src={vehiculo.imagenUrl}
                       alt={`${vehiculo.marca} ${vehiculo.modelo}`}
-                      className="h-full w-full object-contain transition-transform duration-500 ease-out group-hover:scale-105"
+                      className="h-full w-full object-contain"
                       loading="lazy"
                     />
                   </div>
@@ -581,36 +548,78 @@ export default function FleetInventoryManager({
 
                 <div className="mt-4 pt-3 border-t border-[#EDEDED] space-y-3">
                   <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5">
-                      <span className={`h-2 w-2 rounded-full ${estadoInfo.dotColor}`} />
-                      <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
-                        Estado Patio:
+                    <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
+                      Estado Patio:
+                    </span>
+
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#EDEDED] border border-[#9CA3AF]/35">
+                      <span className={`h-2 w-2 rounded-full shrink-0 ${estadoInfo.dotColor}`} />
+                      <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827]">
+                        {estadoInfo.label}
                       </span>
                     </div>
-
-                    <select
-                      value={vehiculo.estado}
-                      disabled={isPending}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        if (esEstadoVehiculo(val)) {
-                          void cambiarEstadoRapido(vehiculo.id, val);
-                        }
-                      }}
-                      className="ios-press-bounce min-h-[40px] rounded-xl border border-[#9CA3AF]/40 bg-white px-2.5 py-1.5 text-base sm:text-xs font-bold text-[#111827] focus:border-[#111827] focus:outline-none cursor-pointer"
-                    >
-                      <option value="DISPONIBLE">Disponible</option>
-                      <option value="RESERVADO">En Alquiler</option>
-                      <option value="MANTENIMIENTO">Mantenimiento</option>
-                      <option value="FUERA_SERVICIO">Fuera de Servicio</option>
-                    </select>
                   </div>
+
+                  <a
+                    href={`/admin/flota/${vehiculo.id}/disponibilidad`}
+                    className={`fx-press min-h-[44px] px-4 flex items-center justify-center gap-2 rounded-full border text-xs font-bold cursor-pointer shadow-2xs ${
+                      vehiculo.estado === 'MANTENIMIENTO'
+                        ? 'border-status-warning/80 bg-status-warning/10 hover:bg-status-warning/20 text-[#111827]'
+                        : 'border-[#9CA3AF]/40 bg-white hover:bg-[#EDEDED] text-[#111827]'
+                    }`}
+                  >
+                    {vehiculo.estado === 'MANTENIMIENTO' ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-4 w-4 shrink-0 text-status-warning"
+                        aria-hidden="true"
+                      >
+                        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-4 w-4 shrink-0 text-[#111827]"
+                        aria-hidden="true"
+                      >
+                        <rect width="18" height="18" x="3" y="4" rx="2" />
+                        <line x1="16" x2="16" y1="2" y2="6" />
+                        <line x1="8" x2="8" y1="2" y2="6" />
+                        <line x1="3" x2="21" y1="10" y2="10" />
+                        <path d="M8 14h.01" />
+                        <path d="M12 14h.01" />
+                        <path d="M16 14h.01" />
+                        <path d="M8 18h.01" />
+                        <path d="M12 18h.01" />
+                        <path d="M16 18h.01" />
+                      </svg>
+                    )}
+                    <span>Disponibilidad & Taller</span>
+                    {vehiculo.estado === 'MANTENIMIENTO' && (
+                      <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-status-warning/25 px-2 py-0.5 text-[10px] font-mono font-bold text-[#111827] uppercase tracking-wider">
+                        <span className="h-1.5 w-1.5 rounded-full bg-status-warning animate-pulse" />
+                        <span>En Taller</span>
+                      </span>
+                    )}
+                  </a>
 
                   <div className="flex items-center gap-2">
                     <a
                       href={`/vehiculos/${vehiculo.id}`}
                       title="Ver ficha pública del vehículo"
-                      className="ios-press-bounce min-h-[44px] px-3.5 flex items-center justify-center gap-1.5 rounded-full border border-[#9CA3AF]/40 bg-white hover:bg-[#EDEDED] text-[#111827] transition shrink-0 cursor-pointer"
+                      className="fx-press min-h-[44px] px-3.5 flex items-center justify-center gap-1.5 rounded-full border border-[#9CA3AF]/40 bg-white hover:bg-[#EDEDED] text-[#111827] shrink-0 cursor-pointer"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
                         <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
@@ -621,7 +630,7 @@ export default function FleetInventoryManager({
 
                     <a
                       href={`/admin/flota/${vehiculo.id}/editar`}
-                      className="ios-press-bounce flex-1 min-h-[44px] px-4 flex items-center justify-center gap-1.5 rounded-full bg-[#111827] hover:bg-[#1F2937] text-white text-xs font-bold shadow-xs transition cursor-pointer"
+                      className="fx-press flex-1 min-h-[44px] px-4 flex items-center justify-center gap-1.5 rounded-full bg-[#111827] hover:bg-[#1F2937] text-white text-xs font-bold shadow-xs cursor-pointer"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5 shrink-0">
                         <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
@@ -635,7 +644,7 @@ export default function FleetInventoryManager({
                       title="Retirar unidad de la flota"
                       aria-label={`Retirar unidad ${vehiculo.placa}`}
                       onClick={() => setVehiculoAEliminar(vehiculo)}
-                      className="ios-press-bounce h-11 w-11 flex items-center justify-center rounded-full border border-[#9CA3AF]/30 bg-white hover:bg-[#EDEDED] hover:border-[#111827] text-[#4B5563] hover:text-[#111827] transition shrink-0 cursor-pointer"
+                      className="fx-press h-11 w-11 flex items-center justify-center rounded-full border border-[#9CA3AF]/30 bg-white hover:bg-[#EDEDED] hover:border-[#111827] text-[#4B5563] hover:text-[#111827] shrink-0 cursor-pointer"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
                         <path d="M3 6h18" />
@@ -657,14 +666,18 @@ export default function FleetInventoryManager({
             return (
               <div
                 key={vehiculo.id}
-                className="group rounded-[24px] border border-[#9CA3AF]/40 bg-white p-4 shadow-xs hover:border-[#111827] hover:shadow-md transition-all duration-300 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+                className={`rounded-[24px] border bg-white p-4 shadow-xs transition-colors duration-150 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 ${
+                  vehiculo.estado === 'MANTENIMIENTO'
+                    ? 'border-status-warning/70 ring-1 ring-status-warning/30 hover:border-status-warning'
+                    : 'border-[#9CA3AF]/40 hover:border-[#111827]'
+                }`}
               >
                 <div className="flex items-center gap-4 min-w-0">
                   <div className="relative h-20 w-28 shrink-0 overflow-hidden rounded-2xl bg-[#EDEDED]/70 flex items-center justify-center p-2 border border-[#9CA3AF]/20">
                     <img
                       src={vehiculo.imagenUrl}
                       alt={`${vehiculo.marca} ${vehiculo.modelo}`}
-                      className="h-full w-full object-contain group-hover:scale-105 transition-transform duration-300"
+                      className="h-full w-full object-contain"
                       loading="lazy"
                     />
                   </div>
@@ -677,6 +690,16 @@ export default function FleetInventoryManager({
                       <span className="font-mono text-[10px] font-bold text-[#4B5563]">
                         {vehiculo.categoriaEtiqueta}
                       </span>
+                      {vehiculo.estado === 'MANTENIMIENTO' && (
+                        <a
+                          href={`/admin/flota/${vehiculo.id}/disponibilidad`}
+                          className="fx-press relative inline-flex items-center gap-1.5 rounded-full bg-[#EDEDED] border border-status-warning/70 px-2.5 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider text-[#111827] hover:bg-status-warning/10 before:absolute before:inset-x-0 before:-inset-y-[11px] before:content-['']"
+                          title="Unidad en taller — Ver gestión y salida técnica"
+                        >
+                          <span className="h-1.5 w-1.5 rounded-full bg-status-warning animate-pulse ring-2 ring-status-warning/30" />
+                          <span>EN TALLER</span>
+                        </a>
+                      )}
                     </div>
 
                     <h4 className="font-display font-bold text-base text-[#111827] truncate mt-1">
@@ -689,37 +712,79 @@ export default function FleetInventoryManager({
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#EDEDED]">
-                  <div className="flex items-center gap-1.5">
-                    <span className={`h-2 w-2 rounded-full ${estadoInfo.dotColor}`} />
-                    <select
-                      value={vehiculo.estado}
-                      disabled={isPending}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        if (esEstadoVehiculo(val)) {
-                          void cambiarEstadoRapido(vehiculo.id, val);
-                        }
-                      }}
-                      className="min-h-[40px] rounded-xl border border-[#9CA3AF]/40 bg-white px-3 py-2 text-base sm:text-xs font-bold text-[#111827] focus:border-[#111827] focus:outline-none cursor-pointer"
-                    >
-                      <option value="DISPONIBLE">Disponible</option>
-                      <option value="RESERVADO">En Alquiler</option>
-                      <option value="MANTENIMIENTO">Mantenimiento</option>
-                      <option value="FUERA_SERVICIO">Fuera de Servicio</option>
-                    </select>
+                <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#EDEDED]">
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#EDEDED] border border-[#9CA3AF]/35">
+                    <span className={`h-2 w-2 rounded-full shrink-0 ${estadoInfo.dotColor}`} />
+                    <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827]">
+                      {estadoInfo.label}
+                    </span>
                   </div>
+
+                  <a
+                    href={`/admin/flota/${vehiculo.id}/disponibilidad`}
+                    className={`fx-press min-h-[44px] px-3.5 sm:px-4 rounded-full border flex items-center justify-center gap-2 text-xs font-bold cursor-pointer shadow-2xs ${
+                      vehiculo.estado === 'MANTENIMIENTO'
+                        ? 'border-status-warning/80 bg-status-warning/10 hover:bg-status-warning/20 text-[#111827]'
+                        : 'border-[#9CA3AF]/40 bg-white hover:bg-[#EDEDED] text-[#111827]'
+                    }`}
+                  >
+                    {vehiculo.estado === 'MANTENIMIENTO' ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-4 w-4 shrink-0 text-status-warning"
+                        aria-hidden="true"
+                      >
+                        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-4 w-4 shrink-0 text-[#111827]"
+                        aria-hidden="true"
+                      >
+                        <rect width="18" height="18" x="3" y="4" rx="2" />
+                        <line x1="16" x2="16" y1="2" y2="6" />
+                        <line x1="8" x2="8" y1="2" y2="6" />
+                        <line x1="3" x2="21" y1="10" y2="10" />
+                        <path d="M8 14h.01" />
+                        <path d="M12 14h.01" />
+                        <path d="M16 14h.01" />
+                        <path d="M8 18h.01" />
+                        <path d="M12 18h.01" />
+                        <path d="M16 18h.01" />
+                      </svg>
+                    )}
+                    <span>Disponibilidad & Taller</span>
+                    {vehiculo.estado === 'MANTENIMIENTO' && (
+                      <span className="hidden xs:inline-flex items-center gap-1 rounded-full bg-status-warning/25 px-2 py-0.5 text-[10px] font-mono font-bold text-[#111827] uppercase tracking-wider">
+                        <span className="h-1.5 w-1.5 rounded-full bg-status-warning animate-pulse" />
+                        <span>En Taller</span>
+                      </span>
+                    )}
+                  </a>
 
                   <div className="flex items-center gap-1.5">
                     <a
                       href={`/vehiculos/${vehiculo.id}`}
-                      className="ios-press-bounce min-h-[44px] px-3.5 rounded-full border border-[#9CA3AF]/40 bg-white hover:bg-[#EDEDED] text-[#111827] text-xs font-bold flex items-center justify-center cursor-pointer"
+                      className="fx-press min-h-[44px] px-3.5 rounded-full border border-[#9CA3AF]/40 bg-white hover:bg-[#EDEDED] text-[#111827] text-xs font-bold flex items-center justify-center cursor-pointer"
                     >
                       Ver
                     </a>
                     <a
                       href={`/admin/flota/${vehiculo.id}/editar`}
-                      className="ios-press-bounce min-h-[44px] px-4 rounded-full bg-[#111827] hover:bg-[#1F2937] text-white text-xs font-bold flex items-center justify-center cursor-pointer"
+                      className="fx-press min-h-[44px] px-4 rounded-full bg-[#111827] hover:bg-[#1F2937] text-white text-xs font-bold flex items-center justify-center cursor-pointer"
                     >
                       Modificar
                     </a>
@@ -727,7 +792,7 @@ export default function FleetInventoryManager({
                       type="button"
                       aria-label={`Retirar unidad ${vehiculo.placa}`}
                       onClick={() => setVehiculoAEliminar(vehiculo)}
-                      className="ios-press-bounce h-11 w-11 rounded-full border border-[#9CA3AF]/30 bg-white hover:bg-[#EDEDED] hover:border-[#111827] text-[#4B5563] hover:text-[#111827] flex items-center justify-center cursor-pointer"
+                      className="fx-press h-11 w-11 rounded-full border border-[#9CA3AF]/30 bg-white hover:bg-[#EDEDED] hover:border-[#111827] text-[#4B5563] hover:text-[#111827] flex items-center justify-center cursor-pointer"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
                         <path d="M3 6h18" />
@@ -772,16 +837,17 @@ export default function FleetInventoryManager({
               <button
                 type="button"
                 onClick={() => setVehiculoAEliminar(null)}
-                className="ios-press-bounce min-h-[44px] rounded-full px-5 py-2.5 text-xs font-bold text-[#4B5563] hover:bg-[#EDEDED] transition cursor-pointer"
+                className="fx-press min-h-[44px] rounded-full px-5 py-2.5 text-xs font-bold text-[#4B5563] hover:bg-[#EDEDED] cursor-pointer"
               >
                 Cancelar
               </button>
               <button
                 type="button"
+                disabled={isPending}
                 onClick={confirmarEliminar}
-                className="ios-press-bounce min-h-[44px] rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] transition cursor-pointer shadow-xs"
+                className="fx-press min-h-[44px] rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white enabled:hover:bg-[#1F2937] cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                Sí, retirar unidad
+                {isPending ? 'Retirando...' : 'Sí, retirar unidad'}
               </button>
             </div>
           </div>

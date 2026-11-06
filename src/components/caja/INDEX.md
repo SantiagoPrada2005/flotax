@@ -15,8 +15,9 @@
 | :--- | :--- | :--- | :--- |
 | [`CajaBarraFlujo.tsx`](./CajaBarraFlujo.tsx) | Componente: Barra Proporcional de Flujos Financieros | `CajaBarraFlujo` | `@/lib/caja` |
 | [`CajaDashboardIsland.tsx`](./CajaDashboardIsland.tsx) | Isla React 19: Dashboard de Caja | `CajaDashboardIsland` | `astro:actions`, `@/lib/caja` |
-| [`CajaGraficos.tsx`](./CajaGraficos.tsx) | Componente: Visualización de Gastos y Canales de Pago | `CajaGraficos` | `@/lib/caja` |
+| [`CajaGraficosHorizontal.tsx`](./CajaGraficosHorizontal.tsx) | Componente: Tarjeta horizontal de distribución financiera (mini-donut, barra proporcional y leyenda) | `CajaGraficosHorizontal`, `CajaGraficosHorizontalProps` | `@/lib/caja` |
 | [`CajaKpiCard.tsx`](./CajaKpiCard.tsx) | Componente: Tarjeta KPI de Balance | `CajaKpiCard` | `lucide-react` |
+| [`CajaMovimientosFilterBar.tsx`](./CajaMovimientosFilterBar.tsx) | Componente: Barra de Filtros con Segmented Control y Dropdown Lists Personalizados (3 Estados) | `CajaMovimientosFilterBar`, `CajaCustomSelect` | `@/lib/caja` |
 | [`ModalArqueoCierre.tsx`](./ModalArqueoCierre.tsx) | Modal: Arqueo y Cierre de Caja | `ModalArqueoCierre` | `astro:actions`, `@/lib/caja` |
 | [`ModalComprobante.tsx`](./ModalComprobante.tsx) | Modal: Visor de Comprobante Digital | `ModalComprobante` | `lucide-react` |
 | [`ModalGarantia.tsx`](./ModalGarantia.tsx) | Modal: Gestión de Depósitos de Garantía | `ModalGarantia` | `astro:actions`, `@/lib/caja` |

@@ -106,13 +106,13 @@ export default function Step1TipoVehiculo({
     <div className="w-full space-y-6">
       {/* Pregunta Hero Principal */}
       <div className="space-y-2">
-        <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#4B5563] block">
+        <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF] block">
           Paso 01 · Segmento Operativo
         </span>
-        <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#111827] leading-[1.12]">
+        <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#111827] dark:text-[#EDEDED] leading-[1.12]">
           ¿Qué vehículo vas a registrar?
         </h1>
-        <p className="text-xs sm:text-sm text-[#4B5563] font-medium max-w-[50ch]">
+        <p className="text-xs sm:text-sm text-[#4B5563] dark:text-[#9CA3AF] font-medium max-w-[50ch]">
           Selecciona el segmento de la unidad para adaptar automáticamente los requisitos y especificaciones.
         </p>
       </div>
@@ -134,14 +134,14 @@ export default function Step1TipoVehiculo({
               aria-checked={isSelected}
               onClick={() => handleSeleccionar(op)}
               className={`ios-press-bounce text-left rounded-[26px] p-5 sm:p-6 border transition-all cursor-pointer flex items-start gap-4 ${isSelected
-                  ? 'bg-[#111827] text-white border-[#111827] shadow-xl'
-                  : 'bg-white text-[#111827] border-[#9CA3AF]/40 hover:border-[#111827] shadow-xs'
+                  ? 'bg-[#111827] text-white border-[#111827] shadow-xl dark:bg-white dark:text-[#111827] dark:border-white'
+                  : 'bg-white text-[#111827] border-[#9CA3AF]/40 hover:border-[#111827] shadow-xs dark:bg-[#1F2937] dark:text-[#EDEDED] dark:border-white/10 dark:hover:border-white/30 dark:hover:bg-[#1F2937]/80'
                 }`}
             >
               <div
                 className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border transition-all ${isSelected
-                    ? 'bg-white text-[#111827] border-white'
-                    : 'bg-[#EDEDED] text-[#111827] border-[#9CA3AF]/30'
+                    ? 'bg-white text-[#111827] border-white dark:bg-[#111827] dark:text-white dark:border-[#111827]'
+                    : 'bg-[#EDEDED] text-[#111827] border-[#9CA3AF]/30 dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15'
                   }`}
               >
                 <svg
@@ -165,15 +165,15 @@ export default function Step1TipoVehiculo({
                   </h3>
                   <span
                     className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold transition ${isSelected
-                        ? 'bg-white text-[#111827]'
-                        : 'border border-[#9CA3AF]/60 text-transparent'
+                        ? 'bg-white text-[#111827] dark:bg-[#111827] dark:text-white'
+                        : 'border border-[#9CA3AF]/60 text-transparent dark:border-white/30'
                       }`}
                   >
                     ✓
                   </span>
                 </div>
                 <p
-                  className={`text-xs mt-1 leading-relaxed ${isSelected ? 'text-gray-300' : 'text-[#4B5563]'
+                  className={`text-xs mt-1 leading-relaxed ${isSelected ? 'text-gray-300 dark:text-gray-600' : 'text-[#4B5563] dark:text-[#9CA3AF]'
                     }`}
                 >
                   {op.subtitulo}

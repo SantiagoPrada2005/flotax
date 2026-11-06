@@ -31,29 +31,29 @@ export default function Step3InfoBasica({
     <div className="w-full space-y-6">
       {/* Encabezado Hero */}
       <div className="space-y-2">
-        <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#4B5563] block">
+        <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF] block">
           Paso 03 · Fabricante y Modelo
         </span>
-        <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#111827] leading-[1.12]">
+        <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#111827] dark:text-[#EDEDED] leading-[1.12]">
           Cuéntanos un poco más
         </h1>
-        <p className="text-xs sm:text-sm text-[#4B5563] font-medium max-w-[50ch]">
+        <p className="text-xs sm:text-sm text-[#4B5563] dark:text-[#9CA3AF] font-medium max-w-[50ch]">
           Especifica la marca del fabricante y la referencia o modelo comercial.
         </p>
       </div>
 
       {/* Contenedor Inmersivo de 2 Entradas */}
-      <div className="rounded-[28px] border border-[#9CA3AF]/40 bg-white p-6 sm:p-8 shadow-xs space-y-6">
+      <div className="rounded-[28px] border border-[#9CA3AF]/40 bg-white p-6 sm:p-8 shadow-xs space-y-6 dark:bg-[#1F2937] dark:border-white/10">
         {/* Entrada 1: Marca / Fabricante */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <label
               htmlFor="input-marca-hero"
-              className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827]"
+              className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]"
             >
-              Marca / Fabricante <span className="text-rose-600">*</span>
+              Marca / Fabricante <span className="text-rose-600 dark:text-rose-400">*</span>
             </label>
-            <span className="font-mono text-[11px] text-[#4B5563]">
+            <span className="font-mono text-[11px] text-[#4B5563] dark:text-[#9CA3AF]">
               Ej: {primeraMarca}
             </span>
           </div>
@@ -65,15 +65,15 @@ export default function Step3InfoBasica({
             value={data.marca}
             onChange={(e) => onChange({ marca: e.target.value })}
             placeholder={`Ej: ${primeraMarca}`}
-            className={`w-full rounded-2xl bg-[#EDEDED]/50 px-5 py-4 font-display text-xl sm:text-2xl font-bold text-[#111827] placeholder-[#9CA3AF] border transition-all ${errors.marca
-                ? 'border-rose-500 bg-rose-50/40 focus:border-rose-600 focus:outline-none'
-                : 'border-transparent focus:border-[#111827] focus:bg-white focus:outline-none'
+            className={`w-full rounded-2xl bg-[#EDEDED]/50 px-5 py-4 font-display text-xl sm:text-2xl font-bold text-[#111827] placeholder-[#9CA3AF] border transition-all dark:bg-[#111827] dark:text-[#EDEDED] dark:placeholder-[#9CA3AF]/60 ${errors.marca
+                ? 'border-rose-500 bg-rose-50/40 focus:border-rose-600 focus:outline-none dark:bg-rose-950/20 dark:border-rose-500'
+                : 'border-transparent focus:border-[#111827] focus:bg-white focus:outline-none dark:border-white/10 dark:focus:border-white dark:focus:bg-[#111827]'
               }`}
           />
 
           {/* Chips de selección rápida de Marca con 1 toque */}
           <div className="space-y-1.5 pt-1">
-            <span className="text-[11px] font-medium text-[#4B5563] block">
+            <span className="text-[11px] font-medium text-[#4B5563] dark:text-[#9CA3AF] block">
               Sugerencias populares para {data.categoriaEtiqueta || 'este segmento'}:
             </span>
             <div className="flex flex-wrap gap-1.5">
@@ -85,8 +85,8 @@ export default function Step3InfoBasica({
                     type="button"
                     onClick={() => onChange({ marca: m })}
                     className={`ios-press-bounce rounded-full px-3 py-1 font-mono text-xs transition cursor-pointer border ${isSelected
-                        ? 'bg-[#111827] text-white border-[#111827] font-bold shadow-xs'
-                        : 'bg-[#EDEDED]/70 text-[#111827] border-[#9CA3AF]/40 hover:border-[#111827] hover:bg-white'
+                        ? 'bg-[#111827] text-white border-[#111827] font-bold shadow-xs dark:bg-white dark:text-[#111827] dark:border-white'
+                        : 'bg-[#EDEDED]/70 text-[#111827] border-[#9CA3AF]/40 hover:border-[#111827] hover:bg-white dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20 dark:hover:border-white/40 dark:hover:text-white'
                       }`}
                   >
                     {m}
@@ -97,22 +97,22 @@ export default function Step3InfoBasica({
           </div>
 
           {errors.marca && (
-            <p className="text-xs font-bold text-rose-600 mt-1 animate-fade-in">
+            <p className="text-xs font-bold text-rose-600 dark:text-rose-400 mt-1 animate-fade-in">
               {errors.marca}
             </p>
           )}
         </div>
 
         {/* Entrada 2: Modelo / Línea */}
-        <div className="space-y-2 border-t border-[#EDEDED] pt-5">
+        <div className="space-y-2 border-t border-[#EDEDED] dark:border-white/10 pt-5">
           <div className="flex items-center justify-between">
             <label
               htmlFor="input-modelo-hero"
-              className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827]"
+              className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]"
             >
-              Modelo / Referencia Comercial <span className="text-rose-600">*</span>
+              Modelo / Referencia Comercial <span className="text-rose-600 dark:text-rose-400">*</span>
             </label>
-            <span className="font-mono text-[11px] text-[#4B5563]">
+            <span className="font-mono text-[11px] text-[#4B5563] dark:text-[#9CA3AF]">
               Línea o versión
             </span>
           </div>
@@ -123,14 +123,14 @@ export default function Step3InfoBasica({
             value={data.modelo}
             onChange={(e) => onChange({ modelo: e.target.value })}
             placeholder="Ej: Serie 3 330i, Corolla Cross, MT-09, Pro 2..."
-            className={`w-full rounded-2xl bg-[#EDEDED]/50 px-5 py-4 font-display text-xl sm:text-2xl font-bold text-[#111827] placeholder-[#9CA3AF] border transition-all ${errors.modelo
-                ? 'border-rose-500 bg-rose-50/40 focus:border-rose-600 focus:outline-none'
-                : 'border-transparent focus:border-[#111827] focus:bg-white focus:outline-none'
+            className={`w-full rounded-2xl bg-[#EDEDED]/50 px-5 py-4 font-display text-xl sm:text-2xl font-bold text-[#111827] placeholder-[#9CA3AF] border transition-all dark:bg-[#111827] dark:text-[#EDEDED] dark:placeholder-[#9CA3AF]/60 ${errors.modelo
+                ? 'border-rose-500 bg-rose-50/40 focus:border-rose-600 focus:outline-none dark:bg-rose-950/20 dark:border-rose-500'
+                : 'border-transparent focus:border-[#111827] focus:bg-white focus:outline-none dark:border-white/10 dark:focus:border-white dark:focus:bg-[#111827]'
               }`}
           />
 
           {errors.modelo && (
-            <p className="text-xs font-bold text-rose-600 mt-1 animate-fade-in">
+            <p className="text-xs font-bold text-rose-600 dark:text-rose-400 mt-1 animate-fade-in">
               {errors.modelo}
             </p>
           )}

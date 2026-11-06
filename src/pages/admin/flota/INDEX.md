@@ -1,13 +1,13 @@
 # Index: `src/pages/admin/flota`
 
-**Responsibility**: Enrutamiento para la gestión perimetral e inventario de la flota (listado, alta de nuevas unidades y edición).
+**Responsibility**: Enrutamiento para la gestión perimetral e inventario de la flota (listado, alta de nuevas unidades, edición y disponibilidad).
 **Architectural Layer**: Presentation / Admin Routing Layer
 
 ## Subdirectories & Child Modules
 
 | Subdirectory | Responsibility | Index |
 | :--- | :--- | :--- |
-| [`[id]/`](./[id]/) | Directory `[id]` | *(No index)* |
+| [`[id]/`](./[id]/) | Operaciones por unidad: edición y disponibilidad técnica | [INDEX.md](./[id]/INDEX.md) |
 
 ## File Manifest
 

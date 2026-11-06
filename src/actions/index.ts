@@ -30,6 +30,7 @@ import {
   cambiarEstadoVehiculoAction,
   eliminarVehiculoAction,
   obtenerVehiculoDetalleAction,
+  consultarDisponibilidadVehiculoAction,
 } from './flota';
 import {
   crearReservaAction,
@@ -43,6 +44,10 @@ import {
   finalizarVerificacionAction,
   obtenerEstadoVerificacionAction,
 } from './verificacion';
+import {
+  crearMantenimiento,
+  cambiarEstadoMantenimiento,
+} from './mantenimientos';
 
 export const server = {
   perfil: {
@@ -85,12 +90,17 @@ export const server = {
     cambiarEstadoVehiculo: cambiarEstadoVehiculoAction,
     eliminarVehiculo: eliminarVehiculoAction,
     obtenerVehiculoDetalle: obtenerVehiculoDetalleAction,
+    consultarDisponibilidad: consultarDisponibilidadVehiculoAction,
   },
   reservas: {
     crearReserva: crearReservaAction,
     cambiarEstado: cambiarEstadoReservaAction,
     registrarCobroWaybill: registrarCobroWaybillAction,
     registrarEntregaEvaluacion: registrarEntregaEvaluacionAction,
+  },
+  mantenimientos: {
+    crearMantenimiento,
+    cambiarEstadoMantenimiento,
   },
 };
 

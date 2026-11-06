@@ -199,6 +199,8 @@ Consulta siempre el archivo de regla correspondiente antes de realizar cambios e
 | **RUL-FLX-020** | [`pwa-spa-governance.md`](file:///Users/santiago/proyectos/movix/.agents/rules/pwa-spa-governance.md) | Gobernanza PWA Standalone y navegación SPA con `<ClientRouter />` y `navigate()`. |
 | **RUL-FLX-021** | [`apple-design-governance.md`](file:///Users/santiago/proyectos/movix/.agents/rules/apple-design-governance.md) | Estética de software de Apple, fidelidad HIG (123 directivas), squircles, Liquid Glass y touch targets 44px. |
 | **RUL-FLX-022** | [`seo-governance.md`](file:///Users/santiago/proyectos/movix/.agents/rules/seo-governance.md) | SEO técnico, canonical URLs, Open Graph, Twitter Cards, Schema.org JSON-LD (AutoRental, Vehicle/Product) y sitemap. |
+| **RUL-FLX-023** | [`theme-system.md`](file:///Users/santiago/proyectos/movix/.agents/rules/theme-system.md) | Gobernanza del sistema de temas canónico, arquitectura dual Claro/Oscuro, anti-FOUC y View Transitions. |
+| **RUL-FLX-024** | [`interaction-states.md`](file:///Users/santiago/proyectos/movix/.agents/rules/interaction-states.md) | Contrato de estados interactivos (rest, hover, press, foco, disabled, loading, selected), presupuesto de motion 120–320 ms y prohibiciones de slop por tier. |
 | — | [`astro-check.md`](file:///Users/santiago/proyectos/movix/.agents/rules/astro-check.md) | Ejecución obligatoria de `pnpm check` (0 errores, 0 warnings, 0 hints). |
 | — | [`engines.md`](file:///Users/santiago/proyectos/movix/.agents/rules/engines.md) | Uso exclusivo de `pnpm` y TypeScript super estricto (cero `any`). |
 | — | [`cloudflare-runtime-bindings.md`](file:///Users/santiago/proyectos/movix/.agents/rules/cloudflare-runtime-bindings.md) | Acceso moderno a bindings vía `cloudflare:workers` (nunca `locals.runtime.env`). |
@@ -279,7 +281,7 @@ Consulta siempre el archivo de regla correspondiente antes de realizar cambios e
    - **Superficies**: Emplear elevación por capas con la paleta canónica (`#111827`, `#1F2937`, `#EDEDED`), bordes translúcidos de luz (`border-white/10`) y translucidez `backdrop-blur-xl` en barras y modales.
    - **Squircles concéntricos**: Respetar la progresión de curvatura (`rounded-3xl` en contenedores, `rounded-2xl` en tarjetas, `rounded-xl` en inputs, `rounded-full` en pastillas y badges).
    - **Ergonomía Apple**: Touch target garantizado de 44x44px (`min-h-[44px] min-w-[44px]`) y texto en inputs ≥ 16px.
-   - **Microinteracción física**: Retroalimentación táctil elástica (`active:scale-[0.97]` o `.ios-press-bounce`).
+   - **Microinteracción física**: Retroalimentación táctil canónica con `.fx-press` (controles) o `.fx-pressable` (tarjetas/filas), según `RUL-FLX-024`; `.ios-press-bounce` es un alias deprecado y no se usa en código nuevo.
    - **Tipografía**: Jerarquía limpia, tracking óptico ajustado (`tracking-tight` en títulos) y `tabular-nums` en cifras numéricas y moneda.
 3. **Auditoría de 5 Lentes**: Contrastes WCAG AA (≥ 4.5:1), soporte `prefers-reduced-motion`, feedback en interfaces y textos que indiquen la acción precisa.
 4. **Verificación**: Ejecutar `pnpm check`.

@@ -192,7 +192,7 @@ export default function LocalCatalogShowcase({
         </div>
 
         {/* Barra de Búsqueda Píldora iOS (Inspirada en Pantalla 1: "Find Your...") */}
-        <div className="relative flex items-center rounded-full bg-white border border-[#9CA3AF]/40 px-4 min-h-[48px] shadow-[0_8px_24px_-6px_rgba(17,24,39,0.07)] focus-within:border-[#111827] focus-within:ring-2 focus-within:ring-[#111827]/10 transition">
+        <div className="relative flex items-center rounded-full bg-white border border-[#9CA3AF]/40 px-4 min-h-[48px] shadow-[0_8px_24px_-6px_rgba(17,24,39,0.07)] focus-within:border-[#111827] focus-within:ring-2 focus-within:ring-[#111827]/10 transition dark:bg-[#1F2937] dark:border-white/10 dark:focus-within:border-white dark:focus-within:ring-white/10">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -212,7 +212,7 @@ export default function LocalCatalogShowcase({
             onChange={(e) => setBusqueda(e.target.value)}
             placeholder={`Buscar en ${local.nombre}...`}
             aria-label={`Buscar vehículos en ${local.nombre}`}
-            className="w-full bg-transparent text-base text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none"
+            className="w-full bg-transparent text-base text-[#111827] placeholder:text-[#9CA3AF] dark:text-[#EDEDED] dark:placeholder:text-[#9CA3AF]/60"
           />
           {busqueda ? (
             <button
@@ -222,7 +222,7 @@ export default function LocalCatalogShowcase({
                 setBusqueda('');
               }}
               aria-label="Limpiar búsqueda"
-              className="ios-press-bounce flex h-8 w-8 items-center justify-center rounded-full bg-[#EDEDED] text-[#4B5563] hover:text-[#111827] shrink-0 ml-1 cursor-pointer"
+              className="fx-pressable flex h-8 w-8 items-center justify-center rounded-full bg-[#EDEDED] text-[#4B5563] hover:text-[#111827] shrink-0 ml-1 cursor-pointer dark:bg-white/10 dark:text-[#EDEDED] dark:hover:bg-white/20"
             >
               ✕
             </button>
@@ -232,7 +232,7 @@ export default function LocalCatalogShowcase({
               onClick={abrirBuscadorGlobal}
               aria-label="Abrir buscador avanzado"
               title="Filtros rápidos"
-              className="ios-press-bounce flex h-9 w-9 items-center justify-center rounded-full bg-[#EDEDED]/80 text-[#111827] hover:bg-[#EDEDED] shrink-0 ml-1 cursor-pointer"
+              className="fx-pressable flex h-9 w-9 items-center justify-center rounded-full bg-[#EDEDED]/80 text-[#111827] hover:bg-[#EDEDED] shrink-0 ml-1 cursor-pointer dark:bg-white/10 dark:text-[#EDEDED] dark:border dark:border-white/15 dark:hover:bg-white/20"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                 <line x1="4" x2="20" y1="6" y2="6" />
@@ -261,20 +261,20 @@ export default function LocalCatalogShowcase({
                   triggerHaptic(8);
                   setCategoriaActiva(cat.id);
                 }}
-                className="ios-press-bounce group flex flex-col items-center gap-1.5 shrink-0 cursor-pointer focus:outline-none"
+                className="fx-pressable flex flex-col items-center gap-1.5 shrink-0 cursor-pointer"
               >
                 <div
-                  className={`flex h-14 w-14 items-center justify-center rounded-full transition-all duration-200 ${isActive
-                    ? 'bg-[#111827] text-[#EDEDED] shadow-[0_10px_22px_-4px_rgba(17,24,39,0.38)] ring-2 ring-[#111827]/15 scale-105'
-                    : 'bg-white text-[#111827] border border-[#9CA3AF]/35 hover:border-[#4B5563]'
+                  className={`flex h-14 w-14 items-center justify-center rounded-full transition-colors duration-200 ${isActive
+                    ? 'bg-[#111827] text-[#EDEDED] shadow-[0_10px_22px_-4px_rgba(17,24,39,0.38)] ring-2 ring-[#111827]/15 scale-105 dark:bg-white dark:text-[#111827] dark:ring-white/20'
+                    : 'bg-white text-[#111827] border border-[#9CA3AF]/35 hover:border-[#4B5563] dark:bg-[#1F2937] dark:text-[#EDEDED] dark:border-white/15 dark:hover:border-white/35'
                     }`}
                 >
                   {cat.renderIcon(isActive)}
                 </div>
                 <span
                   className={`text-[11px] tracking-tight transition-colors ${isActive
-                    ? 'font-extrabold text-[#111827]'
-                    : 'font-medium text-[#4B5563]'
+                    ? 'font-extrabold text-[#111827] dark:text-[#EDEDED]'
+                    : 'font-medium text-[#4B5563] dark:text-[#9CA3AF]'
                     }`}
                 >
                   {cat.label}
@@ -290,7 +290,7 @@ export default function LocalCatalogShowcase({
          ===================================================================== */}
       {vehiculosFiltrados.length > 0 && (
         <div className="flex items-center justify-between gap-2 px-1 pt-0.5">
-          <h2 className="font-display text-sm sm:text-base font-extrabold tracking-tight text-[#111827]">
+          <h2 className="font-display text-sm sm:text-base font-extrabold tracking-tight text-[#111827] dark:text-[#EDEDED]">
             {busqueda
               ? `Resultados (${vehiculosFiltrados.length})`
               : vista === 'TODOS'
@@ -302,7 +302,7 @@ export default function LocalCatalogShowcase({
             <div
               role="tablist"
               aria-label="Modo de visualización"
-              className="inline-flex items-center rounded-full bg-[#EDEDED] p-1 border border-[#9CA3AF]/25 shadow-2xs"
+              className="inline-flex items-center rounded-full bg-[#EDEDED] p-1 border border-[#9CA3AF]/25 shadow-2xs dark:bg-white/10 dark:border-white/15"
             >
               <button
                 type="button"
@@ -312,10 +312,10 @@ export default function LocalCatalogShowcase({
                   triggerHaptic(8);
                   setVista('DESTACADOS');
                 }}
-                className={`ios-press-bounce min-h-[34px] px-3.5 py-1 text-xs font-bold rounded-full transition-all cursor-pointer ${
+                className={`fx-pressable min-h-[34px] px-3.5 py-1 text-xs font-bold rounded-full transition-colors cursor-pointer ${
                   vista === 'DESTACADOS'
-                    ? 'bg-[#111827] text-[#EDEDED] shadow-xs'
-                    : 'text-[#4B5563] hover:text-[#111827]'
+                    ? 'bg-[#111827] text-[#EDEDED] shadow-xs dark:bg-white dark:text-[#111827]'
+                    : 'text-[#4B5563] hover:text-[#111827] dark:text-[#9CA3AF] dark:hover:text-white'
                 }`}
               >
                 Destacados
@@ -328,10 +328,10 @@ export default function LocalCatalogShowcase({
                   triggerHaptic(8);
                   setVista('TODOS');
                 }}
-                className={`ios-press-bounce min-h-[34px] px-3.5 py-1 text-xs font-bold rounded-full transition-all cursor-pointer ${
+                className={`fx-pressable min-h-[34px] px-3.5 py-1 text-xs font-bold rounded-full transition-colors cursor-pointer ${
                   vista === 'TODOS'
-                    ? 'bg-[#111827] text-[#EDEDED] shadow-xs'
-                    : 'text-[#4B5563] hover:text-[#111827]'
+                    ? 'bg-[#111827] text-[#EDEDED] shadow-xs dark:bg-white dark:text-[#111827]'
+                    : 'text-[#4B5563] hover:text-[#111827] dark:text-[#9CA3AF] dark:hover:text-white'
                 }`}
               >
                 Ver todos ({vehiculosFiltrados.length})
@@ -345,18 +345,18 @@ export default function LocalCatalogShowcase({
           ESTADO VACÍO SI EL FILTRO NO TIENE COINCIDENCIAS EN ESTE LOCAL
          ===================================================================== */}
       {vehiculosFiltrados.length === 0 ? (
-        <div className="rounded-[28px] bg-white border border-[#9CA3AF]/35 p-8 text-center shadow-xs space-y-4">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#EDEDED] text-[#111827]">
+        <div className="rounded-[28px] bg-white border border-[#9CA3AF]/35 p-8 text-center shadow-xs space-y-4 dark:bg-[#1F2937] dark:border-white/10">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#EDEDED] text-[#111827] dark:bg-white/10 dark:text-[#EDEDED]">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
               <circle cx="11" cy="11" r="8" />
               <path d="m21 21-4.3-4.3" />
             </svg>
           </div>
           <div className="space-y-1">
-            <h2 className="font-display text-lg font-bold text-[#111827]">
+            <h2 className="font-display text-lg font-bold text-[#111827] dark:text-[#EDEDED]">
               Sin unidades en esta categoría
             </h2>
-            <p className="text-xs sm:text-sm text-[#4B5563] max-w-sm mx-auto">
+            <p className="text-xs sm:text-sm text-[#4B5563] dark:text-[#9CA3AF] max-w-sm mx-auto">
               En este momento {local.nombre} no tiene vehículos bajo ese filtro. Explora todas las unidades disponibles en patio.
             </p>
           </div>
@@ -367,7 +367,7 @@ export default function LocalCatalogShowcase({
               setCategoriaActiva('TODOS');
               setBusqueda('');
             }}
-            className="ios-press-bounce min-h-[44px] inline-flex items-center justify-center rounded-full bg-[#111827] px-6 py-2.5 text-xs font-bold text-[#EDEDED] cursor-pointer"
+            className="fx-pressable min-h-[44px] inline-flex items-center justify-center rounded-full bg-[#111827] px-6 py-2.5 text-xs font-bold text-[#EDEDED] cursor-pointer dark:bg-white dark:text-[#111827] dark:hover:bg-[#EDEDED]"
           >
             Ver toda la flota del local
           </button>
@@ -384,21 +384,33 @@ export default function LocalCatalogShowcase({
                 href={`/vehiculos/${v.id}`}
                 data-astro-prefetch="tap"
                 onClick={() => triggerHaptic(8)}
-                className="group ios-press-bounce rounded-[26px] bg-white border border-[#9CA3AF]/30 p-4 shadow-2xs hover:border-[#111827]/40 transition flex items-center justify-between gap-3"
+                className="fx-pressable rounded-[26px] bg-white border border-[#9CA3AF]/30 p-4 shadow-2xs hover:border-[#111827]/40 dark:bg-[#1F2937] dark:border-white/10 dark:hover:border-white/30 transition flex items-center justify-between gap-3"
               >
                 <div className="min-w-0 flex-1 space-y-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF]">
-                    {v.categoriaEtiqueta} · {v.anio}
-                  </span>
-                  <h3 className="font-display text-base font-extrabold text-[#111827] truncate">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF]">
+                      {v.categoriaEtiqueta} · {v.anio}
+                    </span>
+                    {v.estado === 'RESERVADO' && (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-[#EDEDED] text-[#4B5563] border border-[#9CA3AF]/30 dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/10">
+                        Reservado
+                      </span>
+                    )}
+                    {v.estado === 'MANTENIMIENTO' && (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-[#EDEDED] text-[#4B5563] border border-[#9CA3AF]/30 dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/10">
+                        Taller
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="font-display text-base font-extrabold text-[#111827] dark:text-[#EDEDED] truncate">
                     {v.marca} {v.modelo}
                   </h3>
-                  <p className="text-[11px] text-[#4B5563]">
+                  <p className="text-[11px] text-[#4B5563] dark:text-[#9CA3AF]">
                     {v.transmision} · {v.capacidadPasajeros} puestos
                   </p>
-                  <p className="font-mono tabular-nums text-sm font-black text-[#111827] pt-0.5">
+                  <p className="font-mono tabular-nums text-sm font-black text-[#111827] dark:text-[#EDEDED] pt-0.5">
                     {formatCop(v.precioDia)}
-                    <span className="font-sans text-[11px] font-normal text-[#4B5563]">
+                    <span className="font-sans text-[11px] font-normal text-[#4B5563] dark:text-[#9CA3AF]">
                       {' '}
                       / día
                     </span>
@@ -409,7 +421,7 @@ export default function LocalCatalogShowcase({
                   <img
                     src={v.imagenUrl}
                     alt={`${v.marca} ${v.modelo}`}
-                    className="w-full max-h-24 object-contain group-hover:scale-105 transition-transform"
+                    className="w-full max-h-24 object-contain"
                     loading="lazy"
                   />
                 </div>
@@ -425,7 +437,7 @@ export default function LocalCatalogShowcase({
                   triggerHaptic(8);
                   setVista('DESTACADOS');
                 }}
-                className="ios-press-bounce inline-flex min-h-[44px] items-center justify-center rounded-full bg-white border border-[#9CA3AF]/40 px-6 py-2.5 text-xs font-bold text-[#111827] hover:bg-[#EDEDED]/50 transition cursor-pointer"
+                className="fx-pressable inline-flex min-h-[44px] items-center justify-center rounded-full bg-white border border-[#9CA3AF]/40 px-6 py-2.5 text-xs font-bold text-[#111827] hover:bg-[#EDEDED]/50 transition cursor-pointer dark:bg-white/10 dark:border-white/15 dark:text-[#EDEDED] dark:hover:bg-white/20"
               >
                 ← Volver a Destacados
               </button>
@@ -450,20 +462,27 @@ export default function LocalCatalogShowcase({
                     href={`/vehiculos/${bentoPrincipalIzq.id}`}
                     data-astro-prefetch="tap"
                     onClick={() => triggerHaptic(8)}
-                    className="group ios-press-bounce col-span-1 flex flex-col justify-between rounded-[26px] bg-white border border-[#9CA3AF]/30 p-4 sm:p-5 shadow-[0_10px_28px_-6px_rgba(17,24,39,0.06)] hover:border-[#4B5563]/50 transition relative overflow-hidden min-h-[250px] sm:min-h-[275px]"
+                    className="fx-pressable col-span-1 flex flex-col justify-between rounded-[26px] bg-white border border-[#9CA3AF]/30 p-4 sm:p-5 shadow-[0_10px_28px_-6px_rgba(17,24,39,0.06)] hover:border-[#4B5563]/50 dark:bg-[#1F2937] dark:border-white/10 dark:hover:border-white/30 transition relative overflow-hidden min-h-[250px] sm:min-h-[275px]"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <h2 className="font-display text-base sm:text-lg font-extrabold tracking-tight text-[#111827] leading-snug truncate">
-                          {bentoPrincipalIzq.marca}
-                        </h2>
-                        <p className="text-xs font-semibold text-[#4B5563] truncate">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <h2 className="font-display text-base sm:text-lg font-extrabold tracking-tight text-[#111827] dark:text-[#EDEDED] leading-snug truncate">
+                            {bentoPrincipalIzq.marca}
+                          </h2>
+                          {bentoPrincipalIzq.estado === 'RESERVADO' && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-[#EDEDED] text-[#4B5563] border border-[#9CA3AF]/30 dark:bg-white/10 dark:text-[#EDEDED]">
+                              Reservado
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs font-semibold text-[#4B5563] dark:text-[#9CA3AF] truncate">
                           {bentoPrincipalIzq.modelo}
                         </p>
                       </div>
 
                       <div className="text-right shrink-0">
-                        <p className="font-mono tabular-nums text-xs sm:text-sm font-bold text-[#111827]">
+                        <p className="font-mono tabular-nums text-xs sm:text-sm font-bold text-[#111827] dark:text-[#EDEDED]">
                           {formatCop(bentoPrincipalIzq.precioDia)}
                         </p>
                         <span className="font-sans font-normal text-[10px] text-[#9CA3AF]">/día</span>
@@ -474,15 +493,15 @@ export default function LocalCatalogShowcase({
                       <img
                         src={bentoPrincipalIzq.imagenUrl}
                         alt={`${bentoPrincipalIzq.marca} ${bentoPrincipalIzq.modelo}`}
-                        className="w-full max-h-32 sm:max-h-36 object-contain mx-auto transition-transform duration-300 group-hover:scale-105"
+                        className="w-full max-h-32 sm:max-h-36 object-contain mx-auto"
                         loading="eager"
                       />
                       <div className="h-3 w-4/5 mx-auto -mt-2 rounded-full bg-[radial-gradient(ellipse_at_center,_rgba(17,24,39,0.22)_0%,_transparent_75%)]" />
                     </div>
 
-                    <div className="flex items-center justify-between text-[11px] text-[#4B5563] pt-1 border-t border-[#EDEDED]">
+                    <div className="flex items-center justify-between text-[11px] text-[#4B5563] dark:text-[#9CA3AF] pt-1 border-t border-[#EDEDED] dark:border-white/10">
                       <span>{bentoPrincipalIzq.transmision}</span>
-                      <span className="font-mono tabular-nums font-bold text-[#111827]">
+                      <span className="font-mono tabular-nums font-bold text-[#111827] dark:text-[#EDEDED]">
                         ★ {bentoPrincipalIzq.rating}
                       </span>
                     </div>
@@ -495,16 +514,23 @@ export default function LocalCatalogShowcase({
                     href={`/vehiculos/${bentoContrasteDer.id}`}
                     data-astro-prefetch="tap"
                     onClick={() => triggerHaptic(8)}
-                    className="group ios-press-bounce col-span-1 flex flex-col justify-between rounded-[26px] bg-[#1F2937] text-[#EDEDED] p-4 sm:p-5 shadow-[0_14px_30px_-6px_rgba(17,24,39,0.28)] border border-white/10 relative overflow-hidden min-h-[250px] sm:min-h-[275px]"
+                    className="fx-pressable col-span-1 flex flex-col justify-between rounded-[26px] bg-[#1F2937] text-[#EDEDED] p-4 sm:p-5 shadow-[0_14px_30px_-6px_rgba(17,24,39,0.28)] border border-white/10 relative overflow-hidden min-h-[250px] sm:min-h-[275px]"
                   >
                     <div
                       className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-white/5 blur-xl"
                       aria-hidden="true"
                     />
                     <div className="relative z-10">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF]">
-                        {bentoContrasteDer.categoriaEtiqueta}
-                      </span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF]">
+                          {bentoContrasteDer.categoriaEtiqueta}
+                        </span>
+                        {bentoContrasteDer.estado === 'RESERVADO' && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-white/15 text-[#EDEDED] border border-white/20">
+                            Reservado
+                          </span>
+                        )}
+                      </div>
                       <h2 className="font-display text-base sm:text-lg font-extrabold tracking-tight text-[#EDEDED] leading-tight truncate mt-0.5">
                         {bentoContrasteDer.marca} {bentoContrasteDer.modelo.split(' ')[0]}
                       </h2>
@@ -517,7 +543,7 @@ export default function LocalCatalogShowcase({
                       <img
                         src={bentoContrasteDer.imagenUrl}
                         alt={`${bentoContrasteDer.marca} ${bentoContrasteDer.modelo}`}
-                        className="w-full max-h-24 sm:max-h-28 object-contain mx-auto transition-transform duration-300 group-hover:scale-105"
+                        className="w-full max-h-24 sm:max-h-28 object-contain mx-auto"
                         loading="eager"
                       />
                     </div>
@@ -537,25 +563,25 @@ export default function LocalCatalogShowcase({
                   href={`/vehiculos/${bentoHorizontalAncho.id}`}
                   data-astro-prefetch="tap"
                   onClick={() => triggerHaptic(8)}
-                  className="group ios-press-bounce col-span-2 rounded-[28px] bg-white border border-[#9CA3AF]/30 p-4 sm:p-5 shadow-[0_10px_28px_-6px_rgba(17,24,39,0.06)] hover:border-[#4B5563]/50 transition flex items-center justify-between gap-3 overflow-hidden"
+                  className="fx-pressable col-span-2 rounded-[28px] bg-white border border-[#9CA3AF]/30 p-4 sm:p-5 shadow-[0_10px_28px_-6px_rgba(17,24,39,0.06)] hover:border-[#4B5563]/50 dark:bg-[#1F2937] dark:border-white/10 dark:hover:border-white/30 transition flex items-center justify-between gap-3 overflow-hidden"
                 >
                   <div className="flex flex-col justify-between space-y-2.5 min-w-0 flex-1">
                     <div>
                       <span className="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF]">
                         {bentoHorizontalAncho.categoriaEtiqueta} · {bentoHorizontalAncho.anio}
                       </span>
-                      <h3 className="font-display text-base sm:text-xl font-black tracking-tight text-[#111827] leading-snug truncate mt-0.5">
+                      <h3 className="font-display text-base sm:text-xl font-black tracking-tight text-[#111827] dark:text-[#EDEDED] leading-snug truncate mt-0.5">
                         {bentoHorizontalAncho.marca} {bentoHorizontalAncho.modelo}
                       </h3>
-                      <p className="text-xs text-[#4B5563] mt-0.5">
+                      <p className="text-xs text-[#4B5563] dark:text-[#9CA3AF] mt-0.5">
                         {bentoHorizontalAncho.capacidadPasajeros} pasajeros · {bentoHorizontalAncho.combustible}
                       </p>
                     </div>
 
                     <div className="pt-1">
-                      <span className="font-mono tabular-nums text-sm sm:text-base font-extrabold text-[#111827]">
+                      <span className="font-mono tabular-nums text-sm sm:text-base font-extrabold text-[#111827] dark:text-[#EDEDED]">
                         {formatCop(bentoHorizontalAncho.precioDia)}
-                        <span className="font-sans font-normal text-[11px] text-[#4B5563]"> / día</span>
+                        <span className="font-sans font-normal text-[11px] text-[#4B5563] dark:text-[#9CA3AF]"> / día</span>
                       </span>
                     </div>
                   </div>
@@ -564,7 +590,7 @@ export default function LocalCatalogShowcase({
                     <img
                       src={bentoHorizontalAncho.imagenUrl}
                       alt={`${bentoHorizontalAncho.marca} ${bentoHorizontalAncho.modelo}`}
-                      className="w-full max-h-28 sm:max-h-32 object-contain transition-transform duration-300 group-hover:scale-105"
+                      className="w-full max-h-28 sm:max-h-32 object-contain"
                       loading="lazy"
                     />
                     <div className="h-3 w-4/5 mx-auto -mt-2 rounded-full bg-[radial-gradient(ellipse_at_center,_rgba(17,24,39,0.20)_0%,_transparent_75%)]" />
@@ -599,7 +625,7 @@ export default function LocalCatalogShowcase({
                     <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#EDEDED] backdrop-blur-md">
                       <span>★ {unidadHero.rating}</span>
                       <span>•</span>
-                      <span>Destacado</span>
+                      <span>{unidadHero.estado === 'RESERVADO' ? 'Reservado hoy' : 'Destacado'}</span>
                     </div>
 
                     <div>
@@ -614,7 +640,7 @@ export default function LocalCatalogShowcase({
                         {formatCop(unidadHero.precioDia)}
                         <span className="font-sans text-xs font-normal text-[#9CA3AF]">
                           {' '}
-                          / día · Disponible
+                          / día · {unidadHero.estado === 'RESERVADO' ? 'Reservado' : unidadHero.estado === 'MANTENIMIENTO' ? 'En taller' : 'Disponible'}
                         </span>
                       </p>
                     </div>
@@ -624,9 +650,9 @@ export default function LocalCatalogShowcase({
                         href={`/alquilar/${unidadHero.id}`}
                         data-astro-prefetch="tap"
                         onClick={() => triggerHaptic(10)}
-                        className="ios-press-bounce inline-flex min-h-[42px] items-center justify-center rounded-full bg-[#EDEDED] px-5 py-2 text-xs font-extrabold text-[#111827] shadow-md hover:bg-white transition"
+                        className="fx-pressable inline-flex min-h-[42px] items-center justify-center rounded-full bg-[#EDEDED] px-5 py-2 text-xs font-extrabold text-[#111827] shadow-md hover:bg-white transition"
                       >
-                        Reservar ahora
+                        {unidadHero.estado === 'RESERVADO' ? 'Ver fechas disponibles' : 'Reservar ahora'}
                       </a>
 
                     </div>
@@ -637,13 +663,13 @@ export default function LocalCatalogShowcase({
                       href={`/vehiculos/${unidadHero.id}`}
                       data-astro-prefetch="tap"
                       onClick={() => triggerHaptic(8)}
-                      className="block w-full focus:outline-none"
+                      className="block w-full"
                       aria-label={`Ver ficha de ${unidadHero.marca} ${unidadHero.modelo}`}
                     >
                       <img
                         src={unidadHero.imagenUrl}
                         alt={`${unidadHero.marca} ${unidadHero.modelo}`}
-                        className="w-full max-h-36 sm:max-h-44 object-contain drop-shadow-[0_16px_24px_rgba(0,0,0,0.55)] transition-transform duration-300 hover:scale-105"
+                        className="w-full max-h-36 sm:max-h-44 object-contain drop-shadow-[0_16px_24px_rgba(0,0,0,0.55)]"
                       />
                     </a>
                   </div>
@@ -659,16 +685,16 @@ export default function LocalCatalogShowcase({
                   </p>
                 </div>
 
-                <div className="rounded-[20px] bg-white text-[#111827] p-3 flex flex-col justify-center border border-[#9CA3AF]/30 shadow-2xs">
-                  <span className="text-[10px] font-semibold text-[#4B5563] uppercase tracking-wider">Transmisión</span>
-                  <p className="font-display text-xs sm:text-sm font-bold text-[#111827] truncate mt-0.5">
+                <div className="rounded-[20px] bg-white text-[#111827] p-3 flex flex-col justify-center border border-[#9CA3AF]/30 dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 shadow-2xs">
+                  <span className="text-[10px] font-semibold text-[#4B5563] dark:text-[#9CA3AF] uppercase tracking-wider">Transmisión</span>
+                  <p className="font-display text-xs sm:text-sm font-bold text-[#111827] dark:text-[#EDEDED] truncate mt-0.5">
                     {unidadHero.transmision}
                   </p>
                 </div>
 
-                <div className="rounded-[20px] bg-white text-[#111827] p-3 flex flex-col justify-center border border-[#9CA3AF]/30 shadow-2xs">
-                  <span className="text-[10px] font-semibold text-[#4B5563] uppercase tracking-wider">Capacidad</span>
-                  <p className="font-display font-mono tabular-nums text-xs sm:text-sm font-bold text-[#111827] truncate mt-0.5">
+                <div className="rounded-[20px] bg-white text-[#111827] p-3 flex flex-col justify-center border border-[#9CA3AF]/30 dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 shadow-2xs">
+                  <span className="text-[10px] font-semibold text-[#4B5563] dark:text-[#9CA3AF] uppercase tracking-wider">Capacidad</span>
+                  <p className="font-display font-mono tabular-nums text-xs sm:text-sm font-bold text-[#111827] dark:text-[#EDEDED] truncate mt-0.5">
                     {unidadHero.capacidadPasajeros} puestos
                   </p>
                 </div>
@@ -677,11 +703,11 @@ export default function LocalCatalogShowcase({
               {/* 3. Sección "Más de este patio" ("You may like more" en Pantalla 2) */}
               <div className="space-y-2.5 pt-1">
                 <div className="flex items-center justify-between px-0.5">
-                  <h3 className="font-display text-sm sm:text-base font-extrabold tracking-tight text-[#111827]">
+                  <h3 className="font-display text-sm sm:text-base font-extrabold tracking-tight text-[#111827] dark:text-[#EDEDED]">
                     Más opciones en {local.nombre}
                   </h3>
                   <div className="flex items-center gap-1.5">
-                    <span className="font-mono tabular-nums text-[11px] font-semibold text-[#4B5563]">
+                    <span className="font-mono tabular-nums text-[11px] font-semibold text-[#4B5563] dark:text-[#9CA3AF]">
                       {masDelPatio.length} disp.
                     </span>
                     <button
@@ -696,7 +722,7 @@ export default function LocalCatalogShowcase({
                         if (next) setUnidadSpotlightId(next.id);
                       }}
                       aria-label="Siguiente unidad destacada"
-                      className="ios-press-bounce flex h-7 w-7 items-center justify-center rounded-full bg-[#111827] text-[#EDEDED] text-xs cursor-pointer"
+                      className="fx-pressable flex h-7 w-7 items-center justify-center rounded-full bg-[#111827] text-[#EDEDED] text-xs cursor-pointer dark:bg-white dark:text-[#111827]"
                     >
                       ›
                     </button>
@@ -714,15 +740,15 @@ export default function LocalCatalogShowcase({
                           triggerHaptic(8);
                           setUnidadSpotlightId(item.id);
                         }}
-                        className={`ios-press-bounce text-left rounded-[22px] p-3.5 flex items-center justify-between gap-2 transition cursor-pointer border ${isDarkCard
+                        className={`fx-pressable text-left rounded-[22px] p-3.5 flex items-center justify-between gap-2 transition cursor-pointer border ${isDarkCard
                           ? 'bg-[#1F2937] text-[#EDEDED] border-white/10 shadow-sm'
-                          : 'bg-white text-[#111827] border-[#9CA3AF]/30 shadow-2xs'
+                          : 'bg-white text-[#111827] border-[#9CA3AF]/30 dark:bg-[#1F2937] dark:text-[#EDEDED] dark:border-white/10 shadow-2xs'
                           }`}
                       >
                         <div className="min-w-0 flex-1 flex flex-col justify-between h-full space-y-2">
                           <div>
                             <p
-                              className={`text-[10px] font-semibold truncate ${isDarkCard ? 'text-[#9CA3AF]' : 'text-[#4B5563]'
+                              className={`text-[10px] font-semibold truncate ${isDarkCard ? 'text-[#9CA3AF]' : 'text-[#4B5563] dark:text-[#9CA3AF]'
                                 }`}
                             >
                               {item.marca}
@@ -734,7 +760,7 @@ export default function LocalCatalogShowcase({
                           <span
                             className={`inline-flex self-start font-mono tabular-nums text-[10px] font-bold px-2 py-0.5 rounded-full ${isDarkCard
                               ? 'bg-white/10 text-[#EDEDED]'
-                              : 'bg-[#EDEDED] text-[#111827]'
+                              : 'bg-[#EDEDED] text-[#111827] dark:bg-white/10 dark:text-[#EDEDED]'
                               }`}
                           >
                             {formatCop(item.precioDia)}
@@ -766,11 +792,11 @@ export default function LocalCatalogShowcase({
                 window.scrollTo({ top: 140, behavior: 'smooth' });
               }
             }}
-            className="ios-press-bounce min-h-[48px] w-full rounded-2xl bg-white border border-[#9CA3AF]/35 px-4 py-3 flex items-center justify-between text-xs font-extrabold text-[#111827] shadow-2xs hover:border-[#111827] transition cursor-pointer"
+            className="fx-pressable min-h-[48px] w-full rounded-2xl bg-white border border-[#9CA3AF]/35 px-4 py-3 flex items-center justify-between text-xs font-extrabold text-[#111827] shadow-2xs hover:border-[#111827] transition cursor-pointer dark:bg-[#1F2937] dark:border-white/10 dark:text-[#EDEDED] dark:hover:border-white/30"
           >
             <span>Explorar toda la flota de {local.nombre}</span>
-            <span className="font-mono text-[11px] font-bold bg-[#EDEDED] text-[#111827] px-2.5 py-0.5 rounded-full">
-              {vehiculosFiltrados.length} disponibles →
+            <span className="font-mono text-[11px] font-bold bg-[#EDEDED] text-[#111827] px-2.5 py-0.5 rounded-full dark:bg-white/10 dark:text-[#EDEDED]">
+              {vehiculosFiltrados.length} unidades →
             </span>
           </button>
 
@@ -792,7 +818,7 @@ export default function LocalCatalogShowcase({
               <a
                 href="/admin/onboarding?modo=crear"
                 onClick={() => triggerHaptic(8)}
-                className="ios-press-bounce w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-[#111827] shadow-sm hover:bg-[#EDEDED] shrink-0 transition-colors"
+                className="fx-pressable w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-[#111827] shadow-sm hover:bg-[#EDEDED] shrink-0 transition-colors"
               >
                 <span>Crea tu alquiler</span>
                 <span>→</span>

@@ -1,0 +1,59 @@
+---
+import LayoutAdmin from '@/layouts/LayoutAdmin.astro';
+import VehicleAvailabilityIsland from '@/components/flota/disponibilidad/VehicleAvailabilityIsland';
+import { requireLocalAuth, PERMISOS } from '@/lib/auth';
+import { obtenerVehiculoAsync, obtenerVehiculoPorId } from '@/lib/flota';
+import {
+  obtenerBloquesNoDisponiblesD1,
+  obtenerBloquesNoDisponibles,
+} from '@/lib/flota/disponibilidad';
+import { listarMantenimientosPorVehiculo } from '@/lib/mantenimientos';
+import { resolveClientTimeContext } from '@/lib/time/client-time';
+import { env } from 'cloudflare:workers';
+import { getDb } from '@/lib/db';
+
+try {
+  requireLocalAuth(Astro, PERMISOS.FLOTA_ACTUALIZAR);
+} catch {
+  return Astro.redirect('/admin/flota');
+}
+
+const { id } = Astro.params;
+if (!id) {
+  return Astro.redirect('/admin/flota');
+}
+
+const db = env.DB ? getDb(env.DB) : undefined;
+let vehiculo = await obtenerVehiculoAsync(id, db);
+if (!vehiculo) {
+  vehiculo = obtenerVehiculoPorId(id);
+}
+
+if (!vehiculo) {
+  return Astro.redirect('/admin/flota');
+}
+
+const { dateString: hoyISO } = resolveClientTimeContext(Astro.request);
+const bloques = db
+  ? await obtenerBloquesNoDisponiblesD1(db, vehiculo.id, hoyISO)
+  : obtenerBloquesNoDisponibles(vehiculo.id, hoyISO);
+
+const ordenes = db ? await listarMantenimientosPorVehiculo(db, vehiculo.id) : [];
+---
+
+<LayoutAdmin
+  title={`Disponibilidad — ${vehiculo.placa} ${vehiculo.marca} ${vehiculo.modelo}`}
+  activeTab="fleet"
+  hideNav={true}
+  hideBottomNav={true}
+>
+  <main class="mx-auto w-full max-w-5xl px-3 sm:px-6 py-4">
+    <VehicleAvailabilityIsland
+      client:load
+      vehiculo={vehiculo}
+      hoyISO={hoyISO}
+      bloquesIniciales={bloques}
+      ordenesIniciales={ordenes}
+    />
+  </main>
+</LayoutAdmin>

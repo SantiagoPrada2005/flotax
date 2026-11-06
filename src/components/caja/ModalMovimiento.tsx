@@ -7,6 +7,18 @@ import type {
   MetodoPagoFinanciero,
   ContratoCarteraItem,
 } from '@/lib/caja';
+import {
+  CajaCustomSelect,
+  type CajaSelectOption,
+} from './CajaMovimientosFilterBar';
+
+const OPCIONES_METODO_MOVIMIENTO: readonly CajaSelectOption<MetodoPagoFinanciero>[] = [
+  { value: 'efectivo', label: 'Efectivo' },
+  { value: 'transferencia', label: 'Transferencia Bancaria' },
+  { value: 'tarjeta', label: 'Tarjeta Débito / Crédito' },
+  { value: 'especie', label: 'En Especie' },
+  { value: 'otro', label: 'Otro medio' },
+];
 
 export interface ModalMovimientoProps {
   isOpen: boolean;
@@ -293,7 +305,7 @@ export function ModalMovimiento({
             </div>
           </div>
 
-          {/* Cuenta y Método de Pago (2 Columnas Limpias) */}
+          {/* Cuenta y Método de Pago (2 Columnas Limpias con Dropdown Personalizado FlotaX) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             <div className="space-y-1">
               <label
@@ -302,19 +314,22 @@ export function ModalMovimiento({
               >
                 {tipo === 'INGRESO' ? '¿Dónde entra el dinero?' : '¿De dónde sale el dinero?'}
               </label>
-              <select
+              <CajaCustomSelect
                 id={cuentaInputId}
+                ariaLabel={tipo === 'INGRESO' ? 'Dónde entra el dinero' : 'De dónde sale el dinero'}
                 value={cuentaId}
-                onChange={(e) => setCuentaId(e.target.value)}
-                className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 bg-[#EDEDED]/40 px-3 py-2 text-base text-[#111827] focus:border-[#111827] focus:bg-white focus:outline-hidden transition"
-                required
-              >
-                {cuentas.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.nombre} ({c.tipo === 'CAJA_EFECTIVO' ? 'Efectivo en Patio' : 'Banco'})
-                  </option>
-                ))}
-              </select>
+                options={cuentas.map((c) => ({
+                  value: c.id,
+                  label: c.nombre,
+                  badge:
+                    c.tipo === 'CAJA_EFECTIVO'
+                      ? 'Efectivo'
+                      : c.tipo === 'BANCO'
+                        ? 'Banco'
+                        : 'Billetera',
+                }))}
+                onChange={setCuentaId}
+              />
             </div>
 
             <div className="space-y-1">
@@ -324,18 +339,13 @@ export function ModalMovimiento({
               >
                 Método de pago
               </label>
-              <select
+              <CajaCustomSelect<MetodoPagoFinanciero>
                 id={metodoInputId}
+                ariaLabel="Método de pago"
                 value={metodoPago}
-                onChange={(e) => setMetodoPago(e.target.value as MetodoPagoFinanciero)}
-                className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 bg-[#EDEDED]/40 px-3 py-2 text-base text-[#111827] focus:border-[#111827] focus:bg-white focus:outline-hidden transition"
-                required
-              >
-                <option value="efectivo">Efectivo</option>
-                <option value="transferencia">Transferencia Bancaria</option>
-                <option value="tarjeta">Tarjeta Débito / Crédito</option>
-                <option value="otro">Otro medio</option>
-              </select>
+                options={OPCIONES_METODO_MOVIMIENTO}
+                onChange={setMetodoPago}
+              />
             </div>
           </div>
 
@@ -359,18 +369,21 @@ export function ModalMovimiento({
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-[#4B5563] mb-1">
                     Vincular a Contrato Activo
                   </label>
-                  <select
+                  <CajaCustomSelect
+                    ariaLabel="Vincular a contrato activo"
                     value={contratoId}
-                    onChange={(e) => handleContratoSeleccionado(e.target.value)}
-                    className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 bg-white px-3 py-2 text-base text-[#111827] focus:border-[#111827] focus:outline-hidden"
-                  >
-                    <option value="">-- No vincular a contrato --</option>
-                    {contratos.map((c) => (
-                      <option key={c.codigoContrato} value={c.codigoContrato}>
-                        {c.codigoContrato} · {c.clienteNombre} ({c.vehiculoPlaca}) — Saldo: ${c.saldoPendiente.toLocaleString()}
-                      </option>
-                    ))}
-                  </select>
+                    defaultValue=""
+                    dropDirection="up"
+                    options={[
+                      { value: '', label: 'Sin vincular a contrato' },
+                      ...contratos.map((c) => ({
+                        value: c.codigoContrato,
+                        label: `${c.codigoContrato} · ${c.clienteNombre} (${c.vehiculoPlaca})`,
+                        badge: `$ ${c.saldoPendiente.toLocaleString('es-CO')}`,
+                      })),
+                    ]}
+                    onChange={handleContratoSeleccionado}
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

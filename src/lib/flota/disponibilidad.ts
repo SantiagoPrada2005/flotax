@@ -1,3 +1,8 @@
+import type { DrizzleD1Database } from 'drizzle-orm/d1';
+import type { AppDb } from '@/lib/db';
+import { logFalloD1 } from '@/lib/db/diagnostics';
+import { mantenimientosVehiculo, reservas, vehiculos } from '@/db/schema';
+import { and, desc, eq, gte, inArray, lte } from 'drizzle-orm';
 import { toClientISODate } from '@/lib/time/client-time';
 import type {
   BloqueNoDisponible,
@@ -144,6 +149,96 @@ export function obtenerBloquesNoDisponibles(
   ];
 }
 
+/**
+ * Consulta en Cloudflare D1 los bloques reales de indisponibilidad para un vehículo:
+ * 1. Reservas activas ('CONFIRMADA', 'PENDIENTE', 'EN_CURSO') dentro del horizonte temporal.
+ * 2. Mantenimientos u órdenes de taller activas ('PROGRAMADO', 'EN_TALLER') dentro del horizonte temporal.
+ *
+ * Mapea cada registro al tipo canónico `BloqueNoDisponible`:
+ * - Reservas: motivo = 'RESERVADO', etiqueta = 'Reserva confirmada en patio'
+ * - Mantenimientos: motivo = 'MANTENIMIENTO', etiqueta = mantenimiento.etiqueta
+ */
+export async function obtenerBloquesNoDisponiblesD1(
+  db: DrizzleD1Database | AppDb,
+  vehiculoId: string,
+  hoyISO: string = toClientISODate(),
+  horizonteDias: number = 180
+): Promise<BloqueNoDisponible[]> {
+  if (!db || !vehiculoId) {
+    return [];
+  }
+
+  const fechaLimite = sumarDiasISO(hoyISO, horizonteDias);
+
+  try {
+    const [reservasRows, mantenimientosRows] = await Promise.all([
+      db
+        .select({
+          id: reservas.id,
+          fechaInicio: reservas.fechaInicio,
+          fechaFin: reservas.fechaFin,
+        })
+        .from(reservas)
+        .where(
+          and(
+            eq(reservas.vehiculoId, vehiculoId),
+            inArray(reservas.estado, ['CONFIRMADA', 'PENDIENTE', 'EN_CURSO']),
+            gte(reservas.fechaFin, hoyISO),
+            lte(reservas.fechaInicio, fechaLimite)
+          )
+        )
+        .orderBy(reservas.fechaInicio),
+
+      db
+        .select({
+          id: mantenimientosVehiculo.id,
+          fechaInicio: mantenimientosVehiculo.fechaInicio,
+          fechaFin: mantenimientosVehiculo.fechaFin,
+          etiqueta: mantenimientosVehiculo.etiqueta,
+        })
+        .from(mantenimientosVehiculo)
+        .where(
+          and(
+            eq(mantenimientosVehiculo.vehiculoId, vehiculoId),
+            inArray(mantenimientosVehiculo.estado, ['PROGRAMADO', 'EN_TALLER']),
+            gte(mantenimientosVehiculo.fechaFin, hoyISO),
+            lte(mantenimientosVehiculo.fechaInicio, fechaLimite)
+          )
+        )
+        .orderBy(mantenimientosVehiculo.fechaInicio),
+    ]);
+
+    const bloquesReservas: BloqueNoDisponible[] = reservasRows.map((r) => ({
+      id: r.id,
+      vehiculoId,
+      fechaInicio: r.fechaInicio,
+      fechaFin: r.fechaFin,
+      motivo: 'RESERVADO',
+      etiqueta: 'Reserva confirmada en patio',
+    }));
+
+    const bloquesMantenimientos: BloqueNoDisponible[] = mantenimientosRows.map((m) => ({
+      id: m.id,
+      vehiculoId,
+      fechaInicio: m.fechaInicio,
+      fechaFin: m.fechaFin,
+      motivo: 'MANTENIMIENTO',
+      etiqueta: m.etiqueta,
+    }));
+
+    return [...bloquesReservas, ...bloquesMantenimientos].sort((a, b) =>
+      a.fechaInicio.localeCompare(b.fechaInicio)
+    );
+  } catch (error) {
+    logFalloD1('disponibilidad.obtenerBloquesNoDisponiblesD1', error, {
+      vehiculoId,
+      hoyISO,
+      horizonteDias,
+    });
+    return [];
+  }
+}
+
 export interface CalendarioMesResultado {
   anio: number;
   mesIndexCero: number; // 0 = Enero .. 11 = Diciembre
@@ -157,14 +252,17 @@ export interface CalendarioMesResultado {
  * Construye la matriz del mes solicitado junto con sus franjas contiguas de disponibilidad.
  * Asigna un `franjaId` global (sobre un horizonte de 90 días) para que las franjas que
  * cruzan fin de mes sigan siendo contiguas.
+ * Acepta opcionalmente `bloquesPrecalculados` (ej. obtenidos desde D1 con `obtenerBloquesNoDisponiblesD1`).
+ * De no proveerse, asume disponibilidad completa (`[]`) para reflejar el estado real de la base de datos.
  */
 export function construirCalendarioMes(
-  vehiculoId: string,
+  _vehiculoId: string,
   anio: number,
   mesIndexCero: number,
-  hoyISO: string = toClientISODate()
+  hoyISO: string = toClientISODate(),
+  bloquesPrecalculados?: BloqueNoDisponible[]
 ): CalendarioMesResultado {
-  const bloques = obtenerBloquesNoDisponibles(vehiculoId, hoyISO);
+  const bloques = bloquesPrecalculados ?? [];
 
   // Construimos un mapa de franjas contiguas desde hoy hasta +90 días
   const mapaFranjaPorFecha = new Map<string, string>();
@@ -293,20 +391,58 @@ export function construirCalendarioMes(
 
 /**
  * Verifica que todas las fechas en [fechaInicio, fechaFin] estén libres de bloques ocupados.
+ * Acepta opcionalmente `bloquesPrecalculados` (ej. obtenidos desde D1 con `obtenerBloquesNoDisponiblesD1`).
+ * De no proveerse, asume disponibilidad completa (`[]`).
  */
 export function esRangoDisponibleValido(
-  vehiculoId: string,
+  _vehiculoId: string,
   fechaInicio: string,
   fechaFin: string,
-  hoyISO: string = toClientISODate()
+  hoyISO: string = toClientISODate(),
+  bloquesPrecalculados?: BloqueNoDisponible[]
 ): boolean {
   if (fechaInicio > fechaFin || fechaInicio < hoyISO) {
     return false;
   }
-  const bloques = obtenerBloquesNoDisponibles(vehiculoId, hoyISO);
+  const bloques = bloquesPrecalculados ?? [];
   return !bloques.some(
     (b) => b.fechaInicio <= fechaFin && b.fechaFin >= fechaInicio
   );
+}
+
+/**
+ * Encuentra la primera ventana de `duracionDias` consecutivos libres a partir de `hoyISO`,
+ * considerando los bloques reales de indisponibilidad (reservas y mantenimientos en D1).
+ */
+export function encontrarPrimerRangoDisponible(
+  vehiculoId: string,
+  hoyISO: string = toClientISODate(),
+  bloques: BloqueNoDisponible[] = [],
+  duracionDias: number = 3
+): { fechaInicio: string; fechaFin: string } {
+  const diasEfectivos = Math.max(1, duracionDias);
+  let cursor = hoyISO;
+
+  // 1. Intentar encontrar un bloque contiguo libre de la duración solicitada en los próximos 90 días
+  for (let i = 0; i < 90; i++) {
+    const finCandidato = sumarDiasISO(cursor, diasEfectivos - 1);
+    if (esRangoDisponibleValido(vehiculoId, cursor, finCandidato, hoyISO, bloques)) {
+      return { fechaInicio: cursor, fechaFin: finCandidato };
+    }
+    cursor = sumarDiasISO(cursor, 1);
+  }
+
+  // 2. Si no hay ventana contigua completa de N días, buscar al menos el primer día libre individual
+  cursor = hoyISO;
+  for (let i = 0; i < 90; i++) {
+    if (esRangoDisponibleValido(vehiculoId, cursor, cursor, hoyISO, bloques)) {
+      return { fechaInicio: cursor, fechaFin: cursor };
+    }
+    cursor = sumarDiasISO(cursor, 1);
+  }
+
+  // 3. Fallback de resguardo si todo el horizonte estuviera ocupado
+  return { fechaInicio: hoyISO, fechaFin: sumarDiasISO(hoyISO, diasEfectivos - 1) };
 }
 
 /**
@@ -335,4 +471,177 @@ export function calcularCotizacionAlquiler(
     totalAlquiler,
     abonoMinimoReserva,
   };
+}
+
+export interface DictamenDisponibilidadVehiculo {
+  disponible: boolean;        // true si es usable Y no está ocupado en el rango
+  usable: boolean;            // true si activo y estado != 'FUERA_SERVICIO'
+  ocupado: boolean;           // true si tiene reserva o mantenimiento solapado
+  estadoSugerido: 'DISPONIBLE' | 'RESERVADO' | 'MANTENIMIENTO' | 'FUERA_SERVICIO';
+  motivoBloqueo?: 'FUERA_SERVICIO' | 'MANTENIMIENTO' | 'RESERVADO' | undefined;
+  etiqueta: string;
+  fechaInicioEvaluada: string;
+  fechaFinEvaluada: string;
+  ocupadoHasta?: string | undefined;
+  reservaActivaId?: string | undefined;
+  reservaCodigo?: string | undefined;
+  mantenimientoActivoId?: string | undefined;
+}
+
+/**
+ * Evalúa holísticamente si un vehículo está realmente DISPONIBLE para un rango de fechas (o para hoy):
+ * 1. Valida Usabilidad: el vehículo debe existir, estar activo en D1 y su estado no ser 'FUERA_SERVICIO'.
+ * 2. Valida Taller: no debe tener órdenes en 'EN_TALLER' ni 'PROGRAMADO' que solapen con las fechas.
+ * 3. Valida Ocupación: no debe tener reservas en 'CONFIRMADA', 'PENDIENTE' ni 'EN_CURSO' que solapen.
+ */
+export async function verificarDisponibilidadVehiculo(
+  db: DrizzleD1Database | AppDb,
+  vehiculoId: string,
+  fechaInicio?: string,
+  fechaFin?: string,
+  hoyISO: string = toClientISODate()
+): Promise<DictamenDisponibilidadVehiculo> {
+  const inicio = fechaInicio ?? hoyISO;
+  const fin = fechaFin ?? inicio;
+
+  if (!db || !vehiculoId) {
+    return {
+      disponible: false,
+      usable: false,
+      ocupado: false,
+      estadoSugerido: 'FUERA_SERVICIO',
+      motivoBloqueo: 'FUERA_SERVICIO',
+      etiqueta: 'Base de datos o identificador no disponible',
+      fechaInicioEvaluada: inicio,
+      fechaFinEvaluada: fin,
+    };
+  }
+
+  try {
+    // 1. Validar registro de vehículo y usabilidad operativa
+    const vehRows = await db
+      .select({
+        id: vehiculos.id,
+        estado: vehiculos.estado,
+        activo: vehiculos.activo,
+      })
+      .from(vehiculos)
+      .where(eq(vehiculos.id, vehiculoId))
+      .limit(1);
+
+    const veh = vehRows[0];
+    if (!veh || !veh.activo || veh.estado === 'FUERA_SERVICIO') {
+      return {
+        disponible: false,
+        usable: false,
+        ocupado: false,
+        estadoSugerido: 'FUERA_SERVICIO',
+        motivoBloqueo: 'FUERA_SERVICIO',
+        etiqueta: 'Vehículo fuera de servicio o inactivo',
+        fechaInicioEvaluada: inicio,
+        fechaFinEvaluada: fin,
+      };
+    }
+
+    // 2. Validar mantenimientos técnicos solapados
+    const mantRows = await db
+      .select({
+        id: mantenimientosVehiculo.id,
+        fechaInicio: mantenimientosVehiculo.fechaInicio,
+        fechaFin: mantenimientosVehiculo.fechaFin,
+        etiqueta: mantenimientosVehiculo.etiqueta,
+        estado: mantenimientosVehiculo.estado,
+      })
+      .from(mantenimientosVehiculo)
+      .where(
+        and(
+          eq(mantenimientosVehiculo.vehiculoId, vehiculoId),
+          inArray(mantenimientosVehiculo.estado, ['PROGRAMADO', 'EN_TALLER']),
+          lte(mantenimientosVehiculo.fechaInicio, fin),
+          gte(mantenimientosVehiculo.fechaFin, inicio)
+        )
+      )
+      .limit(1);
+
+    if (mantRows.length > 0) {
+      const mant = mantRows[0]!;
+      return {
+        disponible: false,
+        usable: false,
+        ocupado: true,
+        estadoSugerido: 'MANTENIMIENTO',
+        motivoBloqueo: 'MANTENIMIENTO',
+        etiqueta: mant.etiqueta || 'Mantenimiento o alistamiento en taller',
+        fechaInicioEvaluada: inicio,
+        fechaFinEvaluada: fin,
+        ocupadoHasta: mant.fechaFin,
+        mantenimientoActivoId: mant.id,
+      };
+    }
+
+    // 3. Validar reservas de otros clientes solapadas (incluyendo PENDIENTE)
+    const resRows = await db
+      .select({
+        id: reservas.id,
+        codigo: reservas.codigo,
+        fechaInicio: reservas.fechaInicio,
+        fechaFin: reservas.fechaFin,
+        estado: reservas.estado,
+      })
+      .from(reservas)
+      .where(
+        and(
+          eq(reservas.vehiculoId, vehiculoId),
+          inArray(reservas.estado, ['CONFIRMADA', 'PENDIENTE', 'EN_CURSO']),
+          lte(reservas.fechaInicio, fin),
+          gte(reservas.fechaFin, inicio)
+        )
+      )
+      .orderBy(desc(reservas.fechaFin))
+      .limit(1);
+
+    if (resRows.length > 0) {
+      const res = resRows[0]!;
+      return {
+        disponible: false,
+        usable: true,
+        ocupado: true,
+        estadoSugerido: 'RESERVADO',
+        motivoBloqueo: 'RESERVADO',
+        etiqueta: `Reservado por cliente (${res.codigo})`,
+        fechaInicioEvaluada: inicio,
+        fechaFinEvaluada: fin,
+        ocupadoHasta: res.fechaFin,
+        reservaActivaId: res.id,
+        reservaCodigo: res.codigo,
+      };
+    }
+
+    // 4. Completamente DISPONIBLE
+    return {
+      disponible: true,
+      usable: true,
+      ocupado: false,
+      estadoSugerido: 'DISPONIBLE',
+      etiqueta: 'Disponible para alquiler',
+      fechaInicioEvaluada: inicio,
+      fechaFinEvaluada: fin,
+    };
+  } catch (error) {
+    logFalloD1('disponibilidad.verificarDisponibilidadVehiculo', error, {
+      vehiculoId,
+      inicio,
+      fin,
+    });
+    return {
+      disponible: false,
+      usable: false,
+      ocupado: false,
+      estadoSugerido: 'FUERA_SERVICIO',
+      motivoBloqueo: 'FUERA_SERVICIO',
+      etiqueta: 'Error al consultar disponibilidad en base de datos',
+      fechaInicioEvaluada: inicio,
+      fechaFinEvaluada: fin,
+    };
+  }
 }

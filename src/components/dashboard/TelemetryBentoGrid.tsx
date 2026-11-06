@@ -739,19 +739,19 @@ export default function TelemetryBentoGrid({
     return (
       <section
         aria-label="Resumen rápido de movimientos diarios"
-        className="flex h-full flex-col justify-between rounded-[28px] bg-white p-5 text-[#111827] border border-[#9CA3AF]/40 shadow-xs space-y-4"
+        className="flex h-full flex-col justify-between rounded-[28px] bg-white dark:bg-[#1F2937] p-5 text-[#111827] dark:text-[#EDEDED] border border-[#9CA3AF]/40 dark:border-white/10 shadow-xs space-y-4 transition-colors"
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="font-display text-lg font-bold tracking-tight text-[#111827]">
+            <h2 className="font-display text-lg font-bold tracking-tight text-[#111827] dark:text-[#EDEDED]">
               Movimientos de hoy
             </h2>
-            <p className="mt-0.5 text-sm text-[#4B5563]">
+            <p className="mt-0.5 text-sm text-[#4B5563] dark:text-[#9CA3AF]">
               Últimas entradas y salidas en patio
             </p>
           </div>
 
-          <span className="rounded-full bg-[#EDEDED] px-3 py-1 font-mono text-xs font-bold text-[#1F2937] border border-[#9CA3AF]/35">
+          <span className="rounded-full bg-[#EDEDED] dark:bg-white/10 px-3 py-1 font-mono text-xs font-bold text-[#1F2937] dark:text-[#EDEDED] border border-[#9CA3AF]/35 dark:border-white/10">
             Hoy
           </span>
         </div>
@@ -767,14 +767,14 @@ export default function TelemetryBentoGrid({
                   triggerHaptic(6);
                   onSelectMovement(mov);
                 }}
-                className="ios-press-bounce flex min-h-[62px] w-full items-center justify-between gap-3 rounded-2xl bg-[#EDEDED]/60 px-3.5 py-3 text-left border border-[#9CA3AF]/30 transition hover:border-[#111827]/40 hover:bg-[#EDEDED] cursor-pointer"
+                className="ios-press-bounce flex min-h-[62px] w-full items-center justify-between gap-3 rounded-2xl bg-[#EDEDED]/60 dark:bg-white/5 px-3.5 py-3 text-left border border-[#9CA3AF]/30 dark:border-white/10 transition hover:border-[#111827]/40 dark:hover:border-white/30 hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <span
                     className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm font-bold ${
                       isIncome
-                        ? 'bg-[#111827] text-white'
-                        : 'bg-white text-[#1F2937] border border-[#9CA3AF]/45'
+                        ? 'bg-[#111827] dark:bg-white text-white dark:text-[#111827]'
+                        : 'bg-white dark:bg-white/10 text-[#1F2937] dark:text-[#EDEDED] border border-[#9CA3AF]/45 dark:border-white/20'
                     }`}
                     aria-hidden="true"
                   >
@@ -782,10 +782,10 @@ export default function TelemetryBentoGrid({
                   </span>
 
                   <div className="min-w-0">
-                    <p className="truncate font-display text-sm sm:text-base font-bold text-[#111827]">
+                    <p className="truncate font-display text-sm sm:text-base font-bold text-[#111827] dark:text-[#EDEDED]">
                       {mov.title}
                     </p>
-                    <p className="truncate text-xs font-medium text-[#4B5563]">
+                    <p className="truncate text-xs font-medium text-[#4B5563] dark:text-[#9CA3AF]">
                       {mov.categoryLabel} • {mov.timeLabel}
                     </p>
                   </div>
@@ -793,7 +793,7 @@ export default function TelemetryBentoGrid({
 
                 <span
                   className={`shrink-0 font-mono text-sm font-extrabold tabular-nums ${
-                    isIncome ? 'text-[#111827]' : 'text-[#4B5563]'
+                    isIncome ? 'text-[#111827] dark:text-emerald-400' : 'text-[#4B5563] dark:text-rose-400'
                   }`}
                 >
                   {mov.amountFormatted}
@@ -809,7 +809,7 @@ export default function TelemetryBentoGrid({
             triggerHaptic(8);
             onOpenMovementsDetail?.();
           }}
-          className="ios-press-bounce flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-[#111827] px-4 py-2.5 text-sm font-bold text-white shadow-xs transition hover:bg-[#1F2937] cursor-pointer"
+          className="ios-press-bounce flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-[#111827] dark:bg-white px-4 py-2.5 text-sm font-bold text-white dark:text-[#111827] shadow-xs transition hover:bg-[#1F2937] dark:hover:bg-[#EDEDED] cursor-pointer"
         >
           <span>Ver todos los movimientos ({dailyMovements.items.length})</span>
           <span aria-hidden="true">→</span>
@@ -845,7 +845,7 @@ export default function TelemetryBentoGrid({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
         <section
           aria-label="Desglose de ganancia diaria obtenida con los vehículos"
-          className="lg:col-span-6 rounded-[28px] bg-white p-5 sm:p-6 text-[#111827] border border-[#9CA3AF]/40 shadow-xs space-y-5"
+          className="lg:col-span-6 rounded-[28px] bg-white dark:bg-[#1F2937] p-5 sm:p-6 text-[#111827] dark:text-[#EDEDED] border border-[#9CA3AF]/40 dark:border-white/10 shadow-xs space-y-5"
         >
           <div className="relative overflow-hidden rounded-2xl bg-[#111827] p-4 sm:p-5 text-white space-y-3">
             <div
@@ -890,7 +890,7 @@ export default function TelemetryBentoGrid({
           <div
             role="tablist"
             aria-label="Modo de análisis de ganancia diaria"
-            className="flex items-center gap-1.5 rounded-2xl bg-[#EDEDED] p-1.5 border border-[#9CA3AF]/30"
+            className="flex items-center gap-1.5 rounded-2xl bg-[#EDEDED] dark:bg-white/10 p-1.5 border border-[#9CA3AF]/30 dark:border-white/10"
           >
             <button
               type="button"
@@ -902,8 +902,8 @@ export default function TelemetryBentoGrid({
               }}
               className={`ios-press-bounce min-h-[44px] flex-1 rounded-xl px-3 py-2 text-sm font-bold transition cursor-pointer ${
                 dailyBreakdownMode === 'CATEGORY'
-                  ? 'bg-[#111827] text-white shadow-xs'
-                  : 'text-[#4B5563] hover:text-[#111827]'
+                  ? 'bg-[#111827] dark:bg-white text-white dark:text-[#111827] shadow-xs'
+                  : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
               }`}
             >
               Por categoría
@@ -918,8 +918,8 @@ export default function TelemetryBentoGrid({
               }}
               className={`ios-press-bounce min-h-[44px] flex-1 rounded-xl px-3 py-2 text-sm font-bold transition cursor-pointer ${
                 dailyBreakdownMode === 'HOURLY'
-                  ? 'bg-[#111827] text-white shadow-xs'
-                  : 'text-[#4B5563] hover:text-[#111827]'
+                  ? 'bg-[#111827] dark:bg-white text-white dark:text-[#111827] shadow-xs'
+                  : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
               }`}
             >
               Por franja horaria
@@ -929,7 +929,7 @@ export default function TelemetryBentoGrid({
           {dailyBreakdownMode === 'CATEGORY' ? (
             <div className="space-y-4">
               {/* Gráfico de Anillo (Donut) Interactivo + Resumen central */}
-              <div className="flex flex-col sm:flex-row items-center gap-4 rounded-2xl bg-[#EDEDED]/65 p-4 border border-[#9CA3AF]/30">
+              <div className="flex flex-col sm:flex-row items-center gap-4 rounded-2xl bg-[#EDEDED]/65 dark:bg-white/5 p-4 border border-[#9CA3AF]/30 dark:border-white/10">
                 <div className="relative flex h-32 w-32 shrink-0 items-center justify-center">
                   <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
                     <circle
@@ -972,10 +972,10 @@ export default function TelemetryBentoGrid({
                   </svg>
 
                   <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-                    <span className="font-display text-xl font-black tabular-nums text-[#111827]">
+                    <span className="font-display text-xl font-black tabular-nums text-[#111827] dark:text-[#EDEDED]">
                       {activeCategory?.sharePct ?? 100}%
                     </span>
-                    <span className="text-xs font-bold text-[#4B5563]">
+                    <span className="text-xs font-bold text-[#4B5563] dark:text-[#9CA3AF]">
                       aporte
                     </span>
                   </div>
@@ -983,16 +983,16 @@ export default function TelemetryBentoGrid({
 
                 {activeCategory && (
                   <div className="min-w-0 flex-1 space-y-1 text-center sm:text-left tabular-nums">
-                    <span className="inline-block rounded-full bg-white px-2.5 py-0.5 text-xs font-bold text-[#1F2937] border border-[#9CA3AF]/35">
+                    <span className="inline-block rounded-full bg-white dark:bg-white/10 px-2.5 py-0.5 text-xs font-bold text-[#1F2937] dark:text-[#EDEDED] border border-[#9CA3AF]/35 dark:border-white/10">
                       Categoría seleccionada
                     </span>
-                    <p className="font-display text-base font-bold text-[#111827]">
+                    <p className="font-display text-base font-bold text-[#111827] dark:text-[#EDEDED]">
                       {activeCategory.label}
                     </p>
-                    <p className="font-mono text-xl font-extrabold text-[#111827]">
+                    <p className="font-mono text-xl font-extrabold text-[#111827] dark:text-white">
                       {activeCategory.amountFormatted}
                     </p>
-                    <p className="text-xs font-semibold text-[#4B5563]">
+                    <p className="text-xs font-semibold text-[#4B5563] dark:text-[#9CA3AF]">
                       {activeCategory.rentedCount} unidad(es) activas hoy
                     </p>
                   </div>
@@ -1016,12 +1016,12 @@ export default function TelemetryBentoGrid({
                       }}
                       className={`ios-press-bounce w-full rounded-2xl p-3.5 text-left border transition cursor-pointer space-y-2 ${
                         isActive
-                          ? 'bg-white border-[#111827] shadow-xs'
-                          : 'bg-[#EDEDED]/55 border-[#9CA3AF]/30 hover:bg-[#EDEDED]'
+                          ? 'bg-white dark:bg-white/15 border-[#111827] dark:border-white shadow-xs'
+                          : 'bg-[#EDEDED]/55 dark:bg-white/5 border-[#9CA3AF]/30 dark:border-white/10 hover:bg-[#EDEDED] dark:hover:bg-white/10'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className="inline-flex items-center gap-2 text-sm sm:text-base font-bold text-[#111827]">
+                        <span className="inline-flex items-center gap-2 text-sm sm:text-base font-bold text-[#111827] dark:text-[#EDEDED]">
                           <span
                             style={{ backgroundColor: dotColor }}
                             className="h-3 w-3 rounded-full shrink-0"
@@ -1029,11 +1029,11 @@ export default function TelemetryBentoGrid({
                           />
                           {slice.label}
                         </span>
-                        <span className="font-mono text-sm sm:text-base font-extrabold tabular-nums text-[#111827]">
+                        <span className="font-mono text-sm sm:text-base font-extrabold tabular-nums text-[#111827] dark:text-white">
                           {slice.amountFormatted}
                         </span>
                       </div>
-                      <div className="h-2 w-full overflow-hidden rounded-full bg-[#EDEDED]">
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-[#EDEDED] dark:bg-white/10">
                         <div
                           style={{
                             width: `${slice.sharePct}%`,
@@ -1066,7 +1066,7 @@ export default function TelemetryBentoGrid({
               )}
 
               {/* Cápsulas limpias por franja horaria (diseño original sin líneas azules ni tramado) */}
-              <div className="rounded-2xl bg-[#EDEDED]/65 px-3 pt-10 pb-3.5 border border-[#9CA3AF]/30">
+              <div className="rounded-2xl bg-[#EDEDED]/65 dark:bg-white/5 px-3 pt-10 pb-3.5 border border-[#9CA3AF]/30 dark:border-white/10">
                 <div
                   role="group"
                   aria-label="Seleccionar franja horaria de ganancia diaria"
@@ -1092,23 +1092,23 @@ export default function TelemetryBentoGrid({
                           </span>
                         )}
 
-                        <div className="flex w-full max-w-[36px] flex-1 items-end rounded-full bg-white p-1 border border-[#9CA3AF]/35 shadow-2xs">
+                        <div className="flex w-full max-w-[36px] flex-1 items-end rounded-full bg-white dark:bg-white/10 p-1 border border-[#9CA3AF]/35 dark:border-white/10 shadow-2xs">
                           <div
                             style={{
                               height: `${Math.max(24, slot.heightPct)}%`,
                             }}
                             className={`w-full rounded-full transition-all duration-300 ${
                               isSelected
-                                ? 'bg-[#111827]'
-                                : 'bg-[#1F2937]/25 hover:bg-[#1F2937]/45'
+                                ? 'bg-[#111827] dark:bg-white'
+                                : 'bg-[#1F2937]/25 dark:bg-white/20 hover:bg-[#1F2937]/45 dark:hover:bg-white/30'
                             }`}
                           />
                         </div>
                         <span
                           className={`font-mono text-xs sm:text-sm tabular-nums ${
                             isSelected
-                              ? 'font-extrabold text-[#111827]'
-                              : 'font-semibold text-[#4B5563]'
+                              ? 'font-extrabold text-[#111827] dark:text-white'
+                              : 'font-semibold text-[#4B5563] dark:text-[#9CA3AF]'
                           }`}
                         >
                           {slot.hourLabel}
@@ -1125,7 +1125,7 @@ export default function TelemetryBentoGrid({
         {/* Columna Derecha: Automóviles Alquilados con Matriz Visual de Unidades */}
         <section
           aria-label="Automóviles que la empresa tiene alquilados"
-          className="lg:col-span-6 rounded-[28px] bg-white p-5 sm:p-6 text-[#111827] border border-[#9CA3AF]/40 shadow-xs space-y-4"
+          className="lg:col-span-6 rounded-[28px] bg-white dark:bg-[#1F2937] p-5 sm:p-6 text-[#111827] dark:text-[#EDEDED] border border-[#9CA3AF]/40 dark:border-white/10 shadow-xs space-y-4"
         >
           <div className="rounded-2xl bg-[#1F2937] p-4 sm:p-5 text-white space-y-3.5">
             <div className="flex items-start justify-between gap-3">
@@ -1178,7 +1178,7 @@ export default function TelemetryBentoGrid({
           </div>
 
           <div className="space-y-2.5">
-            <p className="text-sm font-semibold text-[#4B5563]">
+            <p className="text-sm font-semibold text-[#4B5563] dark:text-[#9CA3AF]">
               Toca un automóvil para abrir su contrato y retorno previsto:
             </p>
 
@@ -1190,27 +1190,27 @@ export default function TelemetryBentoGrid({
                   triggerHaptic(8);
                   onSelectAutomobile(auto);
                 }}
-                className="ios-press-bounce flex min-h-[64px] w-full items-center justify-between gap-3 rounded-2xl bg-[#EDEDED]/60 p-4 text-left border border-[#9CA3AF]/35 transition hover:border-[#111827]/45 hover:bg-[#EDEDED] cursor-pointer"
+                className="ios-press-bounce flex min-h-[64px] w-full items-center justify-between gap-3 rounded-2xl bg-[#EDEDED]/60 dark:bg-white/5 p-4 text-left border border-[#9CA3AF]/35 dark:border-white/10 transition hover:border-[#111827]/45 dark:hover:border-white/30 hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer"
               >
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="truncate font-display text-base font-bold text-[#111827]">
+                    <p className="truncate font-display text-base font-bold text-[#111827] dark:text-[#EDEDED]">
                       {auto.brandModel}
                     </p>
-                    <span className="shrink-0 rounded-lg bg-[#111827] px-2.5 py-0.5 font-mono text-xs font-bold text-white">
+                    <span className="shrink-0 rounded-lg bg-[#111827] dark:bg-white px-2.5 py-0.5 font-mono text-xs font-bold text-white dark:text-[#111827]">
                       {auto.plate}
                     </span>
                   </div>
-                  <p className="mt-1 truncate text-sm text-[#4B5563]">
+                  <p className="mt-1 truncate text-sm text-[#4B5563] dark:text-[#9CA3AF]">
                     {auto.clientName} • {auto.returnLabel}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="font-mono text-sm font-extrabold tabular-nums text-[#111827]">
+                  <span className="font-mono text-sm font-extrabold tabular-nums text-[#111827] dark:text-white">
                     {auto.dailyRateFormatted}
                   </span>
-                  <span className="text-base font-bold text-[#4B5563]" aria-hidden="true">
+                  <span className="text-base font-bold text-[#4B5563] dark:text-[#9CA3AF]" aria-hidden="true">
                     →
                   </span>
                 </div>
@@ -1218,7 +1218,7 @@ export default function TelemetryBentoGrid({
             ))}
 
             {rentedFleet.otherRentedUnitsCount > 0 && (
-              <p className="px-1 pt-1 text-xs sm:text-sm text-[#4B5563]">
+              <p className="px-1 pt-1 text-xs sm:text-sm text-[#4B5563] dark:text-[#9CA3AF]">
                 Además hay {rentedFleet.otherRentedUnitsCount} unidad(es) de movilidad ligera activas hoy.
               </p>
             )}
@@ -1243,20 +1243,20 @@ export default function TelemetryBentoGrid({
     >
       {/* Par Bento de alto contraste: Blanca (Ingresos) + Azul Oscuro (Egresos) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 tabular-nums">
-        <article className="rounded-[26px] bg-white p-5 text-[#111827] border border-[#9CA3AF]/40 shadow-xs space-y-2">
+        <article className="rounded-[26px] bg-white dark:bg-[#1F2937] p-5 text-[#111827] dark:text-[#EDEDED] border border-[#9CA3AF]/40 dark:border-white/10 shadow-xs space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-bold text-[#4B5563]">
+            <span className="text-sm font-bold text-[#4B5563] dark:text-[#9CA3AF]">
               Ingresos de hoy ({dailyMovements.incomeCount})
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EDEDED] px-3 py-1 text-xs font-bold text-[#111827]">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EDEDED] dark:bg-white/10 px-3 py-1 text-xs font-bold text-[#111827] dark:text-[#EDEDED]">
               <span className="h-2 w-2 rounded-full bg-[#2D6BFF]" />
               Entradas
             </span>
           </div>
-          <p className="font-display text-2xl sm:text-3xl font-extrabold text-[#111827]">
+          <p className="font-display text-2xl sm:text-3xl font-extrabold text-[#111827] dark:text-white">
             + {dailyMovements.totalIncomeFormatted}
           </p>
-          <p className="text-sm text-[#4B5563]">
+          <p className="text-sm text-[#4B5563] dark:text-[#9CA3AF]">
             Cobros de reservas, entregas y extensiones del día
           </p>
         </article>
@@ -1287,15 +1287,15 @@ export default function TelemetryBentoGrid({
       />
 
       {/* Contenedor de filtros y tarjetas en 2 columnas */}
-      <div className="rounded-[28px] bg-white p-4 sm:p-6 text-[#111827] border border-[#9CA3AF]/40 shadow-xs space-y-4">
+      <div className="rounded-[28px] bg-white dark:bg-[#1F2937] p-4 sm:p-6 text-[#111827] dark:text-[#EDEDED] border border-[#9CA3AF]/40 dark:border-white/10 shadow-xs space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="font-display text-lg sm:text-xl font-bold text-[#111827]">
+            <h2 className="font-display text-lg sm:text-xl font-bold text-[#111827] dark:text-[#EDEDED]">
               Registro operativo del día
             </h2>
-            <p className="text-sm text-[#4B5563]">
+            <p className="text-sm text-[#4B5563] dark:text-[#9CA3AF]">
               Balance neto hoy:{' '}
-              <strong className="font-mono font-bold text-[#111827] tabular-nums">
+              <strong className="font-mono font-bold text-[#111827] dark:text-white tabular-nums">
                 {dailyMovements.netDailyBalanceFormatted}
               </strong>
             </p>
@@ -1304,7 +1304,7 @@ export default function TelemetryBentoGrid({
           <div
             role="tablist"
             aria-label="Filtrar movimientos diarios por tipo"
-            className="flex items-center gap-1.5 rounded-2xl bg-[#EDEDED] p-1.5 border border-[#9CA3AF]/30 w-full sm:w-auto"
+            className="flex items-center gap-1.5 rounded-2xl bg-[#EDEDED] dark:bg-white/10 p-1.5 border border-[#9CA3AF]/30 dark:border-white/10 w-full sm:w-auto"
           >
             {MOVEMENT_FILTERS.map((tab) => {
               const isSelected = movementFilter === tab.id;
@@ -1327,8 +1327,8 @@ export default function TelemetryBentoGrid({
                   }}
                   className={`ios-press-bounce min-h-[44px] flex-1 sm:flex-initial rounded-xl px-3.5 py-2 text-sm font-bold transition cursor-pointer ${
                     isSelected
-                      ? 'bg-[#111827] text-white shadow-xs'
-                      : 'text-[#4B5563] hover:text-[#111827]'
+                      ? 'bg-[#111827] dark:bg-white text-white dark:text-[#111827] shadow-xs'
+                      : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
                   }`}
                 >
                   {tab.label} ({count})
@@ -1349,14 +1349,14 @@ export default function TelemetryBentoGrid({
                   triggerHaptic(8);
                   onSelectMovement(mov);
                 }}
-                className="ios-press-bounce flex min-h-[68px] w-full items-center justify-between gap-3 rounded-2xl bg-[#EDEDED]/55 p-4 text-left border border-[#9CA3AF]/35 transition hover:border-[#111827]/45 hover:bg-[#EDEDED] cursor-pointer"
+                className="ios-press-bounce flex min-h-[68px] w-full items-center justify-between gap-3 rounded-2xl bg-[#EDEDED]/55 dark:bg-white/5 p-4 text-left border border-[#9CA3AF]/35 dark:border-white/10 transition hover:border-[#111827]/45 dark:hover:border-white/30 hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer"
               >
                 <div className="flex items-center gap-3.5 min-w-0">
                   <div
                     className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl font-bold text-base ${
                       isIncome
-                        ? 'bg-[#111827] text-white'
-                        : 'bg-white text-[#1F2937] border border-[#9CA3AF]/45'
+                        ? 'bg-[#111827] dark:bg-white text-white dark:text-[#111827]'
+                        : 'bg-white dark:bg-white/10 text-[#1F2937] dark:text-[#EDEDED] border border-[#9CA3AF]/45 dark:border-white/20'
                     }`}
                     aria-hidden="true"
                   >
@@ -1364,10 +1364,10 @@ export default function TelemetryBentoGrid({
                   </div>
 
                   <div className="min-w-0">
-                    <p className="truncate font-display text-base font-bold text-[#111827]">
+                    <p className="truncate font-display text-base font-bold text-[#111827] dark:text-[#EDEDED]">
                       {mov.title}
                     </p>
-                    <p className="mt-0.5 truncate text-sm text-[#4B5563]">
+                    <p className="mt-0.5 truncate text-sm text-[#4B5563] dark:text-[#9CA3AF]">
                       {mov.categoryLabel} • {mov.timeLabel}
                       {mov.vehiclePlate ? ` • ${mov.vehiclePlate}` : ''}
                     </p>
@@ -1376,7 +1376,7 @@ export default function TelemetryBentoGrid({
 
                 <span
                   className={`shrink-0 font-mono text-sm sm:text-base font-extrabold tabular-nums ${
-                    isIncome ? 'text-[#111827]' : 'text-[#4B5563]'
+                    isIncome ? 'text-[#111827] dark:text-white' : 'text-[#4B5563] dark:text-[#9CA3AF]'
                   }`}
                 >
                   {mov.amountFormatted}

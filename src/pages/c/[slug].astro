@@ -7,6 +7,7 @@ import {
   obtenerLocalPorSlugOId,
   registrarCaptacionClienteEnLocal,
 } from '@/lib/flota';
+import { resolveClientTimeContext } from '@/lib/time/client-time';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
 
@@ -36,8 +37,18 @@ if (db && Astro.locals.usuario) {
   await registrarCaptacionClienteEnLocal(db, Astro.locals.usuario.id, local.id);
 }
 
-// 4. Cargar únicamente el inventario perteneciente a este local
-const vehiculos = await listarVehiculos(db, { localId: local.id });
+const url = Astro.url;
+const desde = url.searchParams.get('desde') || undefined;
+const hasta = url.searchParams.get('hasta') || undefined;
+const { dateString: hoyISO } = resolveClientTimeContext(Astro.request);
+
+// 4. Cargar únicamente el inventario perteneciente a este local resolviendo ocupación
+const vehiculos = await listarVehiculos(db, {
+  localId: local.id,
+  desde,
+  hasta,
+  hoyISO,
+});
 ---
 
 <LayoutApp

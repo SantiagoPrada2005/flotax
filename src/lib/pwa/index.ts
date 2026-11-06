@@ -30,3 +30,11 @@ export {
   prefetchRutasCalientes,
   rutasCalientes,
 } from './navigation-cache';
+
+export {
+  type FlotaxLoadingVariant,
+  type FlotaxLoadingOptions,
+  activarFlotaxLoading,
+  desactivarFlotaxLoading,
+  resolverVarianteTransicionPortal,
+} from './loading';

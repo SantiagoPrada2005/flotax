@@ -1,6 +1,7 @@
 import { useState, useEffect, type SyntheticEvent } from 'react';
 import { navigate } from 'astro:transitions/client';
 import { authClient } from '@/lib/auth/client';
+import { DICCIONARIOS, obtenerIdiomaActual, type Idioma } from '@/lib/i18n';
 
 export interface UserDropdownMenuProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ export default function UserDropdownMenu({
   const [isVisible, setIsVisible] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [idioma, setIdioma] = useState<Idioma>('es');
   const [currentPath, setCurrentPath] = useState(
     typeof window !== 'undefined' ? window.location.pathname : ''
   );
@@ -41,8 +43,10 @@ export default function UserDropdownMenu({
     .map((palabra) => palabra[0]?.toUpperCase())
     .join('');
 
-  // Sincronización reactiva de la ruta y anclaje actual
+  // Sincronización reactiva de la ruta y anclaje actual, así como de idioma
   useEffect(() => {
+    setIdioma(obtenerIdiomaActual());
+
     const sincronizarRuta = () => {
       if (typeof window !== 'undefined') {
         setCurrentPath(window.location.pathname);
@@ -50,17 +54,28 @@ export default function UserDropdownMenu({
       }
     };
 
+    const handleI18nChange = (e: Event) => {
+      const custom = e as CustomEvent<{ idioma: Idioma }>;
+      if (custom.detail?.idioma) {
+        setIdioma(custom.detail.idioma);
+      }
+    };
+
     sincronizarRuta();
     document.addEventListener('astro:page-load', sincronizarRuta);
     window.addEventListener('popstate', sincronizarRuta);
     window.addEventListener('hashchange', sincronizarRuta);
+    window.addEventListener('flotax:i18n-change', handleI18nChange);
 
     return () => {
       document.removeEventListener('astro:page-load', sincronizarRuta);
       window.removeEventListener('popstate', sincronizarRuta);
       window.removeEventListener('hashchange', sincronizarRuta);
+      window.removeEventListener('flotax:i18n-change', handleI18nChange);
     };
   }, []);
+
+  const t = DICCIONARIOS[idioma];
 
   // Animación suave de entrada y salida (montaje / desmontaje con transición fluida)
   useEffect(() => {
@@ -115,16 +130,14 @@ export default function UserDropdownMenu({
   // Determinación de estados activos visuales
   const esPerfilActivo =
     currentPath.startsWith('/perfil') &&
-    !currentHash.includes('suscripcion') &&
-    !currentHash.includes('configuracion');
+    !currentHash.includes('suscripcion');
 
   const esSuscripcionActiva =
     currentPath.startsWith('/suscripcion') ||
     (currentPath.startsWith('/perfil') && currentHash.includes('suscripcion'));
 
   const esConfiguracionActiva =
-    currentPath.startsWith('/configuracion') ||
-    (currentPath.startsWith('/perfil') && currentHash.includes('configuracion'));
+    currentPath.startsWith('/configuracion');
 
   const esAyudaActiva =
     currentPath.startsWith('/ayuda') ||
@@ -138,8 +151,8 @@ export default function UserDropdownMenu({
         absolute right-0 top-[calc(100%+8px)] z-50
         w-[280px] sm:w-[295px] max-w-[calc(100vw-24px)]
         origin-top-right transform-gpu
-        rounded-2xl border border-[#9CA3AF]/30 bg-white/96
-        p-2 shadow-[0_18px_40px_-8px_rgba(17,24,39,0.2),0_4px_12px_rgba(17,24,39,0.06)]
+        rounded-2xl border border-[#9CA3AF]/30 dark:border-white/10 bg-white/96 dark:bg-[#1F2937]/96
+        p-2 shadow-[0_18px_40px_-8px_rgba(17,24,39,0.2),0_4px_12px_rgba(17,24,39,0.06)] dark:shadow-[0_18px_40px_-8px_rgba(0,0,0,0.6)]
         backdrop-blur-2xl
         transition-all duration-200 ease-out
         ${
@@ -153,7 +166,7 @@ export default function UserDropdownMenu({
       {autenticado ? (
         <div className="flex items-center gap-3 px-2.5 py-2">
           {/* Foto de perfil o avatar con iniciales */}
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#111827] text-xs font-bold text-[#EDEDED] shadow-xs ring-1 ring-[#111827]/10">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#111827] dark:bg-white text-xs font-bold text-[#EDEDED] dark:text-[#111827] shadow-xs ring-1 ring-[#111827]/10 dark:ring-white/20 transition-colors">
             {usuarioImagen && !avatarError ? (
               <img
                 src={usuarioImagen}
@@ -169,11 +182,11 @@ export default function UserDropdownMenu({
 
           {/* Nombre y Correo electrónico */}
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xs sm:text-[13px] font-bold text-[#111827] leading-snug">
+            <p className="truncate text-xs sm:text-[13px] font-bold text-[#111827] dark:text-[#EDEDED] leading-snug">
               {usuarioNombre || 'Usuario FlotaX'}
             </p>
             {usuarioCorreo && (
-              <p className="truncate text-[11px] font-medium text-[#4B5563] leading-tight">
+              <p className="truncate text-[11px] font-medium text-[#4B5563] dark:text-[#D1D5DB] leading-tight">
                 {usuarioCorreo}
               </p>
             )}
@@ -181,14 +194,14 @@ export default function UserDropdownMenu({
         </div>
       ) : (
         <div className="flex items-center gap-3 px-2.5 py-2">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#111827] text-xs font-bold text-[#EDEDED] shadow-xs">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#111827] dark:bg-white text-xs font-bold text-[#EDEDED] dark:text-[#111827] shadow-xs transition-colors">
             <span>FX</span>
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xs sm:text-[13px] font-bold text-[#111827] leading-snug">
+            <p className="truncate text-xs sm:text-[13px] font-bold text-[#111827] dark:text-[#EDEDED] leading-snug">
               Invitado
             </p>
-            <p className="truncate text-[11px] font-medium text-[#4B5563] leading-tight">
+            <p className="truncate text-[11px] font-medium text-[#4B5563] dark:text-[#D1D5DB] leading-tight">
               Inicia sesión en tu cuenta
             </p>
           </div>
@@ -196,7 +209,7 @@ export default function UserDropdownMenu({
       )}
 
       {/* Separador bajo encabezado */}
-      <div className="my-1.5 h-px bg-[#EDEDED] mx-1" role="separator" />
+      <div className="my-1.5 h-px bg-[#EDEDED] dark:bg-white/10 mx-1" role="separator" />
 
       {/* 2. Opciones principales */}
       {autenticado ? (
@@ -208,15 +221,15 @@ export default function UserDropdownMenu({
             onClick={() => handleNavegacion('/perfil')}
             className={`ios-press-bounce flex min-h-[44px] w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-left text-xs sm:text-[13px] transition-colors ${
               esPerfilActivo
-                ? 'bg-[#111827]/8 font-bold text-[#111827]'
-                : 'font-medium text-[#4B5563] hover:bg-[#EDEDED]/80 hover:text-[#111827]'
+                ? 'bg-[#111827]/8 dark:bg-white/15 font-bold text-[#111827] dark:text-[#EDEDED]'
+                : 'font-medium text-[#4B5563] dark:text-[#E5E7EB] hover:bg-[#EDEDED]/80 dark:hover:bg-white/10 hover:text-[#111827] dark:hover:text-white'
             }`}
           >
             <span
               className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors ${
                 esPerfilActivo
-                  ? 'bg-[#111827] text-[#EDEDED]'
-                  : 'bg-[#EDEDED] text-[#4B5563]'
+                  ? 'bg-[#111827] dark:bg-white/20 text-[#EDEDED]'
+                  : 'bg-[#EDEDED] dark:bg-white/10 text-[#4B5563] dark:text-[#EDEDED]'
               }`}
             >
               <svg
@@ -234,10 +247,10 @@ export default function UserDropdownMenu({
                 <circle cx="12" cy="7" r="4" />
               </svg>
             </span>
-            <span className="flex-1 truncate">Perfil</span>
+            <span className="flex-1 truncate">{t.nav.perfil}</span>
             {esPerfilActivo && (
               <span
-                className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#111827]"
+                className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#111827] dark:bg-[#EDEDED]"
                 aria-hidden="true"
               />
             )}
@@ -250,15 +263,15 @@ export default function UserDropdownMenu({
             onClick={() => handleNavegacion('/perfil#suscripcion')}
             className={`ios-press-bounce flex min-h-[44px] w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-left text-xs sm:text-[13px] transition-colors ${
               esSuscripcionActiva
-                ? 'bg-[#111827]/8 font-bold text-[#111827]'
-                : 'font-medium text-[#4B5563] hover:bg-[#EDEDED]/80 hover:text-[#111827]'
+                ? 'bg-[#111827]/8 dark:bg-white/15 font-bold text-[#111827] dark:text-[#EDEDED]'
+                : 'font-medium text-[#4B5563] dark:text-[#E5E7EB] hover:bg-[#EDEDED]/80 dark:hover:bg-white/10 hover:text-[#111827] dark:hover:text-white'
             }`}
           >
             <span
               className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors ${
                 esSuscripcionActiva
-                  ? 'bg-[#111827] text-[#EDEDED]'
-                  : 'bg-[#EDEDED] text-[#4B5563]'
+                  ? 'bg-[#111827] dark:bg-white/20 text-[#EDEDED]'
+                  : 'bg-[#EDEDED] dark:bg-white/10 text-[#4B5563] dark:text-[#EDEDED]'
               }`}
             >
               <svg
@@ -276,10 +289,10 @@ export default function UserDropdownMenu({
                 <line x1="2" x2="22" y1="10" y2="10" />
               </svg>
             </span>
-            <span className="flex-1 truncate">Suscripción</span>
+            <span className="flex-1 truncate">{t.nav.suscripcion}</span>
             {esSuscripcionActiva && (
               <span
-                className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#111827]"
+                className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#111827] dark:bg-[#EDEDED]"
                 aria-hidden="true"
               />
             )}
@@ -289,18 +302,18 @@ export default function UserDropdownMenu({
           <button
             type="button"
             role="menuitem"
-            onClick={() => handleNavegacion('/perfil#configuracion')}
+            onClick={() => handleNavegacion('/configuracion')}
             className={`ios-press-bounce flex min-h-[44px] w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-left text-xs sm:text-[13px] transition-colors ${
               esConfiguracionActiva
-                ? 'bg-[#111827]/8 font-bold text-[#111827]'
-                : 'font-medium text-[#4B5563] hover:bg-[#EDEDED]/80 hover:text-[#111827]'
+                ? 'bg-[#111827]/8 dark:bg-white/15 font-bold text-[#111827] dark:text-[#EDEDED]'
+                : 'font-medium text-[#4B5563] dark:text-[#E5E7EB] hover:bg-[#EDEDED]/80 dark:hover:bg-white/10 hover:text-[#111827] dark:hover:text-white'
             }`}
           >
             <span
               className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors ${
                 esConfiguracionActiva
-                  ? 'bg-[#111827] text-[#EDEDED]'
-                  : 'bg-[#EDEDED] text-[#4B5563]'
+                  ? 'bg-[#111827] dark:bg-white/20 text-[#EDEDED]'
+                  : 'bg-[#EDEDED] dark:bg-white/10 text-[#4B5563] dark:text-[#EDEDED]'
               }`}
             >
               <svg
@@ -318,10 +331,10 @@ export default function UserDropdownMenu({
                 <circle cx="12" cy="12" r="3" />
               </svg>
             </span>
-            <span className="flex-1 truncate">Configuración</span>
+            <span className="flex-1 truncate">{t.nav.configuracion}</span>
             {esConfiguracionActiva && (
               <span
-                className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#111827]"
+                className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#111827] dark:bg-[#EDEDED]"
                 aria-hidden="true"
               />
             )}
@@ -334,9 +347,9 @@ export default function UserDropdownMenu({
             type="button"
             role="menuitem"
             onClick={() => handleNavegacion('/login')}
-            className="ios-press-bounce flex min-h-[44px] w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-left text-xs sm:text-[13px] font-semibold text-[#111827] transition-colors hover:bg-[#EDEDED]/80"
+            className="ios-press-bounce flex min-h-[44px] w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-left text-xs sm:text-[13px] font-semibold text-[#111827] dark:text-[#EDEDED] transition-colors hover:bg-[#EDEDED]/80 dark:hover:bg-white/10"
           >
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#EDEDED] text-[#111827]">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#EDEDED] dark:bg-white/10 text-[#111827] dark:text-[#EDEDED]">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -353,7 +366,7 @@ export default function UserDropdownMenu({
                 <line x1="15" x2="3" y1="12" y2="12" />
               </svg>
             </span>
-            <span className="flex-1 truncate">Iniciar sesión</span>
+            <span className="flex-1 truncate">{t.nav.iniciarSesion}</span>
           </button>
 
           {/* Registrarse */}
@@ -361,9 +374,9 @@ export default function UserDropdownMenu({
             type="button"
             role="menuitem"
             onClick={() => handleNavegacion('/registro')}
-            className="ios-press-bounce flex min-h-[44px] w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-left text-xs sm:text-[13px] font-semibold text-[#111827] transition-colors hover:bg-[#EDEDED]/80"
+            className="ios-press-bounce flex min-h-[44px] w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-left text-xs sm:text-[13px] font-semibold text-[#111827] dark:text-[#EDEDED] transition-colors hover:bg-[#EDEDED]/80 dark:hover:bg-white/10"
           >
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#EDEDED] text-[#111827]">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#EDEDED] dark:bg-white/10 text-[#111827] dark:text-[#EDEDED]">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -381,13 +394,13 @@ export default function UserDropdownMenu({
                 <line x1="23" x2="17" y1="11" y2="11" />
               </svg>
             </span>
-            <span className="flex-1 truncate">Crear cuenta</span>
+            <span className="flex-1 truncate">{t.nav.crearCuenta}</span>
           </button>
         </div>
       )}
 
       {/* 3. Separador visual */}
-      <div className="my-1.5 h-px bg-[#EDEDED] mx-1" role="separator" />
+      <div className="my-1.5 h-px bg-[#EDEDED] dark:bg-white/10 mx-1" role="separator" />
 
       {/* 4. Opciones secundarias */}
       <div className="space-y-0.5">
@@ -398,15 +411,15 @@ export default function UserDropdownMenu({
           onClick={() => handleNavegacion('/#faq')}
           className={`ios-press-bounce flex min-h-[44px] w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-left text-xs sm:text-[13px] transition-colors ${
             esAyudaActiva
-              ? 'bg-[#111827]/8 font-bold text-[#111827]'
-              : 'font-medium text-[#4B5563] hover:bg-[#EDEDED]/80 hover:text-[#111827]'
+              ? 'bg-[#111827]/8 dark:bg-white/15 font-bold text-[#111827] dark:text-[#EDEDED]'
+              : 'font-medium text-[#4B5563] dark:text-[#E5E7EB] hover:bg-[#EDEDED]/80 dark:hover:bg-white/10 hover:text-[#111827] dark:hover:text-white'
           }`}
         >
           <span
             className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors ${
               esAyudaActiva
-                ? 'bg-[#111827] text-[#EDEDED]'
-                : 'bg-[#EDEDED] text-[#4B5563]'
+                ? 'bg-[#111827] dark:bg-white/20 text-[#EDEDED]'
+                : 'bg-[#EDEDED] dark:bg-white/10 text-[#4B5563] dark:text-[#EDEDED]'
             }`}
           >
             <svg
@@ -425,10 +438,10 @@ export default function UserDropdownMenu({
               <line x1="12" x2="12.01" y1="17" y2="17" />
             </svg>
           </span>
-          <span className="flex-1 truncate">Centro de ayuda</span>
+          <span className="flex-1 truncate">{t.nav.ayuda}</span>
           {esAyudaActiva && (
             <span
-              className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#111827]"
+              className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#111827] dark:bg-[#EDEDED]"
               aria-hidden="true"
             />
           )}
@@ -441,9 +454,9 @@ export default function UserDropdownMenu({
             role="menuitem"
             onClick={handleCerrarSesion}
             disabled={isLoggingOut}
-            className="ios-press-bounce group flex min-h-[44px] w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-left text-xs sm:text-[13px] font-medium text-[#4B5563] transition-colors hover:bg-rose-50/80 hover:text-rose-600 disabled:opacity-50"
+            className="ios-press-bounce group flex min-h-[44px] w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-left text-xs sm:text-[13px] font-medium text-[#4B5563] dark:text-[#E5E7EB] transition-colors hover:bg-rose-50/80 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 disabled:opacity-50"
           >
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#EDEDED] text-[#4B5563] transition-colors group-hover:bg-rose-100 group-hover:text-rose-600">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#EDEDED] dark:bg-white/10 text-[#4B5563] dark:text-[#EDEDED] transition-colors group-hover:bg-rose-100 dark:group-hover:bg-rose-900/40 group-hover:text-rose-600 dark:group-hover:text-rose-400">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -461,7 +474,7 @@ export default function UserDropdownMenu({
               </svg>
             </span>
             <span className="flex-1 truncate">
-              {isLoggingOut ? 'Cerrando sesión...' : 'Cerrar sesión'}
+              {isLoggingOut ? t.comunes.cargando : t.nav.cerrarSesion}
             </span>
           </button>
         )}
@@ -469,4 +482,3 @@ export default function UserDropdownMenu({
     </div>
   );
 }
-
