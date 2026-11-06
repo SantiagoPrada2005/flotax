@@ -144,8 +144,8 @@ export function CajaBentoHeroCard({
       onKeyDown={onClick ? crearManejadorTeclado(onClick) : undefined}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
-      className={`fx-pressable relative overflow-hidden rounded-[24px] sm:rounded-[30px] bg-[#111827] p-4 sm:p-6 text-white shadow-xl border border-white/10 col-span-2 lg:col-span-4 ${
-        onClick ? 'cursor-pointer hover:border-white/25' : ''
+      className={`relative overflow-hidden rounded-[24px] sm:rounded-[30px] bg-[#111827] p-4 sm:p-6 text-white shadow-xl border border-white/10 col-span-2 lg:col-span-4 ${
+        onClick ? 'fx-pressable cursor-pointer hover:border-white/25' : ''
       }`}
     >
       <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
@@ -267,8 +267,8 @@ export function CajaBentoSparklineCard({
         onKeyDown={onClick ? crearManejadorTeclado(onClick) : undefined}
         role={onClick ? 'button' : undefined}
         tabIndex={onClick ? 0 : undefined}
-        className={`fx-pressable relative flex flex-col justify-between rounded-[20px] sm:rounded-[24px] bg-white p-3.5 sm:p-5 text-[#111827] shadow-xs border border-[#9CA3AF]/30 col-span-1 h-full min-h-[115px] sm:min-h-[130px] ${
-          onClick ? 'cursor-pointer hover:border-[#9CA3AF]/60' : ''
+        className={`relative flex flex-col justify-between rounded-[20px] sm:rounded-[24px] bg-white p-3.5 sm:p-5 text-[#111827] shadow-xs border border-[#9CA3AF]/30 col-span-1 h-full min-h-[115px] sm:min-h-[130px] ${
+          onClick ? 'fx-pressable cursor-pointer hover:border-[#9CA3AF]/60' : ''
         }`}
       >
         <div className="flex items-center justify-between gap-1.5 sm:gap-2">
@@ -307,8 +307,8 @@ export function CajaBentoSparklineCard({
       onKeyDown={onClick ? crearManejadorTeclado(onClick) : undefined}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
-      className={`fx-pressable relative flex flex-col justify-between rounded-[20px] sm:rounded-[24px] bg-white p-3.5 sm:p-5 text-[#111827] shadow-xs border border-[#9CA3AF]/30 col-span-1 h-full min-h-[115px] sm:min-h-[130px] ${
-        onClick ? 'cursor-pointer hover:border-[#9CA3AF]/60' : ''
+      className={`relative flex flex-col justify-between rounded-[20px] sm:rounded-[24px] bg-white p-3.5 sm:p-5 text-[#111827] shadow-xs border border-[#9CA3AF]/30 col-span-1 h-full min-h-[115px] sm:min-h-[130px] ${
+        onClick ? 'fx-pressable cursor-pointer hover:border-[#9CA3AF]/60' : ''
       }`}
     >
       <div className="flex items-center justify-between gap-1.5 sm:gap-2">
@@ -372,7 +372,9 @@ export function CajaBentoPillCard({
       <button
         type="button"
         onClick={onClick}
-        className="fx-pressable flex flex-col justify-between rounded-[20px] sm:rounded-[22px] bg-[#EDEDED] p-3 sm:p-4 text-left border border-[#9CA3AF]/40 shadow-xs hover:bg-white cursor-pointer col-span-1"
+        className={`flex flex-col justify-between rounded-[20px] sm:rounded-[22px] bg-[#EDEDED] p-3 sm:p-4 text-left border border-[#9CA3AF]/40 shadow-xs col-span-1 ${
+          onClick ? 'fx-pressable hover:bg-white cursor-pointer' : ''
+        }`}
       >
         <div className="flex w-full items-center justify-between text-[11px] sm:text-xs font-semibold text-[#4B5563]">
           <span className="truncate pr-1">{titulo}</span>
@@ -409,7 +411,9 @@ export function CajaBentoPillCard({
       <button
         type="button"
         onClick={onClick}
-        className="fx-pressable flex flex-col justify-between rounded-[20px] sm:rounded-[22px] bg-[#EDEDED] p-3 sm:p-4 text-left border border-[#9CA3AF]/40 shadow-xs hover:bg-white cursor-pointer col-span-1"
+        className={`flex flex-col justify-between rounded-[20px] sm:rounded-[22px] bg-[#EDEDED] p-3 sm:p-4 text-left border border-[#9CA3AF]/40 shadow-xs col-span-1 ${
+          onClick ? 'fx-pressable hover:bg-white cursor-pointer' : ''
+        }`}
       >
         <div className="flex w-full items-center justify-between text-[11px] sm:text-xs font-semibold text-[#4B5563]">
           <span className="truncate pr-1">{titulo}</span>
@@ -440,7 +444,9 @@ export function CajaBentoPillCard({
       <button
         type="button"
         onClick={onClick}
-        className="fx-pressable flex flex-col justify-between rounded-[20px] sm:rounded-[22px] bg-[#111827] p-3 sm:p-4 text-left border border-white/10 shadow-xs hover:border-white/20 cursor-pointer col-span-1"
+        className={`flex flex-col justify-between rounded-[20px] sm:rounded-[22px] bg-[#111827] p-3 sm:p-4 text-left border border-white/10 shadow-xs col-span-1 ${
+          onClick ? 'fx-pressable hover:border-white/20 cursor-pointer' : ''
+        }`}
       >
         <div className="flex w-full items-center justify-between text-[11px] sm:text-xs font-semibold text-blue-200/90">
           <span className="truncate pr-1">{titulo}</span>
@@ -475,9 +481,9 @@ export function CajaBentoPillCard({
     <button
       type="button"
       onClick={onClick}
-      className={`fx-pressable flex flex-row items-center justify-between gap-2.5 sm:gap-4 rounded-[18px] sm:rounded-[22px] bg-[#111827] px-3.5 py-2.5 sm:px-5 sm:py-3 text-left border border-white/10 shadow-md hover:border-white/25 cursor-pointer col-span-2 w-full ${
-        className || ''
-      }`}
+      className={`flex flex-row items-center justify-between gap-2.5 sm:gap-4 rounded-[18px] sm:rounded-[22px] bg-[#111827] px-3.5 py-2.5 sm:px-5 sm:py-3 text-left border border-white/10 shadow-md col-span-2 w-full ${
+        onClick ? 'fx-pressable hover:border-white/25 cursor-pointer' : ''
+      } ${className || ''}`}
     >
       <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         <div
@@ -564,13 +570,11 @@ export function CajaKpiCard({
       onKeyDown={onClick ? crearManejadorTeclado(onClick) : undefined}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
-      className={`fx-pressable relative flex flex-col justify-between rounded-[20px] sm:rounded-[24px] border shadow-xs col-span-1 ${esAzulOscuro
+      className={`relative flex flex-col justify-between rounded-[20px] sm:rounded-[24px] border shadow-xs col-span-1 ${esAzulOscuro
         ? 'bg-[#111827] border-white/10 text-white'
         : 'bg-white border-[#9CA3AF]/30 text-[#111827]'
         } p-3.5 sm:p-5 ${onClick
-          ? esAzulOscuro
-            ? 'cursor-pointer hover:border-white/20'
-            : 'cursor-pointer hover:border-[#111827]'
+          ? `fx-pressable cursor-pointer ${esAzulOscuro ? 'hover:border-white/20' : 'hover:border-[#111827]'}`
           : ''
         }`}
     >
