@@ -93,21 +93,25 @@ Estos valores son obligatorios en todas las tareas. El revisor los recibe textua
    - `:active:not(:disabled)` con sombra interna y sin `transform`. Primary: `inset 0 1px 2px rgb(0 0 0 / 0.28)`. Secondary/outline/ghost: `inset 0 1px 2px rgb(0 0 0 / 0.16)`.
    - `:disabled` con `opacity: 0.4` y `cursor: not-allowed`.
    - Eliminar `transition: all` y `transform: scale(0.98)` de estas reglas.
-4. Añadir:
+4. Añadir exactamente:
    ```css
-   .fx-press {
-     transition: transform var(--fx-duration-press) var(--fx-ease-out),
-                 background-color var(--fx-duration-press) var(--fx-ease-out),
-                 border-color var(--fx-duration-press) var(--fx-ease-out);
+   .fx-press,
+   .fx-pressable {
+     transition:
+       transform var(--fx-duration-press) var(--fx-ease-out),
+       background-color var(--fx-duration-press) var(--fx-ease-out),
+       border-color var(--fx-duration-press) var(--fx-ease-out),
+       color var(--fx-duration-press) var(--fx-ease-out);
    }
-   .fx-press:active { transform: scale(0.98); }
-   .fx-pressable { /* misma base, para tarjetas */ }
-   .fx-pressable:active { transform: scale(0.98); }
+   .fx-press:active,
+   .fx-pressable:active {
+     transform: scale(0.98);
+   }
    ```
    Sin `will-change`.
 5. Redefinir `.ios-press-bounce` como alias temporal de `.fx-press`: `scale(0.98)`, 120 ms, sin `will-change`, sin `translateY(1px)`. Mantener el nombre para no romper los 243 usos; se retira en tareas posteriores.
 6. Añadir `.fx-press`, `.fx-pressable` y `.ios-press-bounce` al bloque `@media (prefers-reduced-motion: reduce)` existente, con `transition: none !important; transform: none !important;`.
-7. No tocar todavía las reglas `html.dark ... :not([class*="dark:hover:"])` de `tokens.css`; se limpian al final.
+7. No tocar las reglas `html.dark ... :not([class*="dark:hover:"])` de `tokens.css`. Su retirada exige un barrido completo de modo oscuro y queda fuera de este milestone; se documenta como deuda en la Tarea 11.
 8. No tocar `Button.tsx`/`Button.astro` en esta tarea; el primitivo se limpia en la Tarea 3.
 
 **Criterios de aceptación:**
@@ -349,7 +353,7 @@ Estos valores son obligatorios en todas las tareas. El revisor los recibe textua
    - Mantener el enlace `/catalogo` y el texto.
 2. Retirar `.shiny-text` del título y `.shiny-card` de las HUD cards. Sustituir por superficies sólidas o translúcidas simples, sin borde animado.
 3. Eliminar de `tokens.css` `.shiny-cta`, `.shiny-text`, `.shiny-card` y sus `@property`/keyframes si no tienen otros consumidores. Verificar con grep.
-4. Quitar `animate-ping`, `animate-bounce` y `animate-float` decorativos; conservar solo los que comuniquen estado real. Reducir el hover de categorías a una propiedad (borde o tinte), 180 ms.
+4. Quitar `animate-ping`, `animate-bounce` y `animate-float` decorativos **en los archivos de `src/components/landing/`**; conservar solo los que comuniquen estado real. Reducir el hover de categorías a una propiedad (borde o tinte), 180 ms.
 5. Footer: reemplazar los 3 `href="#"` por rutas reales existentes o convertirlos en texto no interactivo; no dejar enlaces muertos.
 6. No romper la animación GSAP de scroll del hero; si el CTA participa, preservar el hook/ref.
 
@@ -357,7 +361,7 @@ Estos valores son obligatorios en todas las tareas. El revisor los recibe textua
 
 - 0 `.shiny-cta`, `.shiny-text`, `.shiny-card` en `src/` y en `tokens.css`.
 - 0 `href="#"` en el footer.
-- 0 `animate-ping`/`animate-bounce` decorativos.
+- 0 `animate-ping`/`animate-bounce` decorativos en `src/components/landing/`.
 - `pnpm check`, `pnpm build`, `pnpm audit:interactions` verdes.
 
 ---
