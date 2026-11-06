@@ -395,7 +395,7 @@ export function LandingHeroIsland() {
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black font-[Manrope,system-ui,sans-serif] leading-[1.08] tracking-tight max-w-3xl drop-shadow-[0_2px_14px_rgba(255,255,255,0.45)]">
             <span className="text-[#0C1120]">Tu próximo vehículo,</span>
             <br />
-            <span className="shiny-text">
+            <span className="text-[#0C1120]">
               controlado al milímetro.
             </span>
           </h1>
@@ -407,11 +407,11 @@ export function LandingHeroIsland() {
           <div className="flex items-center gap-3.5 w-full sm:w-auto">
             <a
               href="/catalogo"
-              className="shiny-cta h-12 sm:h-14 text-sm sm:text-base group"
+              className="fx-btn-primary inline-flex items-center justify-center h-12 sm:h-14 rounded-full px-6 sm:px-7 text-sm sm:text-base font-semibold"
             >
-              <span>
+              <span className="inline-flex items-center gap-2">
                 Explorar Unidades
-                <span className="w-7 h-7 rounded-full bg-white/20 text-white flex items-center justify-center text-xs group-hover:translate-x-1 transition-transform ml-1">
+                <span className="w-7 h-7 rounded-full bg-white/20 text-white dark:bg-black/10 dark:text-[#111827] flex items-center justify-center text-xs">
                   →
                 </span>
               </span>
@@ -426,7 +426,7 @@ export function LandingHeroIsland() {
           className="relative z-20 w-full flex flex-col items-center justify-center pb-8 pointer-events-none transition-opacity duration-300"
         >
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-md border border-white/20 text-white/80 text-xs font-mono uppercase tracking-widest shadow-lg">
-            <span className="animate-bounce">↓</span>
+            <span>↓</span>
             <span>Desplaza para interactuar</span>
           </div>
         </div>
@@ -435,12 +435,11 @@ export function LandingHeroIsland() {
         <div
           ref={card1Ref}
           id="hud-card-1"
-          className="hud-floating-card shiny-card absolute z-30 top-20 sm:top-28 right-3 sm:right-8 lg:right-16 max-w-[calc(100vw-1.5rem)] px-3.5 py-2.5 sm:px-5 sm:py-3.5 rounded-xl sm:rounded-full text-white opacity-0 pointer-events-none will-change-[transform,opacity]"
+          className="bg-[#111827]/90 backdrop-blur-xl border border-white/10 shadow-lg absolute z-30 top-20 sm:top-28 right-3 sm:right-8 lg:right-16 max-w-[calc(100vw-1.5rem)] px-3.5 py-2.5 sm:px-5 sm:py-3.5 rounded-xl sm:rounded-full text-white opacity-0 pointer-events-none will-change-[transform,opacity]"
         >
           <div className="flex items-center gap-3">
             <div className="relative flex items-center justify-center shrink-0">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping absolute" />
             </div>
             <div className="flex flex-col text-left">
               <span className="text-xs sm:text-sm font-bold font-[Manrope,system-ui,sans-serif] leading-tight">
@@ -457,7 +456,7 @@ export function LandingHeroIsland() {
         <div
           ref={card2Ref}
           id="hud-card-2"
-          className="hud-floating-card shiny-card absolute z-30 bottom-24 sm:bottom-28 lg:bottom-32 left-3 sm:left-8 lg:left-16 max-w-[calc(100vw-1.5rem)] px-3.5 py-2.5 sm:px-5 sm:py-3.5 rounded-xl sm:rounded-full text-white opacity-0 pointer-events-none will-change-[transform,opacity]"
+          className="bg-[#111827]/90 backdrop-blur-xl border border-white/10 shadow-lg absolute z-30 bottom-24 sm:bottom-28 lg:bottom-32 left-3 sm:left-8 lg:left-16 max-w-[calc(100vw-1.5rem)] px-3.5 py-2.5 sm:px-5 sm:py-3.5 rounded-xl sm:rounded-full text-white opacity-0 pointer-events-none will-change-[transform,opacity]"
         >
           <div className="flex items-center gap-3">
             <div className="w-7 h-7 rounded-full bg-[#2E4E8F]/50 flex items-center justify-center text-[#A7C9FF] shrink-0 border border-white/10">
@@ -480,7 +479,7 @@ export function LandingHeroIsland() {
         <div
           ref={card3Ref}
           id="hud-card-3"
-          className="hud-floating-card shiny-card absolute z-30 top-20 sm:top-28 left-3 sm:left-8 lg:left-16 max-w-[calc(100vw-1.5rem)] px-3.5 py-2.5 sm:px-5 sm:py-3.5 rounded-xl sm:rounded-full text-white opacity-0 pointer-events-none will-change-[transform,opacity]"
+          className="bg-[#111827]/90 backdrop-blur-xl border border-white/10 shadow-lg absolute z-30 top-20 sm:top-28 left-3 sm:left-8 lg:left-16 max-w-[calc(100vw-1.5rem)] px-3.5 py-2.5 sm:px-5 sm:py-3.5 rounded-xl sm:rounded-full text-white opacity-0 pointer-events-none will-change-[transform,opacity]"
         >
           <div className="flex items-center gap-3">
             <div className="w-7 h-7 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0 border border-emerald-400/20">

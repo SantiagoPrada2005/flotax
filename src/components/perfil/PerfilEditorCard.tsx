@@ -184,7 +184,7 @@ export default function PerfilEditorCard({
           <button
             type="button"
             onClick={handleAbrirEdicion}
-            className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-white dark:bg-[#1F2937] text-[#111827] dark:text-[#EDEDED] shadow-md ring-2 ring-white dark:ring-[#1F2937] hover:bg-gray-50 dark:hover:bg-white/10 active:scale-95 transition-all"
+            className="fx-press absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-white dark:bg-[#1F2937] text-[#111827] dark:text-[#EDEDED] shadow-md ring-2 ring-white dark:ring-[#1F2937] hover:bg-gray-50 dark:hover:bg-white/10 before:absolute before:-inset-1.5 before:content-['']"
             aria-label="Editar información de perfil"
             title="Editar información"
           >
@@ -230,7 +230,7 @@ export default function PerfilEditorCard({
         <button
           type="button"
           onClick={handleAbrirEdicion}
-          className="w-full flex items-center justify-between p-3.5 hover:bg-gray-50/80 active:bg-gray-100/60 dark:hover:bg-white/10 dark:active:bg-white/15 rounded-2xl transition-all text-left"
+          className="fx-press w-full flex items-center justify-between p-3.5 hover:bg-gray-50/80 dark:hover:bg-white/10 rounded-2xl text-left"
         >
           <div className="flex items-center gap-3.5 min-w-0">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gray-100/80 dark:bg-white/10 text-[#4B5563] dark:text-[#EDEDED]">
@@ -274,7 +274,7 @@ export default function PerfilEditorCard({
         <button
           type="button"
           onClick={handleAbrirEdicion}
-          className="w-full flex items-center justify-between p-3.5 hover:bg-gray-50/80 active:bg-gray-100/60 dark:hover:bg-white/10 dark:active:bg-white/15 rounded-2xl transition-all text-left"
+          className="fx-press w-full flex items-center justify-between p-3.5 hover:bg-gray-50/80 dark:hover:bg-white/10 rounded-2xl text-left"
         >
           <div className="flex items-center gap-3.5 min-w-0">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gray-100/80 dark:bg-white/10 text-[#4B5563] dark:text-[#EDEDED]">
@@ -306,7 +306,7 @@ export default function PerfilEditorCard({
           <button
             type="button"
             onClick={() => navigate('/perfil/verificacion')}
-            className="text-xs font-semibold text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white flex items-center gap-1 active:scale-95 transition-all"
+            className="fx-press relative text-xs font-semibold text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white flex items-center gap-1 before:absolute before:-inset-y-3.5 before:-inset-x-2 before:content-['']"
           >
             <span>
               {estadoVerificacion === 'APROBADO'
@@ -326,7 +326,7 @@ export default function PerfilEditorCard({
           <button
             type="button"
             onClick={() => navigate('/perfil/verificacion')}
-            className="rounded-2xl bg-white dark:bg-[#1F2937] p-3.5 border border-gray-200/70 dark:border-white/10 shadow-xs flex flex-col justify-between h-28 text-left hover:border-gray-400 dark:hover:border-white/30 dark:hover:bg-white/5 active:scale-98 transition-all"
+            className="fx-press rounded-2xl bg-white dark:bg-[#1F2937] p-3.5 border border-gray-200/70 dark:border-white/10 shadow-xs flex flex-col justify-between h-28 text-left hover:border-gray-400 dark:hover:border-white/30 dark:hover:bg-white/5"
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gray-100 dark:bg-white/10 text-[#4B5563] dark:text-[#EDEDED]">
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -347,7 +347,7 @@ export default function PerfilEditorCard({
           <button
             type="button"
             onClick={() => navigate('/perfil/verificacion')}
-            className="rounded-2xl bg-white dark:bg-[#1F2937] p-3.5 border border-gray-200/70 dark:border-white/10 shadow-xs flex flex-col justify-between h-28 text-left hover:border-gray-400 dark:hover:border-white/30 dark:hover:bg-white/5 active:scale-98 transition-all"
+            className="fx-press rounded-2xl bg-white dark:bg-[#1F2937] p-3.5 border border-gray-200/70 dark:border-white/10 shadow-xs flex flex-col justify-between h-28 text-left hover:border-gray-400 dark:hover:border-white/30 dark:hover:bg-white/5"
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gray-100 dark:bg-white/10 text-[#4B5563] dark:text-[#EDEDED]">
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -422,7 +422,7 @@ export default function PerfilEditorCard({
                 <button
                   type="button"
                   onClick={() => navigate('/admin/onboarding?modo=crear')}
-                  className="ios-press-bounce w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-xs sm:text-sm font-bold text-[#111827] shadow-sm hover:bg-[#EDEDED] active:scale-98 transition-all cursor-pointer"
+                  className="fx-press w-full sm:w-auto inline-flex min-h-[44px] items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-xs sm:text-sm font-bold text-[#111827] shadow-sm hover:bg-[#EDEDED] cursor-pointer"
                 >
                   <span>Crear mi patio de alquiler</span>
                   <span>→</span>
@@ -439,7 +439,7 @@ export default function PerfilEditorCard({
               <button
                 type="button"
                 onClick={handleConmutarPatio}
-                className="w-full flex items-center justify-between p-3.5 hover:bg-gray-50/80 active:bg-gray-100/60 dark:hover:bg-white/10 dark:active:bg-white/15 rounded-2xl transition-all text-left"
+                className="fx-press w-full flex items-center justify-between p-3.5 hover:bg-gray-50/80 dark:hover:bg-white/10 rounded-2xl text-left"
               >
                 <div className="flex items-center gap-3.5 min-w-0">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#111827] dark:bg-white text-white dark:text-[#111827]">
@@ -464,7 +464,7 @@ export default function PerfilEditorCard({
               <button
                 type="button"
                 onClick={() => navigate('/admin/onboarding?modo=crear')}
-                className="w-full flex items-center justify-between p-3.5 hover:bg-gray-50/80 active:bg-gray-100/60 dark:hover:bg-white/10 dark:active:bg-white/15 rounded-2xl transition-all text-left"
+                className="fx-press w-full flex items-center justify-between p-3.5 hover:bg-gray-50/80 dark:hover:bg-white/10 rounded-2xl text-left"
               >
                 <div className="flex items-center gap-3.5 min-w-0">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gray-100 dark:bg-white/10 text-[#111827] dark:text-[#EDEDED]">
@@ -492,7 +492,7 @@ export default function PerfilEditorCard({
           <button
             type="button"
             onClick={() => setShowLogoutModal(true)}
-            className="w-full flex items-center justify-between p-3.5 hover:bg-rose-50/60 active:bg-rose-100/40 dark:hover:bg-rose-950/40 dark:active:bg-rose-950/60 rounded-2xl transition-all text-left group"
+            className="fx-press w-full flex items-center justify-between p-3.5 hover:bg-rose-50/60 dark:hover:bg-rose-950/40 rounded-2xl text-left group"
           >
             <div className="flex items-center gap-3.5 min-w-0">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 group-hover:bg-rose-100 dark:group-hover:bg-rose-900/50 transition-colors">
@@ -537,7 +537,7 @@ export default function PerfilEditorCard({
               <button
                 type="button"
                 onClick={() => setShowEditModal(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 dark:bg-white/10 text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white active:scale-95"
+                className="fx-press relative flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 dark:bg-white/10 text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white before:absolute before:-inset-1.5 before:content-['']"
               >
                 ✕
               </button>
@@ -562,7 +562,7 @@ export default function PerfilEditorCard({
                     value={nombre}
                     onChange={(e) => setNombre(e.target.value)}
                     placeholder="Tu nombre completo"
-                    className="w-full rounded-xl border border-gray-200 dark:border-white/15 bg-gray-50/50 dark:bg-[#111827] px-3.5 py-2.5 text-base text-[#111827] dark:text-[#EDEDED] outline-none focus:border-[#111827] dark:focus:border-white focus:bg-white dark:focus:bg-[#111827] transition-all min-h-[44px]"
+                    className="w-full rounded-xl border border-gray-200 dark:border-white/15 bg-gray-50/50 dark:bg-[#111827] px-3.5 py-2.5 text-base text-[#111827] dark:text-[#EDEDED] focus:border-[#111827] dark:focus:border-white focus:bg-white dark:focus:bg-[#111827] transition-colors min-h-[44px]"
                     required
                   />
                 </div>
@@ -576,7 +576,7 @@ export default function PerfilEditorCard({
                     id="modal-tipo-doc"
                     value={tipoDocumento}
                     onChange={(e) => setTipoDocumento(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 dark:border-white/15 bg-gray-50/50 dark:bg-[#111827] px-3.5 py-2.5 text-base text-[#111827] dark:text-[#EDEDED] outline-none focus:border-[#111827] dark:focus:border-white focus:bg-white dark:focus:bg-[#111827] transition-all min-h-[44px]"
+                    className="w-full rounded-xl border border-gray-200 dark:border-white/15 bg-gray-50/50 dark:bg-[#111827] px-3.5 py-2.5 text-base text-[#111827] dark:text-[#EDEDED] focus:border-[#111827] dark:focus:border-white focus:bg-white dark:focus:bg-[#111827] transition-colors min-h-[44px]"
                   >
                     <option value="CC">Cédula de Ciudadanía (CC)</option>
                     <option value="CE">Cédula de Extranjería (CE)</option>
@@ -596,7 +596,7 @@ export default function PerfilEditorCard({
                     value={numeroDocumento}
                     onChange={(e) => setNumeroDocumento(e.target.value)}
                     placeholder="Ej. 1020304050"
-                    className="w-full rounded-xl border border-gray-200 dark:border-white/15 bg-gray-50/50 dark:bg-[#111827] px-3.5 py-2.5 text-base font-mono tabular-nums text-[#111827] dark:text-[#EDEDED] outline-none focus:border-[#111827] dark:focus:border-white focus:bg-white dark:focus:bg-[#111827] transition-all min-h-[44px]"
+                    className="w-full rounded-xl border border-gray-200 dark:border-white/15 bg-gray-50/50 dark:bg-[#111827] px-3.5 py-2.5 text-base font-mono tabular-nums text-[#111827] dark:text-[#EDEDED] focus:border-[#111827] dark:focus:border-white focus:bg-white dark:focus:bg-[#111827] transition-colors min-h-[44px]"
                   />
                 </div>
 
@@ -611,7 +611,7 @@ export default function PerfilEditorCard({
                     value={telefono}
                     onChange={(e) => setTelefono(e.target.value)}
                     placeholder="Ej. +57 300 123 4567"
-                    className="w-full rounded-xl border border-gray-200 dark:border-white/15 bg-gray-50/50 dark:bg-[#111827] px-3.5 py-2.5 text-base font-mono tabular-nums text-[#111827] dark:text-[#EDEDED] outline-none focus:border-[#111827] dark:focus:border-white focus:bg-white dark:focus:bg-[#111827] transition-all min-h-[44px]"
+                    className="w-full rounded-xl border border-gray-200 dark:border-white/15 bg-gray-50/50 dark:bg-[#111827] px-3.5 py-2.5 text-base font-mono tabular-nums text-[#111827] dark:text-[#EDEDED] focus:border-[#111827] dark:focus:border-white focus:bg-white dark:focus:bg-[#111827] transition-colors min-h-[44px]"
                   />
                 </div>
               </div>
@@ -621,14 +621,14 @@ export default function PerfilEditorCard({
                   type="button"
                   onClick={() => setShowEditModal(false)}
                   disabled={isPending}
-                  className="min-h-[44px] rounded-xl bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-[#111827] dark:text-[#EDEDED] font-semibold text-xs active:scale-95 transition-all"
+                  className="fx-press min-h-[44px] rounded-xl bg-gray-100 dark:bg-white/10 enabled:hover:bg-gray-200 dark:enabled:hover:bg-white/20 text-[#111827] dark:text-[#EDEDED] font-semibold text-xs disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="min-h-[44px] rounded-xl bg-[#111827] dark:bg-white hover:bg-[#1F2937] dark:hover:bg-[#EDEDED] text-white dark:text-[#111827] font-semibold text-xs shadow-md active:scale-95 transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
+                  className="fx-press min-h-[44px] rounded-xl bg-[#111827] dark:bg-white enabled:hover:bg-[#1F2937] dark:enabled:hover:bg-[#EDEDED] text-white dark:text-[#111827] font-semibold text-xs shadow-md flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {isPending ? (
                     <span>Guardando...</span>
@@ -671,7 +671,7 @@ export default function PerfilEditorCard({
                 type="button"
                 onClick={() => setShowLogoutModal(false)}
                 disabled={isLoggingOut}
-                className="min-h-[44px] rounded-xl bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-[#111827] dark:text-[#EDEDED] font-semibold text-xs active:scale-95 transition-all disabled:opacity-50"
+                className="fx-press min-h-[44px] rounded-xl bg-gray-100 dark:bg-white/10 enabled:hover:bg-gray-200 dark:enabled:hover:bg-white/20 text-[#111827] dark:text-[#EDEDED] font-semibold text-xs disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Cancelar
               </button>
@@ -679,7 +679,7 @@ export default function PerfilEditorCard({
                 type="button"
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className="min-h-[44px] rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs active:scale-95 transition-all flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
+                className="fx-press min-h-[44px] rounded-xl bg-rose-600 enabled:hover:bg-rose-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {isLoggingOut ? (
                   <span>Cerrando...</span>

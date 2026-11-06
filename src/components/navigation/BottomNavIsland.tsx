@@ -91,7 +91,7 @@ export default function BottomNavIsland({
           strokeWidth={active ? 2.3 : 1.8}
           strokeLinecap="round"
           strokeLinejoin="round"
-          className={`h-5 w-5 transition-transform duration-300 ${active ? 'scale-105' : 'group-hover:scale-110'}`}
+          className="h-5 w-5"
         >
           <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" />
           <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
@@ -112,7 +112,7 @@ export default function BottomNavIsland({
           strokeWidth={active ? 2.4 : 1.9}
           strokeLinecap="round"
           strokeLinejoin="round"
-          className={`h-5 w-5 transition-transform duration-300 ${active ? 'scale-105' : 'group-hover:scale-110'}`}
+          className="h-5 w-5"
         >
           <line x1="18" x2="18" y1="20" y2="10" />
           <line x1="12" x2="12" y1="20" y2="4" />
@@ -134,7 +134,7 @@ export default function BottomNavIsland({
           strokeWidth={active ? 2.3 : 1.8}
           strokeLinecap="round"
           strokeLinejoin="round"
-          className={`h-5 w-5 transition-transform duration-300 ${active ? 'scale-105' : 'group-hover:scale-110'}`}
+          className="h-5 w-5"
         >
           <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2" />
           <circle cx="7" cy="17" r="2" />
@@ -157,7 +157,7 @@ export default function BottomNavIsland({
           strokeWidth={active ? 2.3 : 1.8}
           strokeLinecap="round"
           strokeLinejoin="round"
-          className={`h-5 w-5 transition-transform duration-300 ${active ? 'scale-105' : 'group-hover:scale-110'}`}
+          className="h-5 w-5"
         >
           <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
         </svg>
@@ -177,7 +177,7 @@ export default function BottomNavIsland({
           strokeWidth={active ? 2.3 : 1.8}
           strokeLinecap="round"
           strokeLinejoin="round"
-          className={`h-5 w-5 transition-transform duration-300 ${active ? 'scale-105' : 'group-hover:scale-110'}`}
+          className="h-5 w-5"
         >
           <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
           <path d="M22 12A10 10 0 0 0 12 2v10z" />
@@ -201,7 +201,7 @@ export default function BottomNavIsland({
           strokeWidth={active ? 2.3 : 1.8}
           strokeLinecap="round"
           strokeLinejoin="round"
-          className={`h-5 w-5 transition-transform duration-300 ${active ? 'scale-105' : 'group-hover:scale-110'}`}
+          className="h-5 w-5"
         >
           <circle cx="11" cy="11" r="8" />
           <path d="m21 21-4.3-4.3" />
@@ -222,7 +222,7 @@ export default function BottomNavIsland({
           strokeWidth={active ? 2.3 : 1.8}
           strokeLinecap="round"
           strokeLinejoin="round"
-          className={`h-5 w-5 transition-transform duration-300 ${active ? 'scale-105' : 'group-hover:scale-110'}`}
+          className="h-5 w-5"
         >
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
           <line x1="16" y1="2" x2="16" y2="6" />
@@ -245,7 +245,7 @@ export default function BottomNavIsland({
           strokeWidth={active ? 2.3 : 1.8}
           strokeLinecap="round"
           strokeLinejoin="round"
-          className={`h-5 w-5 transition-transform duration-300 ${active ? 'scale-105' : 'group-hover:scale-110'}`}
+          className="h-5 w-5"
         >
           <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
           <circle cx="12" cy="7" r="4" />
@@ -501,7 +501,7 @@ export default function BottomNavIsland({
               data-astro-prefetch="tap"
               onClick={(e) => handleTabClick(e, index, item.href)}
               style={{ touchAction: 'none', WebkitUserSelect: 'none', userSelect: 'none' }}
-              className={`ios-press-bounce group relative z-10 flex h-11 w-11 items-center justify-center rounded-full transition-colors duration-200 ${isCurrentVisual
+              className={`fx-pressable relative z-10 flex h-11 w-11 items-center justify-center rounded-full transition-colors duration-200 ${isCurrentVisual
                 ? 'text-white'
                 : 'text-[#4B5563] dark:text-[#E5E7EB] hover:text-[#111827] dark:hover:text-white hover:bg-[#EDEDED]/60 dark:hover:bg-white/10'
                 }`}

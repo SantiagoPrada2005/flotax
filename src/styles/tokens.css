@@ -30,6 +30,7 @@ html[data-theme="light"] {
   --fx-border-subtle: rgba(156, 163, 175, 0.35);
   --fx-border-card: rgba(156, 163, 175, 0.25);
   --fx-border-focus: #111827;
+  --fx-focus-halo: #ededed;
 
   --fx-status-amber-bg: rgba(245, 158, 11, 0.14);
   --fx-status-amber-text: #92400e;
@@ -97,6 +98,7 @@ html[data-theme="dark"] {
   --fx-border-subtle: rgba(156, 163, 175, 0.22);
   --fx-border-card: rgba(255, 255, 255, 0.10);
   --fx-border-focus: #ededed;
+  --fx-focus-halo: #111827;
 
   --fx-status-amber-bg: rgba(245, 158, 11, 0.20);
   --fx-status-amber-text: #fcd34d;
@@ -143,6 +145,17 @@ html[data-theme="dark"] {
   --fx-btn-disabled-text: #6b7280;
   --fx-btn-disabled-border: rgba(255, 255, 255, 0.08);
   --fx-btn-focus-ring: #ededed;
+}
+
+/* Interaction Contract: motion scale (theme-independent) */
+:root {
+  --fx-duration-press: 120ms;
+  --fx-duration-hover: 120ms;
+  --fx-duration-reveal: 180ms;
+  --fx-duration-sheet: 240ms;
+  --fx-duration-page: 320ms;
+  --fx-ease-out: cubic-bezier(0.2, 0.8, 0.3, 1);
+  --fx-ease-in-out: cubic-bezier(0.75, 0, 0.25, 1);
 }
 
 @theme {
@@ -194,6 +207,18 @@ html[data-theme="dark"] {
   --radius-input: 12px;
 }
 
+/*
+ * Global focus contract: unlayered so utilities cannot hide the ring.
+ * The 2px outline uses the theme foreground; the 1px halo uses the opposite
+ * tone so the ring stays visible on fixed-color surfaces (dark cards in light
+ * theme, light cards in dark theme) where a single token would blend in.
+ */
+:where(button, a[href], [role="button"], [role="switch"], summary, input, select, textarea):focus-visible {
+  outline: 2px solid var(--fx-border-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 1px var(--fx-focus-halo);
+}
+
 /* Universal Mobile Ergonomics Shielding (iOS WebKit Anti-Zoom) */
 @media screen and (max-width: 768px) {
   input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
@@ -232,14 +257,36 @@ select {
   --ease-fluid-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Interaction Contract: canonical press feedback */
+.fx-press,
+.fx-pressable {
+  transition:
+    transform var(--fx-duration-press) var(--fx-ease-out),
+    background-color var(--fx-duration-press) var(--fx-ease-out),
+    border-color var(--fx-duration-press) var(--fx-ease-out),
+    color var(--fx-duration-press) var(--fx-ease-out);
+}
+
+.fx-press:active,
+.fx-pressable:active {
+  transform: scale(0.98);
+}
+
+/*
+ * Deprecated alias kept for the current consumers until migration.
+ * Same contract as .fx-press: keep both declarations in sync until this
+ * alias is deleted.
+ */
 .ios-press-bounce {
-  transition: transform 340ms var(--ease-spring-ios), opacity 200ms ease, background-color 200ms ease, color 200ms ease, box-shadow 340ms var(--ease-spring-ios);
-  will-change: transform;
+  transition:
+    transform var(--fx-duration-press) var(--fx-ease-out),
+    background-color var(--fx-duration-press) var(--fx-ease-out),
+    border-color var(--fx-duration-press) var(--fx-ease-out),
+    color var(--fx-duration-press) var(--fx-ease-out);
 }
 
 .ios-press-bounce:active {
-  transform: scale(0.88) translateY(1px);
-  transition-duration: 90ms;
+  transform: scale(0.98);
 }
 
 .ios-dock-capsule {
@@ -404,246 +451,6 @@ html.js-ready .reveal-on-scroll.is-visible {
   opacity: 1;
   transform: translateY(0);
   transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* ==========================================================================
-   Shiny Button CTA Effect
-   ========================================================================== */
-
-@property --gradient-angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-
-@property --gradient-angle-offset {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-
-@property --gradient-percent {
-  syntax: "<percentage>";
-  initial-value: 5%;
-  inherits: false;
-}
-
-@property --gradient-shine {
-  syntax: "<color>";
-  initial-value: white;
-  inherits: false;
-}
-
-.shiny-cta {
-  --shiny-cta-bg: #0C1120;
-  --shiny-cta-bg-subtle: #1F2937;
-  --shiny-cta-fg: #ffffff;
-  --shiny-cta-highlight: #2E4E8F;
-  --shiny-cta-highlight-subtle: #A7C9FF;
-  --animation: gradient-angle linear infinite;
-  --duration: 3s;
-  --shadow-size: 2px;
-  --transition: 800ms cubic-bezier(0.25, 1, 0.5, 1);
-
-  isolation: isolate;
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-  outline-offset: 4px;
-  padding: 0.875rem 1.75rem;
-  font-family: inherit;
-  font-size: 1rem;
-  line-height: 1.2;
-  font-weight: 600;
-  border: 1px solid transparent;
-  border-radius: 9999px;
-  color: var(--shiny-cta-fg);
-  background: linear-gradient(var(--shiny-cta-bg), var(--shiny-cta-bg)) padding-box,
-    conic-gradient(
-      from calc(var(--gradient-angle) - var(--gradient-angle-offset)),
-      transparent,
-      var(--shiny-cta-highlight) var(--gradient-percent),
-      var(--gradient-shine) calc(var(--gradient-percent) * 2),
-      var(--shiny-cta-highlight) calc(var(--gradient-percent) * 3),
-      transparent calc(var(--gradient-percent) * 4)
-    ) border-box;
-  box-shadow: inset 0 0 0 1px var(--shiny-cta-bg-subtle);
-  transition: var(--transition);
-  transition-property: --gradient-angle-offset, --gradient-percent, --gradient-shine;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.shiny-cta::before,
-.shiny-cta::after,
-.shiny-cta span::before {
-  content: "";
-  pointer-events: none;
-  position: absolute;
-  inset-inline-start: 50%;
-  inset-block-start: 50%;
-  translate: -50% -50%;
-  z-index: -1;
-}
-
-.shiny-cta:active {
-  translate: 0 1px;
-}
-
-/* Dots pattern */
-.shiny-cta::before {
-  --size: calc(100% - var(--shadow-size) * 3);
-  --position: 2px;
-  --space: calc(var(--position) * 2);
-  width: var(--size);
-  height: var(--size);
-  background: radial-gradient(
-    circle at var(--position) var(--position),
-    white calc(var(--position) / 4),
-    transparent 0
-  ) padding-box;
-  background-size: var(--space) var(--space);
-  background-repeat: space;
-  mask-image: conic-gradient(
-    from calc(var(--gradient-angle) + 45deg),
-    black,
-    transparent 10% 90%,
-    black
-  );
-  border-radius: inherit;
-  opacity: 0.3;
-  z-index: -1;
-}
-
-/* Inner shimmer */
-.shiny-cta::after {
-  --animation: shimmer linear infinite;
-  width: 100%;
-  aspect-ratio: 1;
-  background: linear-gradient(
-    -50deg,
-    transparent,
-    var(--shiny-cta-highlight),
-    transparent
-  );
-  mask-image: radial-gradient(circle at bottom, transparent 40%, black);
-  opacity: 0.5;
-}
-
-.shiny-cta span {
-  z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.shiny-cta span::before {
-  --size: calc(100% + 1rem);
-  width: var(--size);
-  height: var(--size);
-  box-shadow: inset 0 -1ex 2rem 4px var(--shiny-cta-highlight);
-  opacity: 0;
-  transition: opacity var(--transition);
-  animation: calc(var(--duration) * 1.5) breathe linear infinite;
-}
-
-/* Animate */
-.shiny-cta,
-.shiny-cta::before,
-.shiny-cta::after {
-  animation: var(--animation) var(--duration),
-    var(--animation) calc(var(--duration) / 0.4) reverse paused;
-  animation-composition: add;
-}
-
-.shiny-cta:is(:hover, :focus-visible) {
-  --gradient-percent: 20%;
-  --gradient-angle-offset: 95deg;
-  --gradient-shine: var(--shiny-cta-highlight-subtle);
-}
-
-.shiny-cta:is(:hover, :focus-visible),
-.shiny-cta:is(:hover, :focus-visible)::before,
-.shiny-cta:is(:hover, :focus-visible)::after {
-  animation-play-state: running;
-}
-
-.shiny-cta:is(:hover, :focus-visible) span::before {
-  opacity: 1;
-}
-
-@keyframes gradient-angle {
-  to {
-    --gradient-angle: 360deg;
-  }
-}
-
-@keyframes shimmer {
-  to {
-    rotate: 360deg;
-  }
-}
-
-@keyframes breathe {
-  from, to {
-    scale: 1;
-  }
-  50% {
-    scale: 1.2;
-  }
-}
-
-/* ==========================================================================
-   Shiny Text Effect (Hero Title Luxury Shimmer)
-   ========================================================================== */
-
-.shiny-text {
-  background: linear-gradient(
-    115deg,
-    #0C1120 0%,
-    #162A5A 25%,
-    #2E4E8F 45%,
-    #7FB4FF 50%,
-    #2E4E8F 55%,
-    #162A5A 75%,
-    #0C1120 100%
-  );
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: shiny-text-sweep 6s ease-in-out infinite;
-}
-
-@keyframes shiny-text-sweep {
-  0% {
-    background-position: 100% 0;
-  }
-  50%, 100% {
-    background-position: -100% 0;
-  }
-}
-
-/* ==========================================================================
-   Shiny Card Effect (HUD Floating Glass Cards with Animated Perimeter)
-   ========================================================================== */
-
-.shiny-card {
-  border: 1px solid transparent;
-  background: linear-gradient(rgba(12, 17, 32, 0.90), rgba(12, 17, 32, 0.90)) padding-box,
-    conic-gradient(
-      from var(--gradient-angle),
-      transparent 0%,
-      rgba(46, 78, 143, 0.5) 12%,
-      rgba(167, 201, 255, 0.95) 25%,
-      rgba(46, 78, 143, 0.5) 38%,
-      transparent 50%
-    ) border-box;
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  animation: gradient-angle 7s linear infinite;
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.6), inset 0 0 20px -5px rgba(46, 78, 143, 0.3);
 }
 
 /* ==========================================================================
@@ -936,7 +743,26 @@ html.js-ready .reveal-on-scroll.is-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ios-press-bounce,
+  /*
+   * Press feedback: remove motion, but never force opacity here.
+   * Disabled controls (.fx-btn-*:disabled, disabled:opacity-40) must keep
+   * their 40% opacity under reduced motion. Enabled controls keep a non-motion
+   * press signal (opacity 0.92) so the tap still gets feedback.
+   */
+  .fx-press,
+  .fx-pressable,
+  .ios-press-bounce {
+    animation: none !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .fx-press:active:not(:disabled),
+  .fx-pressable:active:not(:disabled),
+  .ios-press-bounce:active:not(:disabled) {
+    opacity: 0.92;
+  }
+
   .ios-search-morph,
   .animate-fade-up,
   .animate-fade-in,
@@ -945,11 +771,6 @@ html.js-ready .reveal-on-scroll.is-visible {
   .reveal-on-scroll,
   html.js-ready .reveal-on-scroll,
   html.js-ready .reveal-on-scroll:not(.is-visible),
-  .shiny-cta,
-  .shiny-cta::before,
-  .shiny-cta::after,
-  .shiny-text,
-  .shiny-card,
   .flotax-loader-m1,
   .flotax-loader-m2,
   .flotax-loader-m3,
@@ -1219,22 +1040,28 @@ html.flotax-theme-transitioning::view-transition-new(root) {
   background-color: var(--fx-btn-primary-bg);
   color: var(--fx-btn-primary-text);
   border: 1px solid var(--fx-btn-primary-border);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    background-color var(--fx-duration-press) var(--fx-ease-out),
+    border-color var(--fx-duration-press) var(--fx-ease-out),
+    color var(--fx-duration-press) var(--fx-ease-out),
+    box-shadow var(--fx-duration-press) var(--fx-ease-out);
 }
-.fx-btn-primary:hover:not(:disabled) {
-  background-color: var(--fx-btn-primary-hover-bg);
-  color: var(--fx-btn-primary-hover-text);
-  border-color: var(--fx-btn-primary-hover-border);
+@media (hover: hover) and (pointer: fine) {
+  .fx-btn-primary:hover:not(:disabled) {
+    background-color: var(--fx-btn-primary-hover-bg);
+    color: var(--fx-btn-primary-hover-text);
+    border-color: var(--fx-btn-primary-hover-border);
+  }
 }
 .fx-btn-primary:active:not(:disabled) {
   background-color: var(--fx-btn-primary-active-bg);
-  transform: scale(0.98);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.28);
 }
 .fx-btn-primary:disabled {
   background-color: var(--fx-btn-disabled-bg);
   color: var(--fx-btn-disabled-text);
   border-color: var(--fx-btn-disabled-border);
-  opacity: 0.6;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
@@ -1242,22 +1069,28 @@ html.flotax-theme-transitioning::view-transition-new(root) {
   background-color: var(--fx-btn-secondary-bg);
   color: var(--fx-btn-secondary-text);
   border: 1px solid var(--fx-btn-secondary-border);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    background-color var(--fx-duration-press) var(--fx-ease-out),
+    border-color var(--fx-duration-press) var(--fx-ease-out),
+    color var(--fx-duration-press) var(--fx-ease-out),
+    box-shadow var(--fx-duration-press) var(--fx-ease-out);
 }
-.fx-btn-secondary:hover:not(:disabled) {
-  background-color: var(--fx-btn-secondary-hover-bg);
-  color: var(--fx-btn-secondary-hover-text);
-  border-color: var(--fx-btn-secondary-hover-border);
+@media (hover: hover) and (pointer: fine) {
+  .fx-btn-secondary:hover:not(:disabled) {
+    background-color: var(--fx-btn-secondary-hover-bg);
+    color: var(--fx-btn-secondary-hover-text);
+    border-color: var(--fx-btn-secondary-hover-border);
+  }
 }
 .fx-btn-secondary:active:not(:disabled) {
   background-color: var(--fx-btn-secondary-active-bg);
-  transform: scale(0.98);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.16);
 }
 .fx-btn-secondary:disabled {
   background-color: var(--fx-btn-disabled-bg);
   color: var(--fx-btn-disabled-text);
   border-color: var(--fx-btn-disabled-border);
-  opacity: 0.6;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
@@ -1265,22 +1098,28 @@ html.flotax-theme-transitioning::view-transition-new(root) {
   background-color: var(--fx-btn-outline-bg);
   color: var(--fx-btn-outline-text);
   border: 1px solid var(--fx-btn-outline-border);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    background-color var(--fx-duration-press) var(--fx-ease-out),
+    border-color var(--fx-duration-press) var(--fx-ease-out),
+    color var(--fx-duration-press) var(--fx-ease-out),
+    box-shadow var(--fx-duration-press) var(--fx-ease-out);
 }
-.fx-btn-outline:hover:not(:disabled) {
-  background-color: var(--fx-btn-outline-hover-bg);
-  color: var(--fx-btn-outline-hover-text);
-  border-color: var(--fx-btn-outline-hover-border);
+@media (hover: hover) and (pointer: fine) {
+  .fx-btn-outline:hover:not(:disabled) {
+    background-color: var(--fx-btn-outline-hover-bg);
+    color: var(--fx-btn-outline-hover-text);
+    border-color: var(--fx-btn-outline-hover-border);
+  }
 }
 .fx-btn-outline:active:not(:disabled) {
   background-color: var(--fx-btn-outline-active-bg);
-  transform: scale(0.98);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.16);
 }
 .fx-btn-outline:disabled {
   background-color: var(--fx-btn-disabled-bg);
   color: var(--fx-btn-disabled-text);
   border-color: var(--fx-btn-disabled-border);
-  opacity: 0.6;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
@@ -1288,20 +1127,26 @@ html.flotax-theme-transitioning::view-transition-new(root) {
   background-color: var(--fx-btn-ghost-bg);
   color: var(--fx-btn-ghost-text);
   border: 1px solid var(--fx-btn-ghost-border);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    background-color var(--fx-duration-press) var(--fx-ease-out),
+    border-color var(--fx-duration-press) var(--fx-ease-out),
+    color var(--fx-duration-press) var(--fx-ease-out),
+    box-shadow var(--fx-duration-press) var(--fx-ease-out);
 }
-.fx-btn-ghost:hover:not(:disabled) {
-  background-color: var(--fx-btn-ghost-hover-bg);
-  color: var(--fx-btn-ghost-hover-text);
-  border-color: var(--fx-btn-ghost-hover-border);
+@media (hover: hover) and (pointer: fine) {
+  .fx-btn-ghost:hover:not(:disabled) {
+    background-color: var(--fx-btn-ghost-hover-bg);
+    color: var(--fx-btn-ghost-hover-text);
+    border-color: var(--fx-btn-ghost-hover-border);
+  }
 }
 .fx-btn-ghost:active:not(:disabled) {
   background-color: var(--fx-btn-ghost-active-bg);
-  transform: scale(0.98);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.16);
 }
 .fx-btn-ghost:disabled {
   color: var(--fx-btn-disabled-text);
-  opacity: 0.6;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 

@@ -396,7 +396,7 @@ export default function MisReservasHub({
               <button
                 type="button"
                 onClick={() => setSheetNuevaAbierto(true)}
-                className="ios-press-bounce mr-1 inline-flex min-h-[40px] items-center gap-1.5 rounded-full bg-[#111827] dark:bg-white dark:text-[#111827] px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-[#1F2937] dark:hover:bg-[#EDEDED] cursor-pointer transition-colors"
+                className="fx-press mr-1 inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-[#111827] dark:bg-white dark:text-[#111827] px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-[#1F2937] dark:hover:bg-[#EDEDED] cursor-pointer"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -417,7 +417,7 @@ export default function MisReservasHub({
               type="button"
               onClick={() => cambiarMes(-1)}
               aria-label="Mes anterior"
-              className="ios-press-bounce flex h-10 w-10 items-center justify-center rounded-full text-[#111827] dark:text-[#EDEDED] hover:bg-[#EDEDED]/70 dark:hover:bg-white/10 cursor-pointer transition-colors"
+              className="fx-press flex h-11 w-11 items-center justify-center rounded-full text-[#111827] dark:text-[#EDEDED] hover:bg-[#EDEDED]/70 dark:hover:bg-white/10 cursor-pointer"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -435,7 +435,7 @@ export default function MisReservasHub({
               type="button"
               onClick={() => cambiarMes(1)}
               aria-label="Mes siguiente"
-              className="ios-press-bounce flex h-10 w-10 items-center justify-center rounded-full text-[#111827] dark:text-[#EDEDED] hover:bg-[#EDEDED]/70 dark:hover:bg-white/10 cursor-pointer transition-colors"
+              className="fx-press flex h-11 w-11 items-center justify-center rounded-full text-[#111827] dark:text-[#EDEDED] hover:bg-[#EDEDED]/70 dark:hover:bg-white/10 cursor-pointer"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -547,7 +547,7 @@ export default function MisReservasHub({
                     enAlgunAlquiler ? ' (Día con alquiler)' : ''
                   }`}
                   aria-pressed={enRangoFiltro}
-                  className={`ios-press-bounce relative flex h-9 w-9 flex-col items-center justify-center rounded-full text-xs tabular-nums select-none cursor-pointer transition-colors ${clasesCirculo}`}
+                  className={`fx-press relative flex h-9 w-9 flex-col items-center justify-center rounded-full text-xs tabular-nums select-none cursor-pointer after:absolute after:-inset-y-1 after:inset-x-0 after:content-[''] ${clasesCirculo}`}
                 >
                   <span>{celda.numeroDia}</span>
                   {enAlgunAlquiler && (
@@ -593,7 +593,7 @@ export default function MisReservasHub({
               <button
                 type="button"
                 onClick={limpiarFiltro}
-                className="ios-press-bounce text-[10px] font-bold text-[#111827] dark:text-[#EDEDED] underline hover:text-[#4B5563] dark:hover:text-white cursor-pointer"
+                className="fx-press inline-flex min-h-[44px] items-center text-[10px] font-bold text-[#111827] dark:text-[#EDEDED] underline hover:text-[#4B5563] dark:hover:text-white cursor-pointer"
               >
                 Limpiar
               </button>
@@ -653,7 +653,7 @@ export default function MisReservasHub({
                   role="tab"
                   aria-selected={activo}
                   onClick={() => setFiltroEstado(tab.id)}
-                  className={`ios-press-bounce shrink-0 inline-flex min-h-[36px] items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
+                  className={`fx-press shrink-0 inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold cursor-pointer ${
                     activo
                       ? 'bg-[#111827] text-white border border-transparent dark:bg-white dark:text-[#111827]'
                       : 'bg-white/75 text-[#4B5563] hover:bg-white hover:text-[#111827] dark:bg-[#1F2937] dark:text-[#EDEDED] dark:hover:bg-white/10 dark:hover:text-white border border-transparent dark:border-white/10'
@@ -720,7 +720,7 @@ export default function MisReservasHub({
             <button
               type="button"
               onClick={limpiarFiltro}
-              className="ios-press-bounce rounded-full bg-[#111827] dark:bg-white dark:text-[#111827] px-3.5 py-1.5 text-[11px] font-semibold text-white cursor-pointer"
+              className="fx-press inline-flex min-h-[44px] items-center rounded-full bg-[#111827] dark:bg-white dark:text-[#111827] px-3.5 py-1.5 text-[11px] font-semibold text-white cursor-pointer"
             >
               Ver todos
             </button>
@@ -746,15 +746,16 @@ export default function MisReservasHub({
                   tabIndex={0}
                   onClick={() => abrirDetalle(item)}
                   onKeyDown={(e) => {
+                    if (e.target !== e.currentTarget) return;
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
                       abrirDetalle(item);
                     }
                   }}
-                  className={`group w-full rounded-[22px] p-4 transition-all duration-200 cursor-pointer animate-fade-up bg-white dark:bg-[#1F2937] border ${
+                  className={`fx-pressable group w-full rounded-[22px] p-4 cursor-pointer bg-white dark:bg-[#1F2937] border ${
                     esActiva
                       ? 'border-[#111827]/15 dark:border-white/20 shadow-sm ring-1 ring-[#111827]/10 dark:ring-white/10'
-                      : 'border-[#E5E4DF] dark:border-white/10 hover:border-[#111827]/25 dark:hover:border-white/20 shadow-2xs hover:shadow-md'
+                      : 'border-[#E5E4DF] dark:border-white/10 hover:border-[#111827]/25 dark:hover:border-white/20 shadow-2xs'
                   }`}
                 >
                   <div className="flex items-center gap-4 min-w-0">
@@ -763,7 +764,7 @@ export default function MisReservasHub({
                       <img
                         src={item.vehiculo.imagenUrl}
                         alt={`${item.vehiculo.marca} ${item.vehiculo.modelo}`}
-                        className="h-full w-full object-contain mix-blend-multiply dark:mix-blend-normal transition-transform duration-300 group-hover:scale-105"
+                        className="h-full w-full object-contain mix-blend-multiply dark:mix-blend-normal"
                         loading="lazy"
                       />
                     </div>
@@ -824,7 +825,8 @@ export default function MisReservasHub({
                                   e.stopPropagation();
                                   aprobarSolicitudRapida(item);
                                 }}
-                                className="ios-press-bounce min-h-[32px] rounded-full bg-[#111827] dark:bg-white dark:text-[#111827] px-3 py-1 text-[11px] font-bold text-white hover:bg-[#1F2937] dark:hover:bg-[#EDEDED] cursor-pointer"
+                                onKeyDown={(e) => e.stopPropagation()}
+                                className="fx-press inline-flex min-h-[44px] items-center rounded-full bg-[#111827] dark:bg-white dark:text-[#111827] px-3.5 py-1 text-[11px] font-bold text-white hover:bg-[#1F2937] dark:hover:bg-[#EDEDED] cursor-pointer"
                               >
                                 Aprobar
                               </button>
@@ -856,7 +858,7 @@ export default function MisReservasHub({
               <button
                 type="button"
                 onClick={limpiarFiltro}
-                className="ios-press-bounce rounded-full bg-[#111827] px-4 py-1.5 text-xs font-semibold text-white cursor-pointer"
+                className="fx-press inline-flex min-h-[44px] items-center rounded-full bg-[#111827] px-4 py-1.5 text-xs font-semibold text-white cursor-pointer"
               >
                 Ver todos
               </button>
@@ -875,7 +877,7 @@ export default function MisReservasHub({
           aria-label="Nueva reserva en patio"
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#111827]/45 backdrop-blur-xs p-0 sm:p-4 animate-fade-in"
         >
-          <div className="w-full max-w-[430px] rounded-t-[32px] sm:rounded-[32px] bg-white p-5 shadow-2xl max-h-[90dvh] overflow-y-auto space-y-4">
+          <div className="[--fx-border-focus:#111827] w-full max-w-[430px] rounded-t-[32px] sm:rounded-[32px] bg-white p-5 shadow-2xl max-h-[90dvh] overflow-y-auto space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
@@ -889,7 +891,7 @@ export default function MisReservasHub({
                 type="button"
                 onClick={() => setSheetNuevaAbierto(false)}
                 aria-label="Cerrar ventana"
-                className="ios-press-bounce flex h-10 w-10 items-center justify-center rounded-full bg-[#EDEDED] text-[#111827] cursor-pointer"
+                className="fx-press flex h-11 w-11 items-center justify-center rounded-full bg-[#EDEDED] text-[#111827] cursor-pointer"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -1076,7 +1078,7 @@ export default function MisReservasHub({
                       prev === 'CONFIRMADA' ? 'PENDIENTE' : 'CONFIRMADA'
                     )
                   }
-                  className="min-h-[44px] rounded-[16px] bg-[#EDEDED]/80 px-3 py-2 text-left cursor-pointer"
+                  className="fx-press min-h-[44px] rounded-[16px] bg-[#EDEDED]/80 px-3 py-2 text-left cursor-pointer"
                 >
                   <span className="block text-[10px] font-medium text-[#4B5563]">
                     Estado inicial
@@ -1093,7 +1095,7 @@ export default function MisReservasHub({
                   onClick={() =>
                     setFormPorcentajeAbono((prev) => (prev === 100 ? 30 : 100))
                   }
-                  className="min-h-[44px] rounded-[16px] bg-[#EDEDED]/80 px-3 py-2 text-left cursor-pointer"
+                  className="fx-press min-h-[44px] rounded-[16px] bg-[#EDEDED]/80 px-3 py-2 text-left cursor-pointer"
                 >
                   <span className="block text-[10px] font-medium text-[#4B5563]">
                     Recaudo en caja
@@ -1118,7 +1120,7 @@ export default function MisReservasHub({
                 </div>
                 <button
                   type="submit"
-                  className="ios-press-bounce min-h-[44px] rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] cursor-pointer"
+                  className="fx-press min-h-[44px] rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] cursor-pointer"
                 >
                   Radicar reserva
                 </button>
