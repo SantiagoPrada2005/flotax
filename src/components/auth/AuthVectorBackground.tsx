@@ -68,8 +68,8 @@ export default function AuthVectorBackground({
       {/* Degradado perimétrico superior suave para respiración del Top Bar */}
       <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-[#111827] via-[#111827]/60 to-transparent" />
 
-      {/* Viñeta de transición inferior: Inicia debajo del chasis para dar contraste legible al formulario */}
-      <div className="absolute bottom-0 inset-x-0 h-28 bg-gradient-to-t from-[#111827] via-[#111827]/80 to-transparent" />
+      {/* Viñeta de transición inferior sutil que preserva las cotas y vistas inferiores */}
+      <div className="absolute bottom-0 inset-x-0 h-14 bg-gradient-to-t from-[#111827] via-[#111827]/45 to-transparent" />
     </div>
   );
 }
