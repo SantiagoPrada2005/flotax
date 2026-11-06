@@ -621,14 +621,14 @@ export default function PerfilEditorCard({
                   type="button"
                   onClick={() => setShowEditModal(false)}
                   disabled={isPending}
-                  className="fx-press min-h-[44px] rounded-xl bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-[#111827] dark:text-[#EDEDED] font-semibold text-xs disabled:opacity-50"
+                  className="fx-press min-h-[44px] rounded-xl bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-[#111827] dark:text-[#EDEDED] font-semibold text-xs disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="fx-press min-h-[44px] rounded-xl bg-[#111827] dark:bg-white hover:bg-[#1F2937] dark:hover:bg-[#EDEDED] text-white dark:text-[#111827] font-semibold text-xs shadow-md flex items-center justify-center gap-1.5 disabled:opacity-50"
+                  className="fx-press min-h-[44px] rounded-xl bg-[#111827] dark:bg-white hover:bg-[#1F2937] dark:hover:bg-[#EDEDED] text-white dark:text-[#111827] font-semibold text-xs shadow-md flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {isPending ? (
                     <span>Guardando...</span>
@@ -671,7 +671,7 @@ export default function PerfilEditorCard({
                 type="button"
                 onClick={() => setShowLogoutModal(false)}
                 disabled={isLoggingOut}
-                className="fx-press min-h-[44px] rounded-xl bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-[#111827] dark:text-[#EDEDED] font-semibold text-xs disabled:opacity-50"
+                className="fx-press min-h-[44px] rounded-xl bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-[#111827] dark:text-[#EDEDED] font-semibold text-xs disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Cancelar
               </button>
@@ -679,7 +679,7 @@ export default function PerfilEditorCard({
                 type="button"
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className="fx-press min-h-[44px] rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
+                className="fx-press min-h-[44px] rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {isLoggingOut ? (
                   <span>Cerrando...</span>
