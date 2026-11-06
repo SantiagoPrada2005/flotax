@@ -76,10 +76,10 @@ const featuredVehicles: Vehicle[] = [
 
       <a
         href="/catalogo"
-        class="inline-flex items-center gap-2 text-sm font-bold text-[#0C1120] hover:text-[#2E4E8F] transition-colors group"
+        class="fx-press relative inline-flex items-center gap-2 text-sm font-bold text-[#0C1120] hover:text-[#2E4E8F] after:absolute after:-inset-y-3 after:inset-x-0 after:content-['']"
       >
         <span>Explorar todo el inventario</span>
-        <span class="group-hover:translate-x-1 transition-transform">→</span>
+        <span>→</span>
       </a>
     </div>
 
@@ -89,7 +89,7 @@ const featuredVehicles: Vehicle[] = [
     >
       {featuredVehicles.map((v) => (
         <article
-          class="min-w-[290px] sm:min-w-[320px] md:min-w-0 bg-white rounded-[26px] overflow-hidden transition-all duration-300 flex flex-col justify-between group"
+          class="min-w-[290px] sm:min-w-[320px] md:min-w-0 bg-white rounded-[26px] overflow-hidden flex flex-col justify-between"
         >
           <!-- Image Container with Lighting & Badges -->
           <div class="relative w-full aspect-[16/10] bg-white overflow-hidden flex items-center justify-center">
@@ -154,10 +154,10 @@ const featuredVehicles: Vehicle[] = [
             <!-- Booking CTA -->
             <a
               href="/catalogo"
-              class="w-full h-11 sm:h-12 flex items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-[#0C1120] hover:bg-[#1F2937] text-white text-xs sm:text-sm font-bold font-[Manrope,system-ui,sans-serif] shadow-xs active:scale-[0.98] transition-all group"
+              class="w-full h-11 sm:h-12 flex items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-[#0C1120] hover:bg-[#1F2937] text-white text-xs sm:text-sm font-bold font-[Manrope,system-ui,sans-serif] shadow-xs fx-press"
             >
               <span>Reservar Unidad</span>
-              <span class="group-hover:translate-x-1 transition-transform">→</span>
+              <span>→</span>
             </a>
           </div>
         </article>

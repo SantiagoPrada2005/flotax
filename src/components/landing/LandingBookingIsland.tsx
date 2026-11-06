@@ -117,14 +117,14 @@ export function LandingBookingIsland() {
               <label htmlFor="sede-select" className="block text-sm font-bold text-[#111827] dark:text-[#EDEDED] mb-2">
                 Punto de entrega
               </label>
-              <div className="h-12 px-4 rounded-full bg-[#F9FAFB] dark:bg-[#111827] dark:border dark:border-white/10 hover:bg-[#F3F4F6] dark:hover:bg-[#111827]/80 focus-within:bg-[#EEF2F6] dark:focus-within:bg-[#111827] transition-all flex items-center gap-2.5">
+              <div className="h-12 px-4 rounded-full bg-[#F9FAFB] dark:bg-[#111827] dark:border dark:border-white/10 hover:bg-[#F3F4F6] dark:hover:bg-[#111827]/80 focus-within:bg-[#EEF2F6] dark:focus-within:bg-[#111827] transition-colors flex items-center gap-2.5">
                 <MapPin className="w-4 h-4 text-[#4B5563] dark:text-[#9CA3AF] shrink-0" strokeWidth={1.8} />
                 <select
                   id="sede-select"
                   name="sede"
                   value={sede}
                   onChange={(e) => setSede(e.target.value)}
-                  className="w-full bg-transparent text-sm font-semibold text-[#1F2937] dark:text-[#EDEDED] font-[Manrope,system-ui,sans-serif] focus:outline-none cursor-pointer truncate"
+                  className="w-full min-h-[44px] bg-transparent text-sm font-semibold text-[#1F2937] dark:text-[#EDEDED] font-[Manrope,system-ui,sans-serif] cursor-pointer truncate"
                 >
                   <option value="centro" className="bg-white dark:bg-[#1F2937] text-[#111827] dark:text-[#EDEDED]">Patio Central · Aeropuerto</option>
                   <option value="norte" className="bg-white dark:bg-[#1F2937] text-[#111827] dark:text-[#EDEDED]">Patio Norte · Zona Financiera</option>
@@ -138,9 +138,9 @@ export function LandingBookingIsland() {
               <label htmlFor="fecha-recogida" className="block text-sm font-bold text-[#111827] dark:text-[#EDEDED] mb-2">
                 Recogida
               </label>
-              <div className="h-12 px-4 rounded-full bg-[#F9FAFB] dark:bg-[#111827] dark:border dark:border-white/10 hover:bg-[#F3F4F6] dark:hover:bg-[#111827]/80 focus-within:bg-[#EEF2F6] dark:focus-within:bg-[#111827] transition-all flex items-center justify-between gap-2.5">
+              <div className="h-12 px-4 rounded-full bg-[#F9FAFB] dark:bg-[#111827] dark:border dark:border-white/10 hover:bg-[#F3F4F6] dark:hover:bg-[#111827]/80 focus-within:bg-[#EEF2F6] dark:focus-within:bg-[#111827] focus-within:ring-2 focus-within:ring-[#111827] focus-within:ring-offset-2 focus-within:ring-offset-white dark:focus-within:ring-[#EDEDED] dark:focus-within:ring-offset-[#1F2937] transition-colors flex items-center justify-between gap-2.5">
                 {/* Date Button with Hidden Native Picker */}
-                <div className="relative flex items-center gap-2 min-w-0 flex-1 cursor-pointer">
+                <div className="relative flex h-full items-center gap-2 min-w-0 flex-1 cursor-pointer">
                   <Calendar className="w-4 h-4 text-[#4B5563] dark:text-[#9CA3AF] shrink-0" strokeWidth={1.8} />
                   <span className="text-sm font-semibold text-[#1F2937] dark:text-[#EDEDED] truncate font-[Manrope,system-ui,sans-serif]">
                     {formatearFechaHumana(fechaInicio)}
@@ -166,7 +166,7 @@ export function LandingBookingIsland() {
                     name="hora_desde"
                     value={horaInicio}
                     onChange={(e) => setHoraInicio(e.target.value)}
-                    className="bg-transparent text-xs sm:text-[13px] font-semibold text-[#1F2937] dark:text-[#EDEDED] focus:outline-none cursor-pointer"
+                    className="min-h-[44px] bg-transparent text-xs sm:text-[13px] font-semibold text-[#1F2937] dark:text-[#EDEDED] cursor-pointer"
                     aria-label="Seleccionar hora de recogida"
                   >
                     {HORAS_DISPONIBLES.map((h) => (
@@ -182,9 +182,9 @@ export function LandingBookingIsland() {
               <label htmlFor="fecha-devolucion" className="block text-sm font-bold text-[#111827] dark:text-[#EDEDED] mb-2">
                 Devolución
               </label>
-              <div className="h-12 px-4 rounded-full bg-[#F9FAFB] dark:bg-[#111827] dark:border dark:border-white/10 hover:bg-[#F3F4F6] dark:hover:bg-[#111827]/80 focus-within:bg-[#EEF2F6] dark:focus-within:bg-[#111827] transition-all flex items-center justify-between gap-2.5">
+              <div className="h-12 px-4 rounded-full bg-[#F9FAFB] dark:bg-[#111827] dark:border dark:border-white/10 hover:bg-[#F3F4F6] dark:hover:bg-[#111827]/80 focus-within:bg-[#EEF2F6] dark:focus-within:bg-[#111827] focus-within:ring-2 focus-within:ring-[#111827] focus-within:ring-offset-2 focus-within:ring-offset-white dark:focus-within:ring-[#EDEDED] dark:focus-within:ring-offset-[#1F2937] transition-colors flex items-center justify-between gap-2.5">
                 {/* Date Button with Hidden Native Picker */}
-                <div className="relative flex items-center gap-2 min-w-0 flex-1 cursor-pointer">
+                <div className="relative flex h-full items-center gap-2 min-w-0 flex-1 cursor-pointer">
                   <Calendar className="w-4 h-4 text-[#4B5563] dark:text-[#9CA3AF] shrink-0" strokeWidth={1.8} />
                   <span className="text-sm font-semibold text-[#1F2937] dark:text-[#EDEDED] truncate font-[Manrope,system-ui,sans-serif]">
                     {formatearFechaHumana(fechaFin)}
@@ -210,7 +210,7 @@ export function LandingBookingIsland() {
                     name="hora_hasta"
                     value={horaFin}
                     onChange={(e) => setHoraFin(e.target.value)}
-                    className="bg-transparent text-xs sm:text-[13px] font-semibold text-[#1F2937] dark:text-[#EDEDED] focus:outline-none cursor-pointer"
+                    className="min-h-[44px] bg-transparent text-xs sm:text-[13px] font-semibold text-[#1F2937] dark:text-[#EDEDED] cursor-pointer"
                     aria-label="Seleccionar hora de devolución"
                   >
                     {HORAS_DISPONIBLES.map((h) => (
@@ -234,10 +234,10 @@ export function LandingBookingIsland() {
                     key={cat.id}
                     type="button"
                     onClick={() => setSelectedCat(cat.id)}
-                    className={`h-10 px-4 flex items-center gap-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer active:scale-[0.98] ${
+                    className={`min-h-[44px] px-4 flex items-center gap-2 rounded-full text-xs sm:text-sm font-semibold fx-press cursor-pointer ${
                       isActive
                         ? 'bg-[#111827] text-white border border-[#111827] dark:bg-white dark:text-[#111827] dark:border-white'
-                        : 'bg-[#F5F5F5] text-[#111827] border border-[#E5E5E5] hover:border-[#A3A3A3] hover:bg-[#EBEBEB] dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/10 dark:hover:bg-white/20 dark:hover:border-white/30'
+                        : 'bg-[#F5F5F5] text-[#111827] border border-[#E5E5E5] hover:border-[#A3A3A3] dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/10 dark:hover:border-white/30'
                     }`}
                   >
                     <span>{cat.label}</span>
@@ -258,9 +258,9 @@ export function LandingBookingIsland() {
             {/* Search CTA on Right (Shadow Free) */}
             <button
               type="submit"
-              className="h-11 sm:h-12 px-6 rounded-full bg-[#111827] hover:bg-[#1F2937] active:scale-[0.99] text-white dark:bg-white dark:text-[#111827] dark:hover:bg-[#EDEDED] text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0 group self-stretch sm:self-auto"
+              className="h-11 sm:h-12 px-6 rounded-full bg-[#111827] hover:bg-[#1F2937] text-white dark:bg-white dark:text-[#111827] dark:hover:bg-[#EDEDED] text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 fx-press cursor-pointer shrink-0 self-stretch sm:self-auto"
             >
-              <Search className="w-4 h-4 text-white dark:text-[#111827] group-hover:scale-110 transition-transform" strokeWidth={2} />
+              <Search className="w-4 h-4 text-white dark:text-[#111827]" strokeWidth={2} />
               <span>Buscar Unidades</span>
             </button>
           </div>

@@ -107,7 +107,7 @@ export default function LandingFleetShowcaseIsland({
           </p>
           <a
             href="/catalogo"
-            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#111827] dark:text-[#EDEDED] hover:text-[#4B5563] dark:hover:text-white transition-colors w-fit"
+            className="fx-press relative inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#111827] dark:text-[#EDEDED] hover:text-[#4B5563] dark:hover:text-white w-fit after:absolute after:-top-1.5 after:-bottom-[22px] after:inset-x-0 after:content-['']"
           >
             <span>Ver catálogo completo ({pool.length})</span>
             <span aria-hidden="true">→</span>
@@ -126,10 +126,10 @@ export default function LandingFleetShowcaseIsland({
                 key={cat.id}
                 type="button"
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`h-11 px-4.5 sm:px-5 flex items-center justify-center gap-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer border active:scale-[0.98] ${
+                className={`h-11 px-4.5 sm:px-5 flex items-center justify-center gap-2.5 rounded-full text-xs sm:text-sm font-semibold fx-press cursor-pointer border ${
                   isSelected
                     ? 'bg-[#111827] text-white border-[#111827] dark:bg-white dark:text-[#111827] dark:border-white'
-                    : 'bg-[#F5F5F5] hover:bg-[#EBEBEB] text-[#111827] border-[#E5E5E5] hover:border-[#A3A3A3] dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/10 dark:hover:bg-white/20 dark:hover:border-white/30'
+                    : 'bg-[#F5F5F5] text-[#111827] border-[#E5E5E5] hover:border-[#A3A3A3] dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/10 dark:hover:border-white/30'
                 }`}
               >
                 <span>{cat.name}</span>
@@ -162,7 +162,7 @@ export default function LandingFleetShowcaseIsland({
             <button
               type="button"
               onClick={() => setSelectedCategory('TODOS')}
-              className="mt-4 px-5 py-2.5 rounded-full bg-[#111827] text-white dark:bg-white dark:text-[#111827] text-xs font-bold hover:bg-[#1F2937] dark:hover:bg-[#EDEDED] active:scale-[0.98] transition-all cursor-pointer shadow-xs"
+              className="mt-4 min-h-[44px] px-5 py-2.5 rounded-full bg-[#111827] text-white dark:bg-white dark:text-[#111827] text-xs font-bold hover:bg-[#1F2937] dark:hover:bg-[#EDEDED] fx-press cursor-pointer shadow-xs"
             >
               Ver todas las unidades disponibles
             </button>
@@ -176,7 +176,7 @@ export default function LandingFleetShowcaseIsland({
               return (
                 <article
                   key={v.id}
-                  className="group relative bg-white dark:bg-[#1F2937] dark:border dark:border-white/10 rounded-[42px] overflow-hidden transition-all duration-300 flex flex-col justify-between"
+                  className="relative bg-white dark:bg-[#1F2937] dark:border dark:border-white/10 rounded-[42px] overflow-hidden transition-colors flex flex-col justify-between"
                 >
                   {/* Visual Central: Foto con Fondo Limpio */}
                   <div className="relative w-full aspect-[16/10] bg-white dark:bg-[#18202F] rounded-t-[42px] overflow-hidden flex items-center justify-center">
@@ -198,7 +198,7 @@ export default function LandingFleetShowcaseIsland({
                           type="button"
                           onClick={() => setSelectedCategory(v.categoria)}
                           title={`Filtrar por ${v.categoriaEtiqueta}`}
-                          className="px-2.5 py-0.5 rounded-full bg-[#111827]/5 hover:bg-[#111827]/10 dark:bg-white/10 dark:hover:bg-white/20 active:scale-[0.98] transition-colors text-[11px] font-semibold text-[#111827] dark:text-[#EDEDED] cursor-pointer"
+                          className="relative px-2.5 py-0.5 rounded-full bg-[#111827]/5 hover:bg-[#111827]/10 dark:bg-white/10 dark:hover:bg-white/20 fx-press text-[11px] font-semibold text-[#111827] dark:text-[#EDEDED] cursor-pointer after:absolute after:-top-4 after:-bottom-2 after:inset-x-0 after:content-['']"
                         >
                           {v.categoriaEtiqueta}
                         </button>
@@ -256,17 +256,17 @@ export default function LandingFleetShowcaseIsland({
                     <div className="flex items-center gap-2.5">
                       <a
                         href={`/vehiculos/${v.id}`}
-                        className="flex-1 h-11 flex items-center justify-center rounded-full bg-white dark:bg-white/10 border border-[#D1D5DB] dark:border-white/15 hover:border-[#111827] dark:hover:border-white hover:bg-[#F9FAFB] dark:hover:bg-white/20 active:scale-[0.99] text-[#111827] dark:text-white text-xs sm:text-sm font-semibold transition-all"
+                        className="flex-1 h-11 flex items-center justify-center rounded-full bg-white dark:bg-white/10 border border-[#D1D5DB] dark:border-white/15 hover:border-[#111827] dark:hover:border-white text-[#111827] dark:text-white text-xs sm:text-sm font-semibold fx-press"
                       >
                         Ver Ficha
                       </a>
 
                       <a
                         href={`/alquilar/${v.id}`}
-                        className="flex-1 h-11 flex items-center justify-center gap-1.5 rounded-full bg-[#111827] dark:bg-white hover:bg-[#1F2937] dark:hover:bg-[#EDEDED] active:scale-[0.99] text-white dark:text-[#111827] text-xs sm:text-sm font-semibold transition-colors group/btn"
+                        className="flex-1 h-11 flex items-center justify-center gap-1.5 rounded-full bg-[#111827] dark:bg-white hover:bg-[#1F2937] dark:hover:bg-[#EDEDED] text-white dark:text-[#111827] text-xs sm:text-sm font-semibold fx-press"
                       >
                         <span>Alquilar</span>
-                        <span className="group-hover/btn:translate-x-0.5 transition-transform">→</span>
+                        <span>→</span>
                       </a>
                     </div>
                   </div>

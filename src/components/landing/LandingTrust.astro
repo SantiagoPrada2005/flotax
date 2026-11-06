@@ -48,9 +48,9 @@ const trustCards = [
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
       {trustCards.map((card) => (
         <div
-          class="p-6 rounded-[24px] bg-white transition-all duration-300 flex flex-col justify-between group"
+          class="p-6 rounded-[24px] bg-white flex flex-col justify-between"
         >
-          <div class="w-12 h-12 rounded-2xl bg-[#EEF2F6] group-hover:bg-[#0C1120] text-[#2E4E8F] group-hover:text-white flex items-center justify-center mb-6 transition-all duration-300 shadow-2xs">
+          <div class="w-12 h-12 rounded-2xl bg-[#EEF2F6] text-[#2E4E8F] flex items-center justify-center mb-6 shadow-2xs">
             {card.icon === "file-text" && (
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -74,7 +74,7 @@ const trustCards = [
           </div>
 
           <div class="flex flex-col gap-2">
-            <h3 class="text-base sm:text-lg font-bold text-[#0C1120] font-[Manrope,system-ui,sans-serif] tracking-tight group-hover:text-[#2E4E8F] transition-colors">
+            <h3 class="text-base sm:text-lg font-bold text-[#0C1120] font-[Manrope,system-ui,sans-serif] tracking-tight">
               {card.title}
             </h3>
             <p class="text-xs sm:text-sm text-[#4B5563] leading-relaxed">
