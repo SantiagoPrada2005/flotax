@@ -15,6 +15,8 @@
 | [`FlotaX_Notificaciones_v2.pdf`](./FlotaX_Notificaciones_v2.pdf) | Diagrama / Wireframe PDF | Especificación visual del sistema integral de notificaciones v2 | PDF |
 | [`FlotaX_User_Flow.pdf`](./FlotaX_User_Flow.pdf) | Diagrama / Wireframe PDF | Mapa visual de flujos de usuario y rutas operativas de FlotaX | PDF |
 | [`PRJ_arquitectura_y_stack_tecnico_alquiler_vehiculos.md`](./PRJ_arquitectura_y_stack_tecnico_alquiler_vehiculos.md) | Blueprint del Proyecto | Arquitectura global, Cloudflare D1, Astro, Better Auth y RBAC | Cloudflare D1, Better Auth |
+| [`auditoria_microinteracciones_hover_click.md`](./auditoria_microinteracciones_hover_click.md) | Auditoría UX & Plan de Interacción | Diagnóstico del slop en hover/press/click, contrato canónico de estados y plan de erradicación por fases | HIG, `design/exports/Motion.html`, Tailwind CSS v4 |
+| [`plans/2026-11-05-interaction-contract.md`](./plans/2026-11-05-interaction-contract.md) | Plan de Implementación | 11 tareas SDD con restricciones globales, criterios de aceptación y orden de ejecución | AUD-FLX-MOTION-001 |
 | [`auditoria_ux_catalogo_buscador.md`](./auditoria_ux_catalogo_buscador.md) | Auditoría UX | Evaluación y recomendaciones ergonómicas del catálogo y spotlight | HIG, Ergonomía Móvil |
 | [`database-er.html`](./database-er.html) | Module / Utility | - | - |
 | [`database-er.mmd`](./database-er.mmd) | Module / Utility | - | - |
