@@ -254,7 +254,7 @@ export default function LocalCatalogShareCard({
             <button
               type="button"
               onClick={compartirNativoOol}
-              className="ios-press-bounce inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-1.5 rounded-full bg-[#111827] px-3.5 sm:px-4 py-2 text-xs font-bold text-[#EDEDED] shadow-2xs transition hover:bg-[#1F2937] dark:bg-white dark:text-[#111827] dark:hover:bg-[#EDEDED]"
+              className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-1.5 rounded-full bg-[#111827] px-3.5 sm:px-4 py-2 text-xs font-bold text-[#EDEDED] shadow-2xs hover:bg-[#1F2937] dark:bg-white dark:text-[#111827] dark:hover:bg-[#EDEDED]"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -286,7 +286,7 @@ export default function LocalCatalogShareCard({
                 triggerHaptic(6);
                 setOpcionesAbiertas((prev) => !prev);
               }}
-              className={`ios-press-bounce flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border transition-colors ${
+              className={`fx-press flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border ${
                 opcionesAbiertas
                   ? 'border-[#111827] bg-[#1F2937] text-[#EDEDED] dark:border-white/30 dark:bg-white/20 dark:text-white'
                   : 'border-[#9CA3AF]/40 bg-[#EDEDED]/75 text-[#111827] hover:bg-[#EDEDED] dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20'
@@ -300,7 +300,7 @@ export default function LocalCatalogShareCard({
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className={`h-4 w-4 transition-transform duration-200 ${
+                className={`h-4 w-4 transition-transform duration-150 ${
                   opcionesAbiertas ? 'rotate-180' : ''
                 }`}
                 aria-hidden="true"
@@ -318,7 +318,7 @@ export default function LocalCatalogShareCard({
               <button
                 type="button"
                 onClick={copiarEnlace}
-                className={`ios-press-bounce inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-1.5 rounded-full border px-3 py-2 text-xs font-bold transition ${
+                className={`fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-1.5 rounded-full border px-3 py-2 text-xs font-bold ${
                   copiado
                     ? 'border-[#111827] bg-[#1F2937] text-[#EDEDED] dark:border-white dark:bg-white dark:text-[#111827]'
                     : 'border-[#9CA3AF]/45 bg-[#EDEDED]/55 text-[#111827] hover:bg-[#EDEDED] hover:border-[#111827] dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20 dark:hover:border-white/30 dark:hover:text-white'
@@ -353,7 +353,7 @@ export default function LocalCatalogShareCard({
                   triggerHaptic(8);
                   setModalAbierto('qr');
                 }}
-                className="ios-press-bounce inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-1.5 rounded-full border border-[#9CA3AF]/45 bg-[#EDEDED]/55 px-3 py-2 text-xs font-bold text-[#111827] transition hover:bg-[#EDEDED] hover:border-[#111827] dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20 dark:hover:border-white/30 dark:hover:text-white"
+                className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-1.5 rounded-full border border-[#9CA3AF]/45 bg-[#EDEDED]/55 px-3 py-2 text-xs font-bold text-[#111827] hover:bg-[#EDEDED] hover:border-[#111827] dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20 dark:hover:border-white/30 dark:hover:text-white"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -381,7 +381,7 @@ export default function LocalCatalogShareCard({
                   triggerHaptic(6);
                   setModalAbierto('editar');
                 }}
-                className="ios-press-bounce inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-1.5 rounded-full border border-[#9CA3AF]/45 bg-[#EDEDED]/55 px-3 py-2 text-xs font-bold text-[#111827] transition hover:bg-[#EDEDED] hover:border-[#111827] dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20 dark:hover:border-white/30 dark:hover:text-white"
+                className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-1.5 rounded-full border border-[#9CA3AF]/45 bg-[#EDEDED]/55 px-3 py-2 text-xs font-bold text-[#111827] hover:bg-[#EDEDED] hover:border-[#111827] dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20 dark:hover:border-white/30 dark:hover:text-white"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -403,7 +403,7 @@ export default function LocalCatalogShareCard({
                 href={pathRelativo}
                 data-astro-prefetch="tap"
                 onClick={() => triggerHaptic(6)}
-                className="ios-press-bounce inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-full border border-[#9CA3AF]/45 bg-white px-3 py-2 text-xs font-bold text-[#111827] transition hover:bg-[#EDEDED]/60 hover:border-[#111827] dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20 dark:hover:border-white/30 dark:hover:text-white"
+                className="fx-press inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-full border border-[#9CA3AF]/45 bg-white px-3 py-2 text-xs font-bold text-[#111827] hover:bg-[#EDEDED]/60 hover:border-[#111827] dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20 dark:hover:border-white/30 dark:hover:text-white"
               >
                 <span>Abrir vista</span>
                 <svg
@@ -457,7 +457,7 @@ export default function LocalCatalogShareCard({
                   setFeedback(null);
                 }}
                 aria-label="Cerrar ventana"
-                className="ios-press-bounce flex h-11 w-11 items-center justify-center rounded-full bg-[#EDEDED] text-[#111827] font-bold text-xs cursor-pointer dark:bg-white/10 dark:text-[#EDEDED] dark:hover:bg-white/20"
+                className="fx-press flex h-11 w-11 items-center justify-center rounded-full bg-[#EDEDED] text-[#111827] font-bold text-xs cursor-pointer dark:bg-white/10 dark:text-[#EDEDED] dark:hover:bg-white/20"
               >
                 ✕
               </button>
@@ -505,13 +505,13 @@ export default function LocalCatalogShareCard({
                   <button
                     type="button"
                     onClick={copiarEnlace}
-                    className="ios-press-bounce min-h-[46px] rounded-full bg-[#EDEDED] text-xs font-extrabold text-[#111827] cursor-pointer dark:bg-white/10 dark:text-[#EDEDED] dark:hover:bg-white/20"
+                    className="fx-press min-h-[46px] rounded-full bg-[#EDEDED] text-xs font-extrabold text-[#111827] cursor-pointer dark:bg-white/10 dark:text-[#EDEDED] dark:hover:bg-white/20"
                   >
                     {copiado ? '✓ Copiado' : 'Copiar URL'}
                   </button>
                   <a
                     href={pathRelativo}
-                    className="ios-press-bounce min-h-[46px] inline-flex items-center justify-center rounded-full bg-[#111827] text-xs font-extrabold text-[#EDEDED] dark:bg-white dark:text-[#111827] dark:hover:bg-[#EDEDED]"
+                    className="fx-press min-h-[46px] inline-flex items-center justify-center rounded-full bg-[#111827] text-xs font-extrabold text-[#EDEDED] dark:bg-white dark:text-[#111827] dark:hover:bg-[#EDEDED]"
                   >
                     Abrir Catálogo
                   </a>
@@ -532,7 +532,7 @@ export default function LocalCatalogShareCard({
                       value={slugInput}
                       onChange={(e) => setSlugInput(e.target.value)}
                       placeholder="mi-agencia-medellin"
-                      className="flex-1 bg-transparent text-base font-mono font-bold text-[#111827] dark:text-[#EDEDED] focus:outline-none ml-1"
+                      className="flex-1 bg-transparent text-base font-mono font-bold text-[#111827] dark:text-[#EDEDED] ml-1"
                       required
                     />
                   </div>
@@ -547,7 +547,7 @@ export default function LocalCatalogShareCard({
                     value={telefonoInput}
                     onChange={(e) => setTelefonoInput(e.target.value)}
                     placeholder="+57 300 000 0000"
-                    className="w-full rounded-2xl bg-[#EDEDED]/70 border border-[#9CA3AF]/45 px-3.5 min-h-[46px] text-base text-[#111827] focus:border-[#111827] focus:outline-none dark:bg-[#111827] dark:border-white/15 dark:text-[#EDEDED] dark:focus:border-white dark:placeholder-[#9CA3AF]/60"
+                    className="w-full rounded-2xl bg-[#EDEDED]/70 border border-[#9CA3AF]/45 px-3.5 min-h-[46px] text-base text-[#111827] focus:border-[#111827] dark:bg-[#111827] dark:border-white/15 dark:text-[#EDEDED] dark:focus:border-white dark:placeholder-[#9CA3AF]/60"
                   />
                 </div>
 
@@ -560,7 +560,7 @@ export default function LocalCatalogShareCard({
                     value={direccionInput}
                     onChange={(e) => setDireccionInput(e.target.value)}
                     placeholder="Av. El Poblado #10-45"
-                    className="w-full rounded-2xl bg-[#EDEDED]/70 border border-[#9CA3AF]/45 px-3.5 min-h-[46px] text-base text-[#111827] focus:border-[#111827] focus:outline-none dark:bg-[#111827] dark:border-white/15 dark:text-[#EDEDED] dark:focus:border-white dark:placeholder-[#9CA3AF]/60"
+                    className="w-full rounded-2xl bg-[#EDEDED]/70 border border-[#9CA3AF]/45 px-3.5 min-h-[46px] text-base text-[#111827] focus:border-[#111827] dark:bg-[#111827] dark:border-white/15 dark:text-[#EDEDED] dark:focus:border-white dark:placeholder-[#9CA3AF]/60"
                   />
                 </div>
 
@@ -580,14 +580,14 @@ export default function LocalCatalogShareCard({
                   <button
                     type="button"
                     onClick={() => setModalAbierto(null)}
-                    className="ios-press-bounce min-h-[46px] rounded-full bg-[#EDEDED] text-xs font-extrabold text-[#111827] cursor-pointer dark:bg-white/10 dark:text-[#EDEDED] dark:hover:bg-white/20"
+                    className="fx-press min-h-[46px] rounded-full bg-[#EDEDED] text-xs font-extrabold text-[#111827] cursor-pointer dark:bg-white/10 dark:text-[#EDEDED] dark:hover:bg-white/20"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
                     disabled={isPending}
-                    className="ios-press-bounce min-h-[46px] rounded-full bg-[#111827] text-xs font-extrabold text-[#EDEDED] disabled:opacity-50 cursor-pointer dark:bg-white dark:text-[#111827] dark:hover:bg-[#EDEDED]"
+                    className="fx-press min-h-[46px] rounded-full bg-[#111827] text-xs font-extrabold text-[#EDEDED] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer dark:bg-white dark:text-[#111827] dark:hover:bg-[#EDEDED]"
                   >
                     {isPending ? 'Guardando...' : 'Guardar Cambios'}
                   </button>
