@@ -31,6 +31,7 @@ import type {
   CalificacionServicioNivel,
 } from './reservas-cliente';
 import { obtenerSpecsBentoPorVehiculo } from './reservas-cliente';
+import { resolverEstadoActualVehiculo } from '@/lib/mantenimientos/repositorio';
 import { eq, desc, and } from 'drizzle-orm';
 
 export interface FiltrosListarReservas {
@@ -354,6 +355,9 @@ export async function crearReservaD1(
     actualizadoEn: ahora,
   });
 
+  // Sincronizar estado operativo del vehículo en D1 si la reserva entra en vigencia hoy
+  await resolverEstadoActualVehiculo(db, input.vehiculoId);
+
   const creada = await obtenerReservaPorCodigoD1(db, codigo);
   if (!creada) {
     throw new Error(`Fallo al recuperar la reserva #${codigo} tras su inserción en D1`);
@@ -430,25 +434,14 @@ export async function cambiarEstadoReservaD1(
       })
       .where(eq(reservas.id, reserva.id));
 
-    // Sincronizar estado del vehículo
-    if (nuevoEstado === 'EN_CURSO') {
+    // Sincronizar estado operativo del vehículo en D1
+    if (nuevoEstado === 'COMPLETADA' && opciones?.requiereMantenimiento) {
       await db
         .update(vehiculos)
-        .set({ estado: 'RESERVADO', actualizadoEn: ahora })
+        .set({ estado: 'MANTENIMIENTO', actualizadoEn: ahora })
         .where(eq(vehiculos.id, reserva.vehiculoId));
-    } else if (nuevoEstado === 'COMPLETADA') {
-      const estadoVehiculo = opciones?.requiereMantenimiento
-        ? 'MANTENIMIENTO'
-        : 'DISPONIBLE';
-      await db
-        .update(vehiculos)
-        .set({ estado: estadoVehiculo, actualizadoEn: ahora })
-        .where(eq(vehiculos.id, reserva.vehiculoId));
-    } else if (nuevoEstado === 'RECHAZADA' || nuevoEstado === 'CANCELADA') {
-      await db
-        .update(vehiculos)
-        .set({ estado: 'DISPONIBLE', actualizadoEn: ahora })
-        .where(eq(vehiculos.id, reserva.vehiculoId));
+    } else {
+      await resolverEstadoActualVehiculo(db, reserva.vehiculoId);
     }
 
     return true;

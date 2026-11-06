@@ -2,7 +2,10 @@ import type { VehiculoItem, EstadoVehiculo } from './types';
 import type { AppDb } from '@/lib/db';
 import { logFalloD1 } from '@/lib/db/diagnostics';
 import { vehiculos, type VehiculoSelect } from '@/db/schema/vehiculos';
-import { eq, desc, and } from 'drizzle-orm';
+import { reservas, mantenimientosVehiculo } from '@/db/schema';
+import { eq, ne, desc, and, inArray, gte, lte } from 'drizzle-orm';
+import { toClientISODate } from '@/lib/time/client-time';
+import { verificarDisponibilidadVehiculo } from './disponibilidad';
 
 /**
  * Mapea una fila relacional de Cloudflare D1 (Drizzle) a la estructura de dominio `VehiculoItem`.
@@ -47,11 +50,15 @@ export function mapD1ToVehiculoItem(row: VehiculoSelect): VehiculoItem {
 export interface OpcionesListarVehiculos {
   localId?: string | null | undefined;
   soloDisponibles?: boolean | undefined;
+  desde?: string | undefined;
+  hasta?: string | undefined;
+  hoyISO?: string | undefined;
 }
 
 /**
  * Obtiene el catálogo de vehículos activos desde Cloudflare D1,
- * opcionalmente aislado a un local específico o filtrado por disponibilidad.
+ * resolviendo dinámicamente su disponibilidad real (usabilidad y ocupación por reservas/mantenimiento)
+ * para la ventana temporal indicada o para el día actual.
  */
 export async function listarVehiculos(
   db?: AppDb,
@@ -66,7 +73,7 @@ export async function listarVehiculos(
       condiciones.push(eq(vehiculos.localId, opciones.localId));
     }
     if (opciones?.soloDisponibles) {
-      condiciones.push(eq(vehiculos.estado, 'DISPONIBLE'));
+      condiciones.push(ne(vehiculos.estado, 'FUERA_SERVICIO'));
     }
 
     const rows = await db
@@ -75,7 +82,79 @@ export async function listarVehiculos(
       .where(and(...condiciones))
       .orderBy(desc(vehiculos.creadoEn));
 
-    return rows.map(mapD1ToVehiculoItem);
+    if (!rows || rows.length === 0) return [];
+
+    const ids = rows.map((r) => r.id);
+    const hoy = opciones?.hoyISO ?? toClientISODate(new Date());
+    const ventanaInicio = opciones?.desde ?? hoy;
+    const ventanaFin = opciones?.hasta ?? opciones?.desde ?? hoy;
+
+    const [reservasOcupadas, mantenimientosOcupados] = await Promise.all([
+      db
+        .select({
+          vehiculoId: reservas.vehiculoId,
+        })
+        .from(reservas)
+        .where(
+          and(
+            inArray(reservas.vehiculoId, ids),
+            inArray(reservas.estado, ['CONFIRMADA', 'PENDIENTE', 'EN_CURSO']),
+            lte(reservas.fechaInicio, ventanaFin),
+            gte(reservas.fechaFin, ventanaInicio)
+          )
+        ),
+      db
+        .select({
+          vehiculoId: mantenimientosVehiculo.vehiculoId,
+        })
+        .from(mantenimientosVehiculo)
+        .where(
+          and(
+            inArray(mantenimientosVehiculo.vehiculoId, ids),
+            inArray(mantenimientosVehiculo.estado, ['PROGRAMADO', 'EN_TALLER']),
+            lte(mantenimientosVehiculo.fechaInicio, ventanaFin),
+            gte(mantenimientosVehiculo.fechaFin, ventanaInicio)
+          )
+        ),
+    ]);
+
+    const vehiculosConMantenimiento = new Set(
+      mantenimientosOcupados.map((m) => m.vehiculoId)
+    );
+    const vehiculosConReserva = new Set(
+      reservasOcupadas.map((r) => r.vehiculoId)
+    );
+
+    const items = rows.map((row) => {
+      const item = mapD1ToVehiculoItem(row);
+
+      // Si el vehículo está fuera de servicio permanentemente, se respeta
+      if (item.estado === 'FUERA_SERVICIO') {
+        return item;
+      }
+
+      // Si tiene mantenimiento activo en la ventana evaluada
+      if (vehiculosConMantenimiento.has(item.id)) {
+        item.estado = 'MANTENIMIENTO';
+        return item;
+      }
+
+      // Si tiene reserva activa (PENDIENTE, CONFIRMADA, EN_CURSO) en la ventana evaluada
+      if (vehiculosConReserva.has(item.id)) {
+        item.estado = 'RESERVADO';
+        return item;
+      }
+
+      // Si no tiene bloqueos en la ventana, está disponible
+      item.estado = 'DISPONIBLE';
+      return item;
+    });
+
+    if (opciones?.soloDisponibles) {
+      return items.filter((item) => item.estado === 'DISPONIBLE');
+    }
+
+    return items;
   } catch (error) {
     logFalloD1('vehiculos.listar', error, { localId: opciones?.localId ?? null });
     return [];
@@ -83,12 +162,14 @@ export async function listarVehiculos(
 }
 
 /**
- * Busca una unidad por su identificador único en D1, validando opcionalmente que pertenezca al local activo.
+ * Busca una unidad por su identificador único en D1, validando opcionalmente que pertenezca al local activo
+ * y resolviendo su estado operativo real para hoy (si no está FUERA_SERVICIO).
  */
 export async function obtenerVehiculoAsync(
   id: string,
   db?: AppDb,
-  localIdRestringido?: string | null
+  localIdRestringido?: string | null,
+  hoyISO?: string
 ): Promise<VehiculoItem | undefined> {
   if (!db) return undefined;
 
@@ -105,6 +186,12 @@ export async function obtenerVehiculoAsync(
 
     if (localIdRestringido && item.localId && item.localId !== localIdRestringido) {
       return undefined;
+    }
+
+    if (item.estado !== 'FUERA_SERVICIO') {
+      const hoy = hoyISO ?? toClientISODate(new Date());
+      const dictamen = await verificarDisponibilidadVehiculo(db, item.id, hoy, hoy, hoy);
+      item.estado = dictamen.estadoSugerido;
     }
 
     return item;

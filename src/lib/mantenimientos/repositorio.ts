@@ -148,7 +148,7 @@ export async function resolverEstadoActualVehiculo(
     if (mantenimientoActivo) {
       nuevoEstado = 'MANTENIMIENTO';
     } else {
-      // Evaluar reservas vigentes para hoy
+      // Evaluar reservas vigentes para hoy (incluyendo PENDIENTE radicadas por clientes)
       const [reservaActiva] = await db
         .select({ id: reservas.id })
         .from(reservas)
@@ -158,7 +158,7 @@ export async function resolverEstadoActualVehiculo(
             or(
               eq(reservas.estado, 'EN_CURSO'),
               and(
-                eq(reservas.estado, 'CONFIRMADA'),
+                inArray(reservas.estado, ['CONFIRMADA', 'PENDIENTE']),
                 lte(reservas.fechaInicio, hoyISO),
                 gte(reservas.fechaFin, hoyISO)
               )

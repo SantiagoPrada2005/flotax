@@ -9,6 +9,8 @@ import {
   darDeBajaVehiculo,
   obtenerVehiculoAsync,
 } from '@/lib/flota/repositorio';
+import { obtenerBloquesNoDisponiblesD1 } from '@/lib/flota/disponibilidad';
+import { resolveClientTimeContext } from '@/lib/time/client-time';
 import type { VehiculoItem, CategoriaVehiculo } from '@/lib/flota/types';
 import {
   categoriasVehiculo,
@@ -212,6 +214,43 @@ export const obtenerVehiculoDetalleAction = defineAction({
     return {
       ok: true,
       vehiculo,
+    };
+  },
+});
+
+/**
+ * Consulta en Cloudflare D1 los bloques reales de indisponibilidad (reservas y mantenimientos)
+ * para un vehículo determinado, permitiendo refrescar el calendario en el cliente.
+ */
+export const consultarDisponibilidadVehiculoAction = defineAction({
+  input: z.object({
+    vehiculoId: z.string().min(1, { error: 'ID de vehículo requerido' }),
+    horizonteDias: z.number().int().positive().optional(),
+  }),
+  handler: async (input, context) => {
+    if (!env.DB) {
+      throw new ActionError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Base de datos no disponible.',
+      });
+    }
+
+    const db = getDb(env.DB);
+    const { dateString: hoyISO } = resolveClientTimeContext(context.request);
+    const horizonte = input.horizonteDias ?? 180;
+
+    const bloques = await obtenerBloquesNoDisponiblesD1(
+      db,
+      input.vehiculoId,
+      hoyISO,
+      horizonte
+    );
+
+    return {
+      ok: true,
+      vehiculoId: input.vehiculoId,
+      hoyISO,
+      bloques,
     };
   },
 });

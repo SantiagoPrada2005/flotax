@@ -40,9 +40,21 @@ export default function VehicleCatalogCard({ vehiculo }: VehicleCatalogCardProps
             {vehiculo.marca} {vehiculo.modelo}
           </h3>
 
-          <p className="mt-0.5 text-xs text-[#A1A1AA] font-normal">
-            {vehiculo.anio}
-          </p>
+          <div className="mt-0.5 flex items-center gap-2">
+            <span className="text-xs text-[#A1A1AA] font-normal">
+              {vehiculo.anio}
+            </span>
+            {vehiculo.estado === 'RESERVADO' && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wide bg-[#F4F4F5] text-[#71717A] border border-[#E4E4E7]">
+                Reservado
+              </span>
+            )}
+            {vehiculo.estado === 'MANTENIMIENTO' && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wide bg-[#F4F4F5] text-[#71717A] border border-[#E4E4E7]">
+                Taller
+              </span>
+            )}
+          </div>
 
           <div className="mt-1 flex items-center gap-1.5 text-xs text-[#A1A1AA]">
             {isElectrico ? (

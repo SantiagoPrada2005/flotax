@@ -2,8 +2,10 @@ import { useMemo, useState } from 'react';
 import { actions } from 'astro:actions';
 import {
   calcularCotizacionAlquiler,
+  encontrarPrimerRangoDisponible,
+  esRangoDisponibleValido,
   formatearFechaCorta,
-  sumarDiasISO,
+  type BloqueNoDisponible,
   type VehiculoItem,
 } from '@/lib/flota';
 import EditorialAvailabilityCalendar from './EditorialAvailabilityCalendar';
@@ -20,6 +22,7 @@ export interface UsuarioSesionCliente {
 export interface RentalWizardFlowProps {
   vehiculo: VehiculoItem;
   hoyISO: string;
+  bloquesIniciales?: BloqueNoDisponible[] | undefined;
   usuarioActual: UsuarioSesionCliente | null;
   fechaInicioInicial?: string | undefined;
   fechaFinInicial?: string | undefined;
@@ -71,19 +74,40 @@ const formatCop = (val: number): string =>
 export default function RentalWizardFlow({
   vehiculo,
   hoyISO,
+  bloquesIniciales,
   usuarioActual,
   fechaInicioInicial,
   fechaFinInicial,
   pasoInicial = 1,
 }: RentalWizardFlowProps) {
   const [paso, setPaso] = useState<PasoWizard>(pasoInicial);
+  const [bloques, setBloques] = useState<BloqueNoDisponible[]>(bloquesIniciales ?? []);
 
-  // Por defecto seleccionamos una franja inicial de 3 días desde hoy
+  // Rango inicial inteligente: respeta parámetros si son válidos, o calcula la primera franja libre contigua
+  const rangoInicialCalculado = useMemo(() => {
+    if (
+      fechaInicioInicial &&
+      esRangoDisponibleValido(
+        vehiculo.id,
+        fechaInicioInicial,
+        fechaFinInicial ?? fechaInicioInicial,
+        hoyISO,
+        bloques
+      )
+    ) {
+      return {
+        fechaInicio: fechaInicioInicial,
+        fechaFin: fechaFinInicial ?? fechaInicioInicial,
+      };
+    }
+    return encontrarPrimerRangoDisponible(vehiculo.id, hoyISO, bloques, 3);
+  }, [fechaInicioInicial, fechaFinInicial, vehiculo.id, hoyISO, bloques]);
+
   const [fechaInicio, setFechaInicio] = useState<string | null>(
-    fechaInicioInicial ?? hoyISO
+    rangoInicialCalculado.fechaInicio
   );
   const [fechaFin, setFechaFin] = useState<string | null>(
-    fechaFinInicial ?? sumarDiasISO(hoyISO, 2)
+    rangoInicialCalculado.fechaFin
   );
 
   const [conductor, setConductor] = useState<DatosConductorState>({
@@ -141,6 +165,13 @@ export default function RentalWizardFlow({
     if (paso === 1) {
       if (!fechaInicio) {
         setErrorValidacion('Selecciona al menos un día disponible en el calendario.');
+        return;
+      }
+      const finEfectivo = fechaFin ?? fechaInicio;
+      if (!esRangoDisponibleValido(vehiculo.id, fechaInicio, finEfectivo, hoyISO, bloques)) {
+        setErrorValidacion(
+          'El rango seleccionado incluye días que ya se encuentran reservados o en taller. Por favor elige fechas disponibles.'
+        );
         return;
       }
       if (!fechaFin) {
@@ -216,9 +247,24 @@ export default function RentalWizardFlow({
         });
 
         if (error || !data?.ok) {
-          setErrorValidacion(
-            error?.message || 'No fue posible radicar la reserva. Intenta de nuevo.'
-          );
+          const mensajeError =
+            error?.message || 'No fue posible radicar la reserva. Intenta de nuevo.';
+          setErrorValidacion(mensajeError);
+
+          // Si el servidor detectó conflicto de fechas, refrescar disponibilidad y regresar al Paso 1
+          if (error?.code === 'CONFLICT') {
+            try {
+              const resp = await actions.flota.consultarDisponibilidad({
+                vehiculoId: vehiculo.id,
+              });
+              if (resp.data?.ok && resp.data.bloques) {
+                setBloques(resp.data.bloques);
+              }
+            } catch {
+              // Silencioso
+            }
+            setPaso(1);
+          }
           return;
         }
 
@@ -396,6 +442,7 @@ export default function RentalWizardFlow({
               fechaInicio={fechaInicio}
               fechaFin={fechaFin}
               onChangeRango={manejarCambioRango}
+              bloquesPrecalculados={bloques}
             />
           </div>
         )}

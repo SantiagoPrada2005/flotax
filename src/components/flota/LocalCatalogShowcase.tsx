@@ -387,9 +387,21 @@ export default function LocalCatalogShowcase({
                 className="group ios-press-bounce rounded-[26px] bg-white border border-[#9CA3AF]/30 p-4 shadow-2xs hover:border-[#111827]/40 dark:bg-[#1F2937] dark:border-white/10 dark:hover:border-white/30 transition flex items-center justify-between gap-3"
               >
                 <div className="min-w-0 flex-1 space-y-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF]">
-                    {v.categoriaEtiqueta} · {v.anio}
-                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF]">
+                      {v.categoriaEtiqueta} · {v.anio}
+                    </span>
+                    {v.estado === 'RESERVADO' && (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-[#EDEDED] text-[#4B5563] border border-[#9CA3AF]/30 dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/10">
+                        Reservado
+                      </span>
+                    )}
+                    {v.estado === 'MANTENIMIENTO' && (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-[#EDEDED] text-[#4B5563] border border-[#9CA3AF]/30 dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/10">
+                        Taller
+                      </span>
+                    )}
+                  </div>
                   <h3 className="font-display text-base font-extrabold text-[#111827] dark:text-[#EDEDED] truncate">
                     {v.marca} {v.modelo}
                   </h3>
@@ -454,9 +466,16 @@ export default function LocalCatalogShowcase({
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <h2 className="font-display text-base sm:text-lg font-extrabold tracking-tight text-[#111827] dark:text-[#EDEDED] leading-snug truncate">
-                          {bentoPrincipalIzq.marca}
-                        </h2>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <h2 className="font-display text-base sm:text-lg font-extrabold tracking-tight text-[#111827] dark:text-[#EDEDED] leading-snug truncate">
+                            {bentoPrincipalIzq.marca}
+                          </h2>
+                          {bentoPrincipalIzq.estado === 'RESERVADO' && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-[#EDEDED] text-[#4B5563] border border-[#9CA3AF]/30 dark:bg-white/10 dark:text-[#EDEDED]">
+                              Reservado
+                            </span>
+                          )}
+                        </div>
                         <p className="text-xs font-semibold text-[#4B5563] dark:text-[#9CA3AF] truncate">
                           {bentoPrincipalIzq.modelo}
                         </p>
@@ -502,9 +521,16 @@ export default function LocalCatalogShowcase({
                       aria-hidden="true"
                     />
                     <div className="relative z-10">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF]">
-                        {bentoContrasteDer.categoriaEtiqueta}
-                      </span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF]">
+                          {bentoContrasteDer.categoriaEtiqueta}
+                        </span>
+                        {bentoContrasteDer.estado === 'RESERVADO' && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-white/15 text-[#EDEDED] border border-white/20">
+                            Reservado
+                          </span>
+                        )}
+                      </div>
                       <h2 className="font-display text-base sm:text-lg font-extrabold tracking-tight text-[#EDEDED] leading-tight truncate mt-0.5">
                         {bentoContrasteDer.marca} {bentoContrasteDer.modelo.split(' ')[0]}
                       </h2>
@@ -599,7 +625,7 @@ export default function LocalCatalogShowcase({
                     <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#EDEDED] backdrop-blur-md">
                       <span>★ {unidadHero.rating}</span>
                       <span>•</span>
-                      <span>Destacado</span>
+                      <span>{unidadHero.estado === 'RESERVADO' ? 'Reservado hoy' : 'Destacado'}</span>
                     </div>
 
                     <div>
@@ -614,7 +640,7 @@ export default function LocalCatalogShowcase({
                         {formatCop(unidadHero.precioDia)}
                         <span className="font-sans text-xs font-normal text-[#9CA3AF]">
                           {' '}
-                          / día · Disponible
+                          / día · {unidadHero.estado === 'RESERVADO' ? 'Reservado' : unidadHero.estado === 'MANTENIMIENTO' ? 'En taller' : 'Disponible'}
                         </span>
                       </p>
                     </div>
@@ -626,7 +652,7 @@ export default function LocalCatalogShowcase({
                         onClick={() => triggerHaptic(10)}
                         className="ios-press-bounce inline-flex min-h-[42px] items-center justify-center rounded-full bg-[#EDEDED] px-5 py-2 text-xs font-extrabold text-[#111827] shadow-md hover:bg-white transition"
                       >
-                        Reservar ahora
+                        {unidadHero.estado === 'RESERVADO' ? 'Ver fechas disponibles' : 'Reservar ahora'}
                       </a>
 
                     </div>
@@ -770,7 +796,7 @@ export default function LocalCatalogShowcase({
           >
             <span>Explorar toda la flota de {local.nombre}</span>
             <span className="font-mono text-[11px] font-bold bg-[#EDEDED] text-[#111827] px-2.5 py-0.5 rounded-full dark:bg-white/10 dark:text-[#EDEDED]">
-              {vehiculosFiltrados.length} disponibles →
+              {vehiculosFiltrados.length} unidades →
             </span>
           </button>
 

@@ -5,13 +5,25 @@ import {
   listarVehiculos,
   obtenerLocalCatalogoPorDefecto,
 } from '@/lib/flota';
+import { resolveClientTimeContext } from '@/lib/time/client-time';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
 
 const db = env.DB ? getDb(env.DB) : undefined;
 const localCautivo = Astro.locals.localCaptacion;
 const local = localCautivo ?? (await obtenerLocalCatalogoPorDefecto(db));
-const vehiculos = await listarVehiculos(db, { localId: local.id });
+
+const url = Astro.url;
+const desde = url.searchParams.get('desde') || undefined;
+const hasta = url.searchParams.get('hasta') || undefined;
+const { dateString: hoyISO } = resolveClientTimeContext(Astro.request);
+
+const vehiculos = await listarVehiculos(db, {
+  localId: local.id,
+  desde,
+  hasta,
+  hoyISO,
+});
 ---
 
 <LayoutApp
