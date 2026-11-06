@@ -45,11 +45,11 @@ export function IconButton({
 
   return (
     <button
+      {...props}
       type="button"
       aria-label={ariaLabel}
       disabled={disabled}
       className={fullClassName}
-      {...props}
     >
       {children}
     </button>

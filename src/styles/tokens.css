@@ -266,7 +266,8 @@ select {
 
 /*
  * Deprecated alias kept for the current consumers until migration.
- * Same contract as .fx-press; remove once every usage is renamed.
+ * Same contract as .fx-press: keep both declarations in sync until this
+ * alias is deleted.
  */
 .ios-press-bounce {
   transition:
@@ -734,9 +735,19 @@ html.js-ready .reveal-on-scroll.is-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /*
+   * Press feedback: remove motion, but never force opacity here.
+   * Disabled controls (.fx-btn-*:disabled, disabled:opacity-40) must keep
+   * their 40% opacity under reduced motion.
+   */
   .fx-press,
   .fx-pressable,
-  .ios-press-bounce,
+  .ios-press-bounce {
+    animation: none !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
   .ios-search-morph,
   .animate-fade-up,
   .animate-fade-in,

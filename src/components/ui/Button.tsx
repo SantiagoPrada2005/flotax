@@ -86,6 +86,12 @@ export function Button({
   );
 
   if (href) {
+    /**
+     * Anchor branch: only `href`, `className`, `aria-label`, `aria-busy`,
+     * `aria-disabled`, `tabIndex` and the disabled `onClick` guard are
+     * forwarded. Arbitrary anchor props (`target`, `rel`, `data-*`) are not
+     * forwarded today; add an explicit prop before relying on them.
+     */
     return (
       <a
         href={href}
@@ -103,12 +109,12 @@ export function Button({
 
   return (
     <button
+      {...props}
       type="button"
       disabled={isBlocked}
       aria-label={ariaLabel}
       aria-busy={loading || undefined}
       className={fullClassName}
-      {...props}
     >
       {content}
     </button>

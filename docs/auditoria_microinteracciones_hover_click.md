@@ -586,5 +586,87 @@ Antes de declarar un componente terminado:
 
 ---
 
-**Fin del informe.**  
-**Siguiente paso recomendado:** aprobar Fase 0 y Fase 1, ejecutarlas en una rama (`fix/interaction-contract`) y medir la reducción antes de tocar los 386 botones.
+## 13. Estado de Ejecución
+
+- **Rama:** `fix-interaction-contract`
+- **Fecha de cierre:** 6 de noviembre de 2026
+- **Alcance cerrado:** Tareas 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10b y 11 del [plan de implementación](./plans/2026-11-05-interaction-contract.md).
+
+### 13.1 Tareas completadas
+
+| Tarea | Entregable | Estado |
+| :--- | :--- | :--- |
+| **1** | Guardrail `scripts/audit-interactions.mjs`, baseline inicial, script `pnpm audit:interactions` y retirada de `shiny-button.tsx`, `text-roll.tsx` y `testimonial.tsx`. | ✅ |
+| **2** | Tokens de motion, regla global `:focus-visible`, reescritura de `.fx-btn-*`, `.fx-press`, `.fx-pressable` y alias `.ios-press-bounce` a 120 ms / `scale(0.98)`. | ✅ |
+| **3** | Primitiva `Button` con `href`/`loading`, nueva `IconButton` y barrel sin las primitivas muertas. | ✅ |
+| **4** | `CajaKpiCard`: halo y `animate-pulse` retirados, hover de elevación eliminado, teclado y press canónicos. | ✅ |
+| **5** | `CajaDashboardIsland`: filas nativas con teclado, targets de 44 px, press unificado y `transition-all` retirado. | ✅ |
+| **6** | `PerfilEditorCard` y `ConfiguracionIsland`: press canónico, foco visible y switches con `aria-checked`. | ✅ |
+| **7** | `FleetInventoryManager` y `LocalCatalogShareCard`: zoom/hover de elevación retirados, press y foco unificados. | ✅ |
+| **8** | `VehicleCatalogCard` (favorito fuera del `<a>`), `LocalCatalogShowcase` y `BottomNavIsland` sin `group-hover:scale`. | ✅ |
+| **9** | `LoginFlow`, `TopBarSearch`, `PortalSwitchCard` y `MisReservasHub`: foco restaurado, press y targets corregidos. | ✅ |
+| **10** | Landing de-slop: CTA sólido, retirada de `.shiny-*` y del brillo/borde animado; footer sin `href="#"`. | ✅ |
+| **10b** | Barrido de la landing viva (`LandingHeader`, `LandingBookingIsland`, `LandingFleetShowcaseIsland`, `LandingFeatured`, `LandingSteps`, `LandingTrust`, `LandingFaq`, `LandingFinalCta`, `LandingPriceBreakdown`). | ✅ |
+| **11** | Regla [`RUL-FLX-024`](../.agents/rules/interaction-states.md), baseline final, sección de estado, endurecimiento de primitivas y corrección del reset de `prefers-reduced-motion`. | ✅ |
+
+### 13.2 Conteos antes / después
+
+Los valores "antes" son el baseline generado en la Tarea 1 (estado pre-migración); los valores "después" son el baseline regenerado en la Tarea 11 con `node scripts/audit-interactions.mjs --update`.
+
+| Regla del guardrail | Antes | Después | Δ |
+| :--- | ---: | ---: | ---: |
+| `transition-all` | 162 | 84 | −78 |
+| `duration-* > 320ms` | 11 | 10 | −1 |
+| `hover:scale/rotate/translate` | 4 | 2 | −2 |
+| `hover:shadow-*` | 27 | 9 | −18 |
+| `group-hover:scale/rotate/translate` | 32 | 8 | −24 |
+| `ios-press-bounce` | 243 | 144 | −99 |
+| `focus:outline-none/hidden` | 70 | 53 | −17 |
+| `div/article onClick` sin `onKeyDown` | 17 | 11 | −6 |
+| **Total** | **566** | **321** | **−245 (−43,3 %)** |
+
+El baseline final escanea 142 archivos y conserva deuda en 56 de ellos. **No se declara deuda cero**: 321 ocurrencias siguen registradas y el guardrail impide que crezcan.
+
+### 13.3 Deuda restante (honesta)
+
+**Archivos fuera del alcance de las migraciones (51 de los 56 con deuda).** Permanecen sin cambios de interacción, principalmente:
+
+- `dashboard/` (7 archivos): bento, telemetría y tarjetas Spline con `transition-all`, `hover:shadow`, `group-hover` y 22 `ios-press-bounce`.
+- `caja/` (7 archivos): modales y flujo de caja con 17 `transition-all`, 18 `focus:outline-none` y 7 `ios-press-bounce`. `CajaKpiCard` y `CajaDashboardIsland` ya están limpios.
+- `flota/` (20 archivos fuera de `LocalCatalogShareCard`): wizards de alta, disponibilidad y spotlight con 17 `transition-all`, 42 `ios-press-bounce`, 22 `focus:outline-none` y 2 filas clicables sin teclado.
+- `verificacion/` (3 archivos): 23 `transition-all`, 1 `hover:shadow` y 1 duración > 320 ms.
+- `navigation/` (7 archivos): modales de instalación y menús con 31 `ios-press-bounce`, 7 `transition-all` y 5 contenedores clicables sin teclado.
+- `reservas/` (2 archivos), `alquiler/` (2), `auth/` (2 fuera de `LoginFlow`) y `notificaciones/` (1): press heredado, foco ausente y `transition-all` en flujos que no estaban en la worklist de este milestone.
+
+**Residuales en archivos ya tocados (5).**
+
+| Archivo | Conteo restante | Lectura |
+| :--- | :--- | :--- |
+| [`LoginFlow.tsx`](../src/components/auth/LoginFlow.tsx) | `clickable-div-no-keydown=1` | Es el `div` que enfoca el OTP como atajo de puntero; la Tarea 9 pidió conservarlo. El detector lo cuenta porque el archivo no declara `onKeyDown`. |
+| [`LocalCatalogShareCard.tsx`](../src/components/flota/LocalCatalogShareCard.tsx) | `clickable-div-no-keydown=1` | Backdrop del modal que cierra al hacer clic; el cierre también existe en botones y no se añadió teclado al fondo. |
+| [`LandingFooter.astro`](../src/components/landing/LandingFooter.astro) | `transition-all=1` | Barra inferior fija; la transición es funcional (posicionamiento), no un hover. Se conserva para no cambiar el comportamiento. |
+| [`LandingCategories.astro`](../src/components/landing/LandingCategories.astro) | `group-hover-transform=1` | Código muerto: no lo importa ninguna página ni componente. |
+| [`LandingHeroIsland.tsx`](../src/components/landing/LandingHeroIsland.tsx) | `transition-all=1`, `duration-over-320=1` | Código muerto: `index.astro` usa `LandingHero.astro`, no este island. |
+
+**Capa de parche de hover en modo oscuro.** Sigue en [`tokens.css`](../src/styles/tokens.css#L1146-L1172) (`html.dark button/a ... .hover\:bg-white:hover` y `.hover\:bg-\[\#EDEDED\]:hover`). Existe porque hay hover claros sin variante oscura; su retirada exige un barrido completo de modo oscuro y quedó fuera de este milestone. No se deben añadir nuevas dependencias de ese parche.
+
+**Código muerto pendiente.** Además de las tres primitivas eliminadas en la Tarea 1, siguen sin consumidores [`LandingHeroIsland.tsx`](../src/components/landing/LandingHeroIsland.tsx), [`LandingCategories.astro`](../src/components/landing/LandingCategories.astro) y [`Button.astro`](../src/components/ui/Button.astro). [`Button.tsx`](../src/components/ui/Button.tsx) e [`IconButton.tsx`](../src/components/ui/IconButton.tsx) están exportados y endurecidos, pero hoy **no tienen consumidores reales**: las migraciones usaron las clases CSS canónicas (`.fx-btn-*`, `.fx-press`, `.fx-pressable`). La adopción del primitivo queda como deuda de una fase posterior.
+
+**Menores diferidos que afectan al contrato.**
+
+- El alias `.ios-press-bounce` sigue en 144 usos; su eliminación se aplazó y sus declaraciones deben permanecer sincronizadas con `.fx-press` hasta entonces (comentario en `tokens.css`).
+- No hay CI porque el repositorio no tiene `.github/`; `pnpm audit:interactions`, `pnpm check` y `pnpm build` son la puerta local documentada en `RUL-FLX-024`.
+- El guardrail es un contador de texto: cuenta comentarios y strings, y evalúa `onKeyDown` por archivo, no por elemento. Sus cifras son un presupuesto de deuda, no un censo exacto.
+- La rama `<a>` de `Button` no reenvía props arbitrarias de ancla (`target`, `rel`, `data-*`); está documentado en su JSDoc y debe resolverse antes de que un consumidor las necesite.
+- Algunos botones operativos ya migrados (por ejemplo, los de `PerfilEditorCard`) usan `.fx-press` (`scale`) en lugar de `.fx-btn-*` (sombra interna). Es una desviación menor del contrato de press de botón; no se corrigió aquí porque implicaría tocar componentes ya migrados. En Tier C el `scale(0.98)` sí es el press canónico.
+- El reset de `prefers-reduced-motion` ya no fuerza `opacity: 1` en `.fx-press`/`.fx-pressable`/`.ios-press-bounce`; el 40 % de un control `disabled` se conserva. La verificación es estática sobre el CSS, no una captura en dispositivo.
+
+### 13.4 Verificación de cierre
+
+```text
+node scripts/audit-interactions.mjs  → exit 0 · 142 archivos escaneados · 56 con deuda · OK
+pnpm check                           → Result (257 files): 0 errors, 0 warnings, 0 hints
+pnpm build                           → Complete! (SSR Cloudflare, sin errores)
+```
+
+**Fin del informe.**
