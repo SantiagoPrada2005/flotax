@@ -7,10 +7,11 @@
 
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
-| [`Button.astro`](./Button.astro) | Componente SSR Astro: Botón Canónico Adaptativo | `default`, `ButtonVariant`, `ButtonSize` | Astro |
-| [`Button.tsx`](./Button.tsx) | Isla React 19: Botón Canónico Adaptativo | `Button`, `default`, `ButtonVariant`, `ButtonSize` | React |
+| [`Button.astro`](./Button.astro) | Componente SSR Astro: Botón Canónico Adaptativo | `default`, `ButtonVariant`, `ButtonSize`, prop `loading` | Astro |
+| [`Button.tsx`](./Button.tsx) | Isla React 19: Botón Canónico Adaptativo | `Button`, `default`, `ButtonVariant`, `ButtonSize`, `ButtonProps` (incl. `loading`) | React |
 | [`FlotaxIsotype.astro`](./FlotaxIsotype.astro) | Componente SSR Astro: Isotipo Vectorial | `default` | Astro |
 | [`FlotaxIsotype.tsx`](./FlotaxIsotype.tsx) | Isla React 19: Isotipo Vectorial | `default`, `FLOTAX_ISOTYPE_PATH` | React |
+| [`IconButton.tsx`](./IconButton.tsx) | Isla React 19: Botón Canónico Solo-Icono | `IconButton`, `default`, `IconButtonVariant`, `IconButtonSize`, `IconButtonProps` (`aria-label` obligatorio) | React |
 | [`index.ts`](./index.ts) | Barrel de exportación | Todos los componentes UI Tier 1 | Componentes internos |
 
 ## Invariants & Directory Rules

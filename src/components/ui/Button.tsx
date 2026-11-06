@@ -73,6 +73,10 @@ export function Button({
   const sizeClass = iconOnly ? ICON_SIZE_MAP[size] : SIZE_MAP[size];
   const fullClassName = `${baseClasses} ${variantClass} ${sizeClass} ${className}`.trim();
   const isBlocked = disabled || loading;
+  // `.fx-btn-*:disabled` does not match `<a>`; mirror the 40% disabled state explicitly.
+  const anchorDisabledClasses = disabled
+    ? 'pointer-events-none cursor-not-allowed opacity-40'
+    : '';
   // For icon-only buttons the icon is the label: the spinner replaces it while loading.
   const content = (
     <>
@@ -85,7 +89,7 @@ export function Button({
     return (
       <a
         href={href}
-        className={fullClassName}
+        className={`${fullClassName} ${anchorDisabledClasses}`.trim()}
         aria-label={ariaLabel}
         aria-busy={loading || undefined}
         aria-disabled={isBlocked || undefined}

@@ -56,13 +56,15 @@ const sizeClass = iconOnly ? ICON_SIZE_MAP[size] : SIZE_MAP[size];
 const fullClasses = [baseClasses, variantClass, sizeClass, className].filter(Boolean).join(' ');
 const isBlocked = disabled || loading;
 const isSpinnerOnly = loading && iconOnly;
+// `.fx-btn-*:disabled` does not match `<a>`; mirror the 40% disabled state explicitly.
+const anchorDisabledClasses = disabled ? 'pointer-events-none cursor-not-allowed opacity-40' : '';
 ---
 
 {
   href ? (
     <a
       href={href}
-      class={fullClasses}
+      class={[fullClasses, anchorDisabledClasses].filter(Boolean).join(' ')}
       id={id}
       aria-label={ariaLabel}
       aria-busy={loading ? 'true' : undefined}
