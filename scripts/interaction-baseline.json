@@ -1,0 +1,348 @@
+{
+  "src/components/alquiler/EditorialAvailabilityCalendar.tsx": {
+    "ios-press-bounce": 1
+  },
+  "src/components/alquiler/RentalWizardFlow.tsx": {
+    "ios-press-bounce": 6,
+    "focus-outline-none": 6
+  },
+  "src/components/auth/AuthVectorBackground.tsx": {
+    "duration-over-320": 4
+  },
+  "src/components/auth/LoginFlow.tsx": {
+    "transition-all": 3,
+    "focus-outline-none": 4,
+    "clickable-div-no-keydown": 1
+  },
+  "src/components/auth/OperatorOnboardingWizard.tsx": {
+    "transition-all": 1,
+    "ios-press-bounce": 6,
+    "focus-outline-none": 3
+  },
+  "src/components/caja/CajaBarraFlujo.tsx": {
+    "transition-all": 3,
+    "ios-press-bounce": 1
+  },
+  "src/components/caja/CajaDashboardIsland.tsx": {
+    "transition-all": 2,
+    "hover-shadow": 1,
+    "ios-press-bounce": 10,
+    "focus-outline-none": 1,
+    "clickable-div-no-keydown": 2
+  },
+  "src/components/caja/CajaGraficosHorizontal.tsx": {
+    "transition-all": 4,
+    "ios-press-bounce": 1
+  },
+  "src/components/caja/CajaKpiCard.tsx": {
+    "transition-all": 9,
+    "hover-shadow": 7,
+    "group-hover-transform": 3,
+    "ios-press-bounce": 8,
+    "clickable-div-no-keydown": 4
+  },
+  "src/components/caja/CajaMovimientosFilterBar.tsx": {
+    "transition-all": 3,
+    "ios-press-bounce": 3,
+    "focus-outline-none": 1
+  },
+  "src/components/caja/ModalArqueoCierre.tsx": {
+    "focus-outline-none": 5
+  },
+  "src/components/caja/ModalGarantia.tsx": {
+    "focus-outline-none": 3
+  },
+  "src/components/caja/ModalMovimiento.tsx": {
+    "transition-all": 4,
+    "ios-press-bounce": 1,
+    "focus-outline-none": 6
+  },
+  "src/components/caja/ModalTransferencia.tsx": {
+    "transition-all": 3,
+    "ios-press-bounce": 1,
+    "focus-outline-none": 3
+  },
+  "src/components/configuracion/ConfiguracionIsland.tsx": {
+    "transition-all": 8,
+    "hover-shadow": 3,
+    "ios-press-bounce": 10
+  },
+  "src/components/dashboard/BentoHeroCard.astro": {
+    "hover-shadow": 1
+  },
+  "src/components/dashboard/BentoMetricsGrid.astro": {
+    "transition-all": 2,
+    "hover-shadow": 2
+  },
+  "src/components/dashboard/BentoOperationsCard.astro": {
+    "transition-all": 1,
+    "hover-transform": 1,
+    "hover-shadow": 1
+  },
+  "src/components/dashboard/InteractiveSplineCard.tsx": {
+    "transition-all": 3,
+    "duration-over-320": 1,
+    "hover-shadow": 1,
+    "group-hover-transform": 1,
+    "ios-press-bounce": 2,
+    "focus-outline-none": 1
+  },
+  "src/components/dashboard/MetricsInteractiveHub.tsx": {
+    "transition-all": 1,
+    "group-hover-transform": 2,
+    "ios-press-bounce": 4
+  },
+  "src/components/dashboard/TelemetryBentoGrid.tsx": {
+    "transition-all": 5,
+    "hover-shadow": 1,
+    "group-hover-transform": 2,
+    "ios-press-bounce": 12
+  },
+  "src/components/dashboard/TelemetryVisualModals.tsx": {
+    "ios-press-bounce": 4,
+    "clickable-div-no-keydown": 2
+  },
+  "src/components/flota/BrandFilterBar.tsx": {
+    "ios-press-bounce": 1
+  },
+  "src/components/flota/CatalogSearchTrigger.tsx": {
+    "ios-press-bounce": 2
+  },
+  "src/components/flota/FleetInventoryManager.tsx": {
+    "transition-all": 8,
+    "duration-over-320": 1,
+    "hover-shadow": 4,
+    "group-hover-transform": 2,
+    "ios-press-bounce": 23,
+    "focus-outline-none": 1
+  },
+  "src/components/flota/LocalCatalogShareCard.tsx": {
+    "ios-press-bounce": 11,
+    "focus-outline-none": 3,
+    "clickable-div-no-keydown": 1
+  },
+  "src/components/flota/LocalCatalogShowcase.tsx": {
+    "transition-all": 3,
+    "hover-transform": 1,
+    "group-hover-transform": 4,
+    "ios-press-bounce": 16,
+    "focus-outline-none": 3
+  },
+  "src/components/flota/VehicleCatalogCard.tsx": {
+    "transition-all": 1,
+    "hover-shadow": 1,
+    "group-hover-transform": 1,
+    "ios-press-bounce": 2
+  },
+  "src/components/flota/VehicleSearchResultItem.tsx": {
+    "hover-shadow": 1,
+    "group-hover-transform": 1,
+    "ios-press-bounce": 1
+  },
+  "src/components/flota/VehicleSearchSpotlight.tsx": {
+    "ios-press-bounce": 2
+  },
+  "src/components/flota/VehicleStudioShowcase.tsx": {
+    "transition-all": 3,
+    "duration-over-320": 1,
+    "ios-press-bounce": 5
+  },
+  "src/components/flota/disponibilidad/ActiveMaintenanceCard.tsx": {
+    "hover-shadow": 1,
+    "ios-press-bounce": 1
+  },
+  "src/components/flota/disponibilidad/AvailabilityHeader.tsx": {
+    "ios-press-bounce": 1
+  },
+  "src/components/flota/disponibilidad/AvailabilityOverviewView.tsx": {
+    "ios-press-bounce": 1
+  },
+  "src/components/flota/disponibilidad/CompleteMaintenanceModal.tsx": {
+    "ios-press-bounce": 3,
+    "focus-outline-none": 2,
+    "clickable-div-no-keydown": 1
+  },
+  "src/components/flota/disponibilidad/MaintenanceWizardFlow.tsx": {
+    "transition-all": 1,
+    "ios-press-bounce": 9,
+    "focus-outline-none": 5
+  },
+  "src/components/flota/disponibilidad/VehicleAvailabilityIsland.tsx": {
+    "transition-all": 1
+  },
+  "src/components/flota/wizard/Step1TipoVehiculo.tsx": {
+    "transition-all": 2,
+    "ios-press-bounce": 1
+  },
+  "src/components/flota/wizard/Step2Identificacion.tsx": {
+    "transition-all": 2,
+    "ios-press-bounce": 2,
+    "focus-outline-none": 4
+  },
+  "src/components/flota/wizard/Step3InfoBasica.tsx": {
+    "transition-all": 2,
+    "ios-press-bounce": 1,
+    "focus-outline-none": 4
+  },
+  "src/components/flota/wizard/Step4Caracteristicas.tsx": {
+    "transition-all": 1,
+    "ios-press-bounce": 2,
+    "focus-outline-none": 2
+  },
+  "src/components/flota/wizard/Step5Tarifas.tsx": {
+    "transition-all": 2,
+    "focus-outline-none": 4
+  },
+  "src/components/flota/wizard/Step6Fotografia.tsx": {
+    "transition-all": 2,
+    "ios-press-bounce": 1,
+    "clickable-div-no-keydown": 1
+  },
+  "src/components/flota/wizard/Step7Patio.tsx": {
+    "transition-all": 1,
+    "ios-press-bounce": 2,
+    "focus-outline-none": 1
+  },
+  "src/components/flota/wizard/StepIndicator.tsx": {
+    "ios-press-bounce": 2
+  },
+  "src/components/flota/wizard/VehicleWizardIsland.tsx": {
+    "ios-press-bounce": 5
+  },
+  "src/components/landing/LandingBookingIsland.tsx": {
+    "transition-all": 5,
+    "group-hover-transform": 1,
+    "focus-outline-none": 3
+  },
+  "src/components/landing/LandingCategories.astro": {
+    "transition-all": 1,
+    "hover-transform": 1,
+    "hover-shadow": 1,
+    "group-hover-transform": 1
+  },
+  "src/components/landing/LandingFaq.astro": {
+    "transition-all": 1
+  },
+  "src/components/landing/LandingFeatured.astro": {
+    "transition-all": 2,
+    "group-hover-transform": 2
+  },
+  "src/components/landing/LandingFinalCta.astro": {
+    "transition-all": 1,
+    "group-hover-transform": 1
+  },
+  "src/components/landing/LandingFleetShowcaseIsland.tsx": {
+    "transition-all": 4
+  },
+  "src/components/landing/LandingFooter.astro": {
+    "transition-all": 1
+  },
+  "src/components/landing/LandingHeader.astro": {
+    "transition-all": 4
+  },
+  "src/components/landing/LandingHeroIsland.tsx": {
+    "transition-all": 1,
+    "duration-over-320": 1,
+    "group-hover-transform": 1
+  },
+  "src/components/landing/LandingPriceBreakdown.astro": {
+    "transition-all": 1
+  },
+  "src/components/landing/LandingSteps.astro": {
+    "transition-all": 3
+  },
+  "src/components/landing/LandingTrust.astro": {
+    "transition-all": 2
+  },
+  "src/components/navigation/BottomNavIsland.tsx": {
+    "group-hover-transform": 8,
+    "ios-press-bounce": 1
+  },
+  "src/components/navigation/ExitAdminButton.tsx": {
+    "ios-press-bounce": 1
+  },
+  "src/components/navigation/FlotaxErrorStateIsland.tsx": {
+    "ios-press-bounce": 10
+  },
+  "src/components/navigation/FlotaxLoaderPreviewIsland.tsx": {
+    "transition-all": 2
+  },
+  "src/components/navigation/IosInstallGuideModal.tsx": {
+    "transition-all": 3,
+    "ios-press-bounce": 7,
+    "clickable-div-no-keydown": 5
+  },
+  "src/components/navigation/PwaRuntimeIsland.tsx": {
+    "ios-press-bounce": 3
+  },
+  "src/components/navigation/TopBarIsland.tsx": {
+    "transition-all": 1,
+    "ios-press-bounce": 3
+  },
+  "src/components/navigation/TopBarSearch.tsx": {
+    "ios-press-bounce": 3,
+    "focus-outline-none": 1
+  },
+  "src/components/navigation/UserDropdownMenu.tsx": {
+    "transition-all": 1,
+    "ios-press-bounce": 7
+  },
+  "src/components/notificaciones/NotificacionesBell.tsx": {
+    "ios-press-bounce": 1
+  },
+  "src/components/perfil/PerfilEditorCard.tsx": {
+    "transition-all": 18,
+    "ios-press-bounce": 1
+  },
+  "src/components/perfil/PortalSwitchCard.tsx": {
+    "transition-all": 1,
+    "ios-press-bounce": 1,
+    "focus-outline-none": 1
+  },
+  "src/components/reservas/AlquilerDetalleView.tsx": {
+    "transition-all": 1,
+    "duration-over-320": 1,
+    "hover-transform": 1,
+    "ios-press-bounce": 19
+  },
+  "src/components/reservas/MisReservasHub.tsx": {
+    "transition-all": 1,
+    "hover-shadow": 1,
+    "group-hover-transform": 1,
+    "ios-press-bounce": 11
+  },
+  "src/components/reservas/VehiculoEntregaWizard.tsx": {
+    "transition-all": 4,
+    "duration-over-320": 1,
+    "group-hover-transform": 1,
+    "ios-press-bounce": 9
+  },
+  "src/components/ui/Button.astro": {
+    "ios-press-bounce": 1
+  },
+  "src/components/ui/Button.tsx": {
+    "ios-press-bounce": 1
+  },
+  "src/components/verificacion/VerificacionAssets.tsx": {
+    "transition-all": 1,
+    "duration-over-320": 1,
+    "hover-shadow": 1
+  },
+  "src/components/verificacion/VerificacionCameraModal.tsx": {
+    "transition-all": 6
+  },
+  "src/components/verificacion/VerificacionMultistepIsland.tsx": {
+    "transition-all": 16,
+    "focus-outline-none": 3
+  },
+  "totals": {
+    "transition-all": 162,
+    "duration-over-320": 11,
+    "hover-transform": 4,
+    "hover-shadow": 27,
+    "group-hover-transform": 32,
+    "ios-press-bounce": 243,
+    "focus-outline-none": 70,
+    "clickable-div-no-keydown": 17
+  }
+}
