@@ -1,5 +1,25 @@
-import type { ReactNode } from 'react';
+import type { KeyboardEvent, ReactNode } from 'react';
 import { formatearMonedaCOP, type PuntoGraficoFlujo } from '@/lib/caja';
+
+/**
+ * Contrato de teclado para una tarjeta expuesta como `role="button"`.
+ * Enter y Space activan la misma acción que el clic; ambos previenen el
+ * default para no disparar un submit ancestro ni desplazar la página.
+ */
+function crearManejadorTeclado(accion: (() => void) | undefined) {
+  return (event: KeyboardEvent<HTMLElement>): void => {
+    if (!accion) return;
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      accion();
+      return;
+    }
+    if (event.key === ' ' || event.key === 'Spacebar') {
+      event.preventDefault();
+      accion();
+    }
+  };
+}
 
 export interface CajaKpiCardProps {
   titulo: string;
@@ -90,7 +110,7 @@ export function calcularPathSplineReal(
 /**
  * Tarjeta Bento Hero: Saldo Disponible Real
  * Fiel a BentoHeroCard.astro y la paleta canónica FlotaX:
- * Contenedor #111827, halo difuso de luz #2D6BFF/10, pill de estado, Space Grotesk
+ * Contenedor #111827, pill de estado, Space Grotesk
  * y mini-tarjeta blanca insertada para desglose exacto entre efectivo y bancos.
  */
 export interface CajaBentoHeroCardProps {
@@ -121,28 +141,20 @@ export function CajaBentoHeroCard({
   return (
     <article
       onClick={onClick}
+      onKeyDown={onClick ? crearManejadorTeclado(onClick) : undefined}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
-      className={`ios-press-bounce group relative overflow-hidden rounded-[24px] sm:rounded-[30px] bg-[#111827] p-4 sm:p-6 text-white shadow-xl border border-white/10 transition-all duration-300 hover:border-[#2D6BFF]/40 hover:shadow-2xl col-span-2 lg:col-span-4 ${onClick ? 'cursor-pointer' : ''
-        }`}
+      className={`fx-pressable relative overflow-hidden rounded-[24px] sm:rounded-[30px] bg-[#111827] p-4 sm:p-6 text-white shadow-xl border border-white/10 col-span-2 lg:col-span-4 ${
+        onClick ? 'cursor-pointer hover:border-white/25' : ''
+      }`}
     >
-      {/* Halo de luz difusa en azul canónico FlotaX #2D6BFF */}
-      <div
-        className="pointer-events-none absolute -right-12 -top-12 h-52 w-52 rounded-full bg-[#2D6BFF]/12 blur-3xl"
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none absolute -left-12 -bottom-12 h-44 w-44 rounded-full bg-white/5 blur-2xl"
-        aria-hidden="true"
-      />
-
       <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
         {/* Columna Izquierda: Identidad Financiera, Monto Principal y Botones */}
         <div className="flex flex-col space-y-2.5 sm:space-y-3.5 flex-1">
           {/* Pill de Tag Canónico con Azul FlotaX */}
           <div className="flex flex-wrap items-center gap-2">
             <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/90 backdrop-blur-md border border-white/10">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#111827] animate-pulse" />
+              <span className="h-1.5 w-1.5 rounded-full bg-[#111827]" />
               <span>Tesorería & Saldo Disponible Real</span>
             </div>
 
@@ -177,7 +189,7 @@ export function CajaBentoHeroCard({
               Turno Operativo Activo
             </span>
             <span className="text-[#9CA3AF]/60">•</span>
-            <span className="text-[11px] text-[#9CA3AF] group-hover:text-blue-300 transition-colors">
+            <span className="text-[11px] text-[#9CA3AF]">
               Clic para ver detalle de cuentas →
             </span>
           </div>
@@ -191,7 +203,7 @@ export function CajaBentoHeroCard({
               Distribución de Fondos
             </span>
             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse" />
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
               Operativo
             </span>
           </div>
@@ -252,10 +264,11 @@ export function CajaBentoSparklineCard({
     return (
       <article
         onClick={onClick}
+        onKeyDown={onClick ? crearManejadorTeclado(onClick) : undefined}
         role={onClick ? 'button' : undefined}
         tabIndex={onClick ? 0 : undefined}
-        className={`ios-press-bounce group relative flex flex-col justify-between rounded-[20px] sm:rounded-[24px] bg-white p-3.5 sm:p-5 text-[#111827] shadow-xs border border-[#9CA3AF]/30 transition-all duration-200 hover:shadow-md col-span-1 h-full min-h-[115px] sm:min-h-[130px] ${
-          onClick ? 'cursor-pointer' : ''
+        className={`fx-pressable relative flex flex-col justify-between rounded-[20px] sm:rounded-[24px] bg-white p-3.5 sm:p-5 text-[#111827] shadow-xs border border-[#9CA3AF]/30 col-span-1 h-full min-h-[115px] sm:min-h-[130px] ${
+          onClick ? 'cursor-pointer hover:border-[#9CA3AF]/60' : ''
         }`}
       >
         <div className="flex items-center justify-between gap-1.5 sm:gap-2">
@@ -291,10 +304,11 @@ export function CajaBentoSparklineCard({
   return (
     <article
       onClick={onClick}
+      onKeyDown={onClick ? crearManejadorTeclado(onClick) : undefined}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
-      className={`ios-press-bounce group relative flex flex-col justify-between rounded-[20px] sm:rounded-[24px] bg-white p-3.5 sm:p-5 text-[#111827] shadow-xs border border-[#9CA3AF]/30 transition-all duration-200 hover:shadow-md col-span-1 h-full min-h-[115px] sm:min-h-[130px] ${
-        onClick ? 'cursor-pointer' : ''
+      className={`fx-pressable relative flex flex-col justify-between rounded-[20px] sm:rounded-[24px] bg-white p-3.5 sm:p-5 text-[#111827] shadow-xs border border-[#9CA3AF]/30 col-span-1 h-full min-h-[115px] sm:min-h-[130px] ${
+        onClick ? 'cursor-pointer hover:border-[#9CA3AF]/60' : ''
       }`}
     >
       <div className="flex items-center justify-between gap-1.5 sm:gap-2">
@@ -358,11 +372,11 @@ export function CajaBentoPillCard({
       <button
         type="button"
         onClick={onClick}
-        className="ios-press-bounce group flex flex-col justify-between rounded-[20px] sm:rounded-[22px] bg-[#EDEDED] p-3 sm:p-4 text-left border border-[#9CA3AF]/40 shadow-xs transition-all hover:bg-white cursor-pointer col-span-1"
+        className="fx-pressable flex flex-col justify-between rounded-[20px] sm:rounded-[22px] bg-[#EDEDED] p-3 sm:p-4 text-left border border-[#9CA3AF]/40 shadow-xs hover:bg-white cursor-pointer col-span-1"
       >
         <div className="flex w-full items-center justify-between text-[11px] sm:text-xs font-semibold text-[#4B5563]">
           <span className="truncate pr-1">{titulo}</span>
-          <span className="flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-[#111827] text-white shrink-0 group-hover:scale-105 transition-transform">
+          <span className="flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-[#111827] text-white shrink-0">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="h-3 w-3">
               <path d="M5 12c0-3.8 3.1-7 7-7s7 3.2 7 7-3.1 7-7 7-7-3.2-7-7Z" />
               <circle cx="17" cy="8" r="2" fill="currentColor" />
@@ -379,7 +393,7 @@ export function CajaBentoPillCard({
           <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white border border-[#9CA3AF]/40">
             <div
               style={{ width: `${Math.min(100, Math.max(10, porcentajeBarra))}%` }}
-              className="h-full rounded-full bg-[#111827] transition-all duration-300"
+              className="h-full rounded-full bg-[#111827] transition-[width] duration-300"
             />
           </div>
           <span className="font-mono text-[9px] sm:text-[10px] font-bold text-[#111827] truncate">
@@ -395,11 +409,11 @@ export function CajaBentoPillCard({
       <button
         type="button"
         onClick={onClick}
-        className="ios-press-bounce group flex flex-col justify-between rounded-[20px] sm:rounded-[22px] bg-[#EDEDED] p-3 sm:p-4 text-left border border-[#9CA3AF]/40 shadow-xs transition-all hover:bg-white cursor-pointer col-span-1"
+        className="fx-pressable flex flex-col justify-between rounded-[20px] sm:rounded-[22px] bg-[#EDEDED] p-3 sm:p-4 text-left border border-[#9CA3AF]/40 shadow-xs hover:bg-white cursor-pointer col-span-1"
       >
         <div className="flex w-full items-center justify-between text-[11px] sm:text-xs font-semibold text-[#4B5563]">
           <span className="truncate pr-1">{titulo}</span>
-          <span className="h-5 w-5 sm:h-6 sm:w-6 rounded-full bg-hatch-diagonal border border-[#111827] shrink-0 transition-transform group-hover:rotate-45" />
+          <span className="h-5 w-5 sm:h-6 sm:w-6 rounded-full bg-hatch-diagonal border border-[#111827] shrink-0" />
         </div>
 
         <p className="mt-1.5 sm:mt-2 font-display text-base sm:text-xl font-extrabold tracking-tight text-[#111827] truncate">
@@ -426,7 +440,7 @@ export function CajaBentoPillCard({
       <button
         type="button"
         onClick={onClick}
-        className="ios-press-bounce group flex flex-col justify-between rounded-[20px] sm:rounded-[22px] bg-[#111827] p-3 sm:p-4 text-left border border-white/10 shadow-xs transition-all hover:border-white/20 hover:shadow-md cursor-pointer col-span-1"
+        className="fx-pressable flex flex-col justify-between rounded-[20px] sm:rounded-[22px] bg-[#111827] p-3 sm:p-4 text-left border border-white/10 shadow-xs hover:border-white/20 cursor-pointer col-span-1"
       >
         <div className="flex w-full items-center justify-between text-[11px] sm:text-xs font-semibold text-blue-200/90">
           <span className="truncate pr-1">{titulo}</span>
@@ -461,7 +475,7 @@ export function CajaBentoPillCard({
     <button
       type="button"
       onClick={onClick}
-      className={`ios-press-bounce group flex flex-row items-center justify-between gap-2.5 sm:gap-4 rounded-[18px] sm:rounded-[22px] bg-[#111827] px-3.5 py-2.5 sm:px-5 sm:py-3 text-left border border-white/10 shadow-md hover:border-white/25 hover:shadow-lg transition-all cursor-pointer col-span-2 w-full ${
+      className={`fx-pressable flex flex-row items-center justify-between gap-2.5 sm:gap-4 rounded-[18px] sm:rounded-[22px] bg-[#111827] px-3.5 py-2.5 sm:px-5 sm:py-3 text-left border border-white/10 shadow-md hover:border-white/25 cursor-pointer col-span-2 w-full ${
         className || ''
       }`}
     >
@@ -505,7 +519,7 @@ export function CajaBentoPillCard({
         >
           {formatearMonedaCOP(monto)}
         </p>
-        <span className="text-[#9CA3AF] group-hover:text-white transition-colors text-xs sm:text-sm shrink-0">
+        <span className="text-[#9CA3AF] text-xs sm:text-sm shrink-0">
           →
         </span>
       </div>
@@ -547,15 +561,16 @@ export function CajaKpiCard({
   return (
     <article
       onClick={onClick}
+      onKeyDown={onClick ? crearManejadorTeclado(onClick) : undefined}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
-      className={`ios-press-bounce group relative flex flex-col justify-between rounded-[20px] sm:rounded-[24px] border shadow-xs transition-all duration-200 col-span-1 ${esAzulOscuro
+      className={`fx-pressable relative flex flex-col justify-between rounded-[20px] sm:rounded-[24px] border shadow-xs col-span-1 ${esAzulOscuro
         ? 'bg-[#111827] border-white/10 text-white'
         : 'bg-white border-[#9CA3AF]/30 text-[#111827]'
         } p-3.5 sm:p-5 ${onClick
           ? esAzulOscuro
-            ? 'cursor-pointer hover:border-white/20 hover:shadow-md'
-            : 'cursor-pointer hover:border-[#111827] hover:shadow-md'
+            ? 'cursor-pointer hover:border-white/20'
+            : 'cursor-pointer hover:border-[#111827]'
           : ''
         }`}
     >
@@ -602,7 +617,7 @@ export function CajaKpiCard({
 
       {onClick && (
         <div
-          className={`mt-2 sm:mt-3 flex items-center gap-1 border-t pt-1.5 sm:pt-2 text-[10px] sm:text-[11px] font-semibold opacity-80 group-hover:opacity-100 ${esAzulOscuro
+          className={`mt-2 sm:mt-3 flex items-center gap-1 border-t pt-1.5 sm:pt-2 text-[10px] sm:text-[11px] font-semibold opacity-80 ${esAzulOscuro
             ? 'border-white/10 text-blue-300'
             : 'border-[#9CA3AF]/15 text-[#111827]'
             }`}
@@ -612,7 +627,7 @@ export function CajaKpiCard({
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 20 20"
             fill="currentColor"
-            className="h-3 w-3 sm:h-3.5 sm:w-3.5 transition-transform group-hover:translate-x-0.5"
+            className="h-3 w-3 sm:h-3.5 sm:w-3.5"
           >
             <path
               fillRule="evenodd"
