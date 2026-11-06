@@ -166,7 +166,7 @@ export default function ConfiguracionIsland() {
                   setOpcionActiva('apariencia');
                   seleccionarOpcionMovil('apariencia');
                 }}
-                className={`ios-press-bounce flex min-h-[44px] w-full cursor-pointer items-center justify-between rounded-2xl px-3.5 py-2.5 text-left text-xs sm:text-[13px] transition-all ${
+                className={`fx-press flex min-h-[44px] w-full cursor-pointer items-center justify-between rounded-2xl px-3.5 py-2.5 text-left text-xs sm:text-[13px] ${
                   categoriaActiva === 'general' && opcionActiva === 'apariencia'
                     ? 'bg-[#111827] dark:bg-white/15 text-[#EDEDED] font-bold shadow-xs'
                     : 'text-[#4B5563] dark:text-[#E5E7EB] font-medium hover:bg-[#EDEDED]/70 dark:hover:bg-white/10 hover:text-[#111827] dark:hover:text-white'
@@ -190,7 +190,7 @@ export default function ConfiguracionIsland() {
                   setOpcionActiva('lenguajeRegion');
                   seleccionarOpcionMovil('lenguajeRegion');
                 }}
-                className={`ios-press-bounce flex min-h-[44px] w-full cursor-pointer items-center justify-between rounded-2xl px-3.5 py-2.5 text-left text-xs sm:text-[13px] transition-all ${
+                className={`fx-press flex min-h-[44px] w-full cursor-pointer items-center justify-between rounded-2xl px-3.5 py-2.5 text-left text-xs sm:text-[13px] ${
                   categoriaActiva === 'general' && opcionActiva === 'lenguajeRegion'
                     ? 'bg-[#111827] dark:bg-white/15 text-[#EDEDED] font-bold shadow-xs'
                     : 'text-[#4B5563] dark:text-[#E5E7EB] font-medium hover:bg-[#EDEDED]/70 dark:hover:bg-white/10 hover:text-[#111827] dark:hover:text-white'
@@ -216,7 +216,7 @@ export default function ConfiguracionIsland() {
             </div>
             <a
               href="/perfil"
-              className="ios-press-bounce flex min-h-[42px] w-full cursor-pointer items-center justify-between rounded-2xl px-3.5 py-2 text-left text-xs font-semibold text-[#4B5563] dark:text-[#E5E7EB] hover:bg-[#EDEDED]/70 dark:hover:bg-white/10 hover:text-[#111827] dark:hover:text-white"
+              className="fx-press flex min-h-[44px] w-full cursor-pointer items-center justify-between rounded-2xl px-3.5 py-2 text-left text-xs font-semibold text-[#4B5563] dark:text-[#E5E7EB] hover:bg-[#EDEDED]/70 dark:hover:bg-white/10 hover:text-[#111827] dark:hover:text-white"
             >
               <div className="flex items-center gap-2.5 truncate">
                 <svg className="h-4 w-4 shrink-0 text-[#9CA3AF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
@@ -245,7 +245,7 @@ export default function ConfiguracionIsland() {
                 triggerHaptic();
                 setVistaMovilDetalle(false);
               }}
-              className="ios-press-bounce inline-flex min-h-[44px] items-center gap-2 rounded-2xl bg-white dark:bg-[#1F2937] px-4 py-2 text-xs font-bold text-[#111827] dark:text-[#EDEDED] shadow-xs border border-gray-200/70 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/10"
+              className="fx-press inline-flex min-h-[44px] items-center gap-2 rounded-2xl bg-white dark:bg-[#1F2937] px-4 py-2 text-xs font-bold text-[#111827] dark:text-[#EDEDED] shadow-xs border border-gray-200/70 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/10"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -276,10 +276,10 @@ export default function ConfiguracionIsland() {
                   role="radio"
                   aria-checked={tema === 'claro'}
                   onClick={() => handleSeleccionarTema('claro')}
-                  className={`ios-press-bounce group relative flex flex-col justify-between rounded-2xl p-4 text-left border transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-white ${
+                  className={`fx-press group relative flex flex-col justify-between rounded-2xl p-4 text-left border cursor-pointer ${
                     tema === 'claro'
                       ? 'border-[#111827] dark:border-white ring-2 ring-[#111827] dark:ring-white/40 bg-[#EDEDED]/20 dark:bg-white/10 shadow-sm'
-                      : 'border-gray-200/80 dark:border-gray-700 bg-white dark:bg-[#1F2937] hover:border-[#9CA3AF] dark:hover:border-gray-500 hover:shadow-xs'
+                      : 'border-gray-200/80 dark:border-gray-700 bg-white dark:bg-[#1F2937] hover:border-[#9CA3AF] dark:hover:border-gray-500'
                   }`}
                 >
                   {/* Vista previa visual interactiva protegida con data-preserve-theme */}
@@ -325,10 +325,10 @@ export default function ConfiguracionIsland() {
                   role="radio"
                   aria-checked={tema === 'oscuro'}
                   onClick={() => handleSeleccionarTema('oscuro')}
-                  className={`ios-press-bounce group relative flex flex-col justify-between rounded-2xl p-4 text-left border transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-white ${
+                  className={`fx-press group relative flex flex-col justify-between rounded-2xl p-4 text-left border cursor-pointer ${
                     tema === 'oscuro'
                       ? 'border-[#111827] dark:border-white ring-2 ring-[#111827] dark:ring-white/40 bg-[#EDEDED]/20 dark:bg-white/10 shadow-sm'
-                      : 'border-gray-200/80 dark:border-gray-700 bg-white dark:bg-[#1F2937] hover:border-[#9CA3AF] dark:hover:border-gray-500 hover:shadow-xs'
+                      : 'border-gray-200/80 dark:border-gray-700 bg-white dark:bg-[#1F2937] hover:border-[#9CA3AF] dark:hover:border-gray-500'
                   }`}
                 >
                   {/* Vista previa visual de modo oscuro protegida */}
@@ -374,10 +374,10 @@ export default function ConfiguracionIsland() {
                   role="radio"
                   aria-checked={tema === 'sistema'}
                   onClick={() => handleSeleccionarTema('sistema')}
-                  className={`ios-press-bounce group relative flex flex-col justify-between rounded-2xl p-4 text-left border transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-white ${
+                  className={`fx-press group relative flex flex-col justify-between rounded-2xl p-4 text-left border cursor-pointer ${
                     tema === 'sistema'
                       ? 'border-[#111827] dark:border-white ring-2 ring-[#111827] dark:ring-white/40 bg-[#EDEDED]/20 dark:bg-white/10 shadow-sm'
-                      : 'border-gray-200/80 dark:border-gray-700 bg-white dark:bg-[#1F2937] hover:border-[#9CA3AF] dark:hover:border-gray-500 hover:shadow-xs'
+                      : 'border-gray-200/80 dark:border-gray-700 bg-white dark:bg-[#1F2937] hover:border-[#9CA3AF] dark:hover:border-gray-500'
                   }`}
                 >
                   {/* Vista previa dividida (Split Claro / Oscuro) protegida */}
@@ -461,7 +461,7 @@ export default function ConfiguracionIsland() {
                     role="radio"
                     aria-checked={idioma === 'es'}
                     onClick={() => handleSeleccionarIdioma('es')}
-                    className={`ios-press-bounce flex min-h-[50px] cursor-pointer items-center justify-between rounded-2xl px-4 py-3 border text-left transition-all ${
+                    className={`fx-press flex min-h-[50px] cursor-pointer items-center justify-between rounded-2xl px-4 py-3 border text-left ${
                       idioma === 'es'
                         ? 'border-[#111827] dark:border-white ring-2 ring-[#111827] dark:ring-white/40 bg-[#EDEDED]/30 dark:bg-white/10'
                         : 'border-gray-200/80 dark:border-gray-700 bg-white dark:bg-[#1F2937] hover:border-[#9CA3AF] dark:hover:border-gray-500'
@@ -484,7 +484,7 @@ export default function ConfiguracionIsland() {
                     role="radio"
                     aria-checked={idioma === 'en'}
                     onClick={() => handleSeleccionarIdioma('en')}
-                    className={`ios-press-bounce flex min-h-[50px] cursor-pointer items-center justify-between rounded-2xl px-4 py-3 border text-left transition-all ${
+                    className={`fx-press flex min-h-[50px] cursor-pointer items-center justify-between rounded-2xl px-4 py-3 border text-left ${
                       idioma === 'en'
                         ? 'border-[#111827] dark:border-white ring-2 ring-[#111827] dark:ring-white/40 bg-[#EDEDED]/30 dark:bg-white/10'
                         : 'border-gray-200/80 dark:border-gray-700 bg-white dark:bg-[#1F2937] hover:border-[#9CA3AF] dark:hover:border-gray-500'
@@ -521,7 +521,7 @@ export default function ConfiguracionIsland() {
                     role="radio"
                     aria-checked={true}
                     onClick={() => handleSeleccionarRegion('CO')}
-                    className="ios-press-bounce flex min-h-[50px] cursor-pointer items-center justify-between rounded-2xl px-4 py-3 border text-left transition-all border-[#111827] dark:border-white ring-2 ring-[#111827] dark:ring-white/40 bg-[#EDEDED]/30 dark:bg-white/10"
+                    className="fx-press flex min-h-[50px] cursor-pointer items-center justify-between rounded-2xl px-4 py-3 border text-left border-[#111827] dark:border-white ring-2 ring-[#111827] dark:ring-white/40 bg-[#EDEDED]/30 dark:bg-white/10"
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-base">🇨🇴</span>
