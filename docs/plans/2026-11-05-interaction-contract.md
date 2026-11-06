@@ -385,14 +385,16 @@ Estos valores son obligatorios en todas las tareas. El revisor los recibe textua
 3. Ejecutar `node scripts/audit-interactions.mjs --update` para fijar el baseline posterior a las migraciones. El script debe salir 0.
 4. Añadir al final de la auditoría una sección `## 13. Estado de Ejecución` con: rama, tareas completadas, conteos antes/después y pendientes (Fases 3–6 restantes si quedan).
 5. Actualizar `docs/INDEX.md` si se añadieron documentos.
-6. No modificar código de componentes en esta tarea.
+6. No modificar código de componentes, salvo el endurecimiento de primitivas del punto 9.
 7. En `src/styles/tokens.css`, corregir el reset de `prefers-reduced-motion`: el `opacity: 1 !important` del bloque compartido no debe anular el 40 % de `:disabled`. Acotarlo a `:not(:disabled)` o retirar la declaración, y verificar con un botón `disabled` + `.fx-press`.
 8. Añadir un comentario de sincronía entre `.fx-press` y `.ios-press-bounce` antes de que el alias se elimine en una fase posterior.
+9. Endurecer las primitivas: en `Button.tsx` e `IconButton.tsx`, mover `{...props}` antes de `type`/`disabled` para que un caller no pueda convertir el botón en `submit`; añadir una nota JSDoc sobre las props no reenviadas en el branch `<a>`.
 
 **Criterios de aceptación:**
 
 - La regla existe, está enlazada desde `AGENTS.md` y no contradice la auditoría.
 - Un botón `disabled` con `.fx-press` sigue al 40 % de opacidad bajo `prefers-reduced-motion`.
+- Un caller que pase `type` a `Button` o `IconButton` no puede cambiar el `type="button"` por defecto.
 - `node scripts/audit-interactions.mjs` sale 0 con el baseline actualizado.
 - `pnpm check` y `pnpm build` verdes.
 - La sección de estado de ejecución refleja la realidad, sin afirmar tareas no hechas.
