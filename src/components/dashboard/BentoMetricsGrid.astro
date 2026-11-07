@@ -1,25 +1,125 @@
 ---
+import type { EstadoSesionCaja } from '@/db/schema';
+
 interface Props {
   availableCount?: number | undefined;
   availableLabel?: string | undefined;
   availableTrend?: string | undefined;
   revenueAmount?: string | undefined;
   revenueTrend?: string | undefined;
+  shiftStatus?: EstadoSesionCaja | 'Abierto' | 'Cerrado' | undefined;
 }
 
 const {
   availableCount = 14,
   availableLabel = 'Disponibles',
-  availableTrend = '+3 listas hoy',
-  revenueAmount = '$1,450',
-  revenueTrend = '+8.4%',
+  availableTrend = '14 en patio',
+  revenueAmount = '$ 1.450.000',
+  revenueTrend = 'Capacidad/día',
+  shiftStatus = 'ABIERTA',
 } = Astro.props;
+
+const isShiftOpen =
+  shiftStatus === 'ABIERTA' || shiftStatus === 'Abierto';
+const shiftStatusLabel = isShiftOpen ? 'Abierto' : 'Cerrado';
 ---
 
-<div class="grid grid-cols-2 gap-3.5 sm:gap-4">
-  <!-- Card 1 (Left): Flota Disponible / Unidades Listas -->
+<div class="space-y-4">
+  <!-- Fila 1: Tarjeta Horizontal de Ancho Completo — Caja Turno (mismo estilo que Ocupación de Flota) -->
   <article
-    class="flex flex-col justify-between rounded-[26px] bg-[#1F2937] p-5 text-white shadow-md transition-all duration-200 hover:shadow-lg"
+    class="relative overflow-hidden rounded-[30px] bg-[#111827] p-6 text-white shadow-xl"
+  >
+    <!-- Decorative Background Ring for visual depth -->
+    <div
+      class="pointer-events-none absolute -right-12 -top-12 h-44 w-44 rounded-full bg-white/5 blur-2xl"
+      aria-hidden="true"
+    ></div>
+
+    <div class="relative z-10 flex items-center justify-between gap-4">
+      <!-- Columna Izquierda: Título "Caja Turno" y monto de liquidaciones del día -->
+      <div class="flex min-w-0 flex-1 flex-col space-y-3">
+        <!-- Tag Pill -->
+        <div class="inline-flex items-center gap-1.5 self-start rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/90 backdrop-blur-md">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="h-3.5 w-3.5 shrink-0"
+          >
+            <line x1="12" x2="12" y1="2" y2="22"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+          <span>Caja Turno</span>
+        </div>
+
+        <!-- Monto principal y subtítulo sin desbordamiento -->
+        <div class="min-w-0">
+          <p class="font-display text-3xl font-extrabold tracking-tight sm:text-4xl truncate">
+            {revenueAmount}
+          </p>
+          <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-[#9CA3AF]">
+            <span>Liquidaciones del día</span>
+            {revenueTrend && (
+              <>
+                <span aria-hidden="true">•</span>
+                <span class="inline-flex items-center gap-0.5 font-semibold text-emerald-400">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="h-3 w-3 shrink-0"
+                  >
+                    <path d="m18 15-6-6-6 6"></path>
+                  </svg>
+                  <span>{revenueTrend}</span>
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna Derecha: Estado del turno (Abierto/Cerrado) en caja blanca tipo "0 de 0 activas" -->
+      <div
+        class="flex h-28 w-28 shrink-0 flex-col items-center justify-center rounded-[22px] bg-white p-3 text-center text-[#111827] shadow-lg ring-1 ring-black/5 sm:h-32 sm:w-32"
+      >
+        <span class="font-display text-xl font-black tracking-tight sm:text-2xl">
+          {shiftStatusLabel}
+        </span>
+        <span class="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#4B5563]">
+          Estado Turno
+        </span>
+        <span
+          class:list={[
+            'mt-1.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold',
+            isShiftOpen
+              ? 'bg-emerald-50 text-emerald-700'
+              : 'bg-[#EDEDED] text-[#4B5563]',
+          ]}
+        >
+          <span
+            class:list={[
+              'h-1.5 w-1.5 rounded-full',
+              isShiftOpen ? 'bg-emerald-600' : 'bg-[#9CA3AF]',
+            ]}
+          ></span>
+          {isShiftOpen ? 'Operativo' : 'Cerrado'}
+        </span>
+      </div>
+    </div>
+  </article>
+
+  <!-- Fila 2: Disponibles en su propia fila de ancho completo -->
+  <article
+    class="flex flex-col justify-between rounded-[26px] bg-[#1F2937] p-5 text-white shadow-md"
   >
     <div class="flex items-center gap-2">
       <div class="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white/90">
@@ -61,77 +161,6 @@ const {
         </svg>
         <span>{availableTrend}</span>
       </div>
-    </div>
-  </article>
-
-  <!-- Card 2 (Right): Cobros del Turno con Micro Sparkline Waveform -->
-  <article
-    class="relative flex flex-col justify-between overflow-hidden rounded-[26px] bg-white p-5 text-[#111827] shadow-md border border-[#9CA3AF]/30 transition-all duration-200 hover:shadow-lg"
-  >
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-1.5">
-        <div class="flex h-7 w-7 items-center justify-center rounded-full bg-[#111827]/5 text-[#111827]">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="h-4 w-4"
-          >
-            <line x1="12" x2="12" y1="2" y2="22"></line>
-            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-          </svg>
-        </div>
-        <span class="text-xs font-semibold text-[#4B5563]">Caja Turno</span>
-      </div>
-
-      <!-- Trend Badge -->
-      <span class="inline-flex items-center gap-0.5 text-[11px] font-bold text-emerald-600">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.5"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="h-3 w-3"
-        >
-          <path d="m18 15-6-6-6 6"></path>
-        </svg>
-        {revenueTrend}
-      </span>
-    </div>
-
-    <!-- Micro Sparkline Waveform (Emulating reference wave curve with plotted point) -->
-    <div class="my-2 h-7 w-full overflow-visible py-1">
-      <svg
-        viewBox="0 0 100 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-full w-full overflow-visible"
-        preserveAspectRatio="none"
-      >
-        <path
-          d="M0 16 C 15 16, 20 8, 35 12 C 50 16, 60 4, 75 14 C 85 20, 92 6, 100 8"
-          stroke="#111827"
-          stroke-width="2.5"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-        <!-- Active plotted node as in the reference image -->
-        <circle cx="75" cy="14" r="3" fill="#111827" stroke="white" stroke-width="1.5" />
-      </svg>
-    </div>
-
-    <div>
-      <p class="font-display text-3xl font-extrabold tracking-tight text-[#111827]">
-        {revenueAmount}
-      </p>
-      <p class="text-[10px] font-medium text-[#4B5563]">Liquidaciones del día</p>
     </div>
   </article>
 </div>

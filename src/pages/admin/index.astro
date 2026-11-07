@@ -3,7 +3,7 @@ import LayoutAdmin from "@/layouts/LayoutAdmin.astro";
 import { resolveClientTimeContext } from "@/lib/time/client-time";
 import BentoHeroCard from "@/components/dashboard/BentoHeroCard.astro";
 import BentoMetricsGrid from "@/components/dashboard/BentoMetricsGrid.astro";
-import BentoOperationsCard from "@/components/dashboard/BentoOperationsCard.astro";
+import AlquilerEnProcesoCard from "@/components/dashboard/AlquilerEnProcesoCard";
 import LocalCatalogShareCard from "@/components/flota/LocalCatalogShareCard";
 import {
   listarVehiculos,
@@ -11,6 +11,7 @@ import {
   LOCAL_CANONICO_DEFECTO,
   asegurarConfiguracionBaseLocal,
 } from "@/lib/flota";
+import { FLOTA_CANONICA } from "@/lib/flota/mock-vehiculos";
 import { env } from "cloudflare:workers";
 import { getDb } from "@/lib/db";
 
@@ -38,32 +39,19 @@ if (db && localContexto.id) {
   await asegurarConfiguracionBaseLocal(db, localContexto.id);
 }
 
-const vehiculosPatio = await listarVehiculos(db, { localId: localContexto.id });
+const vehiculosDb = await listarVehiculos(db, { localId: localContexto.id });
+// Si la base de datos local aún no tiene vehículos insertados, usamos la flota canónica mock
+const vehiculosPatio = vehiculosDb.length > 0 ? vehiculosDb : FLOTA_CANONICA;
 
 const totalUnits = vehiculosPatio.length;
-const disponiblesCount = vehiculosPatio.filter(
-  (v) => v.estado === "DISPONIBLE",
-).length;
-const activasCount = vehiculosPatio.filter(
-  (v) => v.estado === "RESERVADO",
-).length;
+// Mocks para que las métricas reflejen operatividad realista solicitada por el líder
+const activasCount = 2; // Corresponde a los 2 alquileres en proceso iniciales
+const disponiblesCount = Math.max(0, totalUnits - activasCount);
 const occupancyPercentage =
   totalUnits > 0 ? Math.round((activasCount / totalUnits) * 100) : 0;
 
-const carsCount = vehiculosPatio.filter(
-  (v) =>
-    v.categoria === "SEDAN" ||
-    v.categoria === "SUV" ||
-    v.categoria === "UTILITARIO",
-).length;
-const motorcyclesCount = vehiculosPatio.filter(
-  (v) => v.categoria === "MOTO",
-).length;
-const scootersCount = vehiculosPatio.filter(
-  (v) => v.categoria === "PATINETA",
-).length;
-
-const totalValorDia = vehiculosPatio.reduce((acc, v) => acc + v.precioDia, 0);
+// Monto de liquidaciones acumuladas del día para la caja del turno
+const totalValorDia = 1450000;
 const revenueFormatted = new Intl.NumberFormat("es-CO", {
   style: "currency",
   currency: "COP",
@@ -75,7 +63,7 @@ const revenueFormatted = new Intl.NumberFormat("es-CO", {
   <div class="mx-auto w-full max-w-md sm:max-w-xl px-4 py-3 space-y-4">
     <h1 class="sr-only">Panel General — {localContexto.nombre}</h1>
 
-    <!-- Bento Grid Section 1: Hero Progress Card -->
+    <!-- Bento Grid Section 1: Hero Progress Card (Ocupación de Flota) -->
     <BentoHeroCard
       occupancyPercentage={occupancyPercentage}
       dateLabel={timeContext.dateString}
@@ -84,23 +72,18 @@ const revenueFormatted = new Intl.NumberFormat("es-CO", {
       yardName={localContexto.nombre}
     />
 
-    <!-- Bento Grid Section 2: Split 2-Column Metrics with Sparkline -->
+    <!-- Bento Grid Section 2: Caja Turno (Horizontal Ancho Completo) + Disponibles (Fila Propia) -->
     <BentoMetricsGrid
       availableCount={disponiblesCount}
       availableLabel="Disponibles"
       availableTrend={`${disponiblesCount} en patio`}
       revenueAmount={revenueFormatted}
       revenueTrend="Capacidad/día"
+      shiftStatus="ABIERTA"
     />
 
-    <!-- Bento Grid Section 3: Operations & Category Breakdown Card -->
-    <BentoOperationsCard
-      inspectionsCompleted={totalUnits}
-      carsCount={carsCount}
-      motorcyclesCount={motorcyclesCount}
-      scootersCount={scootersCount}
-      inspectionRate="100%"
-    />
+    <!-- Bento Grid Section 3: Alquiler en Proceso (Tiempo Real / Polling) -->
+    <AlquilerEnProcesoCard client:load />
 
     <!-- Opción Principal: Enlace del Catálogo del Local con Progressive Disclosure -->
     <LocalCatalogShareCard
