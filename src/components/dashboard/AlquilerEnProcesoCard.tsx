@@ -1,178 +1,526 @@
-import { useEffect, useState } from 'react';
-import type { EstadoReserva, ReservaSelect, VehiculoSelect } from '@/db/schema';
+import { useEffect, useMemo, useState } from 'react';
+import type { ContratoAlquilerSelect, ReservaSelect, VehiculoSelect } from '@/db/schema';
+
+export type EstadoAlquilerEnProceso = 'PAUSADO' | 'EN_PROCESO' | 'COMPLETADO';
+
+export type EstadoPasoContrato = 'COMPLETADO' | 'EN_PROCESO' | 'PAUSADO' | 'PENDIENTE';
+
+export interface PasoProcesoContrato {
+  readonly id: string;
+  readonly titulo: string;
+  readonly detalle: string;
+  readonly estado: EstadoPasoContrato;
+}
+
+export interface TiemposConfigAlquilerEnProceso {
+  readonly ocultarCompletadoHoras: number;
+  readonly pausadoSinRespuestaHoras: number;
+}
+
+export const DEFAULT_TIEMPOS_ALQUILER_PROCESO: TiemposConfigAlquilerEnProceso = {
+  ocultarCompletadoHoras: 4,
+  pausadoSinRespuestaHoras: 12,
+};
 
 export interface AlquilerEnProcesoItem {
   readonly id: ReservaSelect['id'];
-  readonly codigo: ReservaSelect['codigo'];
-  readonly marca: VehiculoSelect['marca'];
-  readonly modelo: VehiculoSelect['modelo'];
-  readonly placa: VehiculoSelect['placa'];
+  readonly codigoContrato?: ContratoAlquilerSelect['numeroContrato'] | undefined;
   readonly clienteNombre: ReservaSelect['contactoNombre'];
-  readonly estado: EstadoReserva;
-  readonly estadoEtiqueta: string;
+  readonly clienteDocumento: ReservaSelect['contactoNumeroDocumento'];
+  readonly placa: VehiculoSelect['placa'];
+  readonly imagenUrl: VehiculoSelect['imagenUrl'];
+  readonly estado: EstadoAlquilerEnProceso;
+  readonly etapaActualResumen?: string | undefined;
+  readonly pasosProceso?: readonly PasoProcesoContrato[] | undefined;
+  /** ISO timestamp de inicio de espera de respuesta final (para evaluar >12h -> PAUSADO) */
+  readonly esperandoRespuestaDesde?: string | null | undefined;
+  /** ISO timestamp de finalización (para ocultar COMPLETADO después de 4h) */
+  readonly completadoEn?: string | null | undefined;
 }
 
 export interface AlquilerEnProcesoResponse {
   readonly ok: boolean;
   readonly alquileres: readonly AlquilerEnProcesoItem[];
+  readonly tiemposConfig?: TiemposConfigAlquilerEnProceso | undefined;
   readonly actualizadoEn: string;
 }
 
 export const MOCK_ALQUILERES_EN_PROCESO: readonly AlquilerEnProcesoItem[] = [
   {
     id: 'mock-alq-01',
-    codigo: 'FLX-849210',
-    marca: 'Toyota',
-    modelo: 'Corolla Cross XEI',
-    placa: 'KLM-482',
+    codigoContrato: 'CTR-849210',
     clienteNombre: 'Carlos Andrés Mejía',
-    estado: 'EN_CURSO',
-    estadoEtiqueta: 'En proceso',
+    clienteDocumento: '1.037.648.291',
+    placa: 'MOV-304',
+    imagenUrl: '/images/vehiculos/mazda-cx30.webp',
+    estado: 'EN_PROCESO',
+    etapaActualResumen: 'Peritaje fotográfico en patio',
+    esperandoRespuestaDesde: new Date(Date.now() - 2 * 3600_000).toISOString(),
+    pasosProceso: [
+      {
+        id: 'kyc',
+        titulo: '1. Verificación C.C. y Licencia',
+        detalle: 'Identidad validada',
+        estado: 'COMPLETADO',
+      },
+      {
+        id: 'abono',
+        titulo: '2. Abono y Depósito de Garantía',
+        detalle: 'Recibido en caja',
+        estado: 'COMPLETADO',
+      },
+      {
+        id: 'peritaje',
+        titulo: '3. Inspección Pericial Fotográfica',
+        detalle: 'Capturando evidencia en patio',
+        estado: 'EN_PROCESO',
+      },
+      {
+        id: 'firma',
+        titulo: '4. Firma de Contrato y Entrega',
+        detalle: 'Pendiente de firma final',
+        estado: 'PENDIENTE',
+      },
+    ],
   },
   {
     id: 'mock-alq-02',
-    codigo: 'FLX-849215',
-    marca: 'Mazda',
-    modelo: 'CX-30 Grand Touring',
-    placa: 'NVP-914',
+    codigoContrato: 'CTR-849198',
+    clienteNombre: 'Julián David Osorio',
+    clienteDocumento: '1.017.239.840',
+    placa: 'FLX-801',
+    imagenUrl: '/images/vehiculos/white-suv.webp',
+    estado: 'PAUSADO',
+    etapaActualResumen: 'Sin respuesta de firma (+12h)',
+    esperandoRespuestaDesde: new Date(Date.now() - 14 * 3600_000).toISOString(),
+    pasosProceso: [
+      {
+        id: 'kyc',
+        titulo: '1. Verificación C.C. y Licencia',
+        detalle: 'Identidad validada',
+        estado: 'COMPLETADO',
+      },
+      {
+        id: 'abono',
+        titulo: '2. Abono y Depósito de Garantía',
+        detalle: 'Abono inicial registrado',
+        estado: 'COMPLETADO',
+      },
+      {
+        id: 'peritaje',
+        titulo: '3. Inspección Pericial Fotográfica',
+        detalle: 'Peritaje R2 completado',
+        estado: 'COMPLETADO',
+      },
+      {
+        id: 'firma',
+        titulo: '4. Firma de Contrato y Entrega',
+        detalle: 'Pausado: +14h esperando respuesta final',
+        estado: 'PAUSADO',
+      },
+    ],
+  },
+  {
+    id: 'mock-alq-03',
+    codigoContrato: 'CTR-849204',
     clienteNombre: 'Laura Sofía Restrepo',
-    estado: 'EN_CURSO',
-    estadoEtiqueta: 'En proceso',
+    clienteDocumento: '1.152.461.903',
+    placa: 'BMW-240',
+    imagenUrl: '/images/vehiculos/dark-coupe.webp',
+    estado: 'COMPLETADO',
+    etapaActualResumen: 'Contrato activo • Llaves entregadas',
+    completadoEn: new Date(Date.now() - 1.5 * 3600_000).toISOString(),
+    pasosProceso: [
+      {
+        id: 'kyc',
+        titulo: '1. Verificación C.C. y Licencia',
+        detalle: 'Identidad validada',
+        estado: 'COMPLETADO',
+      },
+      {
+        id: 'abono',
+        titulo: '2. Abono y Depósito de Garantía',
+        detalle: 'Liquidado 100%',
+        estado: 'COMPLETADO',
+      },
+      {
+        id: 'peritaje',
+        titulo: '3. Inspección Pericial Fotográfica',
+        detalle: 'Acta R2 sellada',
+        estado: 'COMPLETADO',
+      },
+      {
+        id: 'firma',
+        titulo: '4. Firma de Contrato y Entrega',
+        detalle: 'Completado (se oculta a las 4h)',
+        estado: 'COMPLETADO',
+      },
+    ],
   },
 ];
+
+const ORDEN_PRIORIDAD_ESTADO: Record<EstadoAlquilerEnProceso, number> = {
+  PAUSADO: 0,
+  EN_PROCESO: 1,
+  COMPLETADO: 2,
+};
+
+const ESTILOS_ESTADO: Record<
+  EstadoAlquilerEnProceso,
+  { readonly label: string; readonly badgeClass: string; readonly dotClass: string }
+> = {
+  PAUSADO: {
+    label: 'Pausado',
+    badgeClass: 'bg-red-500/15 border-red-400/35 text-red-300',
+    dotClass: 'bg-red-400',
+  },
+  EN_PROCESO: {
+    label: 'En proceso',
+    badgeClass: 'bg-amber-500/15 border-amber-400/35 text-amber-300',
+    dotClass: 'bg-amber-400',
+  },
+  COMPLETADO: {
+    label: 'Completado',
+    badgeClass: 'bg-emerald-500/15 border-emerald-400/35 text-emerald-300',
+    dotClass: 'bg-emerald-400',
+  },
+};
+
+const ESTILOS_PASO: Record<
+  EstadoPasoContrato,
+  { readonly circleClass: string; readonly textClass: string; readonly badgeText: string }
+> = {
+  COMPLETADO: {
+    circleClass: 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300',
+    textClass: 'text-[#EDEDED]',
+    badgeText: 'Listo',
+  },
+  EN_PROCESO: {
+    circleClass: 'bg-amber-500/20 border-amber-400/40 text-amber-300',
+    textClass: 'text-amber-300',
+    badgeText: 'Actual',
+  },
+  PAUSADO: {
+    circleClass: 'bg-red-500/20 border-red-400/40 text-red-300',
+    textClass: 'text-red-300',
+    badgeText: 'Detenido',
+  },
+  PENDIENTE: {
+    circleClass: 'bg-[#111827] border-[#4B5563]/40 text-[#9CA3AF]',
+    textClass: 'text-[#9CA3AF]',
+    badgeText: 'Pendiente',
+  },
+};
+
+export function obtenerPasosProcesoContrato(
+  item: AlquilerEnProcesoItem
+): readonly PasoProcesoContrato[] {
+  if (item.pasosProceso && item.pasosProceso.length > 0) {
+    return item.pasosProceso;
+  }
+
+  if (item.estado === 'COMPLETADO') {
+    return [
+      { id: 'kyc', titulo: '1. Verificación C.C. y Licencia', detalle: 'Validado', estado: 'COMPLETADO' },
+      { id: 'abono', titulo: '2. Abono y Depósito de Garantía', detalle: 'Confirmado', estado: 'COMPLETADO' },
+      { id: 'peritaje', titulo: '3. Inspección Pericial Fotográfica', detalle: 'Acta R2 lista', estado: 'COMPLETADO' },
+      { id: 'firma', titulo: '4. Firma de Contrato y Entrega', detalle: 'Llaves entregadas', estado: 'COMPLETADO' },
+    ];
+  }
+
+  if (item.estado === 'PAUSADO') {
+    return [
+      { id: 'kyc', titulo: '1. Verificación C.C. y Licencia', detalle: 'Validado', estado: 'COMPLETADO' },
+      { id: 'abono', titulo: '2. Abono y Depósito de Garantía', detalle: 'Confirmado', estado: 'COMPLETADO' },
+      { id: 'peritaje', titulo: '3. Inspección Pericial Fotográfica', detalle: 'Completado', estado: 'COMPLETADO' },
+      { id: 'firma', titulo: '4. Firma de Contrato y Entrega', detalle: 'Más de 12h sin respuesta final', estado: 'PAUSADO' },
+    ];
+  }
+
+  return [
+    { id: 'kyc', titulo: '1. Verificación C.C. y Licencia', detalle: 'Validado', estado: 'COMPLETADO' },
+    { id: 'abono', titulo: '2. Abono y Depósito de Garantía', detalle: 'Confirmado', estado: 'COMPLETADO' },
+    { id: 'peritaje', titulo: '3. Inspección Pericial Fotográfica', detalle: 'En curso en patio', estado: 'EN_PROCESO' },
+    { id: 'firma', titulo: '4. Firma de Contrato y Entrega', detalle: 'Pendiente', estado: 'PENDIENTE' },
+  ];
+}
+
+export function resolverYOrdenarAlquileres(
+  items: readonly AlquilerEnProcesoItem[],
+  config: TiemposConfigAlquilerEnProceso = DEFAULT_TIEMPOS_ALQUILER_PROCESO,
+  ahoraMs: number = Date.now()
+): AlquilerEnProcesoItem[] {
+  const maxCompletadoMs = config.ocultarCompletadoHoras * 3600_000;
+  const maxSinRespuestaMs = config.pausadoSinRespuestaHoras * 3600_000;
+
+  return items
+    .map((item): AlquilerEnProcesoItem => {
+      if (item.estado === 'EN_PROCESO' && item.esperandoRespuestaDesde) {
+        const esperaMs = ahoraMs - new Date(item.esperandoRespuestaDesde).getTime();
+        if (Number.isFinite(esperaMs) && esperaMs >= maxSinRespuestaMs) {
+          return { ...item, estado: 'PAUSADO' };
+        }
+      }
+      return item;
+    })
+    .filter((item) => {
+      if (item.estado === 'COMPLETADO' && item.completadoEn) {
+        const transcurridoMs = ahoraMs - new Date(item.completadoEn).getTime();
+        if (Number.isFinite(transcurridoMs) && transcurridoMs >= maxCompletadoMs) {
+          return false;
+        }
+      }
+      return true;
+    })
+    .sort((a, b) => ORDEN_PRIORIDAD_ESTADO[a.estado] - ORDEN_PRIORIDAD_ESTADO[b.estado]);
+}
 
 export interface AlquilerEnProcesoCardProps {
   readonly initialAlquileres?: readonly AlquilerEnProcesoItem[] | undefined;
   readonly endpointUrl?: string | undefined;
   readonly pollingIntervalMs?: number | undefined;
+  readonly tiemposConfig?: TiemposConfigAlquilerEnProceso | undefined;
 }
 
 export default function AlquilerEnProcesoCard({
   initialAlquileres = MOCK_ALQUILERES_EN_PROCESO,
   endpointUrl = '/api/alquileres/en-proceso',
   pollingIntervalMs = 30_000,
+  tiemposConfig = DEFAULT_TIEMPOS_ALQUILER_PROCESO,
 }: AlquilerEnProcesoCardProps) {
-  const [alquileres, setAlquileres] =
+  const [rawAlquileres, setRawAlquileres] =
     useState<readonly AlquilerEnProcesoItem[]>(initialAlquileres);
+  const [configActiva, setConfigActiva] =
+    useState<TiemposConfigAlquilerEnProceso>(tiemposConfig);
+  const [expandedIds, setExpandedIds] = useState<ReadonlySet<string>>(
+    () => new Set<string>()
+  );
 
   useEffect(() => {
-    setAlquileres(initialAlquileres);
+    setRawAlquileres(initialAlquileres);
   }, [initialAlquileres]);
 
-  const consultarAlquileres = async (url: string = endpointUrl) => {
-    try {
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: { Accept: 'application/json' },
-        cache: 'no-store',
-      });
-      if (!response.ok) return;
-      const payload: unknown = await response.json();
-      if (
-        typeof payload === 'object' &&
-        payload !== null &&
-        'alquileres' in payload &&
-        Array.isArray(payload.alquileres)
-      ) {
-        setAlquileres(payload.alquileres);
-      }
-    } catch {
-      // Ignorar fallos de red en polling
-    }
-  };
-
   useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      void consultarAlquileres();
-    }, pollingIntervalMs);
-
+    let activeController: AbortController | null = null;
+    const consultar = async () => {
+      activeController?.abort();
+      const controller = new AbortController();
+      activeController = controller;
+      try {
+        const res = await fetch(endpointUrl, {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+          cache: 'no-store',
+          signal: controller.signal,
+        });
+        if (!res.ok) return;
+        const payload: unknown = await res.json();
+        if (typeof payload === 'object' && payload !== null && 'alquileres' in payload && Array.isArray(payload.alquileres)) {
+          setRawAlquileres(payload.alquileres);
+          if (
+            'tiemposConfig' in payload &&
+            typeof payload.tiemposConfig === 'object' &&
+            payload.tiemposConfig !== null &&
+            'ocultarCompletadoHoras' in payload.tiemposConfig &&
+            typeof payload.tiemposConfig.ocultarCompletadoHoras === 'number' &&
+            'pausadoSinRespuestaHoras' in payload.tiemposConfig &&
+            typeof payload.tiemposConfig.pausadoSinRespuestaHoras === 'number'
+          ) {
+            setConfigActiva({
+              ocultarCompletadoHoras: payload.tiemposConfig.ocultarCompletadoHoras,
+              pausadoSinRespuestaHoras: payload.tiemposConfig.pausadoSinRespuestaHoras,
+            });
+          }
+        }
+      } catch {
+        // Conserva último estado en caso de red intermitente
+      }
+    };
+    const id = window.setInterval(() => void consultar(), pollingIntervalMs);
     return () => {
-      window.clearInterval(intervalId);
+      window.clearInterval(id);
+      activeController?.abort();
     };
   }, [endpointUrl, pollingIntervalMs]);
+
+  const alquileresVisibles = useMemo(
+    () => resolverYOrdenarAlquileres(rawAlquileres, configActiva),
+    [rawAlquileres, configActiva]
+  );
+
+  const toggleContrato = (id: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
 
   return (
     <section
       aria-label="Alquiler en proceso"
-      className="relative overflow-hidden rounded-[30px] bg-[#111827] p-5 text-white shadow-xl sm:p-6"
+      className="relative overflow-hidden rounded-[28px] bg-[#111827] p-4 text-white shadow-xl sm:p-5"
     >
-      <div
-        className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-white/5 blur-2xl"
-        aria-hidden="true"
-      />
-
       <div className="relative z-10">
-        {/* Encabezado canónico y limpio sin botones artificiales */}
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#1F2937] text-white border border-[#4B5563]/40">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                className="h-5 w-5"
-              >
-                <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2" />
-                <circle cx="7" cy="17" r="2" />
-                <path d="M9 17h6" />
-                <circle cx="17" cy="17" r="2" />
-              </svg>
-            </div>
-            <div className="min-w-0">
-              <h2 className="font-display text-base font-bold tracking-tight text-white truncate">
-                Alquiler en proceso
-              </h2>
-              <p className="text-xs font-medium text-[#9CA3AF] truncate">
-                Monitoreo activo en tiempo real
-              </p>
-            </div>
-          </div>
-
-          {/* Contador de unidades activas */}
-          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#1F2937] border border-[#4B5563]/40 px-2.5 py-1 text-[11px] font-bold text-[#EDEDED]">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            <span>{alquileres.length}</span>
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="font-display text-base font-bold tracking-tight text-white">
+            Alquiler en proceso
+          </h2>
+          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#1F2937] border border-[#4B5563]/40 px-2.5 py-0.5 text-[11px] font-bold text-[#EDEDED]">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+            <span>{alquileresVisibles.length}</span>
           </span>
         </div>
 
-        {/* Lista de alquileres activos o estado vacío */}
-        {alquileres.length === 0 ? (
-          <div className="mt-4 rounded-[20px] bg-[#1F2937] border border-[#4B5563]/35 px-4 py-6 text-center">
+        {alquileresVisibles.length === 0 ? (
+          <div className="mt-3 rounded-[18px] bg-[#1F2937] border border-[#4B5563]/35 px-4 py-5 text-center">
             <p className="text-sm font-semibold text-[#EDEDED]">
               Sin alquileres en proceso
             </p>
           </div>
         ) : (
-          <ul className="mt-4 space-y-2.5" role="list">
-            {alquileres.map((item) => (
-              <li
-                key={item.id}
-                className="flex items-center justify-between gap-3 rounded-[20px] bg-[#1F2937] border border-[#4B5563]/35 px-4 py-3"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-display text-sm font-bold text-white truncate">
-                      {item.marca} {item.modelo}
-                    </p>
-                    <span className="inline-flex items-center rounded-md bg-[#111827] border border-[#4B5563]/50 px-2 py-0.5 font-mono text-[11px] font-bold tracking-wider text-[#EDEDED]">
-                      {item.placa}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-xs font-medium text-[#9CA3AF] truncate">
-                    Cliente: <span className="text-[#EDEDED]">{item.clienteNombre}</span>
-                  </p>
-                </div>
+          <ul className="mt-3 space-y-2.5" role="list">
+            {alquileresVisibles.map((item) => {
+              const meta = ESTILOS_ESTADO[item.estado];
+              const isExpanded = expandedIds.has(item.id);
+              const pasos = obtenerPasosProcesoContrato(item);
+              const completadosCount = pasos.filter(
+                (p) => p.estado === 'COMPLETADO'
+              ).length;
 
-                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-500/15 border border-emerald-400/30 px-2.5 py-1 text-[11px] font-bold text-emerald-300">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                  <span>{item.estadoEtiqueta}</span>
-                </span>
-              </li>
-            ))}
+              return (
+                <li
+                  key={item.id}
+                  className="overflow-hidden rounded-[20px] bg-[#1F2937] border border-[#4B5563]/35"
+                >
+                  <button
+                    type="button"
+                    onClick={() => toggleContrato(item.id)}
+                    aria-expanded={isExpanded}
+                    className="fx-pressable flex w-full items-center gap-3 p-2.5 text-left sm:p-3"
+                  >
+                    <div className="flex h-20 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[14px] bg-[#EDEDED] p-1.5 sm:h-22 sm:w-28">
+                      <img
+                        src={item.imagenUrl}
+                        alt={`Vehículo ${item.placa}`}
+                        loading="lazy"
+                        className="h-full w-full object-contain"
+                      />
+                    </div>
+
+                    <div className="min-w-0 flex-1 space-y-1.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span
+                          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${meta.badgeClass}`}
+                        >
+                          <span className={`h-1.5 w-1.5 rounded-full ${meta.dotClass}`} />
+                          <span>{meta.label}</span>
+                        </span>
+
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#9CA3AF]">
+                          <span>{isExpanded ? 'Ocultar' : 'Proceso'}</span>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            className={`h-3.5 w-3.5 transition-transform duration-150 ${
+                              isExpanded ? 'rotate-180 text-white' : ''
+                            }`}
+                          >
+                            <polyline points="6 9 12 15 18 9" />
+                          </svg>
+                        </span>
+                      </div>
+
+                      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                        <p className="font-display text-sm font-bold text-white truncate">
+                          {item.clienteNombre}
+                        </p>
+                        <span className="font-mono text-[11px] font-medium text-[#9CA3AF]">
+                          C.C. {item.clienteDocumento}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-2 pt-0.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[11px] font-medium text-[#9CA3AF]">
+                            Placa:
+                          </span>
+                          <span className="inline-flex items-center rounded-md bg-[#111827] border border-[#4B5563]/50 px-2 py-0.5 font-mono text-[11px] font-bold tracking-wider text-[#EDEDED]">
+                            {item.placa}
+                          </span>
+                        </div>
+
+                        <span className="font-mono text-[10px] font-semibold text-[#9CA3AF]">
+                          {completadosCount}/{pasos.length} etapas
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+
+                  {isExpanded && (
+                    <div className="border-t border-[#4B5563]/35 bg-[#111827]/60 px-3 pb-3 pt-2.5">
+                      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                        <span className="font-mono text-[11px] font-bold text-[#EDEDED]">
+                          {item.codigoContrato ?? `Contrato #${item.placa}`}
+                        </span>
+                        {item.etapaActualResumen && (
+                          <span className="text-[11px] font-medium text-[#9CA3AF]">
+                            {item.etapaActualResumen}
+                          </span>
+                        )}
+                      </div>
+
+                      <ol className="space-y-1.5">
+                        {pasos.map((paso) => {
+                          const estiloPaso = ESTILOS_PASO[paso.estado];
+                          return (
+                            <li
+                              key={paso.id}
+                              className="flex items-center justify-between gap-2 rounded-xl bg-[#1F2937]/90 border border-[#4B5563]/30 px-2.5 py-1.5"
+                            >
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span
+                                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold ${estiloPaso.circleClass}`}
+                                >
+                                  {paso.estado === 'COMPLETADO'
+                                    ? '✓'
+                                    : paso.estado === 'PAUSADO'
+                                      ? '!'
+                                      : '•'}
+                                </span>
+                                <div className="min-w-0">
+                                  <p className="text-xs font-semibold text-white truncate">
+                                    {paso.titulo}
+                                  </p>
+                                  <p className="text-[11px] text-[#9CA3AF] truncate">
+                                    {paso.detalle}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <span
+                                className={`shrink-0 text-[10px] font-bold uppercase tracking-wider ${estiloPaso.textClass}`}
+                              >
+                                {estiloPaso.badgeText}
+                              </span>
+                            </li>
+                          );
+                        })}
+                      </ol>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
