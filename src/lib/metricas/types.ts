@@ -6,12 +6,8 @@ export type DailyCurveSeriesFilter = 'AMBAS' | 'SOLO_INGRESOS' | 'SOLO_EGRESOS';
 
 export type MetricsFocusView =
   | 'OVERVIEW'
-  | 'DAILY_EARNINGS'
-  | 'RENTED_AUTOS'
-  | 'DAILY_BALANCE'
-  | 'MONTHLY_OCCUPANCY'
-  | 'MOVEMENTS_CURVE'
   | 'EARNINGS_FLEET'
+  | 'MONTHLY_OCCUPANCY'
   | 'DAILY_MOVEMENTS';
 
 export type ProgressiveSectionId =
