@@ -49,11 +49,11 @@ export default function InteractiveSplineCard({
           onOpenDetail?.();
         }}
         aria-label="Abrir detalle de ocupación mensual, reservas y ganancias por mes"
-        className="ios-press-bounce group flex h-full w-full flex-col justify-between rounded-[26px] bg-white p-4 sm:p-5 text-left text-[#111827] border border-[#9CA3AF]/40 shadow-xs transition hover:border-[#111827]/45 hover:shadow-md cursor-pointer"
+        className="ios-press-bounce group flex h-full w-full flex-col justify-between rounded-[26px] bg-white dark:bg-[#1F2937] p-4 sm:p-5 text-left text-[#111827] dark:text-[#EDEDED] border border-[#9CA3AF]/40 dark:border-white/10 shadow-xs transition hover:border-[#111827]/45 dark:hover:border-white/30 hover:shadow-md cursor-pointer"
       >
         <div className="space-y-3 w-full">
           <div className="flex items-center justify-between gap-2">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#111827] text-white shadow-2xs">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#111827] dark:bg-white text-white dark:text-[#111827] shadow-2xs">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -72,31 +72,31 @@ export default function InteractiveSplineCard({
               </svg>
             </div>
 
-            <span className="rounded-full bg-[#111827] px-2.5 py-1 font-mono text-xs font-bold tabular-nums text-white shadow-2xs">
+            <span className="rounded-full bg-[#111827] dark:bg-white px-2.5 py-1 font-mono text-xs font-bold tabular-nums text-white dark:text-[#111827] shadow-2xs">
               {occupancy.currentOccupancyPct}%
             </span>
           </div>
 
           <div>
-            <p className="text-sm font-bold text-[#4B5563]">
+            <p className="text-sm font-bold text-[#4B5563] dark:text-[#9CA3AF]">
               Ocupación mensual
             </p>
-            <p className="mt-0.5 font-display text-2xl sm:text-3xl font-extrabold tracking-tight tabular-nums text-[#111827]">
+            <p className="mt-0.5 font-display text-2xl sm:text-3xl font-extrabold tracking-tight tabular-nums text-[#111827] dark:text-[#EDEDED]">
               {occupancy.currentMonthReservations}{' '}
-              <span className="text-sm font-bold text-[#4B5563]">res.</span>
+              <span className="text-sm font-bold text-[#4B5563] dark:text-[#9CA3AF]">res.</span>
             </p>
-            <p className="mt-0.5 text-sm font-bold tabular-nums text-[#1F2937]">
+            <p className="mt-0.5 text-sm font-bold tabular-nums text-[#1F2937] dark:text-[#EDEDED]">
               {currentMonthPoint?.earningsCompactFormatted ??
                 occupancy.currentMonthEarningsFormatted}{' '}
-              <span className="font-medium text-[#4B5563]">en el mes</span>
+              <span className="font-medium text-[#4B5563] dark:text-[#9CA3AF]">en el mes</span>
             </p>
           </div>
         </div>
 
-        {/* Mini gráfico limpio de 6 cápsulas mensuales (sin línea superpuesta) */}
+        {/* Mini gráfico limpio de 6 cápsulas mensuales */}
         <div className="mt-4 w-full space-y-2.5">
           <div
-            className="grid h-10 grid-cols-6 items-end gap-1.5 rounded-2xl bg-[#EDEDED]/75 px-2.5 py-2"
+            className="grid h-10 grid-cols-6 items-end gap-1.5 rounded-2xl bg-[#EDEDED]/75 dark:bg-white/5 px-2.5 py-2"
             aria-hidden="true"
           >
             {occupancy.months.map((mes) => {
@@ -110,15 +110,15 @@ export default function InteractiveSplineCard({
                   style={{ height: `${heightPct}%` }}
                   className={`w-full rounded-full transition-all ${
                     mes.isCurrentMonth
-                      ? 'bg-[#111827]'
-                      : 'bg-[#1F2937]/30 group-hover:bg-[#1F2937]/45'
+                      ? 'bg-[#111827] dark:bg-white'
+                      : 'bg-[#1F2937]/30 dark:bg-white/20 group-hover:bg-[#1F2937]/45 dark:group-hover:bg-white/30'
                   }`}
                 />
               );
             })}
           </div>
 
-          <div className="flex items-center justify-between border-t border-[#9CA3AF]/25 pt-2 text-xs sm:text-sm font-bold text-[#111827]">
+          <div className="flex items-center justify-between border-t border-[#9CA3AF]/25 dark:border-white/10 pt-2 text-xs sm:text-sm font-bold text-[#111827] dark:text-[#EDEDED]">
             <span>Reservas por mes</span>
             <span className="transition-transform group-hover:translate-x-0.5">
               →
@@ -266,24 +266,24 @@ export default function InteractiveSplineCard({
         </article>
       )}
 
-      {/* Columna Derecha (Blanca): Cápsulas limpias de 6 meses (diseño original sin líneas traseras) */}
-      <article className="lg:col-span-7 flex flex-col justify-between rounded-[28px] bg-white p-5 sm:p-6 text-[#111827] border border-[#9CA3AF]/40 shadow-xs space-y-5">
+      {/* Columna Derecha (Blanca): Cápsulas limpias de 6 meses */}
+      <article className="lg:col-span-7 flex flex-col justify-between rounded-[28px] bg-white dark:bg-[#1F2937] p-5 sm:p-6 text-[#111827] dark:text-[#EDEDED] border border-[#9CA3AF]/40 dark:border-white/10 shadow-xs space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 className="font-display text-lg sm:text-xl font-bold tracking-tight text-[#111827]">
+            <h2 className="font-display text-lg sm:text-xl font-bold tracking-tight text-[#111827] dark:text-[#EDEDED]">
               Evolución de reservas y ganancias (6 meses)
             </h2>
-            <p className="mt-0.5 text-sm text-[#4B5563]">
+            <p className="mt-0.5 text-sm text-[#4B5563] dark:text-[#9CA3AF]">
               Toca cualquier mes para comparar volumen de reservas y recaudo
             </p>
           </div>
 
-          <span className="rounded-full bg-[#111827] px-3 py-1.5 text-xs font-bold text-white shadow-2xs">
+          <span className="rounded-full bg-[#111827] dark:bg-white px-3 py-1.5 text-xs font-bold text-white dark:text-[#111827] shadow-2xs">
             Pico: {occupancy.bestMonthLabel}
           </span>
         </div>
 
-        <div className="rounded-[22px] bg-[#EDEDED]/65 px-3 sm:px-5 pt-11 pb-4 border border-[#9CA3AF]/30">
+        <div className="rounded-[22px] bg-[#EDEDED]/65 dark:bg-white/5 px-3 sm:px-5 pt-11 pb-4 border border-[#9CA3AF]/30 dark:border-white/10">
           <div
             role="group"
             aria-label="Seleccionar mes para inspeccionar reservas y ganancias"
@@ -310,18 +310,18 @@ export default function InteractiveSplineCard({
                   className="ios-press-bounce group relative flex h-full min-h-[44px] flex-col items-center justify-end gap-2.5 focus:outline-none cursor-pointer"
                 >
                   {isSelected && (
-                    <span className="pointer-events-none absolute -top-8 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-xl bg-[#111827] px-2.5 py-1 font-mono text-xs font-bold tabular-nums text-white shadow-sm">
+                    <span className="pointer-events-none absolute -top-8 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-xl bg-[#111827] dark:bg-white px-2.5 py-1 font-mono text-xs font-bold tabular-nums text-white dark:text-[#111827] shadow-sm">
                       {mes.earningsCompactFormatted}
                     </span>
                   )}
 
-                  <div className="flex w-full max-w-[40px] flex-1 items-end justify-center rounded-full bg-white p-1 border border-[#9CA3AF]/35 shadow-2xs">
+                  <div className="flex w-full max-w-[40px] flex-1 items-end justify-center rounded-full bg-white dark:bg-white/10 p-1 border border-[#9CA3AF]/35 dark:border-white/10 shadow-2xs">
                     <div
                       style={{ height: `${heightPct}%` }}
                       className={`w-full rounded-full transition-all duration-300 ${
                         isSelected
-                          ? 'bg-[#111827] shadow-xs'
-                          : 'bg-[#1F2937]/25 group-hover:bg-[#1F2937]/45'
+                          ? 'bg-[#111827] dark:bg-white shadow-xs'
+                          : 'bg-[#1F2937]/25 dark:bg-white/20 group-hover:bg-[#1F2937]/45 dark:group-hover:bg-white/30'
                       }`}
                     />
                   </div>
@@ -330,8 +330,8 @@ export default function InteractiveSplineCard({
                     <span
                       className={`text-sm transition-colors ${
                         isSelected
-                          ? 'font-extrabold text-[#111827]'
-                          : 'font-semibold text-[#4B5563]'
+                          ? 'font-extrabold text-[#111827] dark:text-white'
+                          : 'font-semibold text-[#4B5563] dark:text-[#9CA3AF]'
                       }`}
                     >
                       {mes.monthShort}
@@ -339,8 +339,8 @@ export default function InteractiveSplineCard({
                     <span
                       className={`font-mono text-xs tabular-nums ${
                         isSelected
-                          ? 'font-bold text-[#1F2937]'
-                          : 'font-medium text-[#4B5563]'
+                          ? 'font-bold text-[#1F2937] dark:text-[#EDEDED]'
+                          : 'font-medium text-[#4B5563] dark:text-[#9CA3AF]'
                       }`}
                     >
                       {mes.reservationsCount} res.
@@ -354,25 +354,25 @@ export default function InteractiveSplineCard({
 
         {/* Resumen rápido en grilla de 3 tarjetas de apoyo */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 tabular-nums">
-          <div className="rounded-2xl bg-[#EDEDED]/65 px-3.5 py-3 border border-[#9CA3AF]/25">
-            <span className="block text-xs font-semibold text-[#4B5563]">
+          <div className="rounded-2xl bg-[#EDEDED]/65 dark:bg-white/5 px-3.5 py-3 border border-[#9CA3AF]/25 dark:border-white/10">
+            <span className="block text-xs font-semibold text-[#4B5563] dark:text-[#9CA3AF]">
               Mes actual ({currentMonthPoint?.monthShort})
             </span>
-            <span className="mt-0.5 block font-display text-base font-extrabold text-[#111827]">
+            <span className="mt-0.5 block font-display text-base font-extrabold text-[#111827] dark:text-white">
               {occupancy.currentMonthEarningsFormatted}
             </span>
           </div>
 
-          <div className="rounded-2xl bg-[#EDEDED]/65 px-3.5 py-3 border border-[#9CA3AF]/25">
-            <span className="block text-xs font-semibold text-[#4B5563]">
+          <div className="rounded-2xl bg-[#EDEDED]/65 dark:bg-white/5 px-3.5 py-3 border border-[#9CA3AF]/25 dark:border-white/10">
+            <span className="block text-xs font-semibold text-[#4B5563] dark:text-[#9CA3AF]">
               Reservas mes actual
             </span>
-            <span className="mt-0.5 block font-display text-base font-extrabold text-[#111827]">
+            <span className="mt-0.5 block font-display text-base font-extrabold text-[#111827] dark:text-white">
               {occupancy.currentMonthReservations} reservas
             </span>
           </div>
 
-          <div className="rounded-2xl bg-[#1F2937] px-3.5 py-3 text-white">
+          <div className="rounded-2xl bg-[#1F2937] px-3.5 py-3 text-white border border-white/10">
             <span className="block text-xs font-semibold text-[#9CA3AF]">
               Meta operativa
             </span>
