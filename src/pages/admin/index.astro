@@ -60,37 +60,45 @@ const revenueFormatted = new Intl.NumberFormat("es-CO", {
 ---
 
 <LayoutAdmin title="FlotaX — Panel General" activeTab="home">
-  <div class="mx-auto w-full max-w-md sm:max-w-xl px-4 py-3 space-y-4">
+  <div class="mx-auto w-full max-w-md sm:max-w-xl lg:max-w-5xl xl:max-w-7xl px-4 py-3 sm:py-5 space-y-4 sm:space-y-5">
     <h1 class="sr-only">Panel General — {localContexto.nombre}</h1>
 
-    <!-- Bento Grid Section 1: Hero Progress Card (Ocupación de Flota) -->
-    <BentoHeroCard
-      occupancyPercentage={occupancyPercentage}
-      dateLabel={timeContext.dateString}
-      activeUnits={activasCount}
-      totalUnits={totalUnits}
-      yardName={localContexto.nombre}
-    />
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 items-start">
+      <!-- Columna 1: Pulso Operativo (Ocupación + Caja del Turno + Disponibles) -->
+      <div class="space-y-4 sm:space-y-5">
+        <!-- Bento Grid Section 1: Hero Progress Card (Ocupación de Flota) -->
+        <BentoHeroCard
+          occupancyPercentage={occupancyPercentage}
+          dateLabel={timeContext.dateString}
+          activeUnits={activasCount}
+          totalUnits={totalUnits}
+          yardName={localContexto.nombre}
+        />
 
-    <!-- Bento Grid Section 2: Caja Turno (Horizontal Ancho Completo) + Disponibles (Fila Propia) -->
-    <BentoMetricsGrid
-      availableCount={disponiblesCount}
-      availableLabel="Disponibles"
-      availableTrend={`${disponiblesCount} en patio`}
-      revenueAmount={revenueFormatted}
-      revenueTrend="Capacidad/día"
-      shiftStatus="ABIERTA"
-    />
+        <!-- Bento Grid Section 2: Caja Turno (Horizontal Ancho Completo) + Disponibles (Fila Propia) -->
+        <BentoMetricsGrid
+          availableCount={disponiblesCount}
+          availableLabel="Disponibles"
+          availableTrend={`${disponiblesCount} en patio`}
+          revenueAmount={revenueFormatted}
+          revenueTrend="Capacidad/día"
+          shiftStatus="ABIERTA"
+        />
+      </div>
 
-    <!-- Bento Grid Section 3: Alquiler en Proceso (Tiempo Real / Polling) -->
-    <AlquilerEnProcesoCard client:load />
+      <!-- Columna 2: Operaciones en Tiempo Real (Alquiler en Proceso + Catálogo Digital) -->
+      <div class="space-y-4 sm:space-y-5">
+        <!-- Bento Grid Section 3: Alquiler en Proceso (Tiempo Real / Polling) -->
+        <AlquilerEnProcesoCard client:load />
 
-    <!-- Opción Principal: Enlace del Catálogo del Local con Progressive Disclosure -->
-    <LocalCatalogShareCard
-      client:load
-      local={localContexto}
-      unidadesCount={vehiculosPatio.length}
-      compact={true}
-    />
+        <!-- Opción Principal: Enlace del Catálogo del Local con Progressive Disclosure -->
+        <LocalCatalogShareCard
+          client:load
+          local={localContexto}
+          unidadesCount={vehiculosPatio.length}
+          compact={true}
+        />
+      </div>
+    </div>
   </div>
 </LayoutAdmin>

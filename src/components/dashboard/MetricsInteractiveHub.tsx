@@ -237,10 +237,10 @@ export default function MetricsInteractiveHub({
             />
           </div>
 
-          {/* BLOQUE D (Gráfica Visual de Curvas de Movimientos Diarios en Azul Oscuro — 7 cols derecha en desktop) */}
-          <div className="col-span-2 lg:col-span-7 lg:order-2">
+          {/* FILA 2: Movimientos de hoy (Comprimida por defecto, arriba de la gráfica) */}
+          <div className="col-span-2 lg:col-span-12">
             <TelemetryBentoGrid
-              viewMode="OVERVIEW_CURVE_CARD"
+              viewMode="OVERVIEW_RECENT_STRIP"
               dailyEarnings={dailyEarnings}
               rentedFleet={rentedFleet}
               dailyMovements={dailyMovements}
@@ -254,10 +254,10 @@ export default function MetricsInteractiveHub({
             />
           </div>
 
-          {/* BLOQUE E (Últimos Movimientos de Hoy en Blanca — 5 cols izquierda en desktop) */}
-          <div className="col-span-2 lg:col-span-5 lg:order-1">
+          {/* FILA 3: Gráfica Visual de Curvas de Movimientos Diarios en Azul Oscuro */}
+          <div className="col-span-2 lg:col-span-12">
             <TelemetryBentoGrid
-              viewMode="OVERVIEW_RECENT_STRIP"
+              viewMode="OVERVIEW_CURVE_CARD"
               dailyEarnings={dailyEarnings}
               rentedFleet={rentedFleet}
               dailyMovements={dailyMovements}

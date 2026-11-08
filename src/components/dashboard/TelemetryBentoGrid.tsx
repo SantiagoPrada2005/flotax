@@ -190,13 +190,9 @@ function DailyMovementsCurveChart({
       aria-label="Gráfica de curvas de movimientos diarios: ingresos y egresos"
       className="relative overflow-hidden flex h-full flex-col justify-between rounded-[28px] bg-[#111827] p-5 sm:p-6 text-white shadow-xl border border-white/10 space-y-4"
     >
-      {/* Luz ambiental difusa superior para profundidad visual */}
+      {/* Luz ambiental difusa superior idéntica a Ganancia diaria con vehículos */}
       <div
-        className="pointer-events-none absolute -right-14 -top-14 h-52 w-52 rounded-full bg-[#2D6BFF]/16 blur-3xl"
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none absolute -left-16 -bottom-16 h-44 w-44 rounded-full bg-white/5 blur-2xl"
+        className="pointer-events-none absolute -right-12 -top-12 h-52 w-52 rounded-full bg-white/5 blur-3xl"
         aria-hidden="true"
       />
 
@@ -205,7 +201,7 @@ function DailyMovementsCurveChart({
         <div>
           <div className="flex items-center gap-2">
             <span
-              className="h-2.5 w-2.5 rounded-full bg-[#2D6BFF] ring-4 ring-[#2D6BFF]/20"
+              className="h-2.5 w-2.5 rounded-full bg-[#1D4ED8] ring-4 ring-[#1D4ED8]/30"
               aria-hidden="true"
             />
             <h2 className="font-display text-lg sm:text-xl font-bold tracking-tight text-white">
@@ -219,7 +215,7 @@ function DailyMovementsCurveChart({
           </p>
         </div>
 
-        {isInteractive ? (
+        {isInteractive && (
           <div
             role="tablist"
             aria-label="Filtrar series de la gráfica de curvas"
@@ -245,20 +241,6 @@ function DailyMovementsCurveChart({
               );
             })}
           </div>
-        ) : (
-          <button
-            type="button"
-            onClick={onOpenDetail}
-            className="ios-press-bounce group inline-flex min-h-[44px] items-center gap-2.5 rounded-full bg-white/12 pl-4 pr-2 py-1.5 text-sm font-bold text-white border border-white/15 transition hover:bg-white/20 cursor-pointer"
-          >
-            <span>Ampliar curva</span>
-            <span
-              className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-xs font-black text-[#111827] transition-transform group-hover:translate-x-0.5"
-              aria-hidden="true"
-            >
-              →
-            </span>
-          </button>
         )}
       </div>
 
@@ -267,7 +249,7 @@ function DailyMovementsCurveChart({
         <div className="flex flex-wrap items-center gap-4 font-semibold">
           <span className="inline-flex items-center gap-2 text-white">
             <span
-              className="h-3 w-3 rounded-full bg-[#2D6BFF] ring-2 ring-white/80"
+              className="h-3 w-3 rounded-full bg-[#1D4ED8] ring-2 ring-white/80"
               aria-hidden="true"
             />
             Ingresos
@@ -286,7 +268,7 @@ function DailyMovementsCurveChart({
             <span className="rounded-lg bg-white px-2.5 py-0.5 text-xs font-extrabold text-[#111827]">
               {activePoint.label}
             </span>
-            <span className="text-[#93C5FD]">
+            <span className="text-[#60A5FA]">
               +{activePoint.incomeCompactFormatted}
             </span>
             <span className="text-[#FCA5A5]">
@@ -301,8 +283,8 @@ function DailyMovementsCurveChart({
         )}
       </div>
 
-      {/* Bandeja interior esculpida (Double-Bezel) con curvas luminosas y spotlight */}
-      <div className="relative z-10 rounded-[22px] bg-[#1F2937]/75 p-2.5 sm:p-3.5 border border-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]">
+      {/* Gráfica integrada directamente sin recuadro interior */}
+      <div className="relative z-10 w-full pt-1">
         <svg
           viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
           className="w-full h-auto block overflow-visible select-none"
@@ -317,9 +299,9 @@ function DailyMovementsCurveChart({
               x2="0"
               y2="1"
             >
-              <stop offset="0%" stopColor="#2D6BFF" stopOpacity="0.42" />
-              <stop offset="58%" stopColor="#2D6BFF" stopOpacity="0.12" />
-              <stop offset="100%" stopColor="#2D6BFF" stopOpacity="0.0" />
+              <stop offset="0%" stopColor="#1D4ED8" stopOpacity="0.40" />
+              <stop offset="60%" stopColor="#1D4ED8" stopOpacity="0.10" />
+              <stop offset="100%" stopColor="#1D4ED8" stopOpacity="0.0" />
             </linearGradient>
 
             <linearGradient
@@ -354,10 +336,26 @@ function DailyMovementsCurveChart({
             >
               <feDropShadow
                 dx="0"
-                dy="4"
-                stdDeviation="5"
-                floodColor="#2D6BFF"
+                dy="3"
+                stdDeviation="4"
+                floodColor="#1D4ED8"
                 floodOpacity="0.45"
+              />
+            </filter>
+
+            <filter
+              id={`${gradientPrefix}-tooltip-shadow`}
+              x="-20%"
+              y="-20%"
+              width="140%"
+              height="150%"
+            >
+              <feDropShadow
+                dx="0"
+                dy="3"
+                stdDeviation="4"
+                floodColor="#000000"
+                floodOpacity="0.25"
               />
             </filter>
           </defs>
@@ -459,7 +457,7 @@ function DailyMovementsCurveChart({
             </>
           )}
 
-          {/* Serie 2: Ingresos diarios (curva azul con resplandor + nodos sólidos) */}
+          {/* Serie 2: Ingresos diarios (curva azul oscuro con resplandor + nodos sólidos) */}
           {showIncome && (
             <>
               {incomeSpline.area && (
@@ -472,8 +470,8 @@ function DailyMovementsCurveChart({
                 <path
                   d={incomeSpline.line}
                   fill="none"
-                  stroke="#3B82F6"
-                  strokeWidth="3.4"
+                  stroke="#1D4ED8"
+                  strokeWidth="3.2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   filter={`url(#${gradientPrefix}-glow)`}
@@ -488,15 +486,15 @@ function DailyMovementsCurveChart({
                         cx={node.x}
                         cy={node.y}
                         r="11.5"
-                        fill="#2D6BFF"
-                        fillOpacity="0.28"
+                        fill="#1D4ED8"
+                        fillOpacity="0.32"
                       />
                     )}
                     <circle
                       cx={node.x}
                       cy={node.y}
                       r={isSelected ? '6.4' : '4.5'}
-                      fill="#2D6BFF"
+                      fill="#1D4ED8"
                       stroke="#FFFFFF"
                       strokeWidth="2.2"
                     />
@@ -506,20 +504,20 @@ function DailyMovementsCurveChart({
             </>
           )}
 
-          {/* Etiqueta flotante sobre el punto activo de mayor altura */}
+          {/* Etiqueta flotante estilo fintech sobre el punto activo */}
           {activePoint && (activeIncNode || activeExpNode) && (() => {
             const anchorX = activeIncNode?.x ?? activeExpNode?.x ?? PAD_LEFT;
             const rawTopY =
               showIncome && activeIncNode
                 ? activeIncNode.y
                 : activeExpNode?.y ?? PAD_TOP + 20;
-            const pillW = 94;
-            const pillH = 24;
+            const pillW = 98;
+            const pillH = 36;
             const clampedX = Math.min(
               SVG_WIDTH - PAD_RIGHT - pillW / 2,
               Math.max(PAD_LEFT + pillW / 2, anchorX)
             );
-            const pillY = Math.max(2, rawTopY - 34);
+            const pillY = Math.max(4, rawTopY - 44);
             const displayVal =
               seriesFilter === 'SOLO_EGRESOS'
                 ? `-${activePoint.expenseCompactFormatted}`
@@ -532,8 +530,9 @@ function DailyMovementsCurveChart({
                   y={pillY}
                   width={pillW}
                   height={pillH}
-                  rx={12}
+                  rx={10}
                   fill="#FFFFFF"
+                  filter={`url(#${gradientPrefix}-tooltip-shadow)`}
                 />
                 <text
                   x={clampedX}
@@ -545,6 +544,17 @@ function DailyMovementsCurveChart({
                   fontFamily="JetBrains Mono, monospace"
                 >
                   {displayVal}
+                </text>
+                <text
+                  x={clampedX}
+                  y={pillY + 28}
+                  textAnchor="middle"
+                  fill="#6B7280"
+                  fontSize="10"
+                  fontWeight="600"
+                  fontFamily="JetBrains Mono, monospace"
+                >
+                  {activePoint.label}
                 </text>
               </g>
             );
@@ -578,8 +588,8 @@ function DailyMovementsCurveChart({
           })}
         </svg>
 
-        {/* Eje X con fechas separadas, sin cortes ni colisiones */}
-        <div className="mt-3 flex items-center justify-between gap-2 sm:gap-4 pl-7 sm:pl-14 pr-1 overflow-x-auto no-scrollbar">
+        {/* Eje X con fechas legibles */}
+        <div className="mt-4 flex items-center justify-between gap-2 sm:gap-4 pl-7 sm:pl-14 pr-1 overflow-x-auto no-scrollbar">
           {points.map((point, idx) => {
             const isSelected = idx === safeIdx;
             return (
@@ -624,6 +634,7 @@ export default function TelemetryBentoGrid({
     useState<DailyBreakdownMode>('CATEGORY');
   const [selectedCategoryIdx, setSelectedCategoryIdx] = useState<number>(0);
   const [selectedHourIdx, setSelectedHourIdx] = useState<number>(3);
+  const [isRecentExpanded, setIsRecentExpanded] = useState<boolean>(false);
 
   const triggerHaptic = (ms: number = 6) => {
     if (typeof window !== 'undefined' && 'vibrate' in navigator) {
@@ -731,89 +742,141 @@ export default function TelemetryBentoGrid({
   }
 
   /* =========================================================================
-     MODO 3 (OVERVIEW): Tarjeta Blanca de Últimos Movimientos (Complemento)
+     MODO 3 (OVERVIEW): Tarjeta Blanca de Movimientos de Hoy (Comprimida con Despliegue)
      ========================================================================= */
   if (viewMode === 'OVERVIEW_RECENT_STRIP') {
-    const recentItems = dailyMovements.items.slice(0, 3);
-
     return (
       <section
-        aria-label="Resumen rápido de movimientos diarios"
-        className="flex h-full flex-col justify-between rounded-[28px] bg-white dark:bg-[#1F2937] p-5 text-[#111827] dark:text-[#EDEDED] border border-[#9CA3AF]/40 dark:border-white/10 shadow-xs space-y-4 transition-colors"
+        aria-label="Resumen de movimientos diarios de caja"
+        className="rounded-[28px] bg-white dark:bg-[#1F2937] p-4 sm:p-5 text-[#111827] dark:text-[#EDEDED] border border-[#9CA3AF]/40 dark:border-white/10 shadow-xs space-y-3 transition-all duration-300"
       >
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h2 className="font-display text-lg font-bold tracking-tight text-[#111827] dark:text-[#EDEDED]">
-              Movimientos de hoy
-            </h2>
-            <p className="mt-0.5 text-sm text-[#4B5563] dark:text-[#9CA3AF]">
-              Últimas entradas y salidas en patio
-            </p>
-          </div>
-
-          <span className="rounded-full bg-[#EDEDED] dark:bg-white/10 px-3 py-1 font-mono text-xs font-bold text-[#1F2937] dark:text-[#EDEDED] border border-[#9CA3AF]/35 dark:border-white/10">
-            Hoy
-          </span>
-        </div>
-
-        <div className="space-y-2.5 flex-1">
-          {recentItems.map((mov) => {
-            const isIncome = mov.kind === 'INGRESO';
-            return (
-              <button
-                key={mov.id}
-                type="button"
-                onClick={() => {
-                  triggerHaptic(6);
-                  onSelectMovement(mov);
-                }}
-                className="ios-press-bounce flex min-h-[62px] w-full items-center justify-between gap-3 rounded-2xl bg-[#EDEDED]/60 dark:bg-white/5 px-3.5 py-3 text-left border border-[#9CA3AF]/30 dark:border-white/10 transition hover:border-[#111827]/40 dark:hover:border-white/30 hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <span
-                    className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm font-bold ${
-                      isIncome
-                        ? 'bg-[#111827] dark:bg-white text-white dark:text-[#111827]'
-                        : 'bg-white dark:bg-white/10 text-[#1F2937] dark:text-[#EDEDED] border border-[#9CA3AF]/45 dark:border-white/20'
-                    }`}
-                    aria-hidden="true"
-                  >
-                    {isIncome ? '↑' : '↓'}
-                  </span>
-
-                  <div className="min-w-0">
-                    <p className="truncate font-display text-sm sm:text-base font-bold text-[#111827] dark:text-[#EDEDED]">
-                      {mov.title}
-                    </p>
-                    <p className="truncate text-xs font-medium text-[#4B5563] dark:text-[#9CA3AF]">
-                      {mov.categoryLabel} • {mov.timeLabel}
-                    </p>
-                  </div>
-                </div>
-
-                <span
-                  className={`shrink-0 font-mono text-sm font-extrabold tabular-nums ${
-                    isIncome ? 'text-[#111827] dark:text-emerald-400' : 'text-[#4B5563] dark:text-rose-400'
-                  }`}
-                >
-                  {mov.amountFormatted}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
         <button
           type="button"
           onClick={() => {
-            triggerHaptic(8);
-            onOpenMovementsDetail?.();
+            triggerHaptic(6);
+            setIsRecentExpanded((prev) => !prev);
           }}
-          className="ios-press-bounce flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-[#111827] dark:bg-white px-4 py-2.5 text-sm font-bold text-white dark:text-[#111827] shadow-xs transition hover:bg-[#1F2937] dark:hover:bg-[#EDEDED] cursor-pointer"
+          className="ios-press-bounce flex w-full items-center justify-between gap-3 text-left cursor-pointer group"
+          aria-expanded={isRecentExpanded}
+          aria-label={
+            isRecentExpanded
+              ? 'Comprimir movimientos de hoy'
+              : 'Desplegar movimientos de hoy'
+          }
         >
-          <span>Ver todos los movimientos ({dailyMovements.items.length})</span>
-          <span aria-hidden="true">→</span>
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3.5 min-w-0">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#111827] dark:bg-white text-white dark:text-[#111827] shadow-2xs">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-5 w-5"
+                aria-hidden="true"
+              >
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+              </svg>
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="font-display text-base sm:text-lg font-bold text-[#111827] dark:text-[#EDEDED]">
+                  Movimientos de hoy
+                </h2>
+                <span className="rounded-full bg-[#EDEDED] dark:bg-white/10 px-2.5 py-0.5 font-mono text-xs font-bold text-[#1F2937] dark:text-[#EDEDED] border border-[#9CA3AF]/30 dark:border-white/10">
+                  {dailyMovements.items.length}
+                </span>
+              </div>
+              <p className="text-xs text-[#4B5563] dark:text-[#9CA3AF]">
+                Balance hoy:{' '}
+                <strong className="font-mono text-[#111827] dark:text-white tabular-nums">
+                  {dailyMovements.netDailyBalanceFormatted}
+                </strong>
+                {' '}• {dailyMovements.incomeCount} entradas / {dailyMovements.expenseCount} salidas
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="hidden sm:inline text-xs font-bold text-[#4B5563] dark:text-[#9CA3AF] group-hover:text-[#111827] dark:group-hover:text-white transition-colors">
+              {isRecentExpanded ? 'Comprimir' : 'Desplegar'}
+            </span>
+            <span
+              className={`flex h-8 w-8 items-center justify-center rounded-full bg-[#EDEDED] dark:bg-white/10 text-xs font-bold text-[#111827] dark:text-white transition-transform duration-200 ${
+                isRecentExpanded ? 'rotate-180' : ''
+              }`}
+              aria-hidden="true"
+            >
+              ↓
+            </span>
+          </div>
         </button>
+
+        {isRecentExpanded && (
+          <div className="pt-3 border-t border-[#9CA3AF]/25 dark:border-white/10 space-y-3 transition-all">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+              {dailyMovements.items.map((mov) => {
+                const isIncome = mov.kind === 'INGRESO';
+                return (
+                  <button
+                    key={mov.id}
+                    type="button"
+                    onClick={() => {
+                      triggerHaptic(6);
+                      onSelectMovement(mov);
+                    }}
+                    className="ios-press-bounce flex min-h-[58px] w-full items-center justify-between gap-3 rounded-2xl bg-[#EDEDED]/60 dark:bg-white/5 px-3.5 py-2.5 text-left border border-[#9CA3AF]/30 dark:border-white/10 transition hover:border-[#111827]/40 dark:hover:border-white/30 hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span
+                        className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-bold ${
+                          isIncome
+                            ? 'bg-[#111827] dark:bg-white text-white dark:text-[#111827]'
+                            : 'bg-white dark:bg-white/10 text-[#1F2937] dark:text-[#EDEDED] border border-[#9CA3AF]/45 dark:border-white/20'
+                        }`}
+                        aria-hidden="true"
+                      >
+                        {isIncome ? '↑' : '↓'}
+                      </span>
+
+                      <div className="min-w-0">
+                        <p className="truncate font-display text-sm font-bold text-[#111827] dark:text-[#EDEDED]">
+                          {mov.title}
+                        </p>
+                        <p className="truncate text-xs text-[#4B5563] dark:text-[#9CA3AF]">
+                          {mov.categoryLabel} • {mov.timeLabel}
+                        </p>
+                      </div>
+                    </div>
+
+                    <span
+                      className={`shrink-0 font-mono text-sm font-extrabold tabular-nums ${
+                        isIncome ? 'text-[#111827] dark:text-emerald-400' : 'text-[#4B5563] dark:text-rose-400'
+                      }`}
+                    >
+                      {mov.amountFormatted}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center justify-end pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  triggerHaptic(8);
+                  onOpenMovementsDetail?.();
+                }}
+                className="ios-press-bounce text-xs font-bold text-[#111827] dark:text-white hover:underline cursor-pointer"
+              >
+                Ver registro completo y arqueo →
+              </button>
+            </div>
+          </div>
+        )}
       </section>
     );
   }
@@ -1279,12 +1342,6 @@ export default function TelemetryBentoGrid({
           </p>
         </article>
       </div>
-
-      {/* Gráfica Interactiva de Curvas Continuas (Ingresos vs Egresos Diarios) */}
-      <DailyMovementsCurveChart
-        points={dailyMovements.curvePoints}
-        variant="FULL_INTERACTIVE"
-      />
 
       {/* Contenedor de filtros y tarjetas en 2 columnas */}
       <div className="rounded-[28px] bg-white dark:bg-[#1F2937] p-4 sm:p-6 text-[#111827] dark:text-[#EDEDED] border border-[#9CA3AF]/40 dark:border-white/10 shadow-xs space-y-4">
