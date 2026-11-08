@@ -24,10 +24,10 @@ const isShiftOpen =
 const shiftStatusLabel = isShiftOpen ? 'Abierto' : 'Cerrado';
 ---
 
-<div class="space-y-4">
-  <!-- Fila 1: Tarjeta Horizontal de Ancho Completo — Caja Turno (mismo estilo que Ocupación de Flota) -->
+<div class="contents">
+  <!-- Fila 1: Caja Turno (En celulares orden 2, en computadores fila 1 columna 2 junto a Ocupación) -->
   <article
-    class="relative overflow-hidden rounded-[30px] bg-[#111827] p-6 text-white shadow-xl"
+    class="order-2 md:col-start-2 md:row-start-1 relative overflow-hidden rounded-[30px] bg-[#111827] p-6 text-white shadow-xl h-full flex flex-col justify-between"
   >
     <!-- Decorative Background Ring for visual depth -->
     <div
@@ -117,9 +117,9 @@ const shiftStatusLabel = isShiftOpen ? 'Abierto' : 'Cerrado';
     </div>
   </article>
 
-  <!-- Fila 2: Disponibles en su propia fila de ancho completo -->
+  <!-- Fila 2: Disponibles (En celulares orden 3, en computadores fila 2 columna 1 al lado de Catálogo) -->
   <article
-    class="flex flex-col justify-between rounded-[26px] bg-[#1F2937] p-5 text-white shadow-md"
+    class="order-3 md:col-start-1 md:row-start-2 flex flex-col justify-between rounded-[26px] bg-[#1F2937] p-5 text-white shadow-md h-full"
   >
     <div class="flex items-center gap-2">
       <div class="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white/90">

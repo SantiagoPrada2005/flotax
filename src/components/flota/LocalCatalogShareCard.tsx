@@ -208,7 +208,7 @@ export default function LocalCatalogShareCard({
     <>
       <section
         aria-label="Enlace del catálogo del local"
-        className={`relative overflow-hidden rounded-[24px] bg-white border border-[#9CA3AF]/35 dark:bg-[#1F2937] dark:border-white/10 ${
+        className={`relative overflow-hidden rounded-[24px] bg-white border border-[#9CA3AF]/35 dark:bg-[#1F2937] dark:border-white/10 h-full flex flex-col justify-between ${
           compact ? 'p-3.5' : 'p-3.5 sm:p-4'
         } shadow-[0_10px_26px_-10px_rgba(17,24,39,0.08)]`}
       >
