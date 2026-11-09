@@ -24,6 +24,8 @@ export interface ModalMovimientoProps {
   isOpen: boolean;
   onClose: () => void;
   tipoInicial: TipoMovimientoCaja;
+  bloquearTipo?: boolean;
+  contratoInicialId?: string | undefined;
   cuentas: CuentaFinancieraSelect[];
   contratos: ContratoCarteraItem[];
   onSubmit: (datos: {
@@ -62,6 +64,8 @@ export function ModalMovimiento({
   isOpen,
   onClose,
   tipoInicial,
+  bloquearTipo = false,
+  contratoInicialId,
   cuentas,
   contratos,
   onSubmit,
@@ -71,20 +75,37 @@ export function ModalMovimiento({
   const cuentaInputId = useId();
   const metodoInputId = useId();
 
-  const [tipo, setTipo] = useState<TipoMovimientoCaja>(tipoInicial);
-  const [categoria, setCategoria] = useState<string>(
-    tipoInicial === 'INGRESO' ? 'PAGO_ALQUILER' : 'MANTENIMIENTO_REPARACION'
-  );
-  const [concepto, setConcepto] = useState('');
-  const [monto, setMonto] = useState<string>('');
+  const contratoPreseleccionado = contratoInicialId
+    ? contratos.find((c) => c.codigoContrato === contratoInicialId)
+    : undefined;
+
+  const tipoEfectivo: TipoMovimientoCaja = bloquearTipo ? 'INGRESO' : tipoInicial;
+
+  const [tipo, setTipo] = useState<TipoMovimientoCaja>(tipoEfectivo);
+  const [categoria, setCategoria] = useState<string>(() => {
+    if (contratoPreseleccionado) return 'ABONO_CONTRATO';
+    return tipoEfectivo === 'INGRESO' ? 'PAGO_ALQUILER' : 'MANTENIMIENTO_REPARACION';
+  });
+  const [concepto, setConcepto] = useState(() => {
+    if (contratoPreseleccionado) {
+      return `Abono contrato #${contratoPreseleccionado.codigoContrato} (${contratoPreseleccionado.vehiculoNombre})`;
+    }
+    return '';
+  });
+  const [monto, setMonto] = useState<string>(() => {
+    if (contratoPreseleccionado && contratoPreseleccionado.saldoPendiente > 0) {
+      return String(contratoPreseleccionado.saldoPendiente);
+    }
+    return '';
+  });
   const [metodoPago, setMetodoPago] = useState<MetodoPagoFinanciero>('efectivo');
   const [cuentaId, setCuentaId] = useState<string>(cuentas[0]?.id ?? '');
-  const [mostrarOpcionesAvanzadas, setMostrarOpcionesAvanzadas] = useState(false);
+  const [mostrarOpcionesAvanzadas, setMostrarOpcionesAvanzadas] = useState(Boolean(contratoPreseleccionado));
 
   // Campos opcionales (Progressive Disclosure)
-  const [contratoId, setContratoId] = useState<string>('');
-  const [clienteNombre, setClienteNombre] = useState<string>('');
-  const [vehiculoId, setVehiculoId] = useState<string>('');
+  const [contratoId, setContratoId] = useState<string>(contratoPreseleccionado?.codigoContrato ?? '');
+  const [clienteNombre, setClienteNombre] = useState<string>(contratoPreseleccionado?.clienteNombre ?? '');
+  const [vehiculoId, setVehiculoId] = useState<string>(contratoPreseleccionado?.vehiculoPlaca ?? '');
   const [proveedor, setProveedor] = useState<string>('');
   const [referencia, setReferencia] = useState<string>('');
   const [observaciones, setObservaciones] = useState<string>('');
@@ -95,6 +116,7 @@ export function ModalMovimiento({
   if (!isOpen) return null;
 
   const handleTipoChange = (nuevoTipo: TipoMovimientoCaja) => {
+    if (bloquearTipo) return;
     setTipo(nuevoTipo);
     setCategoria(nuevoTipo === 'INGRESO' ? 'PAGO_ALQUILER' : 'MANTENIMIENTO_REPARACION');
   };
@@ -177,15 +199,21 @@ export function ModalMovimiento({
         <div className="flex items-start justify-between">
           <div className="space-y-1">
             <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#4B5563] block">
-              Caja Operativa · Registro Rápido
+              {bloquearTipo ? 'Cuentas por Cobrar · Abono a Cartera' : 'Caja Operativa · Registro Rápido'}
             </span>
             <h2 className="font-display text-xl sm:text-2xl font-bold tracking-tight text-[#111827]">
-              {tipo === 'INGRESO' ? 'Registrar nuevo ingreso' : 'Registrar nuevo gasto'}
+              {bloquearTipo
+                ? 'Registrar abono de contrato'
+                : tipo === 'INGRESO'
+                  ? 'Registrar nuevo ingreso'
+                  : 'Registrar nuevo gasto'}
             </h2>
             <p className="text-xs text-[#4B5563]">
-              {tipo === 'INGRESO'
-                ? 'Ingresa el dinero recaudado por alquileres, abonos o servicios.'
-                : 'Ingresa los pagos de taller, compras, combustible o insumos.'}
+              {bloquearTipo
+                ? 'Registra el dinero que entra para abonar al saldo pendiente del contrato de alquiler.'
+                : tipo === 'INGRESO'
+                  ? 'Ingresa el dinero recaudado por alquileres, abonos o servicios.'
+                  : 'Ingresa los pagos de taller, compras, combustible o insumos.'}
             </p>
           </div>
           <button
@@ -199,30 +227,39 @@ export function ModalMovimiento({
         </div>
 
         {/* Selector de Tipo (Pills Suaves) */}
-        <div className="flex rounded-2xl bg-[#EDEDED] p-1 gap-1">
-          <button
-            type="button"
-            onClick={() => handleTipoChange('INGRESO')}
-            className={`flex-1 min-h-[44px] rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-              tipo === 'INGRESO'
-                ? 'bg-emerald-600 text-white shadow-xs'
-                : 'text-[#4B5563] hover:text-[#111827]'
-            }`}
-          >
-            + Dinero que entra (Ingreso)
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTipoChange('EGRESO')}
-            className={`flex-1 min-h-[44px] rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-              tipo === 'EGRESO'
-                ? 'bg-[#111827] text-white shadow-xs'
-                : 'text-[#4B5563] hover:text-[#111827]'
-            }`}
-          >
-            − Dinero que sale (Gasto)
-          </button>
-        </div>
+        {bloquearTipo ? (
+          <div className="flex rounded-2xl bg-[#EDEDED] p-1">
+            <div className="flex-1 min-h-[44px] rounded-xl text-xs sm:text-sm font-bold bg-emerald-600 text-white shadow-xs flex items-center justify-center gap-2">
+              <span className="text-sm font-black">+</span>
+              <span>Dinero que entra (Ingreso)</span>
+            </div>
+          </div>
+        ) : (
+          <div className="flex rounded-2xl bg-[#EDEDED] p-1 gap-1">
+            <button
+              type="button"
+              onClick={() => handleTipoChange('INGRESO')}
+              className={`flex-1 min-h-[44px] rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                tipo === 'INGRESO'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-[#4B5563] hover:text-[#111827]'
+              }`}
+            >
+              + Dinero que entra (Ingreso)
+            </button>
+            <button
+              type="button"
+              onClick={() => handleTipoChange('EGRESO')}
+              className={`flex-1 min-h-[44px] rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                tipo === 'EGRESO'
+                  ? 'bg-[#111827] text-white shadow-xs'
+                  : 'text-[#4B5563] hover:text-[#111827]'
+              }`}
+            >
+              − Dinero que sale (Gasto)
+            </button>
+          </div>
+        )}
 
         {errorValidacion && (
           <div className="rounded-2xl border border-rose-300 bg-rose-50/70 p-3.5 text-xs font-semibold text-rose-800 flex items-center gap-2">
@@ -474,7 +511,7 @@ export function ModalMovimiento({
                   <span>Guardando...</span>
                 </>
               ) : (
-                <span>Guardar {tipo === 'INGRESO' ? 'Ingreso' : 'Gasto'}</span>
+                <span>Guardar {bloquearTipo ? 'Abono' : tipo === 'INGRESO' ? 'Ingreso' : 'Gasto'}</span>
               )}
             </button>
           </div>

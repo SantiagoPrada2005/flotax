@@ -3,22 +3,29 @@
  * (Donut completa y Tarjeta Horizontal). Funciones puras, sin dependencias de UI.
  */
 
-export const PALETA_GASTOS_FLOTAX = [
-  '#2D6BFF', // Azul FlotaX (Principal)
-  '#10B981', // Esmeralda Operativo
-  '#F59E0B', // Ámbar Cálido
-  '#F43F47', // Carmesí Operativo
-  '#0EA5E9', // Celeste Técnico
-  '#9CA3AF', // Gris Canónico Movix
+/**
+ * Paleta Canónica Azul FlotaX compartida por las gráficas de Finanzas.
+ * Escala sobria y no vibrante de azules institucionales y marinos de FlotaX:
+ * - Azul marino profundo: #0F172A
+ * - Azul marino institucional: #1E3A8A
+ * - Azul corporativo sobrio: #1E40AF
+ * - Azul medianoche: #172554
+ * - Azul pizarra oscuro: #1E293B
+ * - Azul pizarra medio: #334155
+ * - Azul pizarra templado: #475569
+ */
+export const PALETA_CIRCULAR_FLOTAX = [
+  '#1E3A8A', // Azul marino institucional FlotaX
+  '#0F172A', // Azul marino profundo (Base abisal)
+  '#1E40AF', // Azul corporativo sobrio
+  '#172554', // Azul medianoche
+  '#1E293B', // Azul pizarra oscuro
+  '#334155', // Azul pizarra medio
+  '#475569', // Azul pizarra templado
 ] as const;
 
-export const PALETA_CANALES_FLOTAX = [
-  '#10B981', // Esmeralda (Recaudo Principal)
-  '#2D6BFF', // Azul FlotaX (Transferencias / Bancos)
-  '#1F2937', // Carbón Canónico Movix
-  '#F59E0B', // Ámbar Cálido
-  '#9CA3AF', // Gris Canónico Movix
-] as const;
+export const PALETA_GASTOS_FLOTAX = PALETA_CIRCULAR_FLOTAX;
+export const PALETA_CANALES_FLOTAX = PALETA_CIRCULAR_FLOTAX;
 
 export function polarACartesiano(
   cx: number,
