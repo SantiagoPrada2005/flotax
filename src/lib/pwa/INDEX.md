@@ -12,6 +12,7 @@
 | [`install.ts`](./install.ts) | Pure PWA Install Domain Utilities | `detectInstallPlatform()`, `isInstallPromptDismissed()`, `dismissInstallPromptForDays()`, `markAppInstalled()`, `isAppMarkedInstalled()`, `openInstallPromptModal()` | Estándares Web (`beforeinstallprompt`, `localStorage`, `CustomEvent`) |
 | [`loading.ts`](./loading.ts) | Kinetic Loader Dispatcher | `activarFlotaxLoading()`, `desactivarFlotaxLoading()`, `resolverVarianteTransicionPortal()`, `FlotaxLoadingVariant`, `FlotaxLoadingOptions` | `CustomEvent ('flotax:loading')`, `@/lib/theme` |
 | [`navigation-cache.ts`](./navigation-cache.ts) | Client Navigation Warm-up | `prefetchHtml()`, `prefetchRutasCalientes()`, `rutasCalientes()` | Fetch API, Network Information, `requestIdleCallback` |
+| [`page-transitions.ts`](./page-transitions.ts) | Horizontal Slide View Transitions | `resolveNavTabOrder()`, `resolveNavSlideDirection()`, `initHorizontalPageTransitions()` | Astro `ClientRouter`, View Transitions API |
 | [`push.ts`](./push.ts) | TypeScript / JavaScript Module | - | - |
 | [`revision.ts`](./revision.ts) | Server Cache Revision Cookie | `COOKIE_REVISION_NAVEGACION`, `marcarRevisionNavegacion()` | `AstroCookies`, `crypto.randomUUID()` |
 | [`standalone.ts`](./standalone.ts) | Pure PWA Standalone & SPA Utilities | `isStandalonePwa()`, `isSpaInterceptableUrl()`, `registerPwaServiceWorker()` | Estándares Web (`window.matchMedia`, `navigator.serviceWorker`) |

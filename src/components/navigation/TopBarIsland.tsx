@@ -108,6 +108,7 @@ export default function TopBarIsland({
 
   return (
     <header
+      style={{ viewTransitionName: 'flotax-top-bar' }}
       className={`fixed top-0 left-0 right-0 z-30 flex h-14 items-center justify-between px-3.5 sm:px-6 transition-all duration-200 ${
         isScrolled
           ? 'bg-white/90 dark:bg-[#111827]/90 backdrop-blur-xl border-b border-[#9CA3AF]/25 dark:border-white/10 shadow-[0_4px_18px_-8px_rgba(17,24,39,0.08)] dark:shadow-[0_4px_18px_-8px_rgba(0,0,0,0.4)]'
