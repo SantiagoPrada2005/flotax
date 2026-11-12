@@ -75,6 +75,7 @@ Astro.response.headers.set('Accept-CH', 'Sec-CH-Prefers-Color-Scheme');
   style={esOscuroInicial ? "background-color: #111827; color-scheme: dark;" : "background-color: #ededed; color-scheme: light;"}
   data-autenticado={Astro.locals.usuario ? 'true' : 'false'}
   data-has-sidebar={!hideNav && isAdmin ? 'true' : 'false'}
+  data-portal-modo={Astro.locals.modoPortal}
 >
   <head>
     <meta charset="UTF-8" />

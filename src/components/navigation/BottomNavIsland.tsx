@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { navigate } from 'astro:transitions/client';
 import { DICCIONARIOS, obtenerIdiomaActual, type Idioma } from '@/lib/i18n';
+import { resolverVarianteDock, type ModoPortal } from '@/lib/auth/portal-modo';
 import {
   LIQUID_DOCK_GEOMETRY,
   buildLiquidNotchPath,
@@ -21,6 +22,7 @@ export interface BottomNavIslandProps {
   currentPath: string;
   activeTab?: ('home' | 'metrics' | 'search' | 'fleet' | 'wallet' | 'profile') | undefined;
   variant?: ('admin' | 'client') | undefined;
+  modoPortal?: ModoPortal | undefined;
   className?: string | undefined;
 }
 
@@ -64,9 +66,11 @@ export default function BottomNavIsland({
   currentPath,
   activeTab,
   variant = 'client',
+  modoPortal,
   className = '',
 }: BottomNavIslandProps) {
   const [livePath, setLivePath] = useState(currentPath);
+  const [liveModoPortal, setLiveModoPortal] = useState<string | undefined>(modoPortal);
   const [idioma, setIdioma] = useState<Idioma>('es');
 
   const rawUid = useId();
@@ -92,7 +96,11 @@ export default function BottomNavIsland({
   const isInitialPath = livePath === currentPath;
   const effectiveTab = isInitialPath ? activeTab : undefined;
   const isAdmin =
-    livePath.startsWith('/admin') || (isInitialPath && variant === 'admin');
+    resolverVarianteDock(
+      livePath,
+      liveModoPortal,
+      isInitialPath ? variant : undefined
+    ) === 'admin';
 
   const isAdminHome =
     effectiveTab === 'home' || livePath === '/admin' || livePath === '/admin/';
@@ -593,19 +601,28 @@ export default function BottomNavIsland({
   useEffect(() => {
     const updateTabFromPath = () => {
       const path = window.location.pathname;
+      const datasetModo = document.documentElement.dataset.portalModo;
       setLivePath(path);
-      const nextIsAdmin = path.startsWith('/admin');
+      setLiveModoPortal(datasetModo);
+
+      const nextIsAdmin =
+        resolverVarianteDock(path, datasetModo, variant) === 'admin';
       const nextItems = nextIsAdmin ? adminItems : clientItems;
       const idx = resolveTabIndexForPath(path, nextItems);
+      const portalSwitched = nextItems.length !== prevItemCountRef.current;
 
       if (idx !== -1) {
-        const portalSwitched = nextItems.length !== prevItemCountRef.current;
         if (portalSwitched || idx !== targetIndexRef.current) {
           setSelectedIndex(idx);
           setHoverIndex(idx);
           hoverIndexRef.current = idx;
           moveIndicatorToTab(idx, portalSwitched);
         }
+      } else if (portalSwitched || targetIndexRef.current >= nextItems.length) {
+        setSelectedIndex(0);
+        setHoverIndex(0);
+        hoverIndexRef.current = 0;
+        moveIndicatorToTab(0, true);
       }
     };
 
@@ -617,7 +634,7 @@ export default function BottomNavIsland({
       document.removeEventListener('astro:page-load', updateTabFromPath);
       window.removeEventListener('popstate', updateTabFromPath);
     };
-  }, [currentPath, moveIndicatorToTab]);
+  }, [currentPath, variant, moveIndicatorToTab]);
 
   // Seguimiento de gestos táctiles/puntero a nivel de ventana
   useEffect(() => {

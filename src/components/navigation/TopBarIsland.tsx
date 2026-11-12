@@ -37,9 +37,10 @@ export default function TopBarIsland({
   const [isScrolled, setIsScrolled] = useState(false);
   const [isStandalone, setIsStandalone] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDatasetAdmin, setIsDatasetAdmin] = useState(false);
   const menuContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const isAdminVariant = navVariant === 'admin';
+  const isAdminVariant = navVariant === 'admin' || isDatasetAdmin;
   const brandLabel = localCaptacionNombre || 'FlotaX';
   const brandHref = isAdminVariant ? '/admin' : '/catalogo';
 
@@ -50,10 +51,17 @@ export default function TopBarIsland({
 
   useEffect(() => {
     setIsStandalone(isStandalonePwa());
+    const syncPortalMode = () => {
+      setIsDatasetAdmin(document.documentElement.dataset.portalModo === 'ADMIN');
+    };
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
     const handleInstalled = () => setIsStandalone(true);
-    const handleRouteSync = () => setIsMenuOpen(false);
+    const handleRouteSync = () => {
+      setIsMenuOpen(false);
+      syncPortalMode();
+    };
 
+    syncPortalMode();
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('appinstalled', handleInstalled);
     document.addEventListener('astro:page-load', handleRouteSync);

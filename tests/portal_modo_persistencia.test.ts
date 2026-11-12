@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   resolverModoPortalInicial,
   evaluarRedireccionModoPortal,
+  resolverVarianteDock,
   type ModoPortal,
 } from '../src/lib/auth/portal-modo';
 
@@ -60,4 +61,23 @@ test('evaluarRedireccionModoPortal: CLIENTE sin rol de patio en /admin redirige 
 test('evaluarRedireccionModoPortal: CLIENTE en /reservas no redirige', () => {
   assert.equal(evaluarRedireccionModoPortal('/reservas', 'CLIENTE', true), null);
   assert.equal(evaluarRedireccionModoPortal('/reservas/ABC-123', 'CLIENTE', false), null);
+});
+
+test('resolverVarianteDock: en /perfil o /configuracion con datasetModo ADMIN resuelve admin', () => {
+  assert.equal(resolverVarianteDock('/perfil', 'ADMIN', 'client'), 'admin');
+  assert.equal(resolverVarianteDock('/configuracion', 'ADMIN', 'client'), 'admin');
+  assert.equal(resolverVarianteDock('/notificaciones', 'ADMIN'), 'admin');
+});
+
+test('resolverVarianteDock: con datasetModo CLIENTE resuelve client', () => {
+  assert.equal(resolverVarianteDock('/perfil', 'CLIENTE', 'admin'), 'client');
+  assert.equal(resolverVarianteDock('/catalogo', 'CLIENTE', 'client'), 'client');
+});
+
+test('resolverVarianteDock: sin datasetModo usa pathname /admin o propVariant admin como fallback', () => {
+  assert.equal(resolverVarianteDock('/admin', undefined, 'client'), 'admin');
+  assert.equal(resolverVarianteDock('/admin/flota', undefined, undefined), 'admin');
+  assert.equal(resolverVarianteDock('/perfil', undefined, 'admin'), 'admin');
+  assert.equal(resolverVarianteDock('/perfil', undefined, 'client'), 'client');
+  assert.equal(resolverVarianteDock('/catalogo', 'INVALIDO', 'client'), 'client');
 });

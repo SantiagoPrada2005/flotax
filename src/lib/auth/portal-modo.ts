@@ -76,3 +76,28 @@ export function evaluarRedireccionModoPortal(
 
   return null;
 }
+
+/**
+ * Resuelve la variante visual del dock / barra superior ('admin' | 'client')
+ * priorizando el atributo `data-portal-modo` del documento para evitar degradación
+ * a la vista cliente cuando el operador navega por rutas compartidas (`/perfil`, `/configuracion`).
+ */
+export function resolverVarianteDock(
+  pathname: string,
+  datasetModo?: string,
+  propVariant?: string
+): 'admin' | 'client' {
+  if (datasetModo === 'ADMIN') {
+    return 'admin';
+  }
+
+  if (datasetModo === 'CLIENTE') {
+    return 'client';
+  }
+
+  if (pathname === '/admin' || pathname.startsWith('/admin/') || propVariant === 'admin') {
+    return 'admin';
+  }
+
+  return 'client';
+}
