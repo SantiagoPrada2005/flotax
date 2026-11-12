@@ -45,6 +45,8 @@ export default function TopBarIsland({
     modoPortal ?? (navVariant === 'admin' ? 'ADMIN' : 'CLIENTE')
   );
   const menuContainerRef = useRef<HTMLDivElement | null>(null);
+  const propsRef = useRef({ modoPortal, navVariant });
+  propsRef.current = { modoPortal, navVariant };
 
   const isAdminVariant = navVariant === 'admin' || isDatasetAdmin;
   const brandLabel = localCaptacionNombre || 'FlotaX';
@@ -69,8 +71,12 @@ export default function TopBarIsland({
         setIsDatasetAdmin(datasetModo === 'ADMIN');
         setLiveModoPortal(datasetModo);
       } else {
+        const { modoPortal: currentModoPortal, navVariant: currentNavVariant } =
+          propsRef.current;
         setIsDatasetAdmin(false);
-        setLiveModoPortal(modoPortal ?? (navVariant === 'admin' ? 'ADMIN' : 'CLIENTE'));
+        setLiveModoPortal(
+          currentModoPortal ?? (currentNavVariant === 'admin' ? 'ADMIN' : 'CLIENTE')
+        );
       }
     };
     const handleScroll = () => setIsScrolled(window.scrollY > 10);

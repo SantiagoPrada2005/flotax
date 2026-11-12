@@ -12,14 +12,10 @@ import {
   obtenerLocalesMembresia,
   completarOnboardingOperativo,
 } from '@/lib/auth/session';
-
-const COOKIE_OPTIONS = {
-  path: '/',
-  httpOnly: true,
-  secure: true,
-  sameSite: 'lax' as const,
-  maxAge: 60 * 60 * 24 * 30, // 30 días de persistencia
-};
+import {
+  COOKIE_PORTAL_MODO,
+  COOKIE_PORTAL_OPTIONS,
+} from '@/lib/auth/portal-modo';
 
 /**
  * Conmuta explícitamente entre el Portal de Cliente y el Portal Operativo de Patio.
@@ -34,7 +30,7 @@ export const cambiarModoPortal = defineAction({
     const usuario = requireAuth(context);
 
     if (input.modo === 'CLIENTE') {
-      context.cookies.set('movix_portal_modo', 'CLIENTE', COOKIE_OPTIONS);
+      context.cookies.set(COOKIE_PORTAL_MODO, 'CLIENTE', COOKIE_PORTAL_OPTIONS);
       return {
         ok: true,
         modo: 'CLIENTE',
@@ -54,7 +50,7 @@ export const cambiarModoPortal = defineAction({
     const db = getDb(env.DB);
 
     if (usuario.esSuperAdmin) {
-      context.cookies.set('movix_portal_modo', 'ADMIN', COOKIE_OPTIONS);
+      context.cookies.set(COOKIE_PORTAL_MODO, 'ADMIN', COOKIE_PORTAL_OPTIONS);
       return {
         ok: true,
         modo: 'ADMIN',
@@ -79,11 +75,11 @@ export const cambiarModoPortal = defineAction({
     );
     const sedeSeleccionada = sedeActualValida ?? primerSede;
 
-    context.cookies.set('movix_portal_modo', 'ADMIN', COOKIE_OPTIONS);
+    context.cookies.set(COOKIE_PORTAL_MODO, 'ADMIN', COOKIE_PORTAL_OPTIONS);
     context.cookies.set(
       'movix_local_activo',
       sedeSeleccionada.localId,
-      COOKIE_OPTIONS
+      COOKIE_PORTAL_OPTIONS
     );
 
     const onboardingPendiente = !sedeSeleccionada.onboardingCompletado;
@@ -131,7 +127,7 @@ export const conmutarLocalActivo = defineAction({
       });
     }
 
-    context.cookies.set('movix_local_activo', input.localId, COOKIE_OPTIONS);
+    context.cookies.set('movix_local_activo', input.localId, COOKIE_PORTAL_OPTIONS);
 
     const onboardingPendiente = Boolean(
       membresiaDestino && !membresiaDestino.onboardingCompletado
@@ -252,8 +248,8 @@ export const crearPatioOperativo = defineAction({
     });
 
     // 3. Establecer cookies de sesión activas
-    context.cookies.set('movix_portal_modo', 'ADMIN', COOKIE_OPTIONS);
-    context.cookies.set('movix_local_activo', localId, COOKIE_OPTIONS);
+    context.cookies.set(COOKIE_PORTAL_MODO, 'ADMIN', COOKIE_PORTAL_OPTIONS);
+    context.cookies.set('movix_local_activo', localId, COOKIE_PORTAL_OPTIONS);
 
     return {
       ok: true,

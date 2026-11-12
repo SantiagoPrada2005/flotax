@@ -4,6 +4,8 @@ import { getDb } from '@/lib/db';
 import { resolveLocalActivo } from '@/lib/auth/session';
 import {
   COOKIE_PORTAL_MODO,
+  COOKIE_PORTAL_OPTIONS,
+  esUsuarioPersonal,
   resolverModoPortalInicial,
   evaluarRedireccionModoPortal,
 } from '@/lib/auth/portal-modo';
@@ -17,14 +19,6 @@ import { aplicarPoliticaCacheHtml } from '@/lib/pwa/cache-policy';
 import { env } from 'cloudflare:workers';
 
 const ADMIN_PREFIX = '/admin';
-
-const COOKIE_PORTAL_OPTIONS = {
-  path: '/',
-  httpOnly: true,
-  secure: true,
-  sameSite: 'lax' as const,
-  maxAge: 60 * 60 * 24 * 30,
-};
 
 const CLIENT_PROTECTED_PREFIXES = [
   '/reservas',
@@ -199,7 +193,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
         const tieneRolPatio = Boolean(localActivo && localActivo.rol !== 'USUARIO');
         const esSuperAdmin = Boolean(rawUser.esSuperAdmin);
-        const esPersonal = esSuperAdmin || tieneRolPatio;
+        const esPersonal = esUsuarioPersonal(context.locals.usuario);
         const cookieModo = context.cookies.get(COOKIE_PORTAL_MODO)?.value;
 
         context.locals.modoPortal = resolverModoPortalInicial(
@@ -250,9 +244,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       return redirigir(`/login?redirect=${returnTo}`);
     }
 
-    const esPersonal =
-      usuario.esSuperAdmin ||
-      (usuario.localActivo && usuario.localActivo.rol !== 'USUARIO');
+    const esPersonal = esUsuarioPersonal(usuario);
 
     if (!esPersonal) {
       // Permitir acceso si se encuentra en onboarding para crear su propio patio o unirse con código
@@ -291,10 +283,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   // Blindaje perimetral de rutas de cliente (/reservas, /reservas/[codigo]) cuando el operador está en modo ADMIN
   if (usuario) {
-    const esPersonal = Boolean(
-      usuario.esSuperAdmin ||
-        (usuario.localActivo && usuario.localActivo.rol !== 'USUARIO')
-    );
+    const esPersonal = esUsuarioPersonal(usuario);
     const destinoRedireccion = evaluarRedireccionModoPortal(
       pathname,
       context.locals.modoPortal,

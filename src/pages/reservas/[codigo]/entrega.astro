@@ -6,6 +6,7 @@ import { obtenerReservaPorCodigoD1 } from '@/lib/flota/repositorio-reservas';
 import { resolveClientTimeContext } from '@/lib/time/client-time';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
+import { sanitizarRetornoEntrega } from '@/lib/auth/portal-modo';
 
 const { codigo } = Astro.params;
 const modoOperador = Astro.locals.modoPortal === 'ADMIN';
@@ -26,10 +27,7 @@ if (!reservaInicial) {
 }
 
 const retornoParam = Astro.url.searchParams.get('retorno');
-const retornoValido =
-  retornoParam && retornoParam.startsWith('/') && !retornoParam.startsWith('//')
-    ? retornoParam
-    : undefined;
+const retornoValido = sanitizarRetornoEntrega(retornoParam);
 const retornoHref =
   retornoValido ??
   (modoOperador

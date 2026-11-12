@@ -7,9 +7,61 @@ export type ModoPortal = 'CLIENTE' | 'ADMIN';
 
 export const COOKIE_PORTAL_MODO = 'movix_portal_modo';
 
+export const COOKIE_PORTAL_OPTIONS = {
+  path: '/',
+  httpOnly: true,
+  secure: true,
+  sameSite: 'lax' as const,
+  maxAge: 60 * 60 * 24 * 30, // 30 días de persistencia
+};
+
 export interface UsuarioCapacidadPortal {
   esSuperAdmin: boolean;
   tieneRolPatio: boolean;
+}
+
+export interface UsuarioPerfilOperativo {
+  esSuperAdmin: boolean;
+  localActivo?: { rol: string } | null | undefined;
+}
+
+/**
+ * Determina si un usuario posee capacidades operativas de patio (SuperAdmin o rol distinto a 'USUARIO').
+ */
+export function esUsuarioPersonal(
+  usuario: UsuarioPerfilOperativo | null | undefined
+): boolean {
+  if (!usuario) {
+    return false;
+  }
+
+  return Boolean(
+    usuario.esSuperAdmin ||
+      (usuario.localActivo && usuario.localActivo.rol !== 'USUARIO')
+  );
+}
+
+/**
+ * Sanitiza el parámetro `retorno` en el flujo de entrega para prevenir open-redirects.
+ * Solo permite rutas internas relativas bajo `/admin` o `/reservas`, sin `//` ni backslashes (`\`).
+ */
+export function sanitizarRetornoEntrega(
+  retornoParam?: string | null
+): string | undefined {
+  if (
+    !retornoParam ||
+    !retornoParam.startsWith('/') ||
+    retornoParam.startsWith('//') ||
+    retornoParam.includes('\\')
+  ) {
+    return undefined;
+  }
+
+  if (retornoParam.startsWith('/admin') || retornoParam.startsWith('/reservas')) {
+    return retornoParam;
+  }
+
+  return undefined;
 }
 
 /**

@@ -4,6 +4,8 @@ import {
   resolverModoPortalInicial,
   evaluarRedireccionModoPortal,
   resolverVarianteDock,
+  esUsuarioPersonal,
+  sanitizarRetornoEntrega,
   type ModoPortal,
 } from '../src/lib/auth/portal-modo';
 
@@ -80,4 +82,30 @@ test('resolverVarianteDock: sin datasetModo usa pathname /admin o propVariant ad
   assert.equal(resolverVarianteDock('/perfil', undefined, 'admin'), 'admin');
   assert.equal(resolverVarianteDock('/perfil', undefined, 'client'), 'client');
   assert.equal(resolverVarianteDock('/catalogo', 'INVALIDO', 'client'), 'client');
+});
+
+test('esUsuarioPersonal: identifica SuperAdmin, roles de patio y excluye USUARIO o nulos', () => {
+  assert.equal(esUsuarioPersonal(null), false);
+  assert.equal(esUsuarioPersonal(undefined), false);
+  assert.equal(esUsuarioPersonal({ esSuperAdmin: false, localActivo: null }), false);
+  assert.equal(esUsuarioPersonal({ esSuperAdmin: false, localActivo: { rol: 'USUARIO' } }), false);
+  assert.equal(esUsuarioPersonal({ esSuperAdmin: true, localActivo: null }), true);
+  assert.equal(esUsuarioPersonal({ esSuperAdmin: true, localActivo: { rol: 'USUARIO' } }), true);
+  assert.equal(esUsuarioPersonal({ esSuperAdmin: false, localActivo: { rol: 'DUENO' } }), true);
+  assert.equal(esUsuarioPersonal({ esSuperAdmin: false, localActivo: { rol: 'OPERADOR' } }), true);
+});
+
+test('sanitizarRetornoEntrega: permite rutas /admin y /reservas y bloquea open-redirects o backslashes', () => {
+  assert.equal(sanitizarRetornoEntrega('/admin/reservas/ABC-123'), '/admin/reservas/ABC-123');
+  assert.equal(sanitizarRetornoEntrega('/reservas/ABC-123'), '/reservas/ABC-123');
+  assert.equal(sanitizarRetornoEntrega('/admin'), '/admin');
+  assert.equal(sanitizarRetornoEntrega(null), undefined);
+  assert.equal(sanitizarRetornoEntrega(undefined), undefined);
+  assert.equal(sanitizarRetornoEntrega(''), undefined);
+  assert.equal(sanitizarRetornoEntrega('https://evil.com'), undefined);
+  assert.equal(sanitizarRetornoEntrega('//evil.com/admin'), undefined);
+  assert.equal(sanitizarRetornoEntrega('/admin\\evil.com'), undefined);
+  assert.equal(sanitizarRetornoEntrega('/\\evil.com'), undefined);
+  assert.equal(sanitizarRetornoEntrega('/catalogo'), undefined);
+  assert.equal(sanitizarRetornoEntrega('/perfil'), undefined);
 });

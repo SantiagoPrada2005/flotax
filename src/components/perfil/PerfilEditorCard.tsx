@@ -55,6 +55,7 @@ export default function PerfilEditorCard({
   // Estados de retroalimentación
   const [isPending, startTransition] = useTransition();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isSwitchingPortal, setIsSwitchingPortal] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -126,6 +127,9 @@ export default function PerfilEditorCard({
 
   // Conmutar bidireccionalmente entre modo operador de patio y modo personal
   const handleConmutarPatio = async () => {
+    if (isSwitchingPortal) return;
+    setIsSwitchingPortal(true);
+
     const modoDestino: 'ADMIN' | 'CLIENTE' = esModoAdmin ? 'CLIENTE' : 'ADMIN';
     const variante = resolverVarianteTransicionPortal(
       modoDestino === 'ADMIN' ? 'PERSONAL_A_DUEÑO' : 'DUEÑO_A_PERSONAL'
@@ -156,6 +160,8 @@ export default function PerfilEditorCard({
     } catch {
       desactivarFlotaxLoading();
       setErrorMsg('Error al conectar con el servidor.');
+    } finally {
+      setIsSwitchingPortal(false);
     }
   };
 
@@ -456,7 +462,8 @@ export default function PerfilEditorCard({
               <button
                 type="button"
                 onClick={handleConmutarPatio}
-                className="fx-press min-h-[44px] w-full cursor-pointer flex items-center justify-between p-3.5 hover:bg-gray-50/80 dark:hover:bg-white/10 rounded-2xl text-left"
+                disabled={isSwitchingPortal}
+                className="fx-press min-h-[44px] w-full cursor-pointer flex items-center justify-between p-3.5 hover:bg-gray-50/80 dark:hover:bg-white/10 rounded-2xl text-left disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div className="flex items-center gap-3.5 min-w-0">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#111827] dark:bg-white text-white dark:text-[#111827]">
