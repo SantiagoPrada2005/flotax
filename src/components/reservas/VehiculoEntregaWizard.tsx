@@ -13,6 +13,7 @@ export interface VehiculoEntregaWizardProps {
   codigo: string;
   reservaInicial: ReservaClienteItem;
   hoyISO: string;
+  retornoHref?: string | undefined;
 }
 
 type PasoWizard = 0 | 1 | 2 | 3;
@@ -80,8 +81,10 @@ export default function VehiculoEntregaWizard({
   codigo: _codigo,
   reservaInicial,
   hoyISO: _hoyISO,
+  retornoHref,
 }: VehiculoEntregaWizardProps) {
   const [reserva, setReserva] = useState<ReservaClienteItem>(reservaInicial);
+  const destinoVolver = retornoHref ?? `/reservas/${reserva.codigo}`;
   const [pasoActual, setPasoActual] = useState<PasoWizard>(0);
   const [maxPasoDesbloqueado, setMaxPasoDesbloqueado] = useState<PasoWizard>(1);
 
@@ -179,12 +182,12 @@ export default function VehiculoEntregaWizard({
           irAPaso((pasoActual - 1) as PasoWizard);
         }
       } else if (e.key === 'Escape') {
-        navigate(`/reservas/${reserva.codigo}`);
+        navigate(destinoVolver);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [pasoActual, checklistCompleto, sintesisCompletada, irAPaso, reserva.codigo]);
+  }, [pasoActual, checklistCompleto, sintesisCompletada, irAPaso, destinoVolver]);
 
   // Motor de Síntesis 0% -> 92% -> 100% cuando entra al Paso 4 (índice 3)
   useEffect(() => {
@@ -464,7 +467,7 @@ export default function VehiculoEntregaWizard({
 
           <button
             type="button"
-            onClick={() => navigate(`/reservas/${reserva.codigo}`)}
+            onClick={() => navigate(destinoVolver)}
             aria-label="Cerrar asistente y volver a la reserva"
             className={`pointer-events-auto ios-press-bounce flex h-9 w-9 items-center justify-center rounded-full border text-xs font-bold cursor-pointer ${
               pasoActual === 1
@@ -1053,12 +1056,14 @@ export default function VehiculoEntregaWizard({
               <button
                 type="button"
                 disabled={!sintesisCompletada}
-                onClick={() => navigate(`/reservas/${reserva.codigo}`)}
+                onClick={() => navigate(destinoVolver)}
                 className="ios-press-bounce flex min-h-[54px] w-full items-center justify-center gap-2 rounded-full bg-[#111827] px-6 py-3.5 font-display text-sm font-bold text-white shadow-lg transition hover:bg-[#1F2937] disabled:opacity-50 cursor-pointer disabled:cursor-wait"
               >
                 <span>
                   {sintesisCompletada
-                    ? 'Ver comprobante de cierre en mi reserva'
+                    ? (retornoHref?.startsWith('/admin')
+                        ? 'Ver comprobante en la reserva'
+                        : 'Ver comprobante de cierre en mi reserva')
                     : 'Procesando cierre pericial...'}
                 </span>
               </button>

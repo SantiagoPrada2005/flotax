@@ -8,9 +8,10 @@ import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
 
 const { codigo } = Astro.params;
+const modoOperador = Astro.locals.modoPortal === 'ADMIN';
 
 if (!codigo) {
-  return Astro.redirect('/reservas');
+  return Astro.redirect(modoOperador ? '/admin/reservas' : '/reservas');
 }
 
 const { dateString: hoyISO } = resolveClientTimeContext(Astro.request);
@@ -21,19 +22,31 @@ if (!reservaInicial) {
 }
 
 if (!reservaInicial) {
-  return Astro.redirect('/reservas');
+  return Astro.redirect(modoOperador ? '/admin/reservas' : '/reservas');
 }
+
+const retornoParam = Astro.url.searchParams.get('retorno');
+const retornoValido =
+  retornoParam && retornoParam.startsWith('/') && !retornoParam.startsWith('//')
+    ? retornoParam
+    : undefined;
+const retornoHref =
+  retornoValido ??
+  (modoOperador
+    ? `/admin/reservas/${codigo.toUpperCase()}`
+    : `/reservas/${codigo.toUpperCase()}`);
 ---
 
 <LayoutApp
   title={`Entrega y Evaluación #${codigo.toUpperCase()} — FlotaX`}
   hideNav={true}
-  navVariant="client"
+  navVariant={modoOperador ? 'admin' : 'client'}
 >
   <VehiculoEntregaWizard
     client:load
     codigo={codigo.toUpperCase()}
     reservaInicial={reservaInicial}
     hoyISO={hoyISO}
+    retornoHref={retornoHref}
   />
 </LayoutApp>
