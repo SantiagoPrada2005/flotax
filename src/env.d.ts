@@ -9,6 +9,8 @@ declare namespace App {
     session: import('./lib/auth').BetterAuthSessionData | null;
     /** Usuario autenticado con local activo y permisos RBAC */
     usuario: import('./lib/auth/session').UsuarioSesion | null;
+    /** Modo de portal activo: CLIENTE (experiencia arrendatario) o ADMIN (operación de patio) */
+    modoPortal: import('./lib/auth/portal-modo').ModoPortal;
     /** Contexto del local cautivo cuando el cliente ingresa por un link exclusivo (/c/[slug]) */
     localCaptacion: import('./lib/flota/locales-captacion').LocalPublicoContexto | null;
     /** Instancia tipada del Logger contextual de la petición */
