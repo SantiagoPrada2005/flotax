@@ -3,7 +3,7 @@ import { env } from 'cloudflare:workers';
 import LayoutApp from '@/layouts/LayoutApp.astro';
 import NotificacionesPagina from '@/components/notificaciones/NotificacionesPagina';
 
-const modoOperador = Astro.cookies.get('movix_portal_modo')?.value === 'ADMIN';
+const modoOperador = Astro.locals.modoPortal === 'ADMIN';
 ---
 
 <LayoutApp
