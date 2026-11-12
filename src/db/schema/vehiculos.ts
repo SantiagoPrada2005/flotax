@@ -14,6 +14,7 @@ export type CategoriaVehiculo = (typeof categoriasVehiculo)[number];
 export const estadosVehiculo = [
   'DISPONIBLE',
   'RESERVADO',
+  'NO_DISPONIBLE',
   'MANTENIMIENTO',
   'FUERA_SERVICIO',
 ] as const;

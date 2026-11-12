@@ -45,6 +45,8 @@ Los dominios cerrados viven **en el schema Drizzle**, no en los módulos de cons
 | | `categoriasLicenciaConduccion` | `reservas.contacto_categoria_licencia`, `contratos_alquiler.arrendatario_licencia_categoria` |
 | `src/db/schema/contratos.ts` | `estadosPagoContrato` | `contratos_alquiler.estado_pago` |
 | | `estadosContratoAlquiler` | `contratos_alquiler.estado_contrato` |
+| `src/db/schema/eventos_alquiler.ts` | `tiposEventoAlquiler` | `eventos_alquiler.tipo_evento` |
+| | `modalidadesTarifaEvento` | `eventos_alquiler.modalidad_tarifa` |
 | `src/db/schema/inspecciones.ts` | `tiposActoInspeccion` | `inspecciones_periciales.tipo_acto` |
 | | `estadosGeneralesInspeccion` | `inspecciones_periciales.estado_general` |
 | | `estadosPuntoInspeccionR2` | `puntos_inspeccion_r2.estado` |
@@ -284,7 +286,7 @@ Catálogo de unidades físicas y operativas disponibles para alquiler y control 
 | `numero_chasis` | TEXT | NULLABLE | VIN / número de chasis o serie para contrato legal. |
 | `valor_comercial` | INTEGER | NULLABLE | Avalúo comercial en COP para respaldo y pagaré (Cláusula 4). |
 | `unidad_medida_uso` | TEXT | NOT NULL, DEFAULT 'KM' | Medidor de uso: 'KM', 'HORAS_MOTOR', 'MINUTOS'. |
-| `estado` | TEXT | NOT NULL, DEFAULT 'DISPONIBLE' | Estado operativo: 'DISPONIBLE', 'RESERVADO', 'MANTENIMIENTO', 'FUERA_SERVICIO'. |
+| `estado` | TEXT | NOT NULL, DEFAULT 'DISPONIBLE' | Estado operativo: 'DISPONIBLE', 'RESERVADO', 'NO_DISPONIBLE', 'MANTENIMIENTO', 'FUERA_SERVICIO'. |
 | `precio_dia` | INTEGER | NOT NULL | Tarifa diaria en COP (ej. 280000). |
 | `deposito_garantia` | INTEGER | NOT NULL | Depósito o fianza de garantía en COP (ej. 750000). |
 | `transmision` | TEXT | NOT NULL | Tipo de transmisión ('Automática', 'Manual', 'Eléctrica'). |
@@ -401,11 +403,14 @@ Solicitudes comerciales de alquiler, bloqueo de fechas en el calendario suizo y 
 | `cliente_id` | TEXT | NULLABLE, FK `user.id` | Usuario cliente autenticado. |
 | `fecha_inicio` | TEXT | NOT NULL | Fecha de inicio (`YYYY-MM-DD`). |
 | `fecha_fin` | TEXT | NOT NULL | Fecha de fin (`YYYY-MM-DD`). |
+| `fecha_fin_original` | TEXT | NULLABLE | Fecha fin pactada originalmente al crear la reserva (`YYYY-MM-DD`). |
+| `fecha_devolucion_real` | TEXT | NULLABLE | Fecha de restitución real en patio (`YYYY-MM-DD`). |
 | `dias_alquiler` | INTEGER | NOT NULL | Cantidad de días inclusivos. |
-| `estado` | TEXT | NOT NULL, DEFAULT 'PENDIENTE' | 'PENDIENTE', 'CONFIRMADA', 'EN_CURSO', 'COMPLETADA', 'RECHAZADA', 'CANCELADA'. |
+| `estado` | TEXT | NOT NULL, DEFAULT 'PENDIENTE' | 'PENDIENTE', 'CONFIRMADA', 'EN_CURSO', 'PAUSADA', 'COMPLETADA', 'RECHAZADA', 'CANCELADA'. |
 | `modalidad_entrega` | TEXT | NOT NULL, DEFAULT 'PATIO_PRINCIPAL' | 'PATIO_PRINCIPAL', 'DOMICILIO_MEDELLIN'. |
 | `direccion_entrega` | TEXT | NULLABLE | Dirección cuando es entrega a domicilio. |
 | `sede_nombre` | TEXT | NOT NULL | Nombre de la sede de entrega. |
+| `token_acceso_publico` | TEXT | NULLABLE | Token firmado para consulta y cancelación segura de reservas web sin sesión. |
 | `precio_dia_cotizado` | INTEGER | NOT NULL | Tarifa diaria congelada al cotizar en COP. |
 | `subtotal_tarifa_cotizado` | INTEGER | NOT NULL | Subtotal tarifa base (`dias * precio_dia`). |
 | `cobertura_pericial_cotizada` | INTEGER | NOT NULL | Monto de cobertura e inspección R2 (8%). |
@@ -415,12 +420,17 @@ Solicitudes comerciales de alquiler, bloqueo de fechas en el calendario suizo y 
 | `monto_abono_reportado` | INTEGER | NOT NULL, DEFAULT 0 | Importe en COP reportado al reservar. |
 | `referencia_abono_inicial` | TEXT | NULLABLE | Comprobante o referencia de transferencia. |
 | `contacto_nombre` | TEXT | NOT NULL | Nombre completo del conductor titular. |
-| `contacto_tipo_documento` | TEXT | NOT NULL | 'CC', 'CE', 'PASAPORTE', 'NIT'. |
-| `contacto_numero_documento` | TEXT | NOT NULL | Número de documento del conductor. |
-| `contacto_categoria_licencia` | TEXT | NOT NULL | 'A1', 'A2', 'B1', 'B2', 'C1'. |
+| `contacto_tipo_documento` | TEXT | NULLABLE | 'CC', 'CE', 'PASAPORTE', 'NIT'. |
+| `contacto_numero_documento` | TEXT | NULLABLE | Número de documento del conductor. |
+| `contacto_categoria_licencia` | TEXT | NULLABLE | 'A1', 'A2', 'B1', 'B2', 'C1'. |
 | `contacto_telefono` | TEXT | NOT NULL | Celular WhatsApp del conductor. |
-| `contacto_correo` | TEXT | NOT NULL | Correo electrónico para envío de contrato y OTP. |
+| `contacto_correo` | TEXT | NULLABLE | Correo electrónico para envío de contrato y OTP. |
 | `ley_1581_aceptada` | INTEGER (boolean) | NOT NULL, DEFAULT true | Aceptación de tratamiento de datos personales. |
+| `autorizado_sin_documentos_por_id` | TEXT | NULLABLE, FK `user.id` | Operador que autorizó la reserva sin documentos completos. |
+| `nota_autorizacion_documentos` | TEXT | NULLABLE | Justificación o nota de autorización sin documentos. |
+| `motivo_cancelacion` | TEXT | NULLABLE | Motivo o justificación de cancelación de la reserva. |
+| `cancelado_por_id` | TEXT | NULLABLE, FK `user.id` | Usuario o colaborador que canceló la reserva. |
+| `cancelado_en` | TIMESTAMP | NULLABLE | Momento exacto de cancelación. |
 | `motivo_rechazo` | TEXT | NULLABLE | Causal explicativa si la solicitud es rechazada. |
 | `creado_por_id` | TEXT | NULLABLE, FK `user.id` | Usuario o asesor que creó la reserva. |
 | `confirmado_por_id` | TEXT | NULLABLE, FK `user.id` | Operador que aprobó la solicitud. |
@@ -441,14 +451,15 @@ Instrumento jurídico 1:1 con `reservas` que formaliza el traslado de guarda mat
 | `vehiculo_id` | TEXT | NOT NULL, FK `vehiculos.id` | Vehículo entregado en tenencia. |
 | `cliente_id` | TEXT | NULLABLE, FK `user.id` | Cliente titular. |
 | `arrendatario_nombre` | TEXT | NOT NULL | Nombre legal en el contrato. |
-| `arrendatario_tipo_documento` | TEXT | NOT NULL | 'CC', 'CE', 'PASAPORTE', 'NIT'. |
-| `arrendatario_numero_documento` | TEXT | NOT NULL | Identificación legal del arrendatario. |
+| `arrendatario_tipo_documento` | TEXT | NULLABLE | 'CC', 'CE', 'PASAPORTE', 'NIT'. |
+| `arrendatario_numero_documento` | TEXT | NULLABLE | Identificación legal del arrendatario. |
 | `arrendatario_ciudad_expedicion` | TEXT | NULLABLE | Lugar de expedición del documento. |
-| `arrendatario_licencia_numero` | TEXT | NOT NULL | Número de licencia de conducción. |
-| `arrendatario_licencia_categoria` | TEXT | NOT NULL | 'A1', 'A2', 'B1', 'B2', 'C1'. |
+| `arrendatario_licencia_numero` | TEXT | NULLABLE | Número de licencia de conducción. |
+| `arrendatario_licencia_categoria` | TEXT | NULLABLE | 'A1', 'A2', 'B1', 'B2', 'C1'. |
 | `arrendatario_domicilio` | TEXT | NULLABLE | Dirección física para notificaciones judiciales. |
 | `arrendatario_telefono` | TEXT | NOT NULL | Teléfono del arrendatario. |
-| `arrendatario_correo` | TEXT | NOT NULL | Correo electrónico del arrendatario. |
+| `arrendatario_correo` | TEXT | NULLABLE | Correo electrónico del arrendatario. |
+| `autorizado_sin_documentos_por_id` | TEXT | NULLABLE, FK `user.id` | Operador que autorizó el contrato sin documentos completos. |
 | `ley_1581_aceptada` | INTEGER (boolean) | NOT NULL, DEFAULT true | Consentimiento Habeas Data (Ley 1581). |
 | `traslado_fotomultas_aceptado` | INTEGER (boolean) | NOT NULL, DEFAULT true | Autorización de fotodetecciones (Sentencias C-038/20 y C-321/22). |
 | `pagare_blanco_firmado` | INTEGER (boolean) | NOT NULL, DEFAULT false | Suscripción de pagaré y carta de instrucciones (Cláusula 10). |
@@ -465,16 +476,46 @@ Instrumento jurídico 1:1 con `reservas` que formaliza el traslado de guarda mat
 | `cargos_mora` | INTEGER | NOT NULL, DEFAULT 0 | Sanción liquidada por retraso en devolución. |
 | `cargos_novedades_danos` | INTEGER | NOT NULL, DEFAULT 0 | Cargos por daños verificados en inspección de retorno. |
 | `cargos_combustible_lavado` | INTEGER | NOT NULL, DEFAULT 0 | Cargos por faltante de combustible/carga o limpieza. |
+| `cargos_otros_local` | INTEGER | NOT NULL, DEFAULT 0 | Sobrecostos o cargos adicionales fijados por el local al retorno/prórroga. |
+| `detalle_otros_cargos` | TEXT | NULLABLE | Detalle explicativo de los otros cargos del local. |
+| `ajuste_descuento_local` | INTEGER | NOT NULL, DEFAULT 0 | Descuento o ajuste tarifario aplicado por el local (ej. devolución anticipada). |
+| `clausula_encargado` | TEXT | NULLABLE | Cláusula particular o acuerdo especial registrado por el encargado. |
 | `total_liquidado` | INTEGER | NOT NULL | Total final liquidado del Waybill en COP. |
 | `total_pagado` | INTEGER | NOT NULL, DEFAULT 0 | Total recaudado en caja. |
 | `saldo_pendiente` | INTEGER | NOT NULL | Saldo por cobrar al cliente. |
 | `estado_pago` | TEXT | NOT NULL, DEFAULT 'PARCIAL' | 'PENDIENTE', 'PARCIAL', 'PAGADO', 'EN_MORA'. |
-| `estado_contrato` | TEXT | NOT NULL, DEFAULT 'VIGENTE' | 'BORRADOR', 'VIGENTE', 'CERRADO_PAZ_Y_SALVO', 'CERRADO_CON_SALDO', 'INCUMPLIMIENTO_PENAL', 'ANULADO'. |
+| `estado_contrato` | TEXT | NOT NULL, DEFAULT 'VIGENTE' | 'BORRADOR', 'VIGENTE', 'PAUSADO', 'CERRADO_PAZ_Y_SALVO', 'CERRADO_CON_SALDO', 'INCUMPLIMIENTO_PENAL', 'ANULADO'. |
+| `motivo_anulacion` | TEXT | NULLABLE | Causal explicativa obligatoria si el contrato es anulado. |
+| `anulado_por_id` | TEXT | NULLABLE, FK `user.id` | Administrador o dueño que anuló el contrato. |
+| `anulado_en` | TIMESTAMP | NULLABLE | Momento exacto de anulación. |
 | `firma_arrendador_r2_key` | TEXT | NULLABLE | Firma digital del operador en R2. |
 | `firma_arrendatario_r2_key` | TEXT | NULLABLE | Firma digital del cliente en R2. |
 | `contrato_pdf_r2_key` | TEXT | NULLABLE | Documento PDF inmutable del contrato en R2. |
 | `creado_en` | TIMESTAMP | NOT NULL | Creación. |
 | `actualizado_en` | TIMESTAMP | NOT NULL | Última modificación. |
+
+#### `eventos_alquiler`
+Historial cronológico auditado de mutaciones y novedades en el ciclo de alquiler: pausas, reanudaciones, prórrogas, devoluciones anticipadas, sobrecostos de cláusula, autorizaciones sin documentos, cancelaciones, anulaciones y reaperturas.
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|---------------|-------------|
+| `id` | TEXT | PRIMARY KEY | Identificador único del evento. |
+| `local_id` | TEXT | NOT NULL, FK `locales_alquiler.id` (CASCADE) | Local de la operación. |
+| `reserva_id` | TEXT | NOT NULL, FK `reservas.id` (CASCADE) | Reserva impactada. |
+| `contrato_id` | TEXT | NULLABLE, FK `contratos_alquiler.id` | Contrato asociado si ya fue emitido. |
+| `vehiculo_id` | TEXT | NOT NULL, FK `vehiculos.id` | Unidad de la flota intervenida. |
+| `tipo_evento` | TEXT | NOT NULL | 'PAUSA', 'REANUDACION', 'PRORROGA', 'DEVOLUCION_ANTICIPADA', 'SOBRECOSTO_CLAUSULA', 'AUTORIZACION_SIN_DOCS', 'CANCELACION', 'ANULACION', 'REAPERTURA'. |
+| `dias_delta` | INTEGER | NOT NULL, DEFAULT 0 | Días agregados (`+N`) o liberados (`-N`). |
+| `fecha_bloqueo_inicio` | TEXT | NULLABLE | Fecha de inicio de bloqueo de disponibilidad (`YYYY-MM-DD`). |
+| `fecha_bloqueo_fin` | TEXT | NULLABLE | Fecha de fin de bloqueo de disponibilidad (`YYYY-MM-DD`). |
+| `modalidad_tarifa` | TEXT | NULLABLE | 'SIN_COSTO', 'MISMO_PRECIO', 'TARIFA_ESTANDAR', 'PRECIO_PACTADO'. |
+| `monto_delta` | INTEGER | NOT NULL, DEFAULT 0 | Delta financiero en COP (+ cargo, - descuento). |
+| `clausula_o_texto` | TEXT | NULLABLE | Texto del acuerdo, motivo de pausa o cláusula del encargado. |
+| `actor_id` | TEXT | NULLABLE, FK `user.id` | Colaborador o cliente responsable del evento. |
+| `activo` | INTEGER (boolean) | NOT NULL, DEFAULT true | Estado de vigencia del evento (ej. pausa activa vs cerrada). |
+| `creado_en` | TIMESTAMP | NOT NULL | Momento de registro del evento. |
+
+Índices: `eventos_alquiler_reserva_idx (reserva_id, creado_en)`, `eventos_alquiler_local_tipo_idx (local_id, tipo_evento, creado_en)` y `eventos_alquiler_vehiculo_idx (vehiculo_id, creado_en)`.
 
 #### `plantillas_inspeccion`
 Plantillas versionadas de checklist pericial por categoría de vehículo (`SUV`, `SEDAN`, `MOTO`, `PATINETA`, `UTILITARIO`).
@@ -782,6 +823,11 @@ erDiagram
     vehiculos ||--o{ puntos_inspeccion_r2 : "anatomia 360 R2"
 
     reservas ||--o| contratos_alquiler : "formaliza 1 a 1"
+    reservas ||--o{ eventos_alquiler : "historial ciclo"
+    contratos_alquiler ||--o{ eventos_alquiler : "eventos contractuales"
+    vehiculos ||--o{ eventos_alquiler : "novedades vehiculo"
+    locales_alquiler ||--o{ eventos_alquiler : "auditoria de patio"
+    user ||--o{ eventos_alquiler : "actor del evento"
     reservas ||--o{ inspecciones_periciales : "actas entrega y retorno"
     reservas ||--o{ puntos_inspeccion_r2 : "hallazgos R2"
     reservas ||--o{ multimedia_vehiculo : "evidencia por reserva"
@@ -1062,9 +1108,12 @@ erDiagram
         string cliente_id FK
         string fecha_inicio
         string fecha_fin
+        string fecha_fin_original
+        string fecha_devolucion_real
         integer dias_alquiler
         string estado
         string modalidad_entrega
+        string token_acceso_publico
         integer precio_dia_cotizado
         integer subtotal_tarifa_cotizado
         integer cobertura_pericial_cotizada
@@ -1076,6 +1125,10 @@ erDiagram
         string contacto_tipo_documento
         string contacto_numero_documento
         string contacto_categoria_licencia
+        string autorizado_sin_documentos_por_id FK
+        string motivo_cancelacion
+        string cancelado_por_id FK
+        timestamp cancelado_en
         timestamp creado_en
         timestamp actualizado_en
     }
@@ -1089,6 +1142,7 @@ erDiagram
         string cliente_id FK
         string arrendatario_nombre
         string arrendatario_numero_documento
+        string autorizado_sin_documentos_por_id FK
         boolean traslado_fotomultas_aceptado
         boolean pagare_blanco_firmado
         timestamp fecha_hora_entrega_real
@@ -1096,14 +1150,38 @@ erDiagram
         timestamp fecha_hora_devolucion_real
         integer medidor_uso_entrega
         integer medidor_uso_retorno
+        integer cargos_otros_local
+        integer ajuste_descuento_local
+        string clausula_encargado
         integer total_liquidado
         integer total_pagado
         integer saldo_pendiente
         string estado_pago
         string estado_contrato
+        string motivo_anulacion
+        string anulado_por_id FK
+        timestamp anulado_en
         string contrato_pdf_r2_key
         timestamp creado_en
         timestamp actualizado_en
+    }
+
+    eventos_alquiler {
+        string id PK
+        string local_id FK
+        string reserva_id FK
+        string contrato_id FK
+        string vehiculo_id FK
+        string tipo_evento
+        integer dias_delta
+        string fecha_bloqueo_inicio
+        string fecha_bloqueo_fin
+        string modalidad_tarifa
+        integer monto_delta
+        string clausula_o_texto
+        string actor_id FK
+        boolean activo
+        timestamp creado_en
     }
 
     plantillas_inspeccion {

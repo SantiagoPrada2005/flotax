@@ -20,6 +20,7 @@ export * from './mantenimientos';
 // Reservations, Legal Contracts & R2 Pericial Inspections Domain Schemas
 export * from './reservas';
 export * from './contratos';
+export * from './eventos_alquiler';
 export * from './inspecciones';
 
 // Notifications, Treasury (Caja) & KYC Identity Verification Domain Schemas
