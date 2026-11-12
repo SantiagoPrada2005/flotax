@@ -51,6 +51,7 @@ export function calcularMetricasFlotaAdmin(
         mantenimientoCount++;
         break;
       case 'FUERA_SERVICIO':
+      case 'NO_DISPONIBLE':
         fueraServicioCount++;
         break;
     }

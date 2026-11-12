@@ -7,18 +7,27 @@ import {
   calcularDiasInclusivos,
   sumarDiasISO,
   verificarDisponibilidadVehiculo,
+  obtenerBloquesNoDisponiblesD1,
+  obtenerEstadoDocumentalVehiculoD1,
 } from '../src/lib/flota/disponibilidad.ts';
+import { resolverEstadoActualVehiculo } from '../src/lib/mantenimientos/repositorio.ts';
 import type { BloqueNoDisponible } from '../src/lib/flota/types.ts';
-import { vehiculos, mantenimientosVehiculo, reservas } from '../src/db/schema/index.ts';
+import {
+  vehiculos,
+  mantenimientosVehiculo,
+  reservas,
+  documentosVehiculo,
+} from '../src/db/schema/index.ts';
 
 describe('Disponibilidad de Vehículos - FlotaX', () => {
   const vehiculoIdPrueba = 'veh-test-mazda-cx30';
   const hoyPrueba = '2026-11-05';
 
   function crearMockDb(config: {
-    vehiculo?: { id: string; activo: boolean; estado: string };
+    vehiculo?: { id: string; activo: boolean; estado: string; categoria?: string };
     mantenimientos?: Array<{ id: string; fechaInicio: string; fechaFin: string; etiqueta?: string; estado: string }>;
     reservas?: Array<{ id: string; codigo: string; fechaInicio: string; fechaFin: string; estado: string }>;
+    documentos?: Array<{ id: string; vehiculoId: string; tipoDocumento: string; fechaVencimiento: string | null; vigente: boolean }>;
   }) {
     return {
       select: () => ({
@@ -30,16 +39,31 @@ describe('Disponibilidad de Vehículos - FlotaX', () => {
             datos = config.mantenimientos ?? [];
           } else if (table === reservas) {
             datos = config.reservas ?? [];
+          } else if (table === documentosVehiculo) {
+            datos = config.documentos ?? [];
           }
-          return {
-            where: () => ({
+
+          const queryResult = {
+            limit: () => Promise.resolve(datos),
+            orderBy: () => ({
               limit: () => Promise.resolve(datos),
-              orderBy: () => ({
-                limit: () => Promise.resolve(datos),
-              }),
+              then: (resolve: any) => resolve(datos),
             }),
+            then: (resolve: any) => resolve(datos),
+          };
+
+          return {
+            where: () => queryResult,
+            orderBy: () => queryResult,
+            limit: () => Promise.resolve(datos),
+            then: (resolve: any) => resolve(datos),
           };
         },
+      }),
+      update: () => ({
+        set: () => ({
+          where: () => Promise.resolve(),
+        }),
       }),
     } as any;
   }
@@ -266,5 +290,214 @@ describe('Disponibilidad de Vehículos - FlotaX', () => {
     assert.equal(dictamen.usable, true);
     assert.equal(dictamen.ocupado, false);
     assert.equal(dictamen.estadoSugerido, 'DISPONIBLE');
+  });
+
+  test('10. Reserva PAUSADA genera BloqueNoDisponible con motivo NO_DISPONIBLE y calendario toma NO_DISPONIBLE', async () => {
+    const mockDbPausada = crearMockDb({
+      reservas: [
+        {
+          id: 'res-pausa-1',
+          codigo: 'RES-PAUSA-01',
+          fechaInicio: '2026-11-10',
+          fechaFin: '2026-11-12',
+          estado: 'PAUSADA',
+        },
+      ],
+      mantenimientos: [],
+    });
+
+    const bloques = await obtenerBloquesNoDisponiblesD1(
+      mockDbPausada,
+      vehiculoIdPrueba,
+      hoyPrueba
+    );
+
+    assert.equal(bloques.length, 1);
+    assert.equal(bloques[0]?.motivo, 'NO_DISPONIBLE');
+    assert.equal(bloques[0]?.id, 'res-pausa-1');
+
+    const cal = construirCalendarioMes(vehiculoIdPrueba, 2026, 10, hoyPrueba, bloques);
+    const dia10 = cal.dias.find((d) => d.fechaISO === '2026-11-10');
+    const dia11 = cal.dias.find((d) => d.fechaISO === '2026-11-11');
+    const dia12 = cal.dias.find((d) => d.fechaISO === '2026-11-12');
+    const dia13 = cal.dias.find((d) => d.fechaISO === '2026-11-13');
+
+    assert.equal(dia10?.estado, 'NO_DISPONIBLE');
+    assert.equal(dia11?.estado, 'NO_DISPONIBLE');
+    assert.equal(dia12?.estado, 'NO_DISPONIBLE');
+    assert.notEqual(dia10?.estado, 'RESERVADO');
+    assert.notEqual(dia10?.estado, 'DISPONIBLE');
+    assert.equal(dia13?.estado, 'DISPONIBLE');
+  });
+
+  test('11. resolverEstadoActualVehiculo retorna NO_DISPONIBLE cuando hay reserva PAUSADA hoy respetando prioridades', async () => {
+    // Caso 1: Reserva PAUSADA activa hoy -> NO_DISPONIBLE
+    const dbPausa = crearMockDb({
+      vehiculo: { id: vehiculoIdPrueba, activo: true, estado: 'DISPONIBLE' },
+      reservas: [
+        {
+          id: 'res-p-hoy',
+          codigo: 'RES-P-01',
+          fechaInicio: '2026-11-01',
+          fechaFin: '2026-11-10',
+          estado: 'PAUSADA',
+        },
+      ],
+      mantenimientos: [],
+    });
+    const estadoPausa = await resolverEstadoActualVehiculo(dbPausa, vehiculoIdPrueba, hoyPrueba);
+    assert.equal(estadoPausa, 'NO_DISPONIBLE');
+
+    // Caso 2: Prioridad EN_TALLER sobre PAUSADA
+    const dbTaller = crearMockDb({
+      vehiculo: { id: vehiculoIdPrueba, activo: true, estado: 'DISPONIBLE' },
+      reservas: [
+        {
+          id: 'res-p-hoy',
+          codigo: 'RES-P-01',
+          fechaInicio: '2026-11-01',
+          fechaFin: '2026-11-10',
+          estado: 'PAUSADA',
+        },
+      ],
+      mantenimientos: [
+        {
+          id: 'mant-urgente',
+          fechaInicio: '2026-11-04',
+          fechaFin: '2026-11-06',
+          estado: 'EN_TALLER',
+        },
+      ],
+    });
+    const estadoTaller = await resolverEstadoActualVehiculo(dbTaller, vehiculoIdPrueba, hoyPrueba);
+    assert.equal(estadoTaller, 'MANTENIMIENTO');
+
+    // Caso 3: Prioridad FUERA_SERVICIO sobre todo
+    const dbFueraServicio = crearMockDb({
+      vehiculo: { id: vehiculoIdPrueba, activo: true, estado: 'FUERA_SERVICIO' },
+      reservas: [
+        {
+          id: 'res-p-hoy',
+          codigo: 'RES-P-01',
+          fechaInicio: '2026-11-01',
+          fechaFin: '2026-11-10',
+          estado: 'PAUSADA',
+        },
+      ],
+    });
+    const estadoFs = await resolverEstadoActualVehiculo(dbFueraServicio, vehiculoIdPrueba, hoyPrueba);
+    assert.equal(estadoFs, 'FUERA_SERVICIO');
+
+    // Caso 4: Sin reserva ni taller -> DISPONIBLE
+    const dbLibre = crearMockDb({
+      vehiculo: { id: vehiculoIdPrueba, activo: true, estado: 'DISPONIBLE' },
+      reservas: [],
+      mantenimientos: [],
+    });
+    const estadoLibre = await resolverEstadoActualVehiculo(dbLibre, vehiculoIdPrueba, hoyPrueba);
+    assert.equal(estadoLibre, 'DISPONIBLE');
+  });
+
+  test('12. obtenerEstadoDocumentalVehiculoD1: bloquea por SOAT/RTM vencido, exceptúa RTM en PATINETA y no bloquea sin filas', async () => {
+    // Subcaso A: Sin filas aún en documentos_vehiculo -> no bloquea, reporta faltantes
+    const dbVacio = crearMockDb({
+      documentos: [],
+    });
+    const docVacioSedan = await obtenerEstadoDocumentalVehiculoD1(
+      dbVacio,
+      vehiculoIdPrueba,
+      'SEDAN',
+      hoyPrueba
+    );
+    assert.equal(docVacioSedan.tieneVencidos, false);
+    assert.equal(docVacioSedan.requiereRtm, true);
+    assert.deepEqual(docVacioSedan.faltantesSinCarga, ['SOAT', 'TECNICO_MECANICA']);
+    assert.deepEqual(docVacioSedan.vencidos, []);
+
+    // Subcaso B: SOAT vencido por fecha -> bloquea
+    const dbSoatVencido = crearMockDb({
+      documentos: [
+        {
+          id: 'doc-1',
+          vehiculoId: vehiculoIdPrueba,
+          tipoDocumento: 'SOAT',
+          fechaVencimiento: '2026-11-01',
+          vigente: true,
+        },
+        {
+          id: 'doc-2',
+          vehiculoId: vehiculoIdPrueba,
+          tipoDocumento: 'TECNICO_MECANICA',
+          fechaVencimiento: '2027-01-01',
+          vigente: true,
+        },
+      ],
+    });
+    const docSoatVenc = await obtenerEstadoDocumentalVehiculoD1(
+      dbSoatVencido,
+      vehiculoIdPrueba,
+      'SEDAN',
+      hoyPrueba
+    );
+    assert.equal(docSoatVenc.tieneVencidos, true);
+    assert.equal(docSoatVenc.vencidos.length, 1);
+    assert.equal(docSoatVenc.vencidos[0]?.tipo, 'SOAT');
+
+    // Subcaso C: RTM con vigente = false -> bloquea en SEDAN
+    const dbRtmInvalido = crearMockDb({
+      documentos: [
+        {
+          id: 'doc-1',
+          vehiculoId: vehiculoIdPrueba,
+          tipoDocumento: 'SOAT',
+          fechaVencimiento: '2027-01-01',
+          vigente: true,
+        },
+        {
+          id: 'doc-2',
+          vehiculoId: vehiculoIdPrueba,
+          tipoDocumento: 'TECNICO_MECANICA',
+          fechaVencimiento: '2027-01-01',
+          vigente: false,
+        },
+      ],
+    });
+    const docRtmInvalido = await obtenerEstadoDocumentalVehiculoD1(
+      dbRtmInvalido,
+      vehiculoIdPrueba,
+      'SEDAN',
+      hoyPrueba
+    );
+    assert.equal(docRtmInvalido.tieneVencidos, true);
+    assert.equal(docRtmInvalido.vencidos[0]?.tipo, 'TECNICO_MECANICA');
+
+    // Subcaso D: PATINETA no requiere TECNICO_MECANICA aunque esté vencida o ausente
+    const dbPatineta = crearMockDb({
+      documentos: [
+        {
+          id: 'doc-1',
+          vehiculoId: vehiculoIdPrueba,
+          tipoDocumento: 'SOAT',
+          fechaVencimiento: '2027-01-01',
+          vigente: true,
+        },
+        {
+          id: 'doc-2',
+          vehiculoId: vehiculoIdPrueba,
+          tipoDocumento: 'TECNICO_MECANICA',
+          fechaVencimiento: '2026-01-01',
+          vigente: false,
+        },
+      ],
+    });
+    const docPatineta = await obtenerEstadoDocumentalVehiculoD1(
+      dbPatineta,
+      vehiculoIdPrueba,
+      'PATINETA',
+      hoyPrueba
+    );
+    assert.equal(docPatineta.requiereRtm, false);
+    assert.equal(docPatineta.tieneVencidos, false);
+    assert.deepEqual(docPatineta.vencidos, []);
   });
 });

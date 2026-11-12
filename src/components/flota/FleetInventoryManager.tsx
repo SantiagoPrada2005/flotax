@@ -40,6 +40,11 @@ const ESTADOS_INFO: Record<
     dotColor: 'bg-[#4B5563]',
     badgeText: 'INACTIVO',
   },
+  NO_DISPONIBLE: {
+    label: 'No Disponible',
+    dotColor: 'bg-[#4B5563]',
+    badgeText: 'NO DISPONIBLE',
+  },
 };
 
 export default function FleetInventoryManager({
@@ -69,7 +74,7 @@ export default function FleetInventoryManager({
     disponibles: vehiculos.filter((v) => v.estado === 'DISPONIBLE').length,
     enAlquiler: vehiculos.filter((v) => v.estado === 'RESERVADO').length,
     mantenimiento: vehiculos.filter((v) => v.estado === 'MANTENIMIENTO').length,
-    fueraServicio: vehiculos.filter((v) => v.estado === 'FUERA_SERVICIO').length,
+    fueraServicio: vehiculos.filter((v) => v.estado === 'FUERA_SERVICIO' || v.estado === 'NO_DISPONIBLE').length,
   };
 
   const hayFiltroCategoriaActivo = categoriaSeleccionada !== 'TODAS';
@@ -80,8 +85,14 @@ export default function FleetInventoryManager({
     if (categoriaSeleccionada !== 'TODAS' && v.categoria !== categoriaSeleccionada) {
       return false;
     }
-    if (estadoSeleccionado !== 'TODOS' && v.estado !== estadoSeleccionado) {
-      return false;
+    if (estadoSeleccionado !== 'TODOS') {
+      if (estadoSeleccionado === 'FUERA_SERVICIO') {
+        if (v.estado !== 'FUERA_SERVICIO' && v.estado !== 'NO_DISPONIBLE') {
+          return false;
+        }
+      } else if (v.estado !== estadoSeleccionado) {
+        return false;
+      }
     }
     if (busqueda.trim()) {
       const q = busqueda.toLowerCase().trim();

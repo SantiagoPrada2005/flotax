@@ -1,16 +1,19 @@
 import type { DrizzleD1Database } from 'drizzle-orm/d1';
 import type { AppDb } from '@/lib/db';
 import { logFalloD1 } from '@/lib/db/diagnostics';
-import { mantenimientosVehiculo, reservas, vehiculos } from '@/db/schema';
-import { and, desc, eq, gte, inArray, lte } from 'drizzle-orm';
+import { documentosVehiculo, mantenimientosVehiculo, reservas, vehiculos } from '@/db/schema';
+import { and, desc, eq, gte, inArray, lte, ne } from 'drizzle-orm';
 import { toClientISODate } from '@/lib/time/client-time';
 import type {
   BloqueNoDisponible,
   CotizacionAlquiler,
   DiaCalendarioItem,
+  EstadoDocumentalVehiculo,
   FranjaDisponible,
   VehiculoItem,
 } from './types';
+
+export type { EstadoDocumentalVehiculo } from './types';
 
 const NOMBRES_MESES = [
   'ENERO',
@@ -151,11 +154,12 @@ export function obtenerBloquesNoDisponibles(
 
 /**
  * Consulta en Cloudflare D1 los bloques reales de indisponibilidad para un vehículo:
- * 1. Reservas activas ('CONFIRMADA', 'PENDIENTE', 'EN_CURSO') dentro del horizonte temporal.
+ * 1. Reservas activas ('CONFIRMADA', 'PENDIENTE', 'EN_CURSO', 'PAUSADA') dentro del horizonte temporal.
  * 2. Mantenimientos u órdenes de taller activas ('PROGRAMADO', 'EN_TALLER') dentro del horizonte temporal.
  *
  * Mapea cada registro al tipo canónico `BloqueNoDisponible`:
- * - Reservas: motivo = 'RESERVADO', etiqueta = 'Reserva confirmada en patio'
+ * - Reservas CONFIRMADA/PENDIENTE/EN_CURSO: motivo = 'RESERVADO', etiqueta = 'Reserva confirmada en patio'
+ * - Reservas PAUSADA: motivo = 'NO_DISPONIBLE', etiqueta = 'Vehículo no disponible (alquiler en pausa)'
  * - Mantenimientos: motivo = 'MANTENIMIENTO', etiqueta = mantenimiento.etiqueta
  */
 export async function obtenerBloquesNoDisponiblesD1(
@@ -177,12 +181,13 @@ export async function obtenerBloquesNoDisponiblesD1(
           id: reservas.id,
           fechaInicio: reservas.fechaInicio,
           fechaFin: reservas.fechaFin,
+          estado: reservas.estado,
         })
         .from(reservas)
         .where(
           and(
             eq(reservas.vehiculoId, vehiculoId),
-            inArray(reservas.estado, ['CONFIRMADA', 'PENDIENTE', 'EN_CURSO']),
+            inArray(reservas.estado, ['CONFIRMADA', 'PENDIENTE', 'EN_CURSO', 'PAUSADA']),
             gte(reservas.fechaFin, hoyISO),
             lte(reservas.fechaInicio, fechaLimite)
           )
@@ -208,14 +213,19 @@ export async function obtenerBloquesNoDisponiblesD1(
         .orderBy(mantenimientosVehiculo.fechaInicio),
     ]);
 
-    const bloquesReservas: BloqueNoDisponible[] = reservasRows.map((r) => ({
-      id: r.id,
-      vehiculoId,
-      fechaInicio: r.fechaInicio,
-      fechaFin: r.fechaFin,
-      motivo: 'RESERVADO',
-      etiqueta: 'Reserva confirmada en patio',
-    }));
+    const bloquesReservas: BloqueNoDisponible[] = reservasRows.map((r) => {
+      const esPausada = r.estado === 'PAUSADA';
+      return {
+        id: r.id,
+        vehiculoId,
+        fechaInicio: r.fechaInicio,
+        fechaFin: r.fechaFin,
+        motivo: esPausada ? 'NO_DISPONIBLE' : 'RESERVADO',
+        etiqueta: esPausada
+          ? 'Vehículo no disponible (alquiler en pausa)'
+          : 'Reserva confirmada en patio',
+      };
+    });
 
     const bloquesMantenimientos: BloqueNoDisponible[] = mantenimientosRows.map((m) => ({
       id: m.id,
@@ -473,12 +483,105 @@ export function calcularCotizacionAlquiler(
   };
 }
 
+/**
+ * Evalúa el estado documental legal de un vehículo en Cloudflare D1:
+ * - SOAT aplica a todas las categorías de vehículos.
+ * - TECNICO_MECANICA aplica a todas las categorías excepto 'PATINETA'.
+ * - Solo vigente === false o fechaVencimiento < fechaReferenciaISO marca tieneVencidos = true.
+ * - Ausencia de filas registradas en documentos_vehiculo se reporta en faltantesSinCarga con tieneVencidos = false.
+ */
+export async function obtenerEstadoDocumentalVehiculoD1(
+  db: DrizzleD1Database | AppDb,
+  vehiculoId: string,
+  categoria?: string,
+  fechaReferenciaISO: string = toClientISODate()
+): Promise<EstadoDocumentalVehiculo> {
+  const cat = categoria?.toUpperCase() ?? '';
+  const requiereRtm = cat !== 'PATINETA';
+
+  if (!db || !vehiculoId) {
+    return {
+      tieneVencidos: false,
+      faltantesSinCarga: requiereRtm ? ['SOAT', 'TECNICO_MECANICA'] : ['SOAT'],
+      vencidos: [],
+      requiereRtm,
+    };
+  }
+
+  try {
+    const rows = await db
+      .select({
+        tipoDocumento: documentosVehiculo.tipoDocumento,
+        fechaVencimiento: documentosVehiculo.fechaVencimiento,
+        vigente: documentosVehiculo.vigente,
+      })
+      .from(documentosVehiculo)
+      .where(eq(documentosVehiculo.vehiculoId, vehiculoId));
+
+    const faltantesSinCarga: Array<'SOAT' | 'TECNICO_MECANICA'> = [];
+    const vencidos: Array<{ tipo: string; fechaVencimiento: string }> = [];
+
+    // Validar SOAT
+    const docSoat = rows?.find((r) => r.tipoDocumento === 'SOAT');
+    if (!docSoat) {
+      faltantesSinCarga.push('SOAT');
+    } else {
+      const estaVencido =
+        docSoat.vigente === false ||
+        (Boolean(docSoat.fechaVencimiento) && docSoat.fechaVencimiento! < fechaReferenciaISO);
+      if (estaVencido) {
+        vencidos.push({
+          tipo: 'SOAT',
+          fechaVencimiento: docSoat.fechaVencimiento ?? '',
+        });
+      }
+    }
+
+    // Validar TECNICO_MECANICA
+    if (requiereRtm) {
+      const docRtm = rows?.find((r) => r.tipoDocumento === 'TECNICO_MECANICA');
+      if (!docRtm) {
+        faltantesSinCarga.push('TECNICO_MECANICA');
+      } else {
+        const estaVencido =
+          docRtm.vigente === false ||
+          (Boolean(docRtm.fechaVencimiento) && docRtm.fechaVencimiento! < fechaReferenciaISO);
+        if (estaVencido) {
+          vencidos.push({
+            tipo: 'TECNICO_MECANICA',
+            fechaVencimiento: docRtm.fechaVencimiento ?? '',
+          });
+        }
+      }
+    }
+
+    return {
+      tieneVencidos: vencidos.length > 0,
+      faltantesSinCarga,
+      vencidos,
+      requiereRtm,
+    };
+  } catch (error) {
+    logFalloD1('disponibilidad.obtenerEstadoDocumentalVehiculoD1', error, {
+      vehiculoId,
+      categoria,
+      fechaReferenciaISO,
+    });
+    return {
+      tieneVencidos: false,
+      faltantesSinCarga: requiereRtm ? ['SOAT', 'TECNICO_MECANICA'] : ['SOAT'],
+      vencidos: [],
+      requiereRtm,
+    };
+  }
+}
+
 export interface DictamenDisponibilidadVehiculo {
   disponible: boolean;        // true si es usable Y no está ocupado en el rango
-  usable: boolean;            // true si activo y estado != 'FUERA_SERVICIO'
+  usable: boolean;            // true si activo y estado != 'FUERA_SERVICIO' y sin docs vencidos
   ocupado: boolean;           // true si tiene reserva o mantenimiento solapado
-  estadoSugerido: 'DISPONIBLE' | 'RESERVADO' | 'MANTENIMIENTO' | 'FUERA_SERVICIO';
-  motivoBloqueo?: 'FUERA_SERVICIO' | 'MANTENIMIENTO' | 'RESERVADO' | undefined;
+  estadoSugerido: 'DISPONIBLE' | 'RESERVADO' | 'MANTENIMIENTO' | 'FUERA_SERVICIO' | 'NO_DISPONIBLE';
+  motivoBloqueo?: 'FUERA_SERVICIO' | 'MANTENIMIENTO' | 'RESERVADO' | 'NO_DISPONIBLE' | undefined;
   etiqueta: string;
   fechaInicioEvaluada: string;
   fechaFinEvaluada: string;
@@ -486,20 +589,23 @@ export interface DictamenDisponibilidadVehiculo {
   reservaActivaId?: string | undefined;
   reservaCodigo?: string | undefined;
   mantenimientoActivoId?: string | undefined;
+  estadoDocumental?: EstadoDocumentalVehiculo | undefined;
 }
 
 /**
  * Evalúa holísticamente si un vehículo está realmente DISPONIBLE para un rango de fechas (o para hoy):
  * 1. Valida Usabilidad: el vehículo debe existir, estar activo en D1 y su estado no ser 'FUERA_SERVICIO'.
- * 2. Valida Taller: no debe tener órdenes en 'EN_TALLER' ni 'PROGRAMADO' que solapen con las fechas.
- * 3. Valida Ocupación: no debe tener reservas en 'CONFIRMADA', 'PENDIENTE' ni 'EN_CURSO' que solapen.
+ * 2. Valida Documentación Legal: SOAT y RTM vigentes (si están vencidos, marca NO_DISPONIBLE).
+ * 3. Valida Taller: no debe tener órdenes en 'EN_TALLER' ni 'PROGRAMADO' que solapen con las fechas.
+ * 4. Valida Ocupación: no debe tener reservas en 'CONFIRMADA', 'PENDIENTE', 'EN_CURSO' ni 'PAUSADA' que solapen.
  */
 export async function verificarDisponibilidadVehiculo(
   db: DrizzleD1Database | AppDb,
   vehiculoId: string,
   fechaInicio?: string,
   fechaFin?: string,
-  hoyISO: string = toClientISODate()
+  hoyISO: string = toClientISODate(),
+  reservaExcluirId?: string
 ): Promise<DictamenDisponibilidadVehiculo> {
   const inicio = fechaInicio ?? hoyISO;
   const fin = fechaFin ?? inicio;
@@ -524,6 +630,7 @@ export async function verificarDisponibilidadVehiculo(
         id: vehiculos.id,
         estado: vehiculos.estado,
         activo: vehiculos.activo,
+        categoria: vehiculos.categoria,
       })
       .from(vehiculos)
       .where(eq(vehiculos.id, vehiculoId))
@@ -543,7 +650,30 @@ export async function verificarDisponibilidadVehiculo(
       };
     }
 
-    // 2. Validar mantenimientos técnicos solapados
+    // 2. Validar estado documental legal (bloquea solo si tiene vencidos)
+    const estadoDocumental = await obtenerEstadoDocumentalVehiculoD1(
+      db,
+      vehiculoId,
+      veh.categoria,
+      hoyISO
+    );
+
+    if (estadoDocumental.tieneVencidos) {
+      const docsVencidosStr = estadoDocumental.vencidos.map((d) => d.tipo).join(', ');
+      return {
+        disponible: false,
+        usable: false,
+        ocupado: false,
+        estadoSugerido: 'NO_DISPONIBLE',
+        motivoBloqueo: 'NO_DISPONIBLE',
+        etiqueta: `Documentación legal vencida (${docsVencidosStr})`,
+        fechaInicioEvaluada: inicio,
+        fechaFinEvaluada: fin,
+        estadoDocumental,
+      };
+    }
+
+    // 3. Validar mantenimientos técnicos solapados
     const mantRows = await db
       .select({
         id: mantenimientosVehiculo.id,
@@ -576,10 +706,21 @@ export async function verificarDisponibilidadVehiculo(
         fechaFinEvaluada: fin,
         ocupadoHasta: mant.fechaFin,
         mantenimientoActivoId: mant.id,
+        estadoDocumental,
       };
     }
 
-    // 3. Validar reservas de otros clientes solapadas (incluyendo PENDIENTE)
+    // 4. Validar reservas solapadas (incluyendo PENDIENTE y PAUSADA)
+    const condicionesReserva = [
+      eq(reservas.vehiculoId, vehiculoId),
+      inArray(reservas.estado, ['CONFIRMADA', 'PENDIENTE', 'EN_CURSO', 'PAUSADA']),
+      lte(reservas.fechaInicio, fin),
+      gte(reservas.fechaFin, inicio),
+    ];
+    if (reservaExcluirId) {
+      condicionesReserva.push(ne(reservas.id, reservaExcluirId));
+    }
+
     const resRows = await db
       .select({
         id: reservas.id,
@@ -589,35 +730,32 @@ export async function verificarDisponibilidadVehiculo(
         estado: reservas.estado,
       })
       .from(reservas)
-      .where(
-        and(
-          eq(reservas.vehiculoId, vehiculoId),
-          inArray(reservas.estado, ['CONFIRMADA', 'PENDIENTE', 'EN_CURSO']),
-          lte(reservas.fechaInicio, fin),
-          gte(reservas.fechaFin, inicio)
-        )
-      )
+      .where(and(...condicionesReserva))
       .orderBy(desc(reservas.fechaFin))
       .limit(1);
 
     if (resRows.length > 0) {
       const res = resRows[0]!;
+      const esPausada = res.estado === 'PAUSADA';
       return {
         disponible: false,
-        usable: true,
+        usable: !esPausada,
         ocupado: true,
-        estadoSugerido: 'RESERVADO',
-        motivoBloqueo: 'RESERVADO',
-        etiqueta: `Reservado por cliente (${res.codigo})`,
+        estadoSugerido: esPausada ? 'NO_DISPONIBLE' : 'RESERVADO',
+        motivoBloqueo: esPausada ? 'NO_DISPONIBLE' : 'RESERVADO',
+        etiqueta: esPausada
+          ? `Vehículo no disponible (alquiler en pausa - ${res.codigo})`
+          : `Reservado por cliente (${res.codigo})`,
         fechaInicioEvaluada: inicio,
         fechaFinEvaluada: fin,
         ocupadoHasta: res.fechaFin,
         reservaActivaId: res.id,
         reservaCodigo: res.codigo,
+        estadoDocumental,
       };
     }
 
-    // 4. Completamente DISPONIBLE
+    // 5. Completamente DISPONIBLE
     return {
       disponible: true,
       usable: true,
@@ -626,6 +764,7 @@ export async function verificarDisponibilidadVehiculo(
       etiqueta: 'Disponible para alquiler',
       fechaInicioEvaluada: inicio,
       fechaFinEvaluada: fin,
+      estadoDocumental,
     };
   } catch (error) {
     logFalloD1('disponibilidad.verificarDisponibilidadVehiculo', error, {

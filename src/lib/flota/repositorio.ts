@@ -93,12 +93,13 @@ export async function listarVehiculos(
       db
         .select({
           vehiculoId: reservas.vehiculoId,
+          estado: reservas.estado,
         })
         .from(reservas)
         .where(
           and(
             inArray(reservas.vehiculoId, ids),
-            inArray(reservas.estado, ['CONFIRMADA', 'PENDIENTE', 'EN_CURSO']),
+            inArray(reservas.estado, ['CONFIRMADA', 'PENDIENTE', 'EN_CURSO', 'PAUSADA']),
             lte(reservas.fechaInicio, ventanaFin),
             gte(reservas.fechaFin, ventanaInicio)
           )
@@ -121,8 +122,11 @@ export async function listarVehiculos(
     const vehiculosConMantenimiento = new Set(
       mantenimientosOcupados.map((m) => m.vehiculoId)
     );
+    const vehiculosConPausa = new Set(
+      reservasOcupadas.filter((r) => r.estado === 'PAUSADA').map((r) => r.vehiculoId)
+    );
     const vehiculosConReserva = new Set(
-      reservasOcupadas.map((r) => r.vehiculoId)
+      reservasOcupadas.filter((r) => r.estado !== 'PAUSADA').map((r) => r.vehiculoId)
     );
 
     const items = rows.map((row) => {
@@ -136,6 +140,12 @@ export async function listarVehiculos(
       // Si tiene mantenimiento activo en la ventana evaluada
       if (vehiculosConMantenimiento.has(item.id)) {
         item.estado = 'MANTENIMIENTO';
+        return item;
+      }
+
+      // Si tiene reserva en pausa (NO_DISPONIBLE) en la ventana evaluada
+      if (vehiculosConPausa.has(item.id)) {
+        item.estado = 'NO_DISPONIBLE';
         return item;
       }
 
