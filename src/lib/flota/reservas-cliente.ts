@@ -1184,9 +1184,9 @@ export function formatearRangoReservaHumano(
 }
 
 /**
- * Consolida la entrega/devolución del vehículo por parte del cliente junto con
- * su evaluación interactiva del servicio prestado, marcando la reserva como
- * `COMPLETADA` y liberando la garantía si no hay novedades críticas.
+ * Almacena la evaluación interactiva del servicio prestado por el cliente en el
+ * wizard de retorno sin cerrar administrativamente el contrato ni forzar COMPLETADA.
+ * El cierre formal, recepción pericial y liquidación de fianza los ejecuta el local.
  */
 export function registrarEntregaClienteConEvaluacion(
   reserva: ReservaClienteItem,
@@ -1200,10 +1200,7 @@ export function registrarEntregaClienteConEvaluacion(
 
   const actualizada: ReservaClienteItem = {
     ...reserva,
-    estado: 'COMPLETADA',
-    montoReportado: reserva.totalAlquiler,
-    estadoGarantia: tieneAlertaTecnica ? 'CUSTODIA_ACTIVA' : 'LIBERADA',
-    kilometrajeRetorno: reserva.kilometrajeEntrega + reserva.diasAlquiler * 68,
+    estado: reserva.estado,
     requiereMantenimientoRetorno: tieneAlertaTecnica,
     evaluacionEntrega: evaluacion,
   };

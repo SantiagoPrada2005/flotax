@@ -281,7 +281,7 @@ function construirAdvertenciasDocumentales(
   };
 }
 
-async function ejecutarBatchOSecuencial(db: AppDb, ops: unknown[]): Promise<void> {
+export async function ejecutarBatchOSecuencial(db: AppDb, ops: unknown[]): Promise<void> {
   if (ops.length === 0) return;
   const dbBatchObj = db as { batch?: (queries: unknown[]) => Promise<unknown> };
   if (typeof dbBatchObj.batch === 'function') {
@@ -1330,3 +1330,6 @@ export async function registrarOActualizarDocumentosClienteRapidoD1(
 
   return { ok: true };
 }
+
+export * from './ciclo-alquiler-transiciones';
+
