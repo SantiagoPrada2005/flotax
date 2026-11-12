@@ -18,6 +18,42 @@ function existe(url) {
  * Astro/Vite resuelven esto en build; Node no lo hace por sí solo.
  */
 export async function resolve(specifier, context, nextResolve) {
+  if (specifier === 'astro:actions') {
+    const code = encodeURIComponent(`
+      export class ActionError extends Error {
+        constructor(options) {
+          super(options.message);
+          this.code = options.code;
+        }
+      }
+      export function defineAction(config) {
+        const fn = async (input, ctx) => config.handler(input, ctx);
+        fn.handler = config.handler;
+        fn.input = config.input;
+        return fn;
+      }
+    `);
+    return { url: `data:text/javascript,${code}`, shortCircuit: true };
+  }
+
+  if (specifier === 'cloudflare:workers') {
+    const code = encodeURIComponent(`
+      export const env = {};
+    `);
+    return { url: `data:text/javascript,${code}`, shortCircuit: true };
+  }
+
+  if (specifier === '@/lib/notificaciones') {
+    const code = encodeURIComponent(`
+      export function crearServicioNotificaciones() {
+        return {
+          notificar: async () => {},
+        };
+      }
+    `);
+    return { url: `data:text/javascript,${code}`, shortCircuit: true };
+  }
+
   if (specifier.startsWith('@/')) {
     const base = new URL(specifier.slice(2), SRC);
 

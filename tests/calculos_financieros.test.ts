@@ -10,6 +10,7 @@ import {
   calcularIndicadoresFinancieros,
   calcularDistribucionMetodosPago,
   calcularDistribucionGastosCategorias,
+  calcularTotalPagadoNetoContrato,
 } from '../src/lib/caja/calculos.ts';
 import type {
   CuentaFinancieraSelect,
@@ -316,5 +317,85 @@ describe('Cálculos Financieros Canónicos - FlotaX', () => {
     assert.ok(texto.includes('1.250.000') || texto.includes('1,250,000'));
     assert.equal(formatearMonedaCompactaCOP(1_500_000), '$1.5M');
     assert.equal(formatearMonedaCompactaCOP(450_000), '$450K');
+  });
+
+  test('7. REEMBOLSO_ALQUILER no es gasto operativo ni infla los gastos del período', () => {
+    // 7.1. Verificación directa por categoría string y objeto movimiento
+    assert.equal(esGastoOperativo('REEMBOLSO_ALQUILER'), false);
+
+    const movReembolsoAlquiler: MovimientoCajaSelect = {
+      id: 'm-rem-1',
+      localId: 'local-1',
+      tipo: 'EGRESO',
+      categoria: 'REEMBOLSO_ALQUILER',
+      concepto: 'Reembolso por devolución anticipada',
+      monto: 300_000,
+      metodoPago: 'transferencia',
+      cuentaId: 'cta-1',
+      cuentaDestinoId: null,
+      contratoId: 'C1',
+      clienteId: null,
+      clienteNombre: 'Cliente C',
+      vehiculoId: null,
+      proveedor: null,
+      referencia: null,
+      soporteUrl: null,
+      estado: 'CONFIRMADO',
+      motivoAnulacion: null,
+      anuladoPorId: null,
+      anuladoEn: null,
+      creadoPorId: 'u1',
+      observaciones: null,
+      fechaMovimiento: new Date('2026-10-10'),
+      creadoEn: new Date('2026-10-10'),
+      actualizadoEn: new Date('2026-10-10'),
+    };
+
+    assert.equal(esGastoOperativo(movReembolsoAlquiler), false);
+
+    // 7.2. En indicadores financieros, los gastos operativos deben ser 0 si el único egreso es reembolso de alquiler
+    const kpis = calcularIndicadoresFinancieros({
+      cuentas: [cuentaEjemplo],
+      movimientosTodos: [movReembolsoAlquiler],
+      movimientosPeriodo: [movReembolsoAlquiler],
+      depositosGarantia: [],
+      carteraContratos: [],
+    });
+
+    assert.equal(kpis.egresosPeriodo, 300_000, 'El dinero sí salió de caja (egreso bruto)');
+    assert.equal(kpis.resultadoOperativoPeriodo, 0, 'No debe descontarse como gasto operativo');
+  });
+
+  test('8. calcularTotalPagadoNetoContrato: abonos menos reembolsos de alquiler no deja neto positivo si se devolvió todo', () => {
+    const movimientos = [
+      {
+        tipo: 'INGRESO' as const,
+        categoria: 'ABONO_CONTRATO' as const,
+        monto: 500_000,
+        estado: 'CONFIRMADO' as const,
+      },
+      {
+        tipo: 'EGRESO' as const,
+        categoria: 'REEMBOLSO_ALQUILER' as const,
+        monto: 500_000,
+        estado: 'CONFIRMADO' as const,
+      },
+      {
+        tipo: 'EGRESO' as const,
+        categoria: 'OTRO_EGRESO' as const,
+        monto: 100_000,
+        estado: 'CONFIRMADO' as const,
+      },
+    ];
+
+    const neto = calcularTotalPagadoNetoContrato(movimientos);
+    assert.equal(neto, 0, 'Si se reembolsó la totalidad del abono, el total pagado neto debe ser 0');
+
+    // Con abono parcial restante
+    const netoParcial = calcularTotalPagadoNetoContrato([
+      { tipo: 'INGRESO', categoria: 'PAGO_ALQUILER', monto: 600_000, estado: 'CONFIRMADO' },
+      { tipo: 'EGRESO', categoria: 'REEMBOLSO_ALQUILER', monto: 200_000, estado: 'CONFIRMADO' },
+    ]);
+    assert.equal(netoParcial, 400_000);
   });
 });

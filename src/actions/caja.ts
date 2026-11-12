@@ -5,6 +5,7 @@ import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
 import {
   registrarMovimientoRepo,
+  registrarAbonoRepo,
   anularMovimientoRepo,
   registrarTransferenciaInternaRepo,
   aperturaCajaRepo,
@@ -13,7 +14,8 @@ import {
   crearCuentaRepo,
 } from '@/lib/caja';
 import { crearServicioNotificaciones } from '@/lib/notificaciones';
-import { requireLocalAuth, PERMISOS } from '@/lib/auth';
+import { requireLocalAuth } from '@/lib/auth/guard';
+import { PERMISOS } from '@/lib/auth/permisos';
 import {
   metodosPagoFinanciero,
   categoriasMovimiento,
@@ -46,12 +48,14 @@ export const registrarMovimientoAction = defineAction({
   }),
   handler: async (input, context) => {
     marcarRevisionNavegacion(context.cookies);
-    const usuario = requireLocalAuth(
-      context,
-      input.tipo === 'INGRESO'
-        ? PERMISOS.CAJA_ABONOS_REGISTRAR
-        : PERMISOS.CAJA_GASTOS_REGISTRAR
-    );
+    const esEgresoORefund =
+      input.tipo === 'EGRESO' ||
+      input.categoria === 'REEMBOLSO_ALQUILER' ||
+      input.categoria === 'REEMBOLSO_GARANTIA';
+    const permisoRequerido = esEgresoORefund
+      ? PERMISOS.CAJA_GASTOS_REGISTRAR
+      : PERMISOS.CAJA_ABONOS_REGISTRAR;
+    const usuario = requireLocalAuth(context, permisoRequerido);
     const localId = usuario.localActivo.id;
     const db = env.DB ? getDb(env.DB) : undefined;
 
@@ -243,21 +247,12 @@ export const registrarAbonoAction = defineAction({
     const localId = usuario.localActivo.id;
     const db = env.DB ? getDb(env.DB) : undefined;
 
-    const cuentaId =
-      input.cuentaId ??
-      (input.metodoPago === 'efectivo'
-        ? 'cta-caja-principal'
-        : 'cta-bancolombia-ope');
-
-    const movimiento = await registrarMovimientoRepo({
+    const movimiento = await registrarAbonoRepo({
       localId,
-      tipo: 'INGRESO',
-      categoria: 'ABONO_CONTRATO',
-      concepto: `Abono a contrato #${input.contratoId}`,
+      contratoId: input.contratoId,
       monto: input.monto,
       metodoPago: input.metodoPago,
-      cuentaId,
-      contratoId: input.contratoId,
+      cuentaId: input.cuentaId,
       referencia: input.referencia,
       observaciones: input.notas,
       usuarioId: usuario.id,
@@ -310,7 +305,11 @@ export const gestionarGarantiaAction = defineAction({
   }),
   handler: async (input, context) => {
     marcarRevisionNavegacion(context.cookies);
-    const usuario = requireLocalAuth(context, PERMISOS.CAJA_ABONOS_REGISTRAR);
+    const permisoRequerido =
+      input.accion === 'DEVOLVER'
+        ? PERMISOS.CAJA_GASTOS_REGISTRAR
+        : PERMISOS.CAJA_ABONOS_REGISTRAR;
+    const usuario = requireLocalAuth(context, permisoRequerido);
     const localId = usuario.localActivo.id;
     const db = env.DB ? getDb(env.DB) : undefined;
 

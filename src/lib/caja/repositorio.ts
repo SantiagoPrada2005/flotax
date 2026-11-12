@@ -14,7 +14,7 @@ import {
   type SesionCajaSelect,
   type DepositoGarantiaSelect,
 } from '@/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, or } from 'drizzle-orm';
 import { asegurarConfiguracionBaseLocal } from '@/lib/flota/locales-captacion';
 import {
   CUENTAS_CANONICAS_SEMILLA,
@@ -30,7 +30,11 @@ import {
   calcularDistribucionGastosCategorias,
   agruparFlujoPorFecha,
   calcularSaldoCuenta,
+  calcularTotalPagadoNetoContrato,
+  resolverCuentaPorMetodoPago,
 } from './calculos';
+
+export { resolverCuentaPorMetodoPago, calcularTotalPagadoNetoContrato } from './calculos';
 import type {
   ResumenFinancieroCompleto,
   RangoPeriodoFinanciero,
@@ -171,7 +175,7 @@ export async function obtenerEstadoFinancieroCompleto(params: {
         .all();
       garantiasList = dbGarantias;
 
-      // Proyección estricta E2E (16 columnas en vez de 103) para evitar SQLITE_MAX_COLUMN (100) en D1
+      // Proyección estricta E2E (<20 columnas) para evitar SQLITE_MAX_COLUMN (100) en D1
       const dbContratos = await db
         .select({
           id: contratosAlquiler.id,
@@ -191,6 +195,7 @@ export async function obtenerEstadoFinancieroCompleto(params: {
           vehiculoMarca: vehiculos.marca,
           vehiculoModelo: vehiculos.modelo,
           vehiculoPlaca: vehiculos.placa,
+          vehiculoDepositoGarantia: vehiculos.depositoGarantia,
         })
         .from(contratosAlquiler)
         .innerJoin(reservas, eq(contratosAlquiler.reservaId, reservas.id))
@@ -212,6 +217,11 @@ export async function obtenerEstadoFinancieroCompleto(params: {
             ? `${row.vehiculoMarca} ${row.vehiculoModelo}`
             : row.reservaVehiculoId;
 
+        const garantiaEsperada =
+          garantiaAsociada?.montoEsperado ??
+          row.vehiculoDepositoGarantia ??
+          0;
+
         return {
           codigoContrato: row.numeroContrato,
           clienteNombre: row.arrendatarioNombre,
@@ -231,7 +241,7 @@ export async function obtenerEstadoFinancieroCompleto(params: {
                 : row.totalPagado > 0
                   ? 'PARCIAL'
                   : 'PENDIENTE',
-          garantiaEsperada: garantiaAsociada?.montoEsperado ?? 1500000,
+          garantiaEsperada,
           garantiaEstado: garantiaAsociada?.estado ?? 'PENDIENTE_RECIBIR',
         };
       });
@@ -321,6 +331,302 @@ export async function obtenerEstadoFinancieroCompleto(params: {
 }
 
 /**
+ * Reconcilia de forma atómica en D1 los saldos y estados de pago de un contrato de alquiler
+ * y su reserva asociada a partir de todos los movimientos confirmados en caja.
+ * Actualiza contratos_alquiler (totalPagado, saldoPendiente, estadoPago)
+ * y reservas.montoAbonoReportado vía db.batch() e inserta auditoria_financiera.
+ */
+export async function reconciliarSaldosContratoYReservaD1(
+  db: AppDb,
+  localId: string,
+  contratoId?: string | undefined,
+  reservaId?: string | undefined,
+  usuarioId?: string | undefined
+): Promise<{ totalPagadoNeto: number; saldoPendiente: number; estadoPago: string }> {
+  // 1. Localizar contrato si se pasó contratoId o reservaId
+  let contrato: {
+    id: string;
+    numeroContrato: string;
+    reservaId: string;
+    localId: string;
+    totalLiquidado: number;
+    totalPagado: number;
+    saldoPendiente: number;
+    estadoPago: string;
+  } | undefined;
+
+  if (contratoId) {
+    const resCtr = await db
+      .select({
+        id: contratosAlquiler.id,
+        numeroContrato: contratosAlquiler.numeroContrato,
+        reservaId: contratosAlquiler.reservaId,
+        localId: contratosAlquiler.localId,
+        totalLiquidado: contratosAlquiler.totalLiquidado,
+        totalPagado: contratosAlquiler.totalPagado,
+        saldoPendiente: contratosAlquiler.saldoPendiente,
+        estadoPago: contratosAlquiler.estadoPago,
+      })
+      .from(contratosAlquiler)
+      .where(
+        or(
+          eq(contratosAlquiler.id, contratoId),
+          eq(contratosAlquiler.numeroContrato, contratoId)
+        )
+      )
+      .limit(1);
+    contrato = resCtr[0];
+  }
+
+  if (!contrato && reservaId) {
+    const resCtr = await db
+      .select({
+        id: contratosAlquiler.id,
+        numeroContrato: contratosAlquiler.numeroContrato,
+        reservaId: contratosAlquiler.reservaId,
+        localId: contratosAlquiler.localId,
+        totalLiquidado: contratosAlquiler.totalLiquidado,
+        totalPagado: contratosAlquiler.totalPagado,
+        saldoPendiente: contratosAlquiler.saldoPendiente,
+        estadoPago: contratosAlquiler.estadoPago,
+      })
+      .from(contratosAlquiler)
+      .where(eq(contratosAlquiler.reservaId, reservaId))
+      .limit(1);
+    contrato = resCtr[0];
+  }
+
+  // 2. Localizar reserva
+  let reserva: {
+    id: string;
+    codigo: string;
+    localId: string;
+    totalCotizado: number;
+    montoAbonoReportado: number;
+  } | undefined;
+
+  const idReservaBuscar = reservaId ?? contrato?.reservaId ?? contratoId;
+  if (idReservaBuscar) {
+    const resRes = await db
+      .select({
+        id: reservas.id,
+        codigo: reservas.codigo,
+        localId: reservas.localId,
+        totalCotizado: reservas.totalCotizado,
+        montoAbonoReportado: reservas.montoAbonoReportado,
+      })
+      .from(reservas)
+      .where(
+        or(
+          eq(reservas.id, idReservaBuscar),
+          eq(reservas.codigo, idReservaBuscar)
+        )
+      )
+      .limit(1);
+    reserva = resRes[0];
+  }
+
+  // Si no hay ni contrato ni reserva, no hay qué reconciliar
+  if (!contrato && !reserva) {
+    return { totalPagadoNeto: 0, saldoPendiente: 0, estadoPago: 'PENDIENTE' };
+  }
+
+  // Validar pertenencia al localId
+  if (contrato && contrato.localId !== localId) {
+    throw new Error('El contrato no pertenece al local especificado');
+  }
+  if (reserva && reserva.localId !== localId) {
+    throw new Error('La reserva no pertenece al local especificado');
+  }
+
+  // 3. Recopilar todos los identificadores posibles bajo los que se hayan asentado movimientos
+  const idsAsociados = new Set<string>();
+  if (contratoId) idsAsociados.add(contratoId);
+  if (reservaId) idsAsociados.add(reservaId);
+  if (contrato) {
+    idsAsociados.add(contrato.id);
+    idsAsociados.add(contrato.numeroContrato);
+  }
+  if (reserva) {
+    idsAsociados.add(reserva.id);
+    idsAsociados.add(reserva.codigo);
+  }
+
+  // 4. Consultar movimientos confirmados asociados al localId
+  const movimientosDelLocal = await db
+    .select({
+      id: movimientosCaja.id,
+      tipo: movimientosCaja.tipo,
+      categoria: movimientosCaja.categoria,
+      monto: movimientosCaja.monto,
+      estado: movimientosCaja.estado,
+      contratoId: movimientosCaja.contratoId,
+    })
+    .from(movimientosCaja)
+    .where(eq(movimientosCaja.localId, localId));
+
+  const movimientosContrato = movimientosDelLocal.filter(
+    (m) => m.contratoId && idsAsociados.has(m.contratoId)
+  );
+
+  const totalPagadoNeto = calcularTotalPagadoNetoContrato(movimientosContrato);
+
+  // 5. Calcular saldos del contrato
+  const totalLiquidado = contrato ? contrato.totalLiquidado : (reserva?.totalCotizado ?? 0);
+  const saldoPendiente = Math.max(0, totalLiquidado - totalPagadoNeto);
+
+  let estadoPago: 'PENDIENTE' | 'PARCIAL' | 'PAGADO' | 'EN_MORA' = 'PENDIENTE';
+  if (totalPagadoNeto >= totalLiquidado && totalLiquidado > 0) {
+    estadoPago = 'PAGADO';
+  } else if (totalPagadoNeto > 0) {
+    estadoPago = 'PARCIAL';
+  } else {
+    estadoPago = 'PENDIENTE';
+  }
+
+  const ahora = new Date();
+  const auditoriaId = `aud-rec-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+  const entId = contrato?.id ?? reserva?.id ?? (contratoId || 'N/A');
+
+  if (typeof db.batch === 'function') {
+    if (contrato && reserva) {
+      await db.batch([
+        db
+          .update(contratosAlquiler)
+          .set({
+            totalPagado: totalPagadoNeto,
+            saldoPendiente,
+            estadoPago,
+            actualizadoEn: ahora,
+          })
+          .where(eq(contratosAlquiler.id, contrato.id)),
+        db
+          .update(reservas)
+          .set({
+            montoAbonoReportado: totalPagadoNeto,
+          })
+          .where(eq(reservas.id, reserva.id)),
+        db.insert(auditoriaFinanciera).values({
+          id: auditoriaId,
+          localId,
+          entidad: 'MOVIMIENTO',
+          entidadId: entId,
+          accion: 'MODIFICAR',
+          montoAnterior: contrato.totalPagado,
+          montoNuevo: totalPagadoNeto,
+          motivo: `Reconciliación de saldos contrato ${contrato.numeroContrato}`,
+          usuarioId: usuarioId ?? 'sistema',
+          detallesJson: JSON.stringify({
+            totalPagadoNeto,
+            saldoPendiente,
+            estadoPago,
+            movimientosContabilizados: movimientosContrato.length,
+          }),
+          creadoEn: ahora,
+        }),
+      ]);
+    } else if (contrato) {
+      await db.batch([
+        db
+          .update(contratosAlquiler)
+          .set({
+            totalPagado: totalPagadoNeto,
+            saldoPendiente,
+            estadoPago,
+            actualizadoEn: ahora,
+          })
+          .where(eq(contratosAlquiler.id, contrato.id)),
+        db.insert(auditoriaFinanciera).values({
+          id: auditoriaId,
+          localId,
+          entidad: 'MOVIMIENTO',
+          entidadId: entId,
+          accion: 'MODIFICAR',
+          montoAnterior: contrato.totalPagado,
+          montoNuevo: totalPagadoNeto,
+          motivo: `Reconciliación de saldos contrato ${contrato.numeroContrato}`,
+          usuarioId: usuarioId ?? 'sistema',
+          detallesJson: JSON.stringify({
+            totalPagadoNeto,
+            saldoPendiente,
+            estadoPago,
+            movimientosContabilizados: movimientosContrato.length,
+          }),
+          creadoEn: ahora,
+        }),
+      ]);
+    } else if (reserva) {
+      await db.batch([
+        db
+          .update(reservas)
+          .set({
+            montoAbonoReportado: totalPagadoNeto,
+          })
+          .where(eq(reservas.id, reserva.id)),
+        db.insert(auditoriaFinanciera).values({
+          id: auditoriaId,
+          localId,
+          entidad: 'MOVIMIENTO',
+          entidadId: entId,
+          accion: 'MODIFICAR',
+          montoAnterior: reserva.montoAbonoReportado,
+          montoNuevo: totalPagadoNeto,
+          motivo: `Reconciliación de abono reserva ${reserva.codigo}`,
+          usuarioId: usuarioId ?? 'sistema',
+          detallesJson: JSON.stringify({
+            totalPagadoNeto,
+            saldoPendiente,
+            estadoPago,
+            movimientosContabilizados: movimientosContrato.length,
+          }),
+          creadoEn: ahora,
+        }),
+      ]);
+    }
+  } else {
+    if (contrato) {
+      await db
+        .update(contratosAlquiler)
+        .set({
+          totalPagado: totalPagadoNeto,
+          saldoPendiente,
+          estadoPago,
+          actualizadoEn: ahora,
+        })
+        .where(eq(contratosAlquiler.id, contrato.id));
+    }
+    if (reserva) {
+      await db
+        .update(reservas)
+        .set({
+          montoAbonoReportado: totalPagadoNeto,
+        })
+        .where(eq(reservas.id, reserva.id));
+    }
+    await db.insert(auditoriaFinanciera).values({
+      id: auditoriaId,
+      localId,
+      entidad: 'MOVIMIENTO',
+      entidadId: entId,
+      accion: 'MODIFICAR',
+      montoAnterior: contrato?.totalPagado ?? reserva?.montoAbonoReportado ?? null,
+      montoNuevo: totalPagadoNeto,
+      motivo: `Reconciliación de saldos ${contrato?.numeroContrato ?? reserva?.codigo ?? ''}`,
+      usuarioId: usuarioId ?? 'sistema',
+      detallesJson: JSON.stringify({
+        totalPagadoNeto,
+        saldoPendiente,
+        estadoPago,
+        movimientosContabilizados: movimientosContrato.length,
+      }),
+      creadoEn: ahora,
+    });
+  }
+
+  return { totalPagadoNeto, saldoPendiente, estadoPago };
+}
+
+/**
  * Registra un nuevo movimiento financiero (Ingreso o Egreso) con persistencia y auditoría.
  */
 export async function registrarMovimientoRepo(params: {
@@ -372,93 +678,177 @@ export async function registrarMovimientoRepo(params: {
     actualizadoEn: ahora,
   };
 
-  cacheMovimientos.set(id, nuevoMov);
+  // Solo en entorno sin DB conectada (offline/preview) usar cache en memoria
+  if (!params.db) {
+    cacheMovimientos.set(id, nuevoMov);
 
-  // Si hay contrato asociado y es abono/pago de alquiler, actualizar cartera
-  if (params.contratoId && params.tipo === 'INGRESO') {
-    const contrato = cacheCartera.get(params.contratoId);
-    if (contrato) {
-      const nuevoAbonado = contrato.totalAbonado + params.monto;
-      const nuevoSaldo = Math.max(0, contrato.totalAlquiler - nuevoAbonado);
-      contrato.totalAbonado = nuevoAbonado;
-      contrato.saldoPendiente = nuevoSaldo;
-      contrato.estadoPago = nuevoSaldo === 0 ? 'PAGADO' : 'PARCIAL';
-      cacheCartera.set(params.contratoId, contrato);
+    if (params.contratoId && params.tipo === 'INGRESO') {
+      const contrato = cacheCartera.get(params.contratoId);
+      if (contrato) {
+        const nuevoAbonado = contrato.totalAbonado + params.monto;
+        const nuevoSaldo = Math.max(0, contrato.totalAlquiler - nuevoAbonado);
+        contrato.totalAbonado = nuevoAbonado;
+        contrato.saldoPendiente = nuevoSaldo;
+        contrato.estadoPago = nuevoSaldo === 0 ? 'PAGADO' : 'PARCIAL';
+        cacheCartera.set(params.contratoId, contrato);
+      }
     }
   }
 
   // Persistir en D1
   if (params.db) {
-    try {
-      // Validar o resolver la cuenta existente en D1 para evitar fallo de FK
-      let cuentaEfectivaId = nuevoMov.cuentaId;
-      const ctaCheck = await params.db
+    // Validar o resolver la cuenta existente en D1 para evitar fallo de FK
+    let cuentaEfectivaId = nuevoMov.cuentaId;
+    const ctaCheck = await params.db
+      .select({ id: cuentasFinancieras.id })
+      .from(cuentasFinancieras)
+      .where(eq(cuentasFinancieras.id, cuentaEfectivaId))
+      .limit(1);
+
+    if (!ctaCheck[0]) {
+      await asegurarConfiguracionBaseLocal(params.db, params.localId);
+      const primeraCta = await params.db
         .select({ id: cuentasFinancieras.id })
         .from(cuentasFinancieras)
-        .where(eq(cuentasFinancieras.id, cuentaEfectivaId))
+        .where(eq(cuentasFinancieras.localId, params.localId))
         .limit(1);
-
-      if (!ctaCheck[0]) {
-        await asegurarConfiguracionBaseLocal(params.db, params.localId);
-        const primeraCta = await params.db
-          .select({ id: cuentasFinancieras.id })
-          .from(cuentasFinancieras)
-          .where(eq(cuentasFinancieras.localId, params.localId))
-          .limit(1);
-        if (primeraCta[0]) {
-          cuentaEfectivaId = primeraCta[0].id;
-        }
+      if (primeraCta[0]) {
+        cuentaEfectivaId = primeraCta[0].id;
       }
+    }
 
-      await params.db.insert(movimientosCaja).values({
-        id: nuevoMov.id,
-        localId: nuevoMov.localId,
-        tipo: nuevoMov.tipo,
-        categoria: nuevoMov.categoria,
-        concepto: nuevoMov.concepto,
-        monto: nuevoMov.monto,
-        metodoPago: nuevoMov.metodoPago,
-        cuentaId: cuentaEfectivaId,
-        cuentaDestinoId: null,
-        contratoId: nuevoMov.contratoId,
-        clienteId: null,
-        clienteNombre: nuevoMov.clienteNombre,
-        vehiculoId: nuevoMov.vehiculoId,
-        proveedor: nuevoMov.proveedor,
-        referencia: nuevoMov.referencia,
-        soporteUrl: null,
-        estado: nuevoMov.estado,
-        motivoAnulacion: null,
-        anuladoPorId: null,
-        anuladoEn: null,
-        creadoPorId: nuevoMov.creadoPorId,
-        observaciones: nuevoMov.observaciones,
-        fechaMovimiento: nuevoMov.fechaMovimiento,
-        creadoEn: nuevoMov.creadoEn,
-        actualizadoEn: nuevoMov.actualizadoEn,
-      });
+    await params.db.insert(movimientosCaja).values({
+      id: nuevoMov.id,
+      localId: nuevoMov.localId,
+      tipo: nuevoMov.tipo,
+      categoria: nuevoMov.categoria,
+      concepto: nuevoMov.concepto,
+      monto: nuevoMov.monto,
+      metodoPago: nuevoMov.metodoPago,
+      cuentaId: cuentaEfectivaId,
+      cuentaDestinoId: null,
+      contratoId: nuevoMov.contratoId,
+      clienteId: null,
+      clienteNombre: nuevoMov.clienteNombre,
+      vehiculoId: nuevoMov.vehiculoId,
+      proveedor: nuevoMov.proveedor,
+      referencia: nuevoMov.referencia,
+      soporteUrl: null,
+      estado: nuevoMov.estado,
+      motivoAnulacion: null,
+      anuladoPorId: null,
+      anuladoEn: null,
+      creadoPorId: nuevoMov.creadoPorId,
+      observaciones: nuevoMov.observaciones,
+      fechaMovimiento: nuevoMov.fechaMovimiento,
+      creadoEn: nuevoMov.creadoEn,
+      actualizadoEn: nuevoMov.actualizadoEn,
+    });
 
-      // Registrar auditoría
-      await params.db.insert(auditoriaFinanciera).values({
-        id: `aud-${Date.now()}`,
-        localId: params.localId,
-        entidad: 'MOVIMIENTO',
-        entidadId: id,
-        accion: 'CREAR',
-        montoAnterior: null,
-        montoNuevo: params.monto,
-        motivo: params.concepto,
-        usuarioId: params.usuarioId,
-        detallesJson: JSON.stringify({ tipo: params.tipo, categoria: params.categoria }),
-        creadoEn: ahora,
-      });
-    } catch (error) {
-      // Fallback memoria asegurado
-      logFalloD1('caja.movimiento.insert', error, { movimientoId: id });
+    // Registrar auditoría financiera
+    await params.db.insert(auditoriaFinanciera).values({
+      id: `aud-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      localId: params.localId,
+      entidad: 'MOVIMIENTO',
+      entidadId: id,
+      accion: 'CREAR',
+      montoAnterior: null,
+      montoNuevo: params.monto,
+      motivo: params.concepto,
+      usuarioId: params.usuarioId,
+      detallesJson: JSON.stringify({ tipo: params.tipo, categoria: params.categoria }),
+      creadoEn: ahora,
+    });
+
+    // Reconciliación atómica de saldos en D1 si hay contrato asociado
+    if (params.contratoId && nuevoMov.estado === 'CONFIRMADO') {
+      await reconciliarSaldosContratoYReservaD1(
+        params.db,
+        params.localId,
+        params.contratoId,
+        undefined,
+        params.usuarioId
+      );
     }
   }
 
   return nuevoMov;
+}
+
+/**
+ * Registra un abono a contrato con persistencia en D1 y reconciliación atómica.
+ */
+export async function registrarAbonoRepo(params: {
+  localId: string;
+  contratoId: string;
+  monto: number;
+  metodoPago: MetodoPagoFinanciero;
+  cuentaId?: string | undefined;
+  referencia?: string | undefined;
+  observaciones?: string | undefined;
+  usuarioId: string;
+  db?: AppDb | undefined;
+}): Promise<MovimientoCajaSelect> {
+  let cuentaEfectivaId = params.cuentaId;
+
+  if (params.db) {
+    if (!cuentaEfectivaId) {
+      const cuentasDelLocal = await params.db
+        .select()
+        .from(cuentasFinancieras)
+        .where(eq(cuentasFinancieras.localId, params.localId));
+      const resCta = resolverCuentaPorMetodoPago(cuentasDelLocal, params.metodoPago);
+      cuentaEfectivaId = resCta?.id;
+    }
+
+    if (!cuentaEfectivaId) {
+      cuentaEfectivaId =
+        params.metodoPago === 'efectivo'
+          ? 'cta-caja-principal'
+          : 'cta-bancolombia-ope';
+    }
+
+    // Validar pertenencia del contrato al local
+    const ctrRows = await params.db
+      .select({
+        id: contratosAlquiler.id,
+        localId: contratosAlquiler.localId,
+      })
+      .from(contratosAlquiler)
+      .where(
+        or(
+          eq(contratosAlquiler.id, params.contratoId),
+          eq(contratosAlquiler.numeroContrato, params.contratoId)
+        )
+      )
+      .limit(1);
+
+    if (ctrRows[0] && ctrRows[0].localId !== params.localId) {
+      throw new Error('El contrato pertenece a otro local operativo');
+    }
+  } else {
+    if (!cuentaEfectivaId) {
+      cuentaEfectivaId =
+        params.metodoPago === 'efectivo'
+          ? 'cta-caja-principal'
+          : 'cta-bancolombia-ope';
+    }
+  }
+
+  return registrarMovimientoRepo({
+    localId: params.localId,
+    tipo: 'INGRESO',
+    categoria: 'ABONO_CONTRATO',
+    concepto: `Abono a contrato #${params.contratoId}`,
+    monto: params.monto,
+    metodoPago: params.metodoPago,
+    cuentaId: cuentaEfectivaId,
+    contratoId: params.contratoId,
+    referencia: params.referencia,
+    observaciones: params.observaciones,
+    usuarioId: params.usuarioId,
+    db: params.db,
+  });
 }
 
 /**
@@ -471,23 +861,83 @@ export async function anularMovimientoRepo(params: {
   localId: string;
   db?: AppDb | undefined;
 }): Promise<MovimientoCajaSelect> {
-  let mov = cacheMovimientos.get(params.movimientoId);
-  if (!mov && params.db) {
+  const ahora = new Date();
+
+  if (params.db) {
     const rows = await params.db
       .select()
       .from(movimientosCaja)
       .where(eq(movimientosCaja.id, params.movimientoId))
       .limit(1);
-    if (rows[0]) mov = rows[0];
+    const mov = rows[0];
+
+    if (!mov) {
+      throw new Error('El movimiento financiero no existe');
+    }
+    if (mov.localId !== params.localId) {
+      throw new Error('No tiene autorización para anular movimientos de otro local');
+    }
+    if (mov.estado === 'ANULADO') {
+      throw new Error('El movimiento ya se encuentra anulado');
+    }
+
+    await params.db
+      .update(movimientosCaja)
+      .set({
+        estado: 'ANULADO',
+        motivoAnulacion: params.motivo,
+        anuladoPorId: params.usuarioId,
+        anuladoEn: ahora,
+        actualizadoEn: ahora,
+      })
+      .where(eq(movimientosCaja.id, params.movimientoId));
+
+    await params.db.insert(auditoriaFinanciera).values({
+      id: `aud-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      localId: params.localId,
+      entidad: 'MOVIMIENTO',
+      entidadId: params.movimientoId,
+      accion: 'ANULAR',
+      montoAnterior: mov.monto,
+      montoNuevo: 0,
+      motivo: params.motivo,
+      usuarioId: params.usuarioId,
+      detallesJson: JSON.stringify({ motivo: params.motivo, fechaAnulacion: ahora }),
+      creadoEn: ahora,
+    });
+
+    if (mov.contratoId) {
+      await reconciliarSaldosContratoYReservaD1(
+        params.db,
+        params.localId,
+        mov.contratoId,
+        undefined,
+        params.usuarioId
+      );
+    }
+
+    return {
+      ...mov,
+      estado: 'ANULADO',
+      motivoAnulacion: params.motivo,
+      anuladoPorId: params.usuarioId,
+      anuladoEn: ahora,
+      actualizadoEn: ahora,
+    };
   }
+
+  // Fallback memoria (solo cuando db no está disponible)
+  const mov = cacheMovimientos.get(params.movimientoId);
   if (!mov) {
     throw new Error('El movimiento financiero no existe');
+  }
+  if (mov.localId !== params.localId) {
+    throw new Error('No tiene autorización para anular movimientos de otro local');
   }
   if (mov.estado === 'ANULADO') {
     throw new Error('El movimiento ya se encuentra anulado');
   }
 
-  const ahora = new Date();
   mov.estado = 'ANULADO';
   mov.motivoAnulacion = params.motivo;
   mov.anuladoPorId = params.usuarioId;
@@ -495,7 +945,6 @@ export async function anularMovimientoRepo(params: {
   mov.actualizadoEn = ahora;
   cacheMovimientos.set(params.movimientoId, mov);
 
-  // Si estaba asociado a un contrato, revertir abono
   if (mov.contratoId && mov.tipo === 'INGRESO') {
     const contrato = cacheCartera.get(mov.contratoId);
     if (contrato) {
@@ -508,38 +957,6 @@ export async function anularMovimientoRepo(params: {
             ? 'PARCIAL'
             : 'PENDIENTE';
       cacheCartera.set(mov.contratoId, contrato);
-    }
-  }
-
-  if (params.db) {
-    try {
-      await params.db
-        .update(movimientosCaja)
-        .set({
-          estado: 'ANULADO',
-          motivoAnulacion: params.motivo,
-          anuladoPorId: params.usuarioId,
-          anuladoEn: ahora,
-          actualizadoEn: ahora,
-        })
-        .where(eq(movimientosCaja.id, params.movimientoId));
-
-      await params.db.insert(auditoriaFinanciera).values({
-        id: `aud-${Date.now()}`,
-        localId: params.localId,
-        entidad: 'MOVIMIENTO',
-        entidadId: params.movimientoId,
-        accion: 'ANULAR',
-        montoAnterior: mov.monto,
-        montoNuevo: 0,
-        motivo: params.motivo,
-        usuarioId: params.usuarioId,
-        detallesJson: JSON.stringify({ motivo: params.motivo, fechaAnulacion: ahora }),
-        creadoEn: ahora,
-      });
-    } catch (error) {
-      // Fallback: la anulación ya quedó aplicada en memoria
-      logFalloD1('caja.movimiento.anular', error, { movimientoId: params.movimientoId });
     }
   }
 
@@ -857,17 +1274,25 @@ export async function gestionarGarantiaRepo(params: {
   localId: string;
   db?: AppDb | undefined;
 }): Promise<DepositoGarantiaSelect> {
-  let dep = cacheGarantias.get(params.garantiaId);
-  if (!dep && params.db) {
+  let dep: DepositoGarantiaSelect | undefined;
+
+  if (params.db) {
     const rows = await params.db
       .select()
       .from(depositosGarantia)
       .where(eq(depositosGarantia.id, params.garantiaId))
       .limit(1);
-    if (rows[0]) dep = rows[0];
+    dep = rows[0];
+  } else {
+    dep = cacheGarantias.get(params.garantiaId);
   }
+
   if (!dep) {
     throw new Error('El depósito de garantía no fue encontrado');
+  }
+
+  if (dep.localId !== params.localId) {
+    throw new Error('No tiene autorización para gestionar garantías de otro local');
   }
 
   const ahora = new Date();
@@ -956,32 +1381,29 @@ export async function gestionarGarantiaRepo(params: {
     });
   }
 
-  cacheGarantias.set(params.garantiaId, dep);
+  if (!params.db) {
+    cacheGarantias.set(params.garantiaId, dep);
+  }
 
   if (params.db) {
-    try {
-      await params.db
-        .update(depositosGarantia)
-        .set({
-          montoRecibido: dep.montoRecibido,
-          montoRetenido: dep.montoRetenido,
-          montoDevuelto: dep.montoDevuelto,
-          saldoComprometido: dep.saldoComprometido,
-          estado: dep.estado,
-          cuentaId: dep.cuentaId,
-          metodoPago: dep.metodoPago,
-          referenciaRecepcion: dep.referenciaRecepcion,
-          fechaRecepcion: dep.fechaRecepcion,
-          fechaDevolucionReal: dep.fechaDevolucionReal,
-          referenciaDevolucion: dep.referenciaDevolucion,
-          motivoRetencion: dep.motivoRetencion,
-          actualizadoEn: ahora,
-        })
-        .where(eq(depositosGarantia.id, params.garantiaId));
-    } catch (error) {
-      // Fallback: la garantía ya quedó actualizada en memoria
-      logFalloD1('caja.garantia.update', error, { garantiaId: params.garantiaId });
-    }
+    await params.db
+      .update(depositosGarantia)
+      .set({
+        montoRecibido: dep.montoRecibido,
+        montoRetenido: dep.montoRetenido,
+        montoDevuelto: dep.montoDevuelto,
+        saldoComprometido: dep.saldoComprometido,
+        estado: dep.estado,
+        cuentaId: dep.cuentaId,
+        metodoPago: dep.metodoPago,
+        referenciaRecepcion: dep.referenciaRecepcion,
+        fechaRecepcion: dep.fechaRecepcion,
+        fechaDevolucionReal: dep.fechaDevolucionReal,
+        referenciaDevolucion: dep.referenciaDevolucion,
+        motivoRetencion: dep.motivoRetencion,
+        actualizadoEn: ahora,
+      })
+      .where(eq(depositosGarantia.id, params.garantiaId));
   }
 
   return dep;
