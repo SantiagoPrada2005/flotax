@@ -12,16 +12,19 @@ export interface PortalSwitchCardProps {
   membresias: MembresiaLocalResumen[];
   esSuperAdmin: boolean;
   localActivoNombre?: string | undefined;
+  modoActual?: 'ADMIN' | 'CLIENTE' | undefined;
 }
 
 export default function PortalSwitchCard({
   membresias,
   esSuperAdmin,
   localActivoNombre,
+  modoActual = 'CLIENTE',
 }: PortalSwitchCardProps) {
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  const esModoAdmin = modoActual === 'ADMIN';
   const tieneAccesoOperativo = esSuperAdmin || membresias.length > 0;
   const sedePrincipal = membresias[0];
   const nombreSede = localActivoNombre ?? sedePrincipal?.nombreLocal ?? 'Patio Operativo';
@@ -30,20 +33,35 @@ export default function PortalSwitchCard({
   const handleToggle = () => {
     if (!tieneAccesoOperativo || isPending) return;
     setErrorMsg(null);
-    const variante = resolverVarianteTransicionPortal('PERSONAL_A_DUEÑO');
-    activarFlotaxLoading('INICIALIZANDO ENTORNO OPERATIVO DE PATIO', variante);
+    const modoDestino: 'ADMIN' | 'CLIENTE' = esModoAdmin ? 'CLIENTE' : 'ADMIN';
+    const variante = resolverVarianteTransicionPortal(
+      modoDestino === 'ADMIN' ? 'PERSONAL_A_DUEÑO' : 'DUEÑO_A_PERSONAL'
+    );
+    const mensajeCarga =
+      modoDestino === 'ADMIN'
+        ? 'INICIALIZANDO ENTORNO OPERATIVO DE PATIO'
+        : 'CONMUTANDO A PORTAL DE CLIENTE';
+
+    activarFlotaxLoading(mensajeCarga, variante);
 
     startTransition(async () => {
       try {
-        const result = await actions.portal.cambiarModoPortal({ modo: 'ADMIN' });
+        const result = await actions.portal.cambiarModoPortal({ modo: modoDestino });
         if (result.error) {
           desactivarFlotaxLoading();
-          setErrorMsg(result.error.message || 'No fue posible cambiar al modo operador.');
+          setErrorMsg(
+            result.error.message ||
+              (modoDestino === 'ADMIN'
+                ? 'No fue posible cambiar al modo operador.'
+                : 'No fue posible cambiar al modo personal.')
+          );
           return;
         }
 
         if (result.data?.rutaDestino) {
           navigate(result.data.rutaDestino);
+        } else {
+          navigate(modoDestino === 'ADMIN' ? '/admin' : '/catalogo');
         }
       } catch {
         desactivarFlotaxLoading();
@@ -89,7 +107,7 @@ export default function PortalSwitchCard({
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1 rounded-full bg-[#111827]/5 dark:bg-white/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
-              Modo Operativo
+              {esModoAdmin ? 'Modo Operador Activo' : 'Modo Operativo Disponible'}
             </span>
             {membresias.length > 1 && (
               <span className="text-[10px] font-medium text-[#4B5563] dark:text-[#9CA3AF]">
@@ -109,21 +127,27 @@ export default function PortalSwitchCard({
         <button
           type="button"
           role="switch"
-          aria-checked={false}
-          aria-label="Cambiar a Modo Operador"
+          aria-checked={esModoAdmin}
+          aria-label={esModoAdmin ? 'Cambiar a Modo Personal (Alquilar)' : 'Cambiar a Modo Operador'}
           aria-busy={isPending}
           disabled={isPending}
           onClick={handleToggle}
-          className="group relative flex shrink-0 cursor-pointer items-center px-1 py-2 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="group relative flex min-h-[44px] min-w-[44px] shrink-0 cursor-pointer items-center justify-center px-1 py-2 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <div
             className={`h-[28px] w-[50px] rounded-[14px] transition-colors duration-200 relative ${
-              isPending ? 'bg-[#4B5563]' : 'bg-[#E5E4DF] dark:bg-white/20 group-hover:bg-[#D8D6D0] dark:group-hover:bg-white/30'
+              isPending
+                ? 'bg-[#4B5563]'
+                : esModoAdmin
+                  ? 'bg-[#111827] dark:bg-[#EDEDED]'
+                  : 'bg-[#9CA3AF]/40 dark:bg-white/20 group-hover:bg-[#9CA3AF]/60 dark:group-hover:bg-white/30'
             }`}
           >
             <div
-              className={`absolute top-[4px] left-[4px] h-[20px] w-[20px] rounded-full bg-white shadow-xs transition-transform duration-200 flex items-center justify-center ${
-                isPending ? 'translate-x-[22px]' : 'translate-x-0'
+              className={`absolute top-[4px] left-[4px] h-[20px] w-[20px] rounded-full shadow-xs transition-transform duration-200 flex items-center justify-center ${
+                esModoAdmin ? 'bg-white dark:bg-[#111827]' : 'bg-white'
+              } ${
+                esModoAdmin || isPending ? 'translate-x-[22px]' : 'translate-x-0'
               }`}
             >
               {isPending && (
@@ -140,9 +164,13 @@ export default function PortalSwitchCard({
           type="button"
           onClick={handleToggle}
           disabled={isPending}
-          className="font-bold text-[#111827] dark:text-[#EDEDED] hover:underline disabled:opacity-40 disabled:cursor-not-allowed"
+          className="inline-flex min-h-[44px] items-center font-bold text-[#111827] dark:text-[#EDEDED] hover:underline disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
         >
-          {isPending ? 'Conectando...' : 'Entrar a patio →'}
+          {isPending
+            ? 'Conectando...'
+            : esModoAdmin
+              ? 'Cambiar a Modo Personal (Alquilar)'
+              : 'Entrar a patio →'}
         </button>
       </div>
 

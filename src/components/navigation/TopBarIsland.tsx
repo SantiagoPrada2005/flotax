@@ -16,6 +16,7 @@ export interface TopBarIslandProps {
   usuarioCorreo?: string | null | undefined;
   usuarioLocalNombre?: string | null | undefined;
   tieneAccesoAdmin?: boolean | undefined;
+  modoPortal?: 'ADMIN' | 'CLIENTE' | undefined;
   clavePublicaVapid?: string | undefined;
   localCaptacionNombre?: string | undefined;
 }
@@ -31,6 +32,8 @@ export default function TopBarIsland({
   usuarioNombre,
   usuarioCorreo,
   usuarioLocalNombre,
+  tieneAccesoAdmin = false,
+  modoPortal,
   clavePublicaVapid,
   localCaptacionNombre,
 }: TopBarIslandProps) {
@@ -38,6 +41,9 @@ export default function TopBarIsland({
   const [isStandalone, setIsStandalone] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDatasetAdmin, setIsDatasetAdmin] = useState(false);
+  const [liveModoPortal, setLiveModoPortal] = useState<'ADMIN' | 'CLIENTE'>(
+    modoPortal ?? (navVariant === 'admin' ? 'ADMIN' : 'CLIENTE')
+  );
   const menuContainerRef = useRef<HTMLDivElement | null>(null);
 
   const isAdminVariant = navVariant === 'admin' || isDatasetAdmin;
@@ -50,9 +56,22 @@ export default function TopBarIsland({
     .trim();
 
   useEffect(() => {
+    if (modoPortal) {
+      setLiveModoPortal(modoPortal);
+    }
+  }, [modoPortal]);
+
+  useEffect(() => {
     setIsStandalone(isStandalonePwa());
     const syncPortalMode = () => {
-      setIsDatasetAdmin(document.documentElement.dataset.portalModo === 'ADMIN');
+      const datasetModo = document.documentElement.dataset.portalModo;
+      if (datasetModo === 'ADMIN' || datasetModo === 'CLIENTE') {
+        setIsDatasetAdmin(datasetModo === 'ADMIN');
+        setLiveModoPortal(datasetModo);
+      } else {
+        setIsDatasetAdmin(false);
+        setLiveModoPortal(modoPortal ?? (navVariant === 'admin' ? 'ADMIN' : 'CLIENTE'));
+      }
     };
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
     const handleInstalled = () => setIsStandalone(true);
@@ -250,6 +269,8 @@ export default function TopBarIsland({
           usuarioCorreo={usuarioCorreo}
           usuarioImagen={usuarioImagen}
           usuarioLocalNombre={usuarioLocalNombre}
+          tieneAccesoAdmin={tieneAccesoAdmin}
+          modoPortal={liveModoPortal}
           onTriggerHaptic={triggerHaptic}
         />
       </div>

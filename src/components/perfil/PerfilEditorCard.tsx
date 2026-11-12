@@ -25,6 +25,7 @@ export interface PerfilEditorCardProps {
   membresias?: MembresiaLocalResumen[];
   localActivoNombre?: string | undefined;
   estadoVerificacion?: string | undefined;
+  modoActual?: 'ADMIN' | 'CLIENTE' | undefined;
 }
 
 export default function PerfilEditorCard({
@@ -32,6 +33,7 @@ export default function PerfilEditorCard({
   membresias = [],
   localActivoNombre,
   estadoVerificacion = 'PENDIENTE',
+  modoActual = 'CLIENTE',
 }: PerfilEditorCardProps) {
   // Datos guardados
   const [datosGuardados, setDatosGuardados] = useState({
@@ -66,6 +68,7 @@ export default function PerfilEditorCard({
     .join('');
 
   const hayAccesoOperativo = usuario.esSuperAdmin || membresias.length > 0;
+  const esModoAdmin = modoActual === 'ADMIN';
 
   // Abrir modal de edición
   const handleAbrirEdicion = () => {
@@ -121,20 +124,34 @@ export default function PerfilEditorCard({
     });
   };
 
-  // Conmutar a modo operador de patio
+  // Conmutar bidireccionalmente entre modo operador de patio y modo personal
   const handleConmutarPatio = async () => {
-    const variante = resolverVarianteTransicionPortal('PERSONAL_A_DUEÑO');
-    activarFlotaxLoading('INICIALIZANDO ENTORNO OPERATIVO', variante);
+    const modoDestino: 'ADMIN' | 'CLIENTE' = esModoAdmin ? 'CLIENTE' : 'ADMIN';
+    const variante = resolverVarianteTransicionPortal(
+      modoDestino === 'ADMIN' ? 'PERSONAL_A_DUEÑO' : 'DUEÑO_A_PERSONAL'
+    );
+    const mensajeCarga =
+      modoDestino === 'ADMIN'
+        ? 'INICIALIZANDO ENTORNO OPERATIVO'
+        : 'CONMUTANDO A PORTAL DE CLIENTE';
+    activarFlotaxLoading(mensajeCarga, variante);
 
     try {
-      const result = await actions.portal.cambiarModoPortal({ modo: 'ADMIN' });
+      const result = await actions.portal.cambiarModoPortal({ modo: modoDestino });
       if (result.error) {
         desactivarFlotaxLoading();
-        setErrorMsg(result.error.message || 'No fue posible cambiar al modo operador.');
+        setErrorMsg(
+          result.error.message ||
+            (modoDestino === 'ADMIN'
+              ? 'No fue posible cambiar al modo operador.'
+              : 'No fue posible cambiar al modo personal.')
+        );
         return;
       }
       if (result.data?.rutaDestino) {
         navigate(result.data.rutaDestino);
+      } else {
+        navigate(modoDestino === 'ADMIN' ? '/admin' : '/catalogo');
       }
     } catch {
       desactivarFlotaxLoading();
@@ -439,20 +456,33 @@ export default function PerfilEditorCard({
               <button
                 type="button"
                 onClick={handleConmutarPatio}
-                className="fx-press w-full flex items-center justify-between p-3.5 hover:bg-gray-50/80 dark:hover:bg-white/10 rounded-2xl text-left"
+                className="fx-press min-h-[44px] w-full cursor-pointer flex items-center justify-between p-3.5 hover:bg-gray-50/80 dark:hover:bg-white/10 rounded-2xl text-left"
               >
                 <div className="flex items-center gap-3.5 min-w-0">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#111827] dark:bg-white text-white dark:text-[#111827]">
-                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg>
+                    {esModoAdmin ? (
+                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2" />
+                        <circle cx="7" cy="17" r="2" />
+                        <path d="M9 17h6" />
+                        <circle cx="17" cy="17" r="2" />
+                      </svg>
+                    ) : (
+                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                      </svg>
+                    )}
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-[#111827] dark:text-[#EDEDED] truncate">
-                      Modo Operador de Patio
+                      {esModoAdmin
+                        ? 'Cambiar a Modo Personal (Alquilar)'
+                        : 'Modo Operador de Patio'}
                     </p>
                     <p className="text-[11px] text-[#4B5563] dark:text-[#9CA3AF] truncate">
-                      {localActivoNombre ?? 'Administración y check-in'}
+                      {esModoAdmin
+                        ? 'Explorar catálogo y reservas personales'
+                        : localActivoNombre ?? 'Administración y check-in'}
                     </p>
                   </div>
                 </div>

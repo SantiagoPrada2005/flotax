@@ -1,7 +1,13 @@
 import { useState, useEffect, type SyntheticEvent } from 'react';
+import { actions } from 'astro:actions';
 import { navigate } from 'astro:transitions/client';
 import { authClient } from '@/lib/auth/client';
 import { DICCIONARIOS, obtenerIdiomaActual, type Idioma } from '@/lib/i18n';
+import {
+  activarFlotaxLoading,
+  desactivarFlotaxLoading,
+  resolverVarianteTransicionPortal,
+} from '@/lib/pwa';
 
 export interface UserDropdownMenuProps {
   isOpen: boolean;
@@ -11,6 +17,8 @@ export interface UserDropdownMenuProps {
   usuarioCorreo?: string | null | undefined;
   usuarioImagen?: string | null | undefined;
   usuarioLocalNombre?: string | null | undefined;
+  tieneAccesoAdmin?: boolean | undefined;
+  modoPortal?: 'ADMIN' | 'CLIENTE' | undefined;
   onTriggerHaptic?: (() => void) | undefined;
 }
 
@@ -21,12 +29,16 @@ export default function UserDropdownMenu({
   usuarioNombre,
   usuarioCorreo,
   usuarioImagen,
+  tieneAccesoAdmin = false,
+  modoPortal = 'CLIENTE',
   onTriggerHaptic,
 }: UserDropdownMenuProps) {
   const [isRendered, setIsRendered] = useState(isOpen);
   const [isVisible, setIsVisible] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isSwitchingPortal, setIsSwitchingPortal] = useState(false);
+  const [liveModoPortal, setLiveModoPortal] = useState<'ADMIN' | 'CLIENTE'>(modoPortal);
   const [idioma, setIdioma] = useState<Idioma>('es');
   const [currentPath, setCurrentPath] = useState(
     typeof window !== 'undefined' ? window.location.pathname : ''
@@ -43,6 +55,10 @@ export default function UserDropdownMenu({
     .map((palabra) => palabra[0]?.toUpperCase())
     .join('');
 
+  useEffect(() => {
+    setLiveModoPortal(modoPortal);
+  }, [modoPortal]);
+
   // Sincronización reactiva de la ruta y anclaje actual, así como de idioma
   useEffect(() => {
     setIdioma(obtenerIdiomaActual());
@@ -51,6 +67,11 @@ export default function UserDropdownMenu({
       if (typeof window !== 'undefined') {
         setCurrentPath(window.location.pathname);
         setCurrentHash(window.location.hash);
+        setIsSwitchingPortal(false);
+        const datasetModo = document.documentElement.dataset.portalModo;
+        if (datasetModo === 'ADMIN' || datasetModo === 'CLIENTE') {
+          setLiveModoPortal(datasetModo);
+        }
       }
     };
 
@@ -107,6 +128,41 @@ export default function UserDropdownMenu({
     onTriggerHaptic?.();
     onClose();
     void navigate(ruta);
+  };
+
+  const handleCambiarModoPortal = async () => {
+    if (isSwitchingPortal) return;
+    const modoDestino: 'ADMIN' | 'CLIENTE' =
+      liveModoPortal === 'ADMIN' ? 'CLIENTE' : 'ADMIN';
+    const variante = resolverVarianteTransicionPortal(
+      modoDestino === 'ADMIN' ? 'PERSONAL_A_DUEÑO' : 'DUEÑO_A_PERSONAL'
+    );
+    const mensajeCarga =
+      modoDestino === 'ADMIN'
+        ? 'INICIALIZANDO ENTORNO OPERATIVO DE PATIO'
+        : 'CONMUTANDO A PORTAL DE CLIENTE';
+
+    setIsSwitchingPortal(true);
+    onTriggerHaptic?.();
+    onClose();
+    activarFlotaxLoading(mensajeCarga, variante);
+
+    try {
+      const result = await actions.portal.cambiarModoPortal({ modo: modoDestino });
+      if (result.error) {
+        desactivarFlotaxLoading();
+        setIsSwitchingPortal(false);
+        return;
+      }
+
+      const destino =
+        result.data?.rutaDestino ??
+        (modoDestino === 'ADMIN' ? '/admin' : '/catalogo');
+      void navigate(destino);
+    } catch {
+      desactivarFlotaxLoading();
+      setIsSwitchingPortal(false);
+    }
   };
 
   const handleCerrarSesion = async (e: SyntheticEvent) => {
@@ -214,6 +270,68 @@ export default function UserDropdownMenu({
       {/* 2. Opciones principales */}
       {autenticado ? (
         <div className="space-y-0.5">
+          {tieneAccesoAdmin && (
+            <>
+              <button
+                type="button"
+                role="menuitem"
+                disabled={isSwitchingPortal}
+                onClick={handleCambiarModoPortal}
+                className="ios-press-bounce flex min-h-[44px] w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-left text-xs sm:text-[13px] font-semibold text-[#111827] dark:text-[#EDEDED] transition-colors hover:bg-[#EDEDED]/80 dark:hover:bg-white/10 disabled:opacity-50"
+              >
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#111827] dark:bg-white/20 text-[#EDEDED] transition-colors">
+                  {liveModoPortal === 'ADMIN' ? (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-4 w-4"
+                      aria-hidden="true"
+                    >
+                      <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2" />
+                      <circle cx="7" cy="17" r="2" />
+                      <path d="M9 17h6" />
+                      <circle cx="17" cy="17" r="2" />
+                    </svg>
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-4 w-4"
+                      aria-hidden="true"
+                    >
+                      <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" />
+                      <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
+                      <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" />
+                      <path d="M10 6h4" />
+                      <path d="M10 10h4" />
+                      <path d="M10 14h4" />
+                      <path d="M10 18h4" />
+                    </svg>
+                  )}
+                </span>
+                <span className="flex-1 truncate">
+                  {liveModoPortal === 'ADMIN'
+                    ? 'Cambiar a Modo Personal'
+                    : 'Cambiar a Modo Patio'}
+                </span>
+                <span className="text-xs text-[#9CA3AF]" aria-hidden="true">
+                  →
+                </span>
+              </button>
+              <div className="my-1 h-px bg-[#EDEDED] dark:bg-white/10 mx-1" role="separator" />
+            </>
+          )}
+
           {/* Opción 1: Perfil */}
           <button
             type="button"
