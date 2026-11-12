@@ -14,7 +14,7 @@ import {
   type SesionCajaSelect,
   type DepositoGarantiaSelect,
 } from '@/db/schema';
-import { eq, desc, or } from 'drizzle-orm';
+import { eq, desc, or, and, inArray } from 'drizzle-orm';
 import { asegurarConfiguracionBaseLocal } from '@/lib/flota/locales-captacion';
 import {
   CUENTAS_CANONICAS_SEMILLA,
@@ -349,6 +349,7 @@ export async function reconciliarSaldosContratoYReservaD1(
     numeroContrato: string;
     reservaId: string;
     localId: string;
+    clienteId: string | null;
     totalLiquidado: number;
     totalPagado: number;
     saldoPendiente: number;
@@ -362,6 +363,7 @@ export async function reconciliarSaldosContratoYReservaD1(
         numeroContrato: contratosAlquiler.numeroContrato,
         reservaId: contratosAlquiler.reservaId,
         localId: contratosAlquiler.localId,
+        clienteId: contratosAlquiler.clienteId,
         totalLiquidado: contratosAlquiler.totalLiquidado,
         totalPagado: contratosAlquiler.totalPagado,
         saldoPendiente: contratosAlquiler.saldoPendiente,
@@ -385,6 +387,7 @@ export async function reconciliarSaldosContratoYReservaD1(
         numeroContrato: contratosAlquiler.numeroContrato,
         reservaId: contratosAlquiler.reservaId,
         localId: contratosAlquiler.localId,
+        clienteId: contratosAlquiler.clienteId,
         totalLiquidado: contratosAlquiler.totalLiquidado,
         totalPagado: contratosAlquiler.totalPagado,
         saldoPendiente: contratosAlquiler.saldoPendiente,
@@ -401,6 +404,7 @@ export async function reconciliarSaldosContratoYReservaD1(
     id: string;
     codigo: string;
     localId: string;
+    clienteId: string | null;
     totalCotizado: number;
     montoAbonoReportado: number;
   } | undefined;
@@ -412,6 +416,7 @@ export async function reconciliarSaldosContratoYReservaD1(
         id: reservas.id,
         codigo: reservas.codigo,
         localId: reservas.localId,
+        clienteId: reservas.clienteId,
         totalCotizado: reservas.totalCotizado,
         montoAbonoReportado: reservas.montoAbonoReportado,
       })
@@ -452,22 +457,35 @@ export async function reconciliarSaldosContratoYReservaD1(
     idsAsociados.add(reserva.codigo);
   }
 
-  // 4. Consultar movimientos confirmados asociados al localId
-  const movimientosDelLocal = await db
-    .select({
-      id: movimientosCaja.id,
-      tipo: movimientosCaja.tipo,
-      categoria: movimientosCaja.categoria,
-      monto: movimientosCaja.monto,
-      estado: movimientosCaja.estado,
-      contratoId: movimientosCaja.contratoId,
-    })
-    .from(movimientosCaja)
-    .where(eq(movimientosCaja.localId, localId));
+  // 4. Consultar movimientos confirmados directamente en SQLite con push-down de predicado
+  const arrayIds = Array.from(idsAsociados);
+  let movimientosContrato: Array<{
+    id: string;
+    tipo: string;
+    categoria: string;
+    monto: number;
+    estado: string;
+    contratoId: string | null;
+  }> = [];
 
-  const movimientosContrato = movimientosDelLocal.filter(
-    (m) => m.contratoId && idsAsociados.has(m.contratoId)
-  );
+  if (arrayIds.length > 0) {
+    movimientosContrato = await db
+      .select({
+        id: movimientosCaja.id,
+        tipo: movimientosCaja.tipo,
+        categoria: movimientosCaja.categoria,
+        monto: movimientosCaja.monto,
+        estado: movimientosCaja.estado,
+        contratoId: movimientosCaja.contratoId,
+      })
+      .from(movimientosCaja)
+      .where(
+        and(
+          eq(movimientosCaja.localId, localId),
+          inArray(movimientosCaja.contratoId, arrayIds)
+        )
+      );
+  }
 
   const totalPagadoNeto = calcularTotalPagadoNetoContrato(movimientosContrato);
 
@@ -488,100 +506,119 @@ export async function reconciliarSaldosContratoYReservaD1(
   const auditoriaId = `aud-rec-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
   const entId = contrato?.id ?? reserva?.id ?? (contratoId || 'N/A');
 
+  // Resolver usuario válido para auditoría inmutable sin vulnerar FK
+  const usuarioAuditoriaId =
+    usuarioId ?? contrato?.clienteId ?? reserva?.clienteId ?? undefined;
+
+  const auditInsert = usuarioAuditoriaId
+    ? db.insert(auditoriaFinanciera).values({
+        id: auditoriaId,
+        localId,
+        entidad: 'MOVIMIENTO',
+        entidadId: entId,
+        accion: 'MODIFICAR',
+        montoAnterior: contrato?.totalPagado ?? reserva?.montoAbonoReportado ?? null,
+        montoNuevo: totalPagadoNeto,
+        motivo: `Reconciliación de saldos ${contrato?.numeroContrato ?? reserva?.codigo ?? ''}`,
+        usuarioId: usuarioAuditoriaId,
+        detallesJson: JSON.stringify({
+          totalPagadoNeto,
+          saldoPendiente,
+          estadoPago,
+          movimientosContabilizados: movimientosContrato.length,
+        }),
+        creadoEn: ahora,
+      })
+    : null;
+
   if (typeof db.batch === 'function') {
     if (contrato && reserva) {
-      await db.batch([
-        db
-          .update(contratosAlquiler)
-          .set({
-            totalPagado: totalPagadoNeto,
-            saldoPendiente,
-            estadoPago,
-            actualizadoEn: ahora,
-          })
-          .where(eq(contratosAlquiler.id, contrato.id)),
-        db
-          .update(reservas)
-          .set({
-            montoAbonoReportado: totalPagadoNeto,
-          })
-          .where(eq(reservas.id, reserva.id)),
-        db.insert(auditoriaFinanciera).values({
-          id: auditoriaId,
-          localId,
-          entidad: 'MOVIMIENTO',
-          entidadId: entId,
-          accion: 'MODIFICAR',
-          montoAnterior: contrato.totalPagado,
-          montoNuevo: totalPagadoNeto,
-          motivo: `Reconciliación de saldos contrato ${contrato.numeroContrato}`,
-          usuarioId: usuarioId ?? 'sistema',
-          detallesJson: JSON.stringify({
-            totalPagadoNeto,
-            saldoPendiente,
-            estadoPago,
-            movimientosContabilizados: movimientosContrato.length,
-          }),
-          creadoEn: ahora,
-        }),
-      ]);
+      if (auditInsert) {
+        await db.batch([
+          db
+            .update(contratosAlquiler)
+            .set({
+              totalPagado: totalPagadoNeto,
+              saldoPendiente,
+              estadoPago,
+              actualizadoEn: ahora,
+            })
+            .where(eq(contratosAlquiler.id, contrato.id)),
+          db
+            .update(reservas)
+            .set({
+              montoAbonoReportado: totalPagadoNeto,
+            })
+            .where(eq(reservas.id, reserva.id)),
+          auditInsert,
+        ]);
+      } else {
+        await db.batch([
+          db
+            .update(contratosAlquiler)
+            .set({
+              totalPagado: totalPagadoNeto,
+              saldoPendiente,
+              estadoPago,
+              actualizadoEn: ahora,
+            })
+            .where(eq(contratosAlquiler.id, contrato.id)),
+          db
+            .update(reservas)
+            .set({
+              montoAbonoReportado: totalPagadoNeto,
+            })
+            .where(eq(reservas.id, reserva.id)),
+        ]);
+      }
     } else if (contrato) {
-      await db.batch([
-        db
-          .update(contratosAlquiler)
-          .set({
-            totalPagado: totalPagadoNeto,
-            saldoPendiente,
-            estadoPago,
-            actualizadoEn: ahora,
-          })
-          .where(eq(contratosAlquiler.id, contrato.id)),
-        db.insert(auditoriaFinanciera).values({
-          id: auditoriaId,
-          localId,
-          entidad: 'MOVIMIENTO',
-          entidadId: entId,
-          accion: 'MODIFICAR',
-          montoAnterior: contrato.totalPagado,
-          montoNuevo: totalPagadoNeto,
-          motivo: `Reconciliación de saldos contrato ${contrato.numeroContrato}`,
-          usuarioId: usuarioId ?? 'sistema',
-          detallesJson: JSON.stringify({
-            totalPagadoNeto,
-            saldoPendiente,
-            estadoPago,
-            movimientosContabilizados: movimientosContrato.length,
-          }),
-          creadoEn: ahora,
-        }),
-      ]);
+      if (auditInsert) {
+        await db.batch([
+          db
+            .update(contratosAlquiler)
+            .set({
+              totalPagado: totalPagadoNeto,
+              saldoPendiente,
+              estadoPago,
+              actualizadoEn: ahora,
+            })
+            .where(eq(contratosAlquiler.id, contrato.id)),
+          auditInsert,
+        ]);
+      } else {
+        await db.batch([
+          db
+            .update(contratosAlquiler)
+            .set({
+              totalPagado: totalPagadoNeto,
+              saldoPendiente,
+              estadoPago,
+              actualizadoEn: ahora,
+            })
+            .where(eq(contratosAlquiler.id, contrato.id)),
+        ]);
+      }
     } else if (reserva) {
-      await db.batch([
-        db
-          .update(reservas)
-          .set({
-            montoAbonoReportado: totalPagadoNeto,
-          })
-          .where(eq(reservas.id, reserva.id)),
-        db.insert(auditoriaFinanciera).values({
-          id: auditoriaId,
-          localId,
-          entidad: 'MOVIMIENTO',
-          entidadId: entId,
-          accion: 'MODIFICAR',
-          montoAnterior: reserva.montoAbonoReportado,
-          montoNuevo: totalPagadoNeto,
-          motivo: `Reconciliación de abono reserva ${reserva.codigo}`,
-          usuarioId: usuarioId ?? 'sistema',
-          detallesJson: JSON.stringify({
-            totalPagadoNeto,
-            saldoPendiente,
-            estadoPago,
-            movimientosContabilizados: movimientosContrato.length,
-          }),
-          creadoEn: ahora,
-        }),
-      ]);
+      if (auditInsert) {
+        await db.batch([
+          db
+            .update(reservas)
+            .set({
+              montoAbonoReportado: totalPagadoNeto,
+            })
+            .where(eq(reservas.id, reserva.id)),
+          auditInsert,
+        ]);
+      } else {
+        await db.batch([
+          db
+            .update(reservas)
+            .set({
+              montoAbonoReportado: totalPagadoNeto,
+            })
+            .where(eq(reservas.id, reserva.id)),
+        ]);
+      }
     }
   } else {
     if (contrato) {
@@ -603,24 +640,9 @@ export async function reconciliarSaldosContratoYReservaD1(
         })
         .where(eq(reservas.id, reserva.id));
     }
-    await db.insert(auditoriaFinanciera).values({
-      id: auditoriaId,
-      localId,
-      entidad: 'MOVIMIENTO',
-      entidadId: entId,
-      accion: 'MODIFICAR',
-      montoAnterior: contrato?.totalPagado ?? reserva?.montoAbonoReportado ?? null,
-      montoNuevo: totalPagadoNeto,
-      motivo: `Reconciliación de saldos ${contrato?.numeroContrato ?? reserva?.codigo ?? ''}`,
-      usuarioId: usuarioId ?? 'sistema',
-      detallesJson: JSON.stringify({
-        totalPagadoNeto,
-        saldoPendiente,
-        estadoPago,
-        movimientosContabilizados: movimientosContrato.length,
-      }),
-      creadoEn: ahora,
-    });
+    if (auditInsert) {
+      await auditInsert;
+    }
   }
 
   return { totalPagadoNeto, saldoPendiente, estadoPago };
@@ -808,7 +830,7 @@ export async function registrarAbonoRepo(params: {
           : 'cta-bancolombia-ope';
     }
 
-    // Validar pertenencia del contrato al local
+    // Validar pertenencia del contrato o de la reserva al local antes de asentar movimiento
     const ctrRows = await params.db
       .select({
         id: contratosAlquiler.id,
@@ -823,8 +845,29 @@ export async function registrarAbonoRepo(params: {
       )
       .limit(1);
 
-    if (ctrRows[0] && ctrRows[0].localId !== params.localId) {
-      throw new Error('El contrato pertenece a otro local operativo');
+    if (ctrRows[0]) {
+      if (ctrRows[0].localId !== params.localId) {
+        throw new Error('El contrato pertenece a otro local operativo');
+      }
+    } else {
+      // Si no es un contrato, validar si es una reserva y verificar su pertenencia
+      const resRows = await params.db
+        .select({
+          id: reservas.id,
+          localId: reservas.localId,
+        })
+        .from(reservas)
+        .where(
+          or(
+            eq(reservas.id, params.contratoId),
+            eq(reservas.codigo, params.contratoId)
+          )
+        )
+        .limit(1);
+
+      if (resRows[0] && resRows[0].localId !== params.localId) {
+        throw new Error('La reserva pertenece a otro local operativo');
+      }
     }
   } else {
     if (!cuentaEfectivaId) {

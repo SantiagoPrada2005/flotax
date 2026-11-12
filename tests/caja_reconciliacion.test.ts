@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {
   anularMovimientoRepo,
   registrarMovimientoRepo,
+  registrarAbonoRepo,
+  reconciliarSaldosContratoYReservaD1,
   obtenerEstadoFinancieroCompleto,
 } from '../src/lib/caja/repositorio.ts';
 import {
@@ -11,7 +13,13 @@ import {
 } from '../src/actions/caja.ts';
 import type { AppDb } from '../src/lib/db.ts';
 import type { ContextWithLocals } from '../src/lib/auth/guard.ts';
-import { movimientosCaja, cuentasFinancieras } from '../src/db/schema/index.ts';
+import {
+  movimientosCaja,
+  cuentasFinancieras,
+  contratosAlquiler,
+  reservas,
+  auditoriaFinanciera,
+} from '../src/db/schema/index.ts';
 
 describe('Reconciliación Real de Caja y Garantías D1 - FlotaX', () => {
   it('1. anularMovimientoRepo rechaza cuando movimiento.localId !== localId sin alterar D1', async () => {
@@ -261,6 +269,203 @@ describe('Reconciliación Real de Caja y Garantías D1 - FlotaX', () => {
       res.carteraContratos[0]?.garantiaEsperada,
       350_000,
       'Debe leer vehiculos.depositoGarantia (350.000) en lugar del fallback 1.500.000'
+    );
+  });
+
+  it('5. reconciliarSaldosContratoYReservaD1 ejecuta db.batch con consulta acotada y usuarioId valido sin fallback sistema', async () => {
+    let batchLlamado = false;
+    let batchOperacionesCount = 0;
+    let auditoriaValues: Record<string, unknown> | null = null;
+    let whereMovimientosInvocado = false;
+
+    const mockContrato = {
+      id: 'ctr-rec-1',
+      numeroContrato: 'CTR-REC-01',
+      reservaId: 'res-rec-1',
+      localId: 'local-patio-1',
+      clienteId: 'usr-cliente-real',
+      totalLiquidado: 1_000_000,
+      totalPagado: 200_000,
+      saldoPendiente: 800_000,
+      estadoPago: 'PARCIAL',
+    };
+
+    const mockReserva = {
+      id: 'res-rec-1',
+      codigo: 'FLX-REC-01',
+      localId: 'local-patio-1',
+      clienteId: 'usr-cliente-real',
+      totalCotizado: 1_000_000,
+      montoAbonoReportado: 200_000,
+    };
+
+    const mockMovimientos = [
+      {
+        id: 'mov-1',
+        tipo: 'INGRESO',
+        categoria: 'PAGO_ALQUILER',
+        monto: 700_000,
+        estado: 'CONFIRMADO',
+        contratoId: 'CTR-REC-01',
+      },
+      {
+        id: 'mov-2',
+        tipo: 'EGRESO',
+        categoria: 'REEMBOLSO_ALQUILER',
+        monto: 100_000,
+        estado: 'CONFIRMADO',
+        contratoId: 'CTR-REC-01',
+      },
+    ];
+
+    const mockDb = {
+      select: () => ({
+        from: (tabla: unknown) => ({
+          where: () => {
+            if (tabla === movimientosCaja) {
+              whereMovimientosInvocado = true;
+              return Promise.resolve(mockMovimientos);
+            }
+            return {
+              limit: async () => {
+                if (tabla === contratosAlquiler) return [mockContrato];
+                if (tabla === reservas) return [mockReserva];
+                return [];
+              },
+            };
+          },
+        }),
+      }),
+      update: (tabla: unknown) => ({
+        set: (valores: Record<string, unknown>) => ({
+          where: () => ({ tabla, valores }),
+        }),
+      }),
+      insert: (tabla: unknown) => ({
+        values: (valores: Record<string, unknown>) => {
+          if (tabla === auditoriaFinanciera) {
+            auditoriaValues = valores;
+          }
+          return { tabla, valores };
+        },
+      }),
+      batch: async (ops: unknown[]) => {
+        batchLlamado = true;
+        batchOperacionesCount = ops.length;
+      },
+    } as unknown as AppDb;
+
+    // Caso A: Con usuarioId explícito
+    const res = await reconciliarSaldosContratoYReservaD1(
+      mockDb,
+      'local-patio-1',
+      'CTR-REC-01',
+      undefined,
+      'usr-operador-real'
+    );
+
+    assert.equal(whereMovimientosInvocado, true, 'Debe consultar movimientosCaja con predicado push-down');
+    assert.equal(batchLlamado, true, 'Debe ejecutar db.batch');
+    assert.equal(batchOperacionesCount, 3, 'Debe sincronizar contratosAlquiler, reservas y registrar auditoriaFinanciera');
+    assert.equal(res.totalPagadoNeto, 600_000, 'Total pagado neto debe ser 700.000 - 100.000 = 600.000');
+    assert.equal(res.saldoPendiente, 400_000, 'Saldo pendiente debe ser 1.000.000 - 600.000 = 400.000');
+    assert.equal(res.estadoPago, 'PARCIAL');
+
+    assert.ok(auditoriaValues, 'Debe registrar auditoría financiera');
+    assert.equal(
+      auditoriaValues.usuarioId,
+      'usr-operador-real',
+      'Debe asignar el usuarioId del operador'
+    );
+    assert.notEqual(
+      auditoriaValues.usuarioId,
+      'sistema',
+      'Jamás debe usar "sistema" por restricción FK contra user.id'
+    );
+
+    // Caso B: Sin usuarioId explícito, debe resolver clienteId del contrato/reserva y nunca 'sistema'
+    auditoriaValues = null;
+    await reconciliarSaldosContratoYReservaD1(
+      mockDb,
+      'local-patio-1',
+      'CTR-REC-01',
+      undefined,
+      undefined
+    );
+
+    assert.ok(auditoriaValues, 'Debe registrar auditoría resolviendo clienteId');
+    assert.equal(
+      auditoriaValues.usuarioId,
+      'usr-cliente-real',
+      'Debe resolver clienteId existente en vez de "sistema"'
+    );
+  });
+
+  it('6. registrarAbonoRepo rechaza reserva de otro local antes de insertar en movimientosCaja', async () => {
+    let insertMovimientoLlamado = false;
+
+    const mockDb = {
+      select: () => ({
+        from: (tabla: unknown) => ({
+          where: () => ({
+            limit: async () => {
+              // Si consulta contratos: vacío (es una reserva sin contrato)
+              if (tabla === contratosAlquiler) return [];
+              // Si consulta reservas: retorna reserva de OTRO local
+              if (tabla === reservas) {
+                return [
+                  {
+                    id: 'res-otro-local-1',
+                    codigo: 'FLX-OTRO-99',
+                    localId: 'local-patio-ajeno',
+                  },
+                ];
+              }
+              // Cuentas financieras del local
+              if (tabla === cuentasFinancieras) {
+                return [{ id: 'cta-local-1', activo: true, tipo: 'CAJA_EFECTIVO' }];
+              }
+              return [];
+            },
+            all: async () => [
+              { id: 'cta-local-1', activo: true, tipo: 'CAJA_EFECTIVO' },
+            ],
+            then: (resolve?: (val: unknown) => unknown) =>
+              Promise.resolve([
+                { id: 'cta-local-1', activo: true, tipo: 'CAJA_EFECTIVO' },
+              ]).then(resolve),
+          }),
+        }),
+      }),
+      insert: (tabla: unknown) => {
+        if (tabla === movimientosCaja) {
+          insertMovimientoLlamado = true;
+        }
+        return {
+          values: () => ({}),
+        };
+      },
+    } as unknown as AppDb;
+
+    await assert.rejects(
+      async () => {
+        await registrarAbonoRepo({
+          localId: 'local-patio-mio',
+          contratoId: 'FLX-OTRO-99',
+          monto: 150_000,
+          metodoPago: 'efectivo',
+          usuarioId: 'usr-operador-1',
+          db: mockDb,
+        });
+      },
+      /reserva pertenece a otro local/i,
+      'Debe rechazar la reserva ajena antes de escribir en movimientosCaja'
+    );
+
+    assert.equal(
+      insertMovimientoLlamado,
+      false,
+      'Jamás debe insertar en movimientosCaja si la reserva pertenece a otro local'
     );
   });
 });
