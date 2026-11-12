@@ -15,6 +15,7 @@ import { getDb } from "@/lib/db";
 const { id } = Astro.params;
 const db = env.DB ? getDb(env.DB) : undefined;
 const localCautivo = Astro.locals.localCaptacion;
+const modoOperador = Astro.locals.modoPortal === "ADMIN";
 const { dateString: hoyISO } = resolveClientTimeContext(Astro.request);
 
 // Validar que el vehículo exista y pertenezca al perímetro del local cautivo
@@ -23,7 +24,13 @@ const vehiculo = id
   : undefined;
 
 if (!vehiculo) {
-  return Astro.redirect(localCautivo ? `/c/${localCautivo.slug}` : "/catalogo");
+  return Astro.redirect(
+    modoOperador
+      ? "/admin/flota"
+      : localCautivo
+        ? `/c/${localCautivo.slug}`
+        : "/catalogo"
+  );
 }
 
 const local =
@@ -34,7 +41,11 @@ const local =
   (await obtenerLocalCatalogoPorDefecto(db));
 
 const flotaLocal = await listarVehiculos(db, { localId: local.id, hoyISO });
-const backHref = localCautivo ? `/c/${local.slug}` : "/catalogo";
+const backHref = modoOperador
+  ? "/admin/flota"
+  : localCautivo
+    ? `/c/${local.slug}`
+    : "/catalogo";
 
 const siteUrl = (Astro.site ? Astro.site.toString() : 'https://flotax.innovaweb.pro').replace(/\/$/, '');
 const vehicleSchema = buildVehicleProductSchema(vehiculo, siteUrl);
@@ -61,8 +72,8 @@ const canonicalUrl = `${siteUrl}/vehiculos/${vehiculo.id}`;
   structuredData={[vehicleSchema, breadcrumbSchema]}
   showBack={true}
   backHref={backHref}
-  activeTab="home"
-  navVariant="client"
+  activeTab={modoOperador ? "fleet" : "home"}
+  navVariant={modoOperador ? "admin" : "client"}
 >
   <div class="mx-auto w-full max-w-7xl px-4 sm:px-6 py-2 pb-28">
     <VehicleStudioShowcase
