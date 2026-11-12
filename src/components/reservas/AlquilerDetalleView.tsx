@@ -35,8 +35,10 @@ const ETIQUETA_ESTADO_CABECERA: Readonly<
   PENDIENTE: 'Solicitud pendiente de revisión',
   CONFIRMADA: 'Confirmada · Lista para entrega R2',
   EN_CURSO: 'En curso · Unidad en ruta',
+  PAUSADA: 'Alquiler en pausa',
   COMPLETADA: 'Completada · Contrato cerrado',
   RECHAZADA: 'Solicitud rechazada',
+  CANCELADA: 'Reserva cancelada',
 };
 
 const formatCop = (val: number): string =>
@@ -308,10 +310,12 @@ export default function AlquilerDetalleView({
       PENDIENTE: `Reserva #${reserva.codigo} reabierta para revisión en patio`,
       CONFIRMADA: `Reserva #${reserva.codigo} confirmada · Cliente notificado`,
       EN_CURSO: `Acta de entrega R2 completada · Unidad ${vehiculo.placa} en alquiler`,
+      PAUSADA: `Alquiler #${reserva.codigo} pausado por acuerdo`,
       COMPLETADA: opciones?.requiereMantenimiento
         ? `Devolución registrada · Unidad ${vehiculo.placa} enviada a Mantenimiento`
         : `Contrato #${reserva.codigo} cerrado · Unidad ${vehiculo.placa} disponible`,
       RECHAZADA: `Solicitud #${reserva.codigo} rechazada y notificada`,
+      CANCELADA: `Reserva #${reserva.codigo} cancelada`,
     };
 
     mostrarAviso(mensajesPorEstado[nuevoEstado]);

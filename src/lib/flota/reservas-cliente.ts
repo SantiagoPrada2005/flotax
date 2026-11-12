@@ -13,8 +13,10 @@ export type EstadoReservaCliente =
   | 'EN_CURSO'
   | 'CONFIRMADA'
   | 'PENDIENTE'
+  | 'PAUSADA'
   | 'COMPLETADA'
-  | 'RECHAZADA';
+  | 'RECHAZADA'
+  | 'CANCELADA';
 
 export type ModalidadEntregaReserva = 'PATIO_PRINCIPAL' | 'DOMICILIO_MEDELLIN';
 
@@ -28,11 +30,11 @@ export type EstadoGarantiaReserva =
 
 export interface DatosConductorReserva {
   nombreCompleto: string;
-  tipoDocumento: 'CC' | 'CE' | 'PASAPORTE';
-  numeroDocumento: string;
-  categoriaLicencia: 'B1' | 'B2' | 'A2' | 'C1';
+  tipoDocumento?: 'CC' | 'CE' | 'PASAPORTE' | 'NIT' | null | undefined;
+  numeroDocumento?: string | null | undefined;
+  categoriaLicencia?: 'B1' | 'B2' | 'A2' | 'C1' | string | null | undefined;
   telefono: string;
-  correo: string;
+  correo?: string | null | undefined;
   ley1581Aceptada: boolean;
 }
 
@@ -109,6 +111,8 @@ export interface ReservaClienteItem {
   nivelCargaPorcentaje: number;
   requiereMantenimientoRetorno?: boolean | undefined;
   motivoRechazo?: string | undefined;
+  tokenAccesoPublico?: string | null | undefined;
+  eventosRecientes?: unknown[] | undefined;
   puntosR2Custom?: PuntoInspeccionR2[] | undefined;
   evaluacionEntrega?: EvaluacionEntregaServicio | undefined;
 }

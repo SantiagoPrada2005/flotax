@@ -9,6 +9,7 @@ import {
   movimientosCaja,
   cuentasFinancieras,
   depositosGarantia,
+  auditoriaFinanciera,
   type ReservaSelect,
   type VehiculoSelect,
   type ContratoAlquilerSelect,
@@ -32,7 +33,9 @@ import type {
 } from './reservas-cliente';
 import { obtenerSpecsBentoPorVehiculo } from './reservas-cliente';
 import { resolverEstadoActualVehiculo } from '@/lib/mantenimientos/repositorio';
-import { eq, desc, and } from 'drizzle-orm';
+import { resolverCuentaPorMetodoPago } from '@/lib/caja/calculos';
+import { reconciliarSaldosContratoYReservaD1 } from '@/lib/caja/repositorio';
+import { eq, desc, and, or } from 'drizzle-orm';
 
 export interface FiltrosListarReservas {
   localId?: string | undefined;
@@ -88,7 +91,7 @@ export interface RegistroCobroWaybillInput {
 }
 
 function mapEstadoReserva(estadoDb: EstadoReserva): EstadoReservaCliente {
-  if (estadoDb === 'CANCELADA') return 'RECHAZADA';
+  if (estadoDb === 'CANCELADA') return 'CANCELADA';
   return estadoDb;
 }
 
@@ -109,12 +112,14 @@ function resolverEstadoGarantia(
   return 'PENDIENTE';
 }
 
-function mapRowToReservaItem(
+export function mapRowToReservaItem(
   reservaRow: ReservaSelect,
   vehiculoRow?: VehiculoSelect | null,
   contratoRow?: ContratoAlquilerSelect | null,
   evaluacionRow?: EvaluacionEntregaClienteSelect | null,
-  puntosR2Rows?: PuntoInspeccionR2[]
+  puntosR2Rows?: PuntoInspeccionR2[],
+  garantiaRow?: { estado: string } | null,
+  eventosRows?: unknown[]
 ): ReservaClienteItem {
   const vehiculo = vehiculoRow
     ? mapD1ToVehiculoItem(vehiculoRow)
@@ -184,18 +189,20 @@ function mapRowToReservaItem(
       obtenerSpecsBentoPorVehiculo(vehiculo.id),
     conductor: {
       nombreCompleto: reservaRow.contactoNombre,
-      tipoDocumento: reservaRow.contactoTipoDocumento as 'CC' | 'CE' | 'PASAPORTE',
-      numeroDocumento: reservaRow.contactoNumeroDocumento,
-      categoriaLicencia: reservaRow.contactoCategoriaLicencia as 'B1' | 'B2' | 'A2' | 'C1',
+      tipoDocumento: (reservaRow.contactoTipoDocumento as 'CC' | 'CE' | 'PASAPORTE' | 'NIT' | null) ?? null,
+      numeroDocumento: reservaRow.contactoNumeroDocumento ?? null,
+      categoriaLicencia: (reservaRow.contactoCategoriaLicencia as 'B1' | 'B2' | 'A2' | 'C1' | null) ?? null,
       telefono: reservaRow.contactoTelefono,
-      correo: reservaRow.contactoCorreo,
+      correo: reservaRow.contactoCorreo ?? null,
       ley1581Aceptada: Boolean(reservaRow.ley1581Aceptada),
     },
-    estadoGarantia: resolverEstadoGarantia(reservaRow.estado),
+    estadoGarantia: resolverEstadoGarantia(reservaRow.estado, garantiaRow),
     kilometrajeEntrega: contratoRow?.medidorUsoEntrega ?? vehiculo.kilometraje,
     kilometrajeRetorno: contratoRow?.medidorUsoRetorno ?? undefined,
     nivelCargaPorcentaje: contratoRow?.nivelEnergiaEntregaPct ?? 100,
     motivoRechazo: reservaRow.motivoRechazo ?? undefined,
+    tokenAccesoPublico: reservaRow.tokenAccesoPublico ?? undefined,
+    eventosRecientes: eventosRows,
     puntosR2Custom: puntosR2Rows,
     evaluacionEntrega,
   };
@@ -293,12 +300,24 @@ export async function obtenerReservaPorCodigoD1(
       coordY: p.coordY,
     }));
 
+    const garantiaRows = await db
+      .select()
+      .from(depositosGarantia)
+      .where(
+        or(
+          eq(depositosGarantia.contratoId, match.reserva.codigo),
+          eq(depositosGarantia.contratoId, `CTR-${match.reserva.codigo.replace('FLX-', '')}`)
+        )
+      )
+      .limit(1);
+
     return mapRowToReservaItem(
       match.reserva,
       match.vehiculo,
       contratoRows[0] ?? null,
       evaluacionRows[0] ?? null,
-      puntosR2Custom.length > 0 ? puntosR2Custom : undefined
+      puntosR2Custom.length > 0 ? puntosR2Custom : undefined,
+      garantiaRows[0] ?? null
     );
   } catch (error) {
     logFalloD1('reservas.obtenerPorCodigo', error, { codigo: normalizado });
@@ -547,7 +566,7 @@ export async function registrarCobroWaybillD1(
       .select()
       .from(cuentasFinancieras)
       .where(and(eq(cuentasFinancieras.localId, reserva.localId), eq(cuentasFinancieras.activo, true)))
-      .limit(1);
+      .limit(10);
 
     if (ctas.length === 0) {
       await asegurarConfiguracionBaseLocal(db, reserva.localId);
@@ -555,10 +574,11 @@ export async function registrarCobroWaybillD1(
         .select()
         .from(cuentasFinancieras)
         .where(and(eq(cuentasFinancieras.localId, reserva.localId), eq(cuentasFinancieras.activo, true)))
-        .limit(1);
+        .limit(10);
     }
 
-    const cuentaId = ctas[0]?.id;
+    const cta = resolverCuentaPorMetodoPago(ctas, input.metodoPago);
+    const cuentaId = cta?.id ?? ctas[0]?.id;
     if (!cuentaId) return false;
 
     const ahora = new Date();
@@ -584,6 +604,33 @@ export async function registrarCobroWaybillD1(
       creadoEn: ahora,
       actualizadoEn: ahora,
     });
+
+    // Auditoría financiera del movimiento
+    await db.insert(auditoriaFinanciera).values({
+      id: `aud-wb-${Date.now()}-${crypto.randomUUID().slice(0, 6)}`,
+      localId: reserva.localId,
+      entidad: 'MOVIMIENTO',
+      entidadId: movId,
+      accion: 'CREAR',
+      montoNuevo: input.monto,
+      motivo: `Cobro Waybill #${normalizado}`,
+      usuarioId: input.usuarioId,
+      detallesJson: JSON.stringify({
+        metodoPago: input.metodoPago,
+        cuentaId,
+        codigoReserva: normalizado,
+      }),
+      creadoEn: ahora,
+    });
+
+    // Reconciliar saldos de contrato y abono reportado en reserva
+    await reconciliarSaldosContratoYReservaD1(
+      db,
+      reserva.localId,
+      normalizado,
+      reserva.id,
+      input.usuarioId
+    );
 
     return true;
   } catch (error) {

@@ -42,8 +42,10 @@ const ETIQUETA_ESTADO: Readonly<Record<EstadoReservaCliente, string>> = {
   EN_CURSO: 'En curso',
   CONFIRMADA: 'Confirmada',
   PENDIENTE: 'Pendiente',
+  PAUSADA: 'En pausa',
   COMPLETADA: 'Completada',
   RECHAZADA: 'Rechazada',
+  CANCELADA: 'Cancelada',
 };
 
 export default function MisReservasHub({
