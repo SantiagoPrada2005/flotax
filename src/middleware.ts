@@ -3,6 +3,11 @@ import { createAuth } from '@/lib/auth';
 import { getDb } from '@/lib/db';
 import { resolveLocalActivo } from '@/lib/auth/session';
 import {
+  COOKIE_PORTAL_MODO,
+  resolverModoPortalInicial,
+  evaluarRedireccionModoPortal,
+} from '@/lib/auth/portal-modo';
+import {
   COOKIE_LOCAL_CAPTACION,
   obtenerLocalPorSlugOId,
   registrarCaptacionClienteEnLocal,
@@ -12,6 +17,14 @@ import { aplicarPoliticaCacheHtml } from '@/lib/pwa/cache-policy';
 import { env } from 'cloudflare:workers';
 
 const ADMIN_PREFIX = '/admin';
+
+const COOKIE_PORTAL_OPTIONS = {
+  path: '/',
+  httpOnly: true,
+  secure: true,
+  sameSite: 'lax' as const,
+  maxAge: 60 * 60 * 24 * 30,
+};
 
 const CLIENT_PROTECTED_PREFIXES = [
   '/reservas',
@@ -54,6 +67,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   context.locals.session = null;
   context.locals.usuario = null;
   context.locals.localCaptacion = null;
+  context.locals.modoPortal = 'CLIENTE';
 
   const redirigir = (destino: string): Response => {
     const response = context.redirect(destino);
@@ -183,6 +197,24 @@ export const onRequest = defineMiddleware(async (context, next) => {
           localActivo,
         };
 
+        const tieneRolPatio = Boolean(localActivo && localActivo.rol !== 'USUARIO');
+        const esSuperAdmin = Boolean(rawUser.esSuperAdmin);
+        const esPersonal = esSuperAdmin || tieneRolPatio;
+        const cookieModo = context.cookies.get(COOKIE_PORTAL_MODO)?.value;
+
+        context.locals.modoPortal = resolverModoPortalInicial(
+          { esSuperAdmin, tieneRolPatio },
+          cookieModo
+        );
+
+        if (esPersonal && !cookieModo) {
+          context.cookies.set(
+            COOKIE_PORTAL_MODO,
+            context.locals.modoPortal,
+            COOKIE_PORTAL_OPTIONS
+          );
+        }
+
         // 7. Enriquecer el logger de locals con el contexto del usuario autenticado
         context.locals.logger = baseLogger.withContext({
           userId: rawUser.id,
@@ -197,6 +229,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     context.locals.user = null;
     context.locals.session = null;
     context.locals.usuario = null;
+    context.locals.modoPortal = 'CLIENTE';
   }
 
   // 8. Control de acceso perimetral y redirección de rutas
@@ -234,6 +267,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
       return redirigir('/catalogo');
     }
 
+    context.locals.modoPortal = 'ADMIN';
+    context.cookies.set(COOKIE_PORTAL_MODO, 'ADMIN', COOKIE_PORTAL_OPTIONS);
+
     // Si tiene inducción pendiente en este local, forzar paso por /admin/onboarding
     const requiereOnboarding =
       !usuario.esSuperAdmin &&
@@ -253,12 +289,27 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
 
+  // Blindaje perimetral de rutas de cliente (/reservas, /reservas/[codigo]) cuando el operador está en modo ADMIN
+  if (usuario) {
+    const esPersonal = Boolean(
+      usuario.esSuperAdmin ||
+        (usuario.localActivo && usuario.localActivo.rol !== 'USUARIO')
+    );
+    const destinoRedireccion = evaluarRedireccionModoPortal(
+      pathname,
+      context.locals.modoPortal,
+      esPersonal
+    );
+    if (destinoRedireccion) {
+      return redirigir(destinoRedireccion);
+    }
+  }
+
   // Redirección inteligente si ya tiene sesión activa e intenta visitar /login o /registro
   if (isAuthPage(pathname) && user) {
-    const esPersonal =
-      usuario?.esSuperAdmin ||
-      (usuario?.localActivo && usuario.localActivo.rol !== 'USUARIO');
-    return redirigir(esPersonal ? '/admin' : '/catalogo');
+    return redirigir(
+      context.locals.modoPortal === 'ADMIN' ? '/admin' : '/catalogo'
+    );
   }
 
   try {

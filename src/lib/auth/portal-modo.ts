@@ -38,3 +38,41 @@ export function resolverModoPortalInicial(
 
   return 'ADMIN';
 }
+
+/**
+ * Evalúa si una ruta debe redirigir preventivamente según el modo de portal activo
+ * y las capacidades de patio del usuario.
+ * - Si `modoPortal === 'ADMIN'` y `tieneRolPatio` y visita `/reservas` o `/reservas/[codigo]`
+ *   (excluyendo `/reservas/[codigo]/entrega`), redirige a `/admin/reservas` o `/admin/reservas/[codigo]`.
+ * - Si visita `/admin` (excluyendo `/admin/onboarding`) sin rol de patio en modo `CLIENTE`,
+ *   redirige a `/catalogo`.
+ */
+export function evaluarRedireccionModoPortal(
+  pathname: string,
+  modoPortal: ModoPortal,
+  tieneRolPatio: boolean
+): string | null {
+  if (modoPortal === 'ADMIN' && tieneRolPatio) {
+    if (pathname === '/reservas' || pathname === '/reservas/') {
+      return '/admin/reservas';
+    }
+
+    const matchReservaDetalle = /^\/reservas\/([^/]+)\/?$/.exec(pathname);
+    if (matchReservaDetalle && matchReservaDetalle[1]) {
+      return `/admin/reservas/${matchReservaDetalle[1]}`;
+    }
+
+    return null;
+  }
+
+  if (
+    modoPortal === 'CLIENTE' &&
+    !tieneRolPatio &&
+    (pathname === '/admin' || pathname.startsWith('/admin/')) &&
+    !pathname.startsWith('/admin/onboarding')
+  ) {
+    return '/catalogo';
+  }
+
+  return null;
+}
