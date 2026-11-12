@@ -4,7 +4,12 @@ import {
   calcularMetricasFlotaAdmin,
   calcularResumenCajaTurnoHoy,
 } from '../src/lib/dashboard/resumen-admin.ts';
+import {
+  mapearReservaAAlquilerEnProceso,
+  listarAlquileresEnProcesoD1,
+} from '../src/lib/dashboard/alquileres-proceso.ts';
 import type { MovimientoCajaSelect } from '../src/db/schema/caja.ts';
+import type { ReservaSelect } from '../src/db/schema/reservas.ts';
 
 function crearMovimientoBase(
   overrides: Partial<MovimientoCajaSelect>
@@ -34,6 +39,47 @@ function crearMovimientoBase(
     creadoPorId: 'usr-1',
     observaciones: null,
     fechaMovimiento: ahora,
+    creadoEn: ahora,
+    actualizadoEn: ahora,
+    ...overrides,
+  };
+}
+
+function crearReservaBase(
+  overrides: Partial<ReservaSelect> = {}
+): ReservaSelect {
+  const ahora = new Date('2026-11-12T14:00:00-05:00');
+  return {
+    id: 'res-1',
+    codigo: 'FLX-849210',
+    localId: 'local-1',
+    vehiculoId: 'veh-1',
+    clienteId: 'usr-cliente-1',
+    fechaInicio: '2026-11-12',
+    fechaFin: '2026-11-15',
+    diasAlquiler: 3,
+    estado: 'PENDIENTE',
+    modalidadEntrega: 'PATIO_PRINCIPAL',
+    direccionEntrega: null,
+    sedeNombre: 'Sede Poblado',
+    precioDiaCotizado: 220_000,
+    subtotalTarifaCotizado: 660_000,
+    coberturaPericialCotizada: 45_000,
+    totalCotizado: 705_000,
+    modalidadPagoInicial: 'ABONO_30',
+    metodoAbonoInicial: 'TRANSFERENCIA_PSE',
+    montoAbonoReportado: 0,
+    referenciaAbonoInicial: null,
+    contactoNombre: 'Carlos Andrés Mejía',
+    contactoTipoDocumento: 'CC',
+    contactoNumeroDocumento: '1.037.648.291',
+    contactoCategoriaLicencia: 'B1',
+    contactoTelefono: '3001234567',
+    contactoCorreo: 'carlos@example.com',
+    ley1581Aceptada: true,
+    motivoRechazo: null,
+    creadoPorId: null,
+    confirmadoPorId: null,
     creadoEn: ahora,
     actualizadoEn: ahora,
     ...overrides,
@@ -98,5 +144,93 @@ describe('Resumen Admin - Métricas de Flota y Caja Turno', () => {
 
     assert.equal(res.shiftStatus, 'ABIERTA');
     assert.equal(res.totalValorDia, 500_000);
+  });
+});
+
+describe('Mapeo de Alquileres en Proceso (D1 a UI)', () => {
+  it('1. Reserva PENDIENTE sin contrato, inspección ni verificación mapea a EN_PROCESO con todos los pasos PENDIENTE', () => {
+    const reserva = crearReservaBase({
+      estado: 'PENDIENTE',
+      montoAbonoReportado: 0,
+    });
+    const item = mapearReservaAAlquilerEnProceso({
+      reserva,
+      vehiculo: { placa: 'MOV-304', imagenUrl: '/images/vehiculos/mazda-cx30.webp' },
+      contrato: null,
+      inspeccionEntrega: null,
+      verificacion: null,
+    });
+
+    assert.equal(item.estado, 'EN_PROCESO');
+    assert.equal(item.clienteNombre, 'Carlos Andrés Mejía');
+    assert.equal(item.placa, 'MOV-304');
+    const pasos = item.pasosProceso ?? [];
+    assert.equal(pasos.find((p) => p.id === 'kyc')?.estado, 'PENDIENTE');
+    assert.equal(pasos.find((p) => p.id === 'abono')?.estado, 'PENDIENTE');
+    assert.equal(pasos.find((p) => p.id === 'peritaje')?.estado, 'PENDIENTE');
+    assert.equal(pasos.find((p) => p.id === 'firma')?.estado, 'PENDIENTE');
+  });
+
+  it('2. Reserva CONFIRMADA con abono > 0 e inspección iniciada (sin finalizar) mapea abono COMPLETADO y peritaje EN_PROCESO', () => {
+    const ahora = new Date('2026-11-12T14:30:00-05:00');
+    const reserva = crearReservaBase({
+      estado: 'CONFIRMADA',
+      montoAbonoReportado: 200_000,
+    });
+    const item = mapearReservaAAlquilerEnProceso({
+      reserva,
+      vehiculo: { placa: 'FLX-801', imagenUrl: '/images/vehiculos/white-suv.webp' },
+      contrato: null,
+      inspeccionEntrega: {
+        iniciadaEn: ahora,
+        finalizadaEn: null,
+      },
+      verificacion: null,
+    });
+
+    assert.equal(item.estado, 'EN_PROCESO');
+    const pasos = item.pasosProceso ?? [];
+    assert.equal(pasos.find((p) => p.id === 'abono')?.estado, 'COMPLETADO');
+    assert.equal(pasos.find((p) => p.id === 'peritaje')?.estado, 'EN_PROCESO');
+  });
+
+  it('3. Reserva EN_CURSO con contrato VIGENTE, pago, entrega real e inspección finalizada mapea a COMPLETADO con completadoEn', () => {
+    const fechaEntrega = new Date('2026-11-12T15:00:00.000Z');
+    const reserva = crearReservaBase({
+      estado: 'EN_CURSO',
+      montoAbonoReportado: 300_000,
+    });
+    const item = mapearReservaAAlquilerEnProceso({
+      reserva,
+      vehiculo: { placa: 'BMW-240', imagenUrl: '/images/vehiculos/dark-coupe.webp' },
+      contrato: {
+        numeroContrato: 'CTR-849204',
+        estadoContrato: 'VIGENTE',
+        totalPagado: 705_000,
+        firmaArrendatarioR2Key: 'firmas/ctr-849204-cliente.png',
+        fechaHoraEntregaReal: fechaEntrega,
+        actualizadoEn: fechaEntrega,
+      },
+      inspeccionEntrega: {
+        iniciadaEn: new Date('2026-11-12T14:30:00.000Z'),
+        finalizadaEn: fechaEntrega,
+      },
+      verificacion: {
+        estado: 'APROBADO',
+      },
+    });
+
+    assert.equal(item.estado, 'COMPLETADO');
+    assert.equal(item.completadoEn, fechaEntrega.toISOString());
+    const pasos = item.pasosProceso ?? [];
+    assert.equal(pasos.find((p) => p.id === 'kyc')?.estado, 'COMPLETADO');
+    assert.equal(pasos.find((p) => p.id === 'abono')?.estado, 'COMPLETADO');
+    assert.equal(pasos.find((p) => p.id === 'peritaje')?.estado, 'COMPLETADO');
+    assert.equal(pasos.find((p) => p.id === 'firma')?.estado, 'COMPLETADO');
+  });
+
+  it('4. listarAlquileresEnProcesoD1 sin DB retorna array vacío', async () => {
+    const res = await listarAlquileresEnProcesoD1(undefined, 'local-1');
+    assert.deepEqual(res, []);
   });
 });
