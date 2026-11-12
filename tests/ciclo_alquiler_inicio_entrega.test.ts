@@ -52,6 +52,19 @@ function crearMockQuery(datos: unknown[], joinedData?: unknown[]) {
   return resolvable;
 }
 
+class MockD1Session {
+  readonly active = true;
+}
+
+function crearMockBatch() {
+  return function (this: { session?: unknown }, ops: unknown[]) {
+    if (!this || !this.session) {
+      throw new TypeError("Cannot read properties of undefined (reading 'session')");
+    }
+    return Promise.resolve(ops);
+  };
+}
+
 describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega R2', () => {
   const localId = 'loc-medellin-central';
   const vehiculoId = 'veh-mazda-cx30-01';
@@ -118,7 +131,8 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
           where: async () => [],
         }),
       }),
-      batch: async (ops: unknown[]) => ops,
+      session: new MockD1Session(),
+      batch: crearMockBatch(),
     } as unknown as AppDb;
 
     const inputWebManipulado: CrearReservaCicloInput = {
@@ -275,7 +289,8 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
           where: async () => [],
         }),
       }),
-      batch: async (ops: unknown[]) => ops,
+      session: new MockD1Session(),
+      batch: crearMockBatch(),
     } as unknown as AppDb;
 
     const inputMostrador: CrearReservaCicloInput = {
@@ -366,7 +381,8 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
           onConflictDoNothing: async () => [],
         }),
       }),
-      batch: async (ops: unknown[]) => ops,
+      session: new MockD1Session(),
+      batch: crearMockBatch(),
     } as unknown as AppDb;
 
     const totalVinculadas = await vincularReservasHuerfanasPorCorreoD1(
@@ -471,7 +487,8 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
           };
         },
       }),
-      batch: async (ops: unknown[]) => ops,
+      session: new MockD1Session(),
+      batch: crearMockBatch(),
     } as unknown as AppDb;
 
     // 4a. Intento sin autorizar sin documentos: debe responder requiereAutorizacionSinDocs = true sin mutar
@@ -507,6 +524,106 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
     assert.equal(contratoCreado?.['estadoContrato'], 'BORRADOR');
     assert.ok(depositoCreado, 'Debe crear depósito en estado PENDIENTE_RECIBIR');
     assert.equal(depositoCreado?.['estado'], 'PENDIENTE_RECIBIR');
+
+    // 4c. Si el cliente tiene todos los documentos pero el vehículo tiene SOAT vencido,
+    // confirmarReservaD1 debe advertirlo en advertencias.vehiculo.soatVencido y exigir autorización sin documentos.
+    const reservaConClienteCompleto = {
+      ...reservaPendiente,
+      id: 'res-pend-soat-vencido',
+      codigo: 'FLX-CONF-SOAT',
+      contactoTipoDocumento: 'CC',
+      contactoNumeroDocumento: '1020304050',
+      contactoCategoriaLicencia: 'B1', // Compatible con SUV
+    };
+
+    let updateReservaSoat: Record<string, unknown> | null = null;
+    let contratoSoatCreado: Record<string, unknown> | null = null;
+    let eventoSoatCreado: Record<string, unknown> | null = null;
+
+    const mockDbSoatVencidoConfirmacion = {
+      session: new MockD1Session(),
+      select: () => ({
+        from: (table: unknown) => {
+          let rows: unknown[] = [];
+          if (table === reservas) {
+            const data = updateReservaSoat ? { ...reservaConClienteCompleto, ...updateReservaSoat } : reservaConClienteCompleto;
+            return {
+              limit: (n?: number) => Promise.resolve(n != null ? [data].slice(0, n) : [data]),
+              orderBy: () => crearMockQuery([data], [{ reserva: data, vehiculo: vehiculoData }]),
+              where: (clause?: any) => {
+                if (buscarEnChunks(clause, 'res-pend-soat-vencido')) {
+                  return crearMockQuery([]);
+                }
+                return crearMockQuery([data], [{ reserva: data, vehiculo: vehiculoData }]);
+              },
+              leftJoin: () => crearMockQuery([{ reserva: data, vehiculo: vehiculoData }]),
+              then: (resolve: (v: unknown) => unknown) => resolve([data]),
+            };
+          } else if (table === vehiculos) rows = [vehiculoData];
+          else if (table === verificacionesIdentidad) rows = [{ estado: 'APROBADO' }];
+          else if (table === documentosVehiculo) {
+            rows = [
+              {
+                id: 'doc-soat-vencido',
+                vehiculoId,
+                tipoDocumento: 'SOAT',
+                fechaVencimiento: '2025-01-01', // Vencido respecto a 2026-11-25
+                vigente: false,
+              },
+            ];
+          }
+          return crearMockQuery(rows);
+        },
+      }),
+      insert: (table: unknown) => ({
+        values: (vals: Record<string, unknown>) => {
+          if (table === eventosAlquiler) eventoSoatCreado = vals;
+          if (table === contratosAlquiler) contratoSoatCreado = vals;
+          return {
+            onConflictDoNothing: async () => [vals],
+            then: (resolve: (v: unknown) => unknown) => resolve([vals]),
+          };
+        },
+      }),
+      update: (table: unknown) => ({
+        set: (vals: Record<string, unknown>) => {
+          if (table === reservas) updateReservaSoat = vals;
+          return {
+            where: async () => [],
+          };
+        },
+      }),
+      batch: crearMockBatch(),
+    } as unknown as AppDb;
+
+    const intentoSinAutorizarSoat = await confirmarReservaD1(mockDbSoatVencidoConfirmacion, {
+      codigo: 'FLX-CONF-SOAT',
+      localId,
+      usuarioId: 'usr-admin-1',
+      autorizarSinDocumentos: false,
+    });
+
+    assert.equal(intentoSinAutorizarSoat.requiereAutorizacionSinDocs, true, 'Debe requerir autorización por SOAT vehicular vencido');
+    if (intentoSinAutorizarSoat.requiereAutorizacionSinDocs) {
+      assert.equal(intentoSinAutorizarSoat.advertencias.vehiculo.soatVencido, true, 'Debe marcar soatVencido = true');
+      assert.equal(intentoSinAutorizarSoat.advertencias.cliente.faltaDocumentoIdentidad, false, 'Cliente tiene CC');
+      assert.equal(intentoSinAutorizarSoat.advertencias.cliente.faltaLicencia, false, 'Cliente tiene B1');
+    }
+
+    const confirmacionConAutorizacionSoat = await confirmarReservaD1(mockDbSoatVencidoConfirmacion, {
+      codigo: 'FLX-CONF-SOAT',
+      localId,
+      usuarioId: 'usr-admin-1',
+      autorizarSinDocumentos: true,
+      notaAutorizacion: 'Vehículo autorizado con póliza comercial sustituta en mostrador',
+    });
+
+    assert.equal(confirmacionConAutorizacionSoat.requiereAutorizacionSinDocs, false);
+    if (!confirmacionConAutorizacionSoat.requiereAutorizacionSinDocs) {
+      assert.equal(confirmacionConAutorizacionSoat.reserva.estado, 'CONFIRMADA');
+    }
+    assert.equal(updateReservaSoat?.['estado'], 'CONFIRMADA');
+    assert.ok(eventoSoatCreado, 'Debe registrar evento de autorización');
   });
 
   it('5. entregarVehiculoConContratoD1: pasa CONFIRMADA a EN_CURSO, contrato a VIGENTE, sella acta ENTREGA, asienta fianza y rechaza con CONFLICT entrega duplicada', async () => {
@@ -613,7 +730,8 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
           };
         },
       }),
-      batch: async (ops: unknown[]) => ops,
+      session: new MockD1Session(),
+      batch: crearMockBatch(),
     } as unknown as AppDb;
 
     const resEntrega = await entregarVehiculoConContratoD1(mockDb, {
@@ -690,7 +808,8 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
           };
         },
       }),
-      batch: async (ops: unknown[]) => ops,
+      session: new MockD1Session(),
+      batch: crearMockBatch(),
     } as unknown as AppDb;
 
     const r2Res = await guardarInspeccionR2D1(mockDb, {
@@ -725,5 +844,43 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
 
     assert.equal(kycRes.ok, true);
     assert.equal(docGuardado?.['estado'], 'APROBADO');
+  });
+
+  it('7. preserva el receptor this al invocar db.batch emulando el comportamiento nativo de Cloudflare D1', async () => {
+    let batchInvocadoConSession = false;
+    const mockDbConSession = {
+      session: {
+        batch: async (ops: unknown[]) => {
+          batchInvocadoConSession = true;
+          return ops;
+        },
+      },
+      batch: function (
+        this: { session?: { batch: (ops: unknown[]) => Promise<unknown> } },
+        ops: unknown[]
+      ) {
+        if (!this || !this.session) {
+          throw new TypeError("Cannot read properties of undefined (reading 'session')");
+        }
+        return this.session.batch(ops);
+      },
+    };
+
+    // Al extraer la función del receptor sin vincular, pierde this y lanza TypeError
+    const funcionDesvinculada = mockDbConSession.batch;
+    assert.throws(
+      () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (funcionDesvinculada as any)([]);
+      },
+      {
+        name: 'TypeError',
+        message: /Cannot read properties of undefined \(reading 'session'\)/,
+      }
+    );
+
+    // Al invocar como método o usando .call(db, ops), this es preservado correctamente
+    await mockDbConSession.batch([]);
+    assert.equal(batchInvocadoConSession, true);
   });
 });

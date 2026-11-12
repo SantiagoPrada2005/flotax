@@ -12,8 +12,6 @@ import {
   movimientosCaja,
   verificacionesIdentidad,
   clientesLocal,
-  type ReservaSelect,
-  type VehiculoSelect,
   type ModalidadEntregaReservaSchema,
   type ModalidadPagoInicial,
   type MetodoAbonoInicial,
@@ -25,7 +23,6 @@ import {
   type TipoActoInspeccion,
 } from '@/db/schema';
 import {
-  mapRowToReservaItem,
   obtenerReservaPorCodigoD1,
 } from './repositorio-reservas';
 import type { ReservaClienteItem } from './reservas-cliente';
@@ -259,7 +256,12 @@ function construirAdvertenciasDocumentales(
   }
 
   const requiereAutorizacion =
-    faltaDocumentoIdentidad || faltaLicencia || licenciaIncompatible || sinKycAprobado;
+    faltaDocumentoIdentidad ||
+    faltaLicencia ||
+    licenciaIncompatible ||
+    sinKycAprobado ||
+    soatVencido ||
+    rtmVencida;
 
   return {
     cliente: {
@@ -280,9 +282,10 @@ function construirAdvertenciasDocumentales(
 }
 
 async function ejecutarBatchOSecuencial(db: AppDb, ops: unknown[]): Promise<void> {
-  const maybeBatch = (db as { batch?: (queries: unknown[]) => Promise<unknown> }).batch;
-  if (typeof maybeBatch === 'function') {
-    await maybeBatch(ops);
+  if (ops.length === 0) return;
+  const dbBatchObj = db as { batch?: (queries: unknown[]) => Promise<unknown> };
+  if (typeof dbBatchObj.batch === 'function') {
+    await dbBatchObj.batch.call(db, ops);
   } else {
     for (const op of ops) {
       if (op && typeof (op as Promise<unknown>).then === 'function') {
@@ -614,53 +617,15 @@ export async function crearReservaConValidaciones(
   await resolverEstadoActualVehiculo(db, input.vehiculoId);
 
   const reservaRecuperada = await obtenerReservaPorCodigoD1(db, codigo);
-  const reservaItem: ReservaClienteItem =
-    reservaRecuperada ??
-    mapRowToReservaItem({
-      id: reservaId,
-      codigo,
-      localId,
-      vehiculoId: input.vehiculoId,
-      clienteId,
-      fechaInicio: input.fechaInicio,
-      fechaFin: input.fechaFin,
-      fechaFinOriginal: input.fechaFin,
-      fechaDevolucionReal: null,
-      diasAlquiler,
-      estado: estadoInicial,
-      modalidadEntrega: input.modalidadEntrega ?? 'PATIO_PRINCIPAL',
-      direccionEntrega: input.direccionEntrega ?? null,
-      sedeNombre: input.sedeNombre ?? 'Patio Central',
-      tokenAccesoPublico,
-      precioDiaCotizado: precioDia,
-      subtotalTarifaCotizado,
-      coberturaPericialCotizada,
-      totalCotizado,
-      modalidadPagoInicial: input.modalidadPagoInicial ?? 'ABONO_30',
-      metodoAbonoInicial: input.metodoAbonoInicial ?? 'TRANSFERENCIA_PSE',
-      montoAbonoReportado: montoAbonoInicial,
-      referenciaAbonoInicial: input.referenciaAbonoInicial ?? null,
-      contactoNombre: input.contactoNombre,
-      contactoTipoDocumento: input.contactoTipoDocumento ?? null,
-      contactoNumeroDocumento: input.contactoNumeroDocumento ?? null,
-      contactoCategoriaLicencia: input.contactoCategoriaLicencia ?? null,
-      contactoTelefono: input.contactoTelefono,
-      contactoCorreo: input.contactoCorreo ?? null,
-      ley1581Aceptada: input.ley1581Aceptada ?? true,
-      autorizadoSinDocumentosPorId: null,
-      notaAutorizacionDocumentos: null,
-      motivoCancelacion: null,
-      canceladoPorId: null,
-      canceladoEn: null,
-      motivoRechazo: null,
-      creadoPorId,
-      confirmadoPorId: estadoInicial === 'CONFIRMADA' ? creadoPorId : null,
-      creadoEn: ahora,
-      actualizadoEn: ahora,
-    } as unknown as ReservaSelect, vehiculo as unknown as VehiculoSelect);
+  if (!reservaRecuperada) {
+    throw new ErrorCicloAlquiler(
+      'INTERNAL_SERVER_ERROR',
+      `Fallo al recuperar la reserva #${codigo} desde D1 tras su creación`
+    );
+  }
 
   return {
-    reserva: reservaItem,
+    reserva: reservaRecuperada,
     tokenAccesoPublico,
     advertenciasDocumentales: advertencias,
   };
@@ -827,14 +792,21 @@ export async function confirmarReservaD1(
     kycEstado = kycRows[0]?.estado ?? null;
   }
 
+  const estadoDocVeh = await obtenerEstadoDocumentalVehiculoD1(
+    db,
+    reserva.vehiculoId,
+    vehiculo.categoria,
+    reserva.fechaInicio
+  );
+
   const advertencias = construirAdvertenciasDocumentales(
     {
       contactoTipoDocumento: reserva.contactoTipoDocumento,
       contactoNumeroDocumento: reserva.contactoNumeroDocumento,
       contactoCategoriaLicencia: reserva.contactoCategoriaLicencia,
     },
-    [],
-    [],
+    estadoDocVeh.vencidos,
+    estadoDocVeh.faltantesSinCarga,
     vehiculo.categoria,
     kycEstado
   );
@@ -954,19 +926,16 @@ export async function confirmarReservaD1(
   await resolverEstadoActualVehiculo(db, reserva.vehiculoId);
 
   const reservaActualizada = await obtenerReservaPorCodigoD1(db, reserva.codigo);
-  const reservaItem: ReservaClienteItem =
-    reservaActualizada ??
-    mapRowToReservaItem({
-      ...reserva,
-      estado: 'CONFIRMADA',
-      confirmadoPorId: params.usuarioId,
-      autorizadoSinDocumentosPorId: params.autorizarSinDocumentos ? params.usuarioId : null,
-      actualizadoEn: ahora,
-    } as unknown as ReservaSelect, vehiculo as unknown as VehiculoSelect);
+  if (!reservaActualizada) {
+    throw new ErrorCicloAlquiler(
+      'INTERNAL_SERVER_ERROR',
+      `Fallo al recuperar la reserva #${reserva.codigo} tras su confirmación en D1`
+    );
+  }
 
   return {
     requiereAutorizacionSinDocs: false,
-    reserva: reservaItem,
+    reserva: reservaActualizada,
     contratoId,
   };
 }
@@ -1291,16 +1260,15 @@ export async function entregarVehiculoConContratoD1(
   await resolverEstadoActualVehiculo(db, reserva.vehiculoId);
 
   const reservaActualizada = await obtenerReservaPorCodigoD1(db, reserva.codigo);
-  const reservaItem: ReservaClienteItem =
-    reservaActualizada ??
-    mapRowToReservaItem({
-      ...reserva,
-      estado: 'EN_CURSO',
-      actualizadoEn: ahora,
-    } as unknown as ReservaSelect, vehiculo as unknown as VehiculoSelect);
+  if (!reservaActualizada) {
+    throw new ErrorCicloAlquiler(
+      'INTERNAL_SERVER_ERROR',
+      `Fallo al recuperar la reserva #${reserva.codigo} tras su entrega en D1`
+    );
+  }
 
   return {
-    reserva: reservaItem,
+    reserva: reservaActualizada,
     contratoId,
   };
 }
