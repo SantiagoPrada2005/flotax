@@ -1,49 +1,35 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { ContratoAlquilerSelect, ReservaSelect, VehiculoSelect } from '@/db/schema';
+import {
+  DEFAULT_TIEMPOS_ALQUILER_PROCESO,
+  resolverYOrdenarAlquileres,
+  type AlquilerEnProcesoItem,
+  type EstadoAlquilerEnProceso,
+  type EstadoPasoContrato,
+  type PasoProcesoContrato,
+  type TiemposConfigAlquilerEnProceso,
+} from '@/lib/dashboard/alquileres-proceso';
 
-export type EstadoAlquilerEnProceso = 'PAUSADO' | 'EN_PROCESO' | 'COMPLETADO';
-
-export type EstadoPasoContrato = 'COMPLETADO' | 'EN_PROCESO' | 'PAUSADO' | 'PENDIENTE';
-
-export interface PasoProcesoContrato {
-  readonly id: string;
-  readonly titulo: string;
-  readonly detalle: string;
-  readonly estado: EstadoPasoContrato;
-}
-
-export interface TiemposConfigAlquilerEnProceso {
-  readonly ocultarCompletadoHoras: number;
-  readonly pausadoSinRespuestaHoras: number;
-}
-
-export const DEFAULT_TIEMPOS_ALQUILER_PROCESO: TiemposConfigAlquilerEnProceso = {
-  ocultarCompletadoHoras: 4,
-  pausadoSinRespuestaHoras: 12,
+export {
+  DEFAULT_TIEMPOS_ALQUILER_PROCESO,
+  resolverYOrdenarAlquileres,
+  type AlquilerEnProcesoItem,
+  type EstadoAlquilerEnProceso,
+  type EstadoPasoContrato,
+  type PasoProcesoContrato,
+  type TiemposConfigAlquilerEnProceso,
 };
 
-export interface AlquilerEnProcesoItem {
-  readonly id: ReservaSelect['id'];
-  readonly codigoContrato?: ContratoAlquilerSelect['numeroContrato'] | undefined;
-  readonly clienteNombre: ReservaSelect['contactoNombre'];
-  readonly clienteDocumento: ReservaSelect['contactoNumeroDocumento'];
-  readonly placa: VehiculoSelect['placa'];
-  readonly imagenUrl: VehiculoSelect['imagenUrl'];
-  readonly estado: EstadoAlquilerEnProceso;
-  readonly etapaActualResumen?: string | undefined;
-  readonly pasosProceso?: readonly PasoProcesoContrato[] | undefined;
-  /** ISO timestamp de inicio de espera de respuesta final (para evaluar >12h -> PAUSADO) */
-  readonly esperandoRespuestaDesde?: string | null | undefined;
-  /** ISO timestamp de finalización (para ocultar COMPLETADO después de 4h) */
-  readonly completadoEn?: string | null | undefined;
-}
-
-export interface AlquilerEnProcesoResponse {
-  readonly ok: boolean;
-  readonly alquileres: readonly AlquilerEnProcesoItem[];
-  readonly tiemposConfig?: TiemposConfigAlquilerEnProceso | undefined;
-  readonly actualizadoEn: string;
-}
+export type AlquilerEnProcesoResponse =
+  | {
+      readonly ok: true;
+      readonly alquileres: readonly AlquilerEnProcesoItem[];
+      readonly tiemposConfig?: TiemposConfigAlquilerEnProceso | undefined;
+      readonly actualizadoEn: string;
+    }
+  | {
+      readonly ok: false;
+      readonly error: string;
+    };
 
 export const MOCK_ALQUILERES_EN_PROCESO: readonly AlquilerEnProcesoItem[] = [
   {
@@ -159,12 +145,6 @@ export const MOCK_ALQUILERES_EN_PROCESO: readonly AlquilerEnProcesoItem[] = [
   },
 ];
 
-const ORDEN_PRIORIDAD_ESTADO: Record<EstadoAlquilerEnProceso, number> = {
-  PAUSADO: 0,
-  EN_PROCESO: 1,
-  COMPLETADO: 2,
-};
-
 const ESTILOS_ESTADO: Record<
   EstadoAlquilerEnProceso,
   { readonly label: string; readonly badgeClass: string; readonly dotClass: string }
@@ -245,36 +225,6 @@ export function obtenerPasosProcesoContrato(
   ];
 }
 
-export function resolverYOrdenarAlquileres(
-  items: readonly AlquilerEnProcesoItem[],
-  config: TiemposConfigAlquilerEnProceso = DEFAULT_TIEMPOS_ALQUILER_PROCESO,
-  ahoraMs: number = Date.now()
-): AlquilerEnProcesoItem[] {
-  const maxCompletadoMs = config.ocultarCompletadoHoras * 3600_000;
-  const maxSinRespuestaMs = config.pausadoSinRespuestaHoras * 3600_000;
-
-  return items
-    .map((item): AlquilerEnProcesoItem => {
-      if (item.estado === 'EN_PROCESO' && item.esperandoRespuestaDesde) {
-        const esperaMs = ahoraMs - new Date(item.esperandoRespuestaDesde).getTime();
-        if (Number.isFinite(esperaMs) && esperaMs >= maxSinRespuestaMs) {
-          return { ...item, estado: 'PAUSADO' };
-        }
-      }
-      return item;
-    })
-    .filter((item) => {
-      if (item.estado === 'COMPLETADO' && item.completadoEn) {
-        const transcurridoMs = ahoraMs - new Date(item.completadoEn).getTime();
-        if (Number.isFinite(transcurridoMs) && transcurridoMs >= maxCompletadoMs) {
-          return false;
-        }
-      }
-      return true;
-    })
-    .sort((a, b) => ORDEN_PRIORIDAD_ESTADO[a.estado] - ORDEN_PRIORIDAD_ESTADO[b.estado]);
-}
-
 export interface AlquilerEnProcesoCardProps {
   readonly initialAlquileres?: readonly AlquilerEnProcesoItem[] | undefined;
   readonly endpointUrl?: string | undefined;
@@ -283,7 +233,7 @@ export interface AlquilerEnProcesoCardProps {
 }
 
 export default function AlquilerEnProcesoCard({
-  initialAlquileres = MOCK_ALQUILERES_EN_PROCESO,
+  initialAlquileres = [],
   endpointUrl = '/api/alquileres/en-proceso',
   pollingIntervalMs = 30_000,
   tiemposConfig = DEFAULT_TIEMPOS_ALQUILER_PROCESO,
