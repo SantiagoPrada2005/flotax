@@ -509,14 +509,26 @@ export async function obtenerEstadoDocumentalVehiculoD1(
   }
 
   try {
-    const rows = await db
+    const rawRows = await db
       .select({
         tipoDocumento: documentosVehiculo.tipoDocumento,
         fechaVencimiento: documentosVehiculo.fechaVencimiento,
         vigente: documentosVehiculo.vigente,
       })
       .from(documentosVehiculo)
-      .where(eq(documentosVehiculo.vehiculoId, vehiculoId));
+      .where(eq(documentosVehiculo.vehiculoId, vehiculoId))
+      .orderBy(desc(documentosVehiculo.fechaVencimiento));
+
+    // Ordenar de forma determinista por fecha de vencimiento descendente
+    // para garantizar que siempre se evalúe el documento más reciente de cada tipo
+    const rows = [...(rawRows ?? [])].sort((a, b) => {
+      const fechaA = a.fechaVencimiento ?? '';
+      const fechaB = b.fechaVencimiento ?? '';
+      if (fechaA !== fechaB) {
+        return fechaB.localeCompare(fechaA);
+      }
+      return (b.vigente ? 1 : 0) - (a.vigente ? 1 : 0);
+    });
 
     const faltantesSinCarga: Array<'SOAT' | 'TECNICO_MECANICA'> = [];
     const vencidos: Array<{ tipo: string; fechaVencimiento: string }> = [];

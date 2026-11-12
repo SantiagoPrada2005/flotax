@@ -500,4 +500,59 @@ describe('Disponibilidad de Vehículos - FlotaX', () => {
     assert.equal(docPatineta.tieneVencidos, false);
     assert.deepEqual(docPatineta.vencidos, []);
   });
+
+  test('13. obtenerEstadoDocumentalVehiculoD1: evalúa el documento más reciente por tipo ante registros históricos', async () => {
+    // Caso: Fila antigua de SOAT vencida primero en el mock, seguida de SOAT renovado vigente
+    const dbHistorico = crearMockDb({
+      documentos: [
+        {
+          id: 'doc-soat-antiguo',
+          vehiculoId: vehiculoIdPrueba,
+          tipoDocumento: 'SOAT',
+          fechaVencimiento: '2025-10-31',
+          vigente: false,
+        },
+        {
+          id: 'doc-soat-renovado',
+          vehiculoId: vehiculoIdPrueba,
+          tipoDocumento: 'SOAT',
+          fechaVencimiento: '2027-10-31',
+          vigente: true,
+        },
+        {
+          id: 'doc-rtm-antiguo',
+          vehiculoId: vehiculoIdPrueba,
+          tipoDocumento: 'TECNICO_MECANICA',
+          fechaVencimiento: '2025-05-20',
+          vigente: false,
+        },
+        {
+          id: 'doc-rtm-renovado',
+          vehiculoId: vehiculoIdPrueba,
+          tipoDocumento: 'TECNICO_MECANICA',
+          fechaVencimiento: '2027-05-20',
+          vigente: true,
+        },
+      ],
+    });
+
+    const dictamen = await obtenerEstadoDocumentalVehiculoD1(
+      dbHistorico,
+      vehiculoIdPrueba,
+      'SEDAN',
+      hoyPrueba
+    );
+
+    assert.equal(
+      dictamen.tieneVencidos,
+      false,
+      'No debe marcar vencidos si existe renovación vigente más reciente'
+    );
+    assert.deepEqual(dictamen.vencidos, [], 'La lista de vencidos debe estar vacía');
+    assert.deepEqual(
+      dictamen.faltantesSinCarga,
+      [],
+      'No debe reportar faltantes ya que ambos documentos están cargados'
+    );
+  });
 });
