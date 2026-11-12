@@ -124,52 +124,52 @@ export async function obtenerEstadoFinancieroCompleto(params: {
     db,
   } = params;
 
-  inicializarCacheMemoria();
+  let cuentasList: CuentaFinancieraSelect[] = [];
+  let movimientosList: MovimientoCajaSelect[] = [];
+  let sesionesList: SesionCajaSelect[] = [];
+  let garantiasList: DepositoGarantiaSelect[] = [];
+  let carteraList: ContratoCarteraItem[] = [];
 
-  let cuentasList: CuentaFinancieraSelect[] = Array.from(cacheCuentas.values());
-  let movimientosList: MovimientoCajaSelect[] = Array.from(cacheMovimientos.values());
-  let sesionesList: SesionCajaSelect[] = Array.from(cacheSesiones.values());
-  let garantiasList: DepositoGarantiaSelect[] = Array.from(cacheGarantias.values());
-  let carteraList: ContratoCarteraItem[] = Array.from(cacheCartera.values());
-
-  // Si hay base de datos D1 conectada, leer registros persistidos
-  if (db) {
+  if (!db) {
+    inicializarCacheMemoria();
+    cuentasList = Array.from(cacheCuentas.values());
+    movimientosList = Array.from(cacheMovimientos.values());
+    sesionesList = Array.from(cacheSesiones.values());
+    garantiasList = Array.from(cacheGarantias.values());
+    carteraList = Array.from(cacheCartera.values());
+  } else if (params.localId) {
+    // Si hay base de datos D1 conectada y localId definido, leer registros persistidos de dicho local
     try {
       const dbCuentas = await db
         .select()
         .from(cuentasFinancieras)
-        .where(params.localId ? eq(cuentasFinancieras.localId, params.localId) : undefined)
+        .where(eq(cuentasFinancieras.localId, params.localId))
         .all();
-      if (dbCuentas.length > 0) {
-        cuentasList = dbCuentas;
-      }
+      cuentasList = dbCuentas;
+
       const dbMovimientos = await db
         .select()
         .from(movimientosCaja)
-        .where(params.localId ? eq(movimientosCaja.localId, params.localId) : undefined)
+        .where(eq(movimientosCaja.localId, params.localId))
         .orderBy(desc(movimientosCaja.fechaMovimiento))
         .all();
-      if (dbMovimientos.length > 0) {
-        movimientosList = dbMovimientos;
-      }
+      movimientosList = dbMovimientos;
+
       const dbSesiones = await db
         .select()
         .from(sesionesCaja)
-        .where(params.localId ? eq(sesionesCaja.localId, params.localId) : undefined)
+        .where(eq(sesionesCaja.localId, params.localId))
         .orderBy(desc(sesionesCaja.fechaApertura))
         .all();
-      if (dbSesiones.length > 0) {
-        sesionesList = dbSesiones;
-      }
+      sesionesList = dbSesiones;
+
       const dbGarantias = await db
         .select()
         .from(depositosGarantia)
-        .where(params.localId ? eq(depositosGarantia.localId, params.localId) : undefined)
+        .where(eq(depositosGarantia.localId, params.localId))
         .orderBy(desc(depositosGarantia.creadoEn))
         .all();
-      if (dbGarantias.length > 0) {
-        garantiasList = dbGarantias;
-      }
+      garantiasList = dbGarantias;
 
       // Proyección estricta E2E (16 columnas en vez de 103) para evitar SQLITE_MAX_COLUMN (100) en D1
       const dbContratos = await db
@@ -195,48 +195,46 @@ export async function obtenerEstadoFinancieroCompleto(params: {
         .from(contratosAlquiler)
         .innerJoin(reservas, eq(contratosAlquiler.reservaId, reservas.id))
         .leftJoin(vehiculos, eq(reservas.vehiculoId, vehiculos.id))
-        .where(params.localId ? eq(contratosAlquiler.localId, params.localId) : undefined)
+        .where(eq(contratosAlquiler.localId, params.localId))
         .orderBy(desc(contratosAlquiler.creadoEn));
 
-      if (dbContratos.length > 0) {
-        const mapaGarantiasPorContrato = new Map(
-          garantiasList.map((g) => [g.contratoId, g])
-        );
+      const mapaGarantiasPorContrato = new Map(
+        garantiasList.map((g) => [g.contratoId, g])
+      );
 
-        carteraList = dbContratos.map((row) => {
-          const garantiaAsociada =
-            mapaGarantiasPorContrato.get(row.id) ??
-            mapaGarantiasPorContrato.get(row.numeroContrato);
+      carteraList = dbContratos.map((row) => {
+        const garantiaAsociada =
+          mapaGarantiasPorContrato.get(row.id) ??
+          mapaGarantiasPorContrato.get(row.numeroContrato);
 
-          const vehiculoNombre =
-            row.vehiculoMarca && row.vehiculoModelo
-              ? `${row.vehiculoMarca} ${row.vehiculoModelo}`
-              : row.reservaVehiculoId;
+        const vehiculoNombre =
+          row.vehiculoMarca && row.vehiculoModelo
+            ? `${row.vehiculoMarca} ${row.vehiculoModelo}`
+            : row.reservaVehiculoId;
 
-          return {
-            codigoContrato: row.numeroContrato,
-            clienteNombre: row.arrendatarioNombre,
-            clienteDocumento: `${row.arrendatarioTipoDocumento} ${row.arrendatarioNumeroDocumento}`,
-            vehiculoNombre,
-            vehiculoPlaca: row.vehiculoPlaca ?? 'N/A',
-            fechaInicio: row.reservaFechaInicio,
-            fechaFin: row.reservaFechaFin,
-            totalAlquiler: row.totalLiquidado,
-            totalAbonado: row.totalPagado,
-            saldoPendiente: row.saldoPendiente,
-            estadoPago:
-              row.estadoPago === 'PAGADO'
-                ? 'PAGADO'
-                : row.estadoPago === 'EN_MORA'
-                  ? 'VENCIDO'
-                  : row.totalPagado > 0
-                    ? 'PARCIAL'
-                    : 'PENDIENTE',
-            garantiaEsperada: garantiaAsociada?.montoEsperado ?? 1500000,
-            garantiaEstado: garantiaAsociada?.estado ?? 'PENDIENTE_RECIBIR',
-          };
-        });
-      }
+        return {
+          codigoContrato: row.numeroContrato,
+          clienteNombre: row.arrendatarioNombre,
+          clienteDocumento: `${row.arrendatarioTipoDocumento} ${row.arrendatarioNumeroDocumento}`,
+          vehiculoNombre,
+          vehiculoPlaca: row.vehiculoPlaca ?? 'N/A',
+          fechaInicio: row.reservaFechaInicio,
+          fechaFin: row.reservaFechaFin,
+          totalAlquiler: row.totalLiquidado,
+          totalAbonado: row.totalPagado,
+          saldoPendiente: row.saldoPendiente,
+          estadoPago:
+            row.estadoPago === 'PAGADO'
+              ? 'PAGADO'
+              : row.estadoPago === 'EN_MORA'
+                ? 'VENCIDO'
+                : row.totalPagado > 0
+                  ? 'PARCIAL'
+                  : 'PENDIENTE',
+          garantiaEsperada: garantiaAsociada?.montoEsperado ?? 1500000,
+          garantiaEstado: garantiaAsociada?.estado ?? 'PENDIENTE_RECIBIR',
+        };
+      });
     } catch (error) {
       logFalloD1('caja.resumen.select', error, {});
     }
@@ -272,7 +270,7 @@ export async function obtenerEstadoFinancieroCompleto(params: {
   const sesionActiva = sesionesList.find((s) => s.estado === 'ABIERTA') ?? null;
 
   // Alertas accionables
-  const alertas: AlertaFinanciera[] = [...ALERTAS_FINANCIERAS_SEMILLA];
+  const alertas: AlertaFinanciera[] = db ? [] : [...ALERTAS_FINANCIERAS_SEMILLA];
 
   // Si hay sesión abierta, calcular diferencia si existiera conteo
   if (sesionActiva) {
