@@ -3,3 +3,6 @@ allowBuilds:
   ffmpeg-static: false
   sharp: true
   workerd: true
+
+overrides:
+  '@napi-rs/wasm-runtime@1.2.4>@emnapi/runtime': '^1.11.3'
