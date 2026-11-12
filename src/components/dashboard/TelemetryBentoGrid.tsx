@@ -1036,7 +1036,7 @@ export default function TelemetryBentoGrid({
 
                   <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
                     <span className="font-display text-xl font-black tabular-nums text-[#111827] dark:text-[#EDEDED]">
-                      {activeCategory?.sharePct ?? 100}%
+                      {activeCategory?.sharePct ?? 0}%
                     </span>
                     <span className="text-xs font-bold text-[#4B5563] dark:text-[#9CA3AF]">
                       aporte
@@ -1044,7 +1044,7 @@ export default function TelemetryBentoGrid({
                   </div>
                 </div>
 
-                {activeCategory && (
+                {activeCategory ? (
                   <div className="min-w-0 flex-1 space-y-1 text-center sm:text-left tabular-nums">
                     <span className="inline-block rounded-full bg-white dark:bg-white/10 px-2.5 py-0.5 text-xs font-bold text-[#1F2937] dark:text-[#EDEDED] border border-[#9CA3AF]/35 dark:border-white/10">
                       Categoría seleccionada
@@ -1059,56 +1059,70 @@ export default function TelemetryBentoGrid({
                       {activeCategory.rentedCount} unidad(es) activas hoy
                     </p>
                   </div>
+                ) : (
+                  <div className="min-w-0 flex-1 text-center sm:text-left">
+                    <p className="text-xs sm:text-sm font-semibold text-[#4B5563] dark:text-[#9CA3AF]">
+                      Sin ingresos registrados hoy para desglosar.
+                    </p>
+                  </div>
                 )}
               </div>
 
               {/* Tarjetas selectoras de cada categoría */}
-              <div className="space-y-2.5">
-                {dailyEarnings.byCategory.map((slice, idx) => {
-                  const isActive = idx === safeCatIdx;
-                  const dotColor =
-                    CATEGORY_RING_COLORS[idx % CATEGORY_RING_COLORS.length]!;
+              {dailyEarnings.byCategory.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-[#9CA3AF]/40 dark:border-white/10 bg-[#EDEDED]/40 dark:bg-white/5 p-4 text-center">
+                  <p className="text-xs sm:text-sm font-medium text-[#4B5563] dark:text-[#9CA3AF]">
+                    Sin ingresos registrados hoy para desglosar.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2.5">
+                  {dailyEarnings.byCategory.map((slice, idx) => {
+                    const isActive = idx === safeCatIdx;
+                    const dotColor =
+                      CATEGORY_RING_COLORS[idx % CATEGORY_RING_COLORS.length]!;
 
-                  return (
-                    <button
-                      key={slice.id}
-                      type="button"
-                      onClick={() => {
-                        triggerHaptic(6);
-                        setSelectedCategoryIdx(idx);
-                      }}
-                      className={`ios-press-bounce w-full rounded-2xl p-3.5 text-left border transition cursor-pointer space-y-2 ${
-                        isActive
-                          ? 'bg-white dark:bg-white/15 border-[#111827] dark:border-white shadow-xs'
-                          : 'bg-[#EDEDED]/55 dark:bg-white/5 border-[#9CA3AF]/30 dark:border-white/10 hover:bg-[#EDEDED] dark:hover:bg-white/10'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="inline-flex items-center gap-2 text-sm sm:text-base font-bold text-[#111827] dark:text-[#EDEDED]">
-                          <span
-                            style={{ backgroundColor: dotColor }}
-                            className="h-3 w-3 rounded-full shrink-0"
-                            aria-hidden="true"
+                    return (
+                      <button
+                        key={slice.id}
+                        type="button"
+                        onClick={() => {
+                          triggerHaptic(6);
+                          setSelectedCategoryIdx(idx);
+                        }}
+                        className={`ios-press-bounce w-full rounded-2xl p-3.5 text-left border transition cursor-pointer space-y-2 ${
+                          isActive
+                            ? 'bg-white dark:bg-white/15 border-[#111827] dark:border-white shadow-xs'
+                            : 'bg-[#EDEDED]/55 dark:bg-white/5 border-[#9CA3AF]/30 dark:border-white/10 hover:bg-[#EDEDED] dark:hover:bg-white/10'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="inline-flex items-center gap-2 text-sm sm:text-base font-bold text-[#111827] dark:text-[#EDEDED]">
+                            <span
+                              style={{ backgroundColor: dotColor }}
+                              className="h-3 w-3 rounded-full shrink-0"
+                              aria-hidden="true"
+                            />
+                            {slice.label}
+                          </span>
+                          <span className="font-mono text-sm sm:text-base font-extrabold tabular-nums text-[#111827] dark:text-white">
+                            {slice.amountFormatted}
+                          </span>
+                        </div>
+                        <div className="h-2 w-full overflow-hidden rounded-full bg-[#EDEDED] dark:bg-white/10">
+                          <div
+                            style={{
+                              width: `${slice.sharePct}%`,
+                              backgroundColor: dotColor,
+                            }}
+                            className="h-full rounded-full transition-all duration-300"
                           />
-                          {slice.label}
-                        </span>
-                        <span className="font-mono text-sm sm:text-base font-extrabold tabular-nums text-[#111827] dark:text-white">
-                          {slice.amountFormatted}
-                        </span>
-                      </div>
-                      <div className="h-2 w-full overflow-hidden rounded-full bg-[#EDEDED] dark:bg-white/10">
-                        <div
-                          style={{
-                            width: `${slice.sharePct}%`,
-                            backgroundColor: dotColor,
-                          }}
-                          className="h-full rounded-full transition-all duration-300"
-                        />
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           ) : (
             <div className="space-y-3.5">
@@ -1245,40 +1259,48 @@ export default function TelemetryBentoGrid({
               Toca un automóvil para abrir su contrato y retorno previsto:
             </p>
 
-            {rentedFleet.rentedAutomobiles.map((auto) => (
-              <button
-                key={auto.id}
-                type="button"
-                onClick={() => {
-                  triggerHaptic(8);
-                  onSelectAutomobile(auto);
-                }}
-                className="ios-press-bounce flex min-h-[64px] w-full items-center justify-between gap-3 rounded-2xl bg-[#EDEDED]/60 dark:bg-white/5 p-4 text-left border border-[#9CA3AF]/35 dark:border-white/10 transition hover:border-[#111827]/45 dark:hover:border-white/30 hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer"
-              >
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="truncate font-display text-base font-bold text-[#111827] dark:text-[#EDEDED]">
-                      {auto.brandModel}
+            {rentedFleet.rentedAutomobiles.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-[#9CA3AF]/40 dark:border-white/10 bg-[#EDEDED]/40 dark:bg-white/5 p-6 text-center">
+                <p className="text-sm font-semibold text-[#4B5563] dark:text-[#9CA3AF]">
+                  No hay automóviles alquilados en este momento.
+                </p>
+              </div>
+            ) : (
+              rentedFleet.rentedAutomobiles.map((auto) => (
+                <button
+                  key={auto.id}
+                  type="button"
+                  onClick={() => {
+                    triggerHaptic(8);
+                    onSelectAutomobile(auto);
+                  }}
+                  className="ios-press-bounce flex min-h-[64px] w-full items-center justify-between gap-3 rounded-2xl bg-[#EDEDED]/60 dark:bg-white/5 p-4 text-left border border-[#9CA3AF]/35 dark:border-white/10 transition hover:border-[#111827]/45 dark:hover:border-white/30 hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer"
+                >
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="truncate font-display text-base font-bold text-[#111827] dark:text-[#EDEDED]">
+                        {auto.brandModel}
+                      </p>
+                      <span className="shrink-0 rounded-lg bg-[#111827] dark:bg-white px-2.5 py-0.5 font-mono text-xs font-bold text-white dark:text-[#111827]">
+                        {auto.plate}
+                      </span>
+                    </div>
+                    <p className="mt-1 truncate text-sm text-[#4B5563] dark:text-[#9CA3AF]">
+                      {auto.clientName} • {auto.returnLabel}
                     </p>
-                    <span className="shrink-0 rounded-lg bg-[#111827] dark:bg-white px-2.5 py-0.5 font-mono text-xs font-bold text-white dark:text-[#111827]">
-                      {auto.plate}
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="font-mono text-sm font-extrabold tabular-nums text-[#111827] dark:text-white">
+                      {auto.dailyRateFormatted}
+                    </span>
+                    <span className="text-base font-bold text-[#4B5563] dark:text-[#9CA3AF]" aria-hidden="true">
+                      →
                     </span>
                   </div>
-                  <p className="mt-1 truncate text-sm text-[#4B5563] dark:text-[#9CA3AF]">
-                    {auto.clientName} • {auto.returnLabel}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="font-mono text-sm font-extrabold tabular-nums text-[#111827] dark:text-white">
-                    {auto.dailyRateFormatted}
-                  </span>
-                  <span className="text-base font-bold text-[#4B5563] dark:text-[#9CA3AF]" aria-hidden="true">
-                    →
-                  </span>
-                </div>
-              </button>
-            ))}
+                </button>
+              ))
+            )}
 
             {rentedFleet.otherRentedUnitsCount > 0 && (
               <p className="px-1 pt-1 text-xs sm:text-sm text-[#4B5563] dark:text-[#9CA3AF]">
@@ -1395,53 +1417,61 @@ export default function TelemetryBentoGrid({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {filteredMovements.map((mov) => {
-            const isIncome = mov.kind === 'INGRESO';
-            return (
-              <button
-                key={mov.id}
-                type="button"
-                onClick={() => {
-                  triggerHaptic(8);
-                  onSelectMovement(mov);
-                }}
-                className="ios-press-bounce flex min-h-[68px] w-full items-center justify-between gap-3 rounded-2xl bg-[#EDEDED]/55 dark:bg-white/5 p-4 text-left border border-[#9CA3AF]/35 dark:border-white/10 transition hover:border-[#111827]/45 dark:hover:border-white/30 hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer"
-              >
-                <div className="flex items-center gap-3.5 min-w-0">
-                  <div
-                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl font-bold text-base ${
-                      isIncome
-                        ? 'bg-[#111827] dark:bg-white text-white dark:text-[#111827]'
-                        : 'bg-white dark:bg-white/10 text-[#1F2937] dark:text-[#EDEDED] border border-[#9CA3AF]/45 dark:border-white/20'
-                    }`}
-                    aria-hidden="true"
-                  >
-                    {isIncome ? '↑' : '↓'}
-                  </div>
-
-                  <div className="min-w-0">
-                    <p className="truncate font-display text-base font-bold text-[#111827] dark:text-[#EDEDED]">
-                      {mov.title}
-                    </p>
-                    <p className="mt-0.5 truncate text-sm text-[#4B5563] dark:text-[#9CA3AF]">
-                      {mov.categoryLabel} • {mov.timeLabel}
-                      {mov.vehiclePlate ? ` • ${mov.vehiclePlate}` : ''}
-                    </p>
-                  </div>
-                </div>
-
-                <span
-                  className={`shrink-0 font-mono text-sm sm:text-base font-extrabold tabular-nums ${
-                    isIncome ? 'text-[#111827] dark:text-white' : 'text-[#4B5563] dark:text-[#9CA3AF]'
-                  }`}
+        {filteredMovements.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-[#9CA3AF]/40 dark:border-white/10 bg-[#EDEDED]/40 dark:bg-white/5 p-6 text-center">
+            <p className="text-sm font-semibold text-[#4B5563] dark:text-[#9CA3AF]">
+              Sin movimientos registrados hoy con este filtro.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {filteredMovements.map((mov) => {
+              const isIncome = mov.kind === 'INGRESO';
+              return (
+                <button
+                  key={mov.id}
+                  type="button"
+                  onClick={() => {
+                    triggerHaptic(8);
+                    onSelectMovement(mov);
+                  }}
+                  className="ios-press-bounce flex min-h-[68px] w-full items-center justify-between gap-3 rounded-2xl bg-[#EDEDED]/55 dark:bg-white/5 p-4 text-left border border-[#9CA3AF]/35 dark:border-white/10 transition hover:border-[#111827]/45 dark:hover:border-white/30 hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer"
                 >
-                  {mov.amountFormatted}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div
+                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl font-bold text-base ${
+                        isIncome
+                          ? 'bg-[#111827] dark:bg-white text-white dark:text-[#111827]'
+                          : 'bg-white dark:bg-white/10 text-[#1F2937] dark:text-[#EDEDED] border border-[#9CA3AF]/45 dark:border-white/20'
+                      }`}
+                      aria-hidden="true"
+                    >
+                      {isIncome ? '↑' : '↓'}
+                    </div>
+
+                    <div className="min-w-0">
+                      <p className="truncate font-display text-base font-bold text-[#111827] dark:text-[#EDEDED]">
+                        {mov.title}
+                      </p>
+                      <p className="mt-0.5 truncate text-sm text-[#4B5563] dark:text-[#9CA3AF]">
+                        {mov.categoryLabel} • {mov.timeLabel}
+                        {mov.vehiclePlate ? ` • ${mov.vehiclePlate}` : ''}
+                      </p>
+                    </div>
+                  </div>
+
+                  <span
+                    className={`shrink-0 font-mono text-sm sm:text-base font-extrabold tabular-nums ${
+                      isIncome ? 'text-[#111827] dark:text-white' : 'text-[#4B5563] dark:text-[#9CA3AF]'
+                    }`}
+                  >
+                    {mov.amountFormatted}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
     </section>
   );

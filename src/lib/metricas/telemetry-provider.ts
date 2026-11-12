@@ -4,7 +4,6 @@ import {
   formatearMonedaCOP,
   formatearMonedaCompactaCOP,
   type MovimientoCajaSelect,
-  type ResumenFinancieroCompleto,
 } from '@/lib/caja';
 import type { CategoriaVehiculo, VehiculoItem } from '@/lib/flota';
 import { DEFAULT_TIMEZONE, toClientISODate } from '@/lib/time/client-time';
@@ -25,15 +24,14 @@ import type {
 } from './types';
 
 export interface BuildMetricsInput {
-  readonly yardName?: string | undefined;
-  readonly cityLabel?: string | undefined;
-  readonly operatorName?: string | undefined;
+  readonly yardName?: string | null | undefined;
+  readonly cityLabel?: string | null | undefined;
+  readonly operatorName?: string | null | undefined;
   readonly timezone?: string | undefined;
   readonly dateLabel?: string | undefined;
   readonly hoyISO?: string | undefined;
   readonly vehiculos?: readonly VehiculoItem[] | undefined;
   readonly datosD1?: DatosMetricasLocalD1 | undefined;
-  readonly estadoFinanciero?: ResumenFinancieroCompleto | undefined;
 }
 
 const DATOS_D1_VACIOS: DatosMetricasLocalD1 = {

@@ -2,36 +2,53 @@
 import { env } from 'cloudflare:workers';
 import LayoutAdmin from '@/layouts/LayoutAdmin.astro';
 import { getDb } from '@/lib/db';
-import { obtenerEstadoFinancieroCompleto } from '@/lib/caja';
-import { listarVehiculos } from '@/lib/flota';
+import { obtenerLocalPorSlugOId, listarVehiculos } from '@/lib/flota';
 import { resolveClientTimeContext } from '@/lib/time/client-time';
-import { getYardMetricsSnapshot } from '@/lib/metricas';
+import { getYardMetricsSnapshot, obtenerDatosMetricasLocalD1 } from '@/lib/metricas';
 import MetricsInteractiveHub from '@/components/dashboard/MetricsInteractiveHub';
 
-const timeContext = resolveClientTimeContext(Astro.request);
 const usuario = Astro.locals.usuario;
+const localActivo = usuario?.localActivo;
+if (!localActivo?.id) {
+  return Astro.redirect('/admin');
+}
 
+const timeContext = resolveClientTimeContext(Astro.request);
 const operatorName = usuario?.nombre ?? 'Operador';
-const localId = usuario?.localActivo?.id;
-const yardName = usuario?.localActivo?.nombre ?? 'Patio Principal';
 const db = env.DB ? getDb(env.DB) : undefined;
 
-const [vehiculos, estadoFinanciero] = await Promise.all([
-  listarVehiculos(db, localId ? { localId } : {}),
-  obtenerEstadoFinancieroCompleto({
-    localId,
-    periodo: 'ESTE_MES',
-    db,
+const localContexto =
+  (await obtenerLocalPorSlugOId(localActivo.id, db)) ?? {
+    id: localActivo.id,
+    nombre: localActivo.nombre,
+    slug: localActivo.slug,
+    ciudad: 'Medellín',
+    direccion: null,
+    telefono: null,
+  };
+
+const [vehiculos, datosD1] = await Promise.all([
+  listarVehiculos(db, {
+    localId: localContexto.id,
+    hoyISO: timeContext.dateString,
   }),
+  obtenerDatosMetricasLocalD1(
+    db,
+    localContexto.id,
+    timeContext.dateString,
+    timeContext.timezone
+  ),
 ]);
 
 const snapshot = getYardMetricsSnapshot({
-  yardName,
+  yardName: localContexto.nombre,
+  cityLabel: localContexto.ciudad,
   operatorName,
   timezone: timeContext.timezone,
   dateLabel: timeContext.dateString,
+  hoyISO: timeContext.dateString,
   vehiculos,
-  estadoFinanciero,
+  datosD1,
 });
 ---
 
@@ -40,7 +57,7 @@ const snapshot = getYardMetricsSnapshot({
     <header class="flex flex-wrap items-center justify-between gap-3 border-b border-[#9CA3AF]/35 pb-3.5">
       <div class="min-w-0">
         <p class="text-xs sm:text-sm font-semibold uppercase tracking-wider text-[#4B5563] truncate">
-          {yardName} • {timeContext.dateString}
+          {localContexto.nombre} • {timeContext.dateString}
         </p>
         <h1 class="mt-0.5 font-display text-2xl sm:text-3xl font-black tracking-tight text-[#111827]">
           Métricas y telemetría
