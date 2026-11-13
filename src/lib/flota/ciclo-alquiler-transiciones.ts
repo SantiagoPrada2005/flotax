@@ -9,11 +9,16 @@ import {
   vehiculos,
   movimientosCaja,
   auditoriaFinanciera,
+  depositosGarantia,
+  cuentasFinancieras,
   type MetodoPagoFinanciero,
   type EstadoGeneralInspeccion,
   type TipoMantenimientoVehiculo,
   type EstadoPagoContrato,
   type EstadoContratoAlquiler,
+  type EstadoDepositoGarantia,
+  type TipoCuentaFinanciera,
+  type DepositoGarantiaSelect,
 } from '@/db/schema';
 import {
   ErrorCicloAlquiler,
@@ -26,10 +31,11 @@ import {
   verificarDisponibilidadVehiculo,
 } from './disponibilidad';
 import { resolverEstadoActualVehiculo } from '@/lib/mantenimientos/repositorio';
+import { reconciliarSaldosContratoYReservaD1 } from '@/lib/caja/repositorio';
 import { toClientISODate } from '@/lib/time/client-time';
 import { PERMISOS, type Permiso } from '@/lib/auth/permisos';
 import { tienePermiso } from '@/lib/auth/rbac';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, or } from 'drizzle-orm';
 
 export interface PausarAlquilerParams {
   reservaId?: string | undefined;
@@ -100,6 +106,13 @@ export interface DevolverYCerrarAlquilerParams {
   actor?: ContextoActorCiclo | undefined;
 }
 
+export interface ResultadoDevolverYCerrarAlquiler {
+  reserva: typeof reservas.$inferSelect;
+  contrato: typeof contratosAlquiler.$inferSelect | null;
+  garantia: DepositoGarantiaSelect | null;
+  mensajeLegal: string;
+}
+
 export interface RegistrarEvaluacionEntregaParams {
   reservaId?: string | undefined;
   codigo?: string | undefined;
@@ -164,8 +177,7 @@ function validarPermisoActor(
   permiso: Permiso,
   mensajeError: string
 ): void {
-  if (!actor || !actor.rol) return;
-  if (!tienePermiso(actor.rol, permiso)) {
+  if (!actor?.rol || !tienePermiso(actor.rol, permiso)) {
     throw new ErrorCicloAlquiler('FORBIDDEN', mensajeError);
   }
 }
@@ -202,6 +214,81 @@ async function resolverContratoPorReservaId(db: AppDb, reservaId: string) {
     .where(eq(contratosAlquiler.reservaId, reservaId))
     .limit(1);
   return rows[0];
+}
+
+async function resolverCuentaActivaLocal(
+  db: AppDb,
+  localId: string,
+  cuentaIdDeseada?: string | undefined,
+  metodoPago?: string | undefined
+): Promise<string> {
+  if (cuentaIdDeseada) {
+    const rows = await db
+      .select({ id: cuentasFinancieras.id, activo: cuentasFinancieras.activo })
+      .from(cuentasFinancieras)
+      .where(
+        and(
+          eq(cuentasFinancieras.id, cuentaIdDeseada),
+          eq(cuentasFinancieras.localId, localId)
+        )
+      )
+      .limit(1);
+    const c = rows[0];
+    if (c && c.activo) {
+      return c.id;
+    }
+    throw new ErrorCicloAlquiler(
+      'BAD_REQUEST',
+      `La cuenta financiera solicitada (${cuentaIdDeseada}) no existe o no está activa en el local ${localId}`
+    );
+  }
+
+  if (metodoPago) {
+    const tipoBuscado: TipoCuentaFinanciera =
+      metodoPago.toLowerCase() === 'efectivo' ? 'CAJA_EFECTIVO' : 'BANCO';
+    const rows = await db
+      .select({ id: cuentasFinancieras.id })
+      .from(cuentasFinancieras)
+      .where(
+        and(
+          eq(cuentasFinancieras.localId, localId),
+          eq(cuentasFinancieras.tipo, tipoBuscado),
+          eq(cuentasFinancieras.activo, true)
+        )
+      )
+      .limit(1);
+    if (rows[0]) return rows[0].id;
+  }
+
+  const efectivoRows = await db
+    .select({ id: cuentasFinancieras.id })
+    .from(cuentasFinancieras)
+    .where(
+      and(
+        eq(cuentasFinancieras.localId, localId),
+        eq(cuentasFinancieras.tipo, 'CAJA_EFECTIVO'),
+        eq(cuentasFinancieras.activo, true)
+      )
+    )
+    .limit(1);
+  if (efectivoRows[0]) return efectivoRows[0].id;
+
+  const cualquierRows = await db
+    .select({ id: cuentasFinancieras.id })
+    .from(cuentasFinancieras)
+    .where(
+      and(
+        eq(cuentasFinancieras.localId, localId),
+        eq(cuentasFinancieras.activo, true)
+      )
+    )
+    .limit(1);
+  if (cualquierRows[0]) return cualquierRows[0].id;
+
+  throw new ErrorCicloAlquiler(
+    'BAD_REQUEST',
+    `No existe ninguna cuenta financiera activa configurada para el local ${localId}`
+  );
 }
 
 /**
@@ -329,7 +416,7 @@ export async function pausarAlquilerD1(
   await resolverEstadoActualVehiculo(db, reserva.vehiculoId);
 
   const reservaAct = await resolverReservaPorIdOCodigo(db, reserva.id);
-  const contratoAct = contrato ? await resolverContratoPorReservaId(db, reserva.id) : null;
+  const contratoAct = contrato ? (await resolverContratoPorReservaId(db, reserva.id)) ?? null : null;
 
   return {
     reserva: reservaAct!,
@@ -424,7 +511,7 @@ export async function reanudarAlquilerD1(
   await resolverEstadoActualVehiculo(db, reserva.vehiculoId);
 
   const reservaAct = await resolverReservaPorIdOCodigo(db, reserva.id);
-  const contratoAct = contrato ? await resolverContratoPorReservaId(db, reserva.id) : null;
+  const contratoAct = contrato ? (await resolverContratoPorReservaId(db, reserva.id)) ?? null : null;
 
   return {
     reserva: reservaAct!,
@@ -585,7 +672,7 @@ export async function prorrogarAlquilerD1(
   await ejecutarBatchOSecuencial(db, ops);
 
   const reservaAct = await resolverReservaPorIdOCodigo(db, reserva.id);
-  const contratoAct = contrato ? await resolverContratoPorReservaId(db, reserva.id) : null;
+  const contratoAct = contrato ? (await resolverContratoPorReservaId(db, reserva.id)) ?? null : null;
 
   return {
     reserva: reservaAct!,
@@ -596,12 +683,13 @@ export async function prorrogarAlquilerD1(
 /**
  * 4. devolverYCerrarAlquilerD1 (EN_CURSO / PAUSADA -> COMPLETADA)
  * Devolución normal o anticipada con cláusula del local, control de sobrecosto/descuento,
- * salvaguarda contra saldos negativos por excedente y orden técnica de mantenimiento.
+ * salvaguarda contra saldos negativos por excedente, gestión de depósitos de garantía
+ * y orden técnica de mantenimiento.
  */
 export async function devolverYCerrarAlquilerD1(
   db: AppDb,
   params: DevolverYCerrarAlquilerParams
-) {
+): Promise<ResultadoDevolverYCerrarAlquiler> {
   validarPermisoActor(
     params.actor,
     PERMISOS.CONTRATOS_FINALIZAR,
@@ -663,6 +751,8 @@ export async function devolverYCerrarAlquilerD1(
   const mensajeLegal = 'Las condiciones, ajustes y sobrecostos de devolución los establece el local.';
   const ahora = new Date();
   const ops: unknown[] = [];
+  const usuarioResponsableId =
+    params.usuarioId ?? params.actor?.usuarioId ?? reserva.clienteId ?? 'usr-sistema-cierre';
 
   // Regla de excedente: si totalLiquidado < totalPagado
   let saldoPendienteFinal = 0;
@@ -691,8 +781,12 @@ export async function devolverYCerrarAlquilerD1(
 
     const excedente = totalPagadoActual - nuevoTotalLiquidado;
     const movimientoReembolsoId = `mov-reemb-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-    const cuentaId = params.cuentaReembolsoId ?? 'cta-caja-default';
-    const usuarioResponsableId = params.usuarioId ?? params.actor?.usuarioId ?? reserva.clienteId ?? 'usr-sistema-cierre';
+    const cuentaId = await resolverCuentaActivaLocal(
+      db,
+      reserva.localId,
+      params.cuentaReembolsoId,
+      'efectivo'
+    );
 
     ops.push(
       db.insert(movimientosCaja).values({
@@ -735,13 +829,18 @@ export async function devolverYCerrarAlquilerD1(
     const saldo = nuevoTotalLiquidado - totalPagadoActual;
     if (params.cobrarSaldoAhora && params.cobrarSaldoAhora.metodoPago) {
       const movCobroId = `mov-cobro-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-      const usuarioResponsableId = params.usuarioId ?? params.actor?.usuarioId ?? reserva.clienteId ?? 'usr-sistema-cierre';
+      const cuentaCobroId = await resolverCuentaActivaLocal(
+        db,
+        reserva.localId,
+        params.cobrarSaldoAhora.cuentaId,
+        params.cobrarSaldoAhora.metodoPago
+      );
       ops.push(
         db.insert(movimientosCaja).values({
           id: movCobroId,
           localId: reserva.localId,
           contratoId: contrato?.id ?? null,
-          cuentaId: params.cobrarSaldoAhora.cuentaId ?? 'cta-caja-default',
+          cuentaId: cuentaCobroId,
           tipo: 'INGRESO',
           categoria: 'PAGO_ALQUILER',
           monto: saldo,
@@ -770,6 +869,179 @@ export async function devolverYCerrarAlquilerD1(
     totalPagadoFinal = nuevoTotalLiquidado;
     estadoPagoFinal = 'PAGADO';
     estadoContratoFinal = 'CERRADO_PAZ_Y_SALVO';
+  }
+
+  // Gestión de depósito de garantía
+  const garantias = await db
+    .select()
+    .from(depositosGarantia)
+    .where(
+      and(
+        eq(depositosGarantia.localId, reserva.localId),
+        or(
+          eq(depositosGarantia.contratoId, contrato?.id ?? ''),
+          eq(depositosGarantia.contratoId, contrato?.numeroContrato ?? ''),
+          eq(depositosGarantia.contratoId, reserva.codigo)
+        )
+      )
+    )
+    .limit(1);
+  const garantia = garantias[0];
+
+  if (params.gestionGarantia) {
+    if (!garantia) {
+      throw new ErrorCicloAlquiler(
+        'BAD_REQUEST',
+        'No se encontró un depósito de garantía activo para esta reserva/contrato'
+      );
+    }
+
+    const { accion, montoDevolver, cuentaId: ctaGarantiaReq, motivoRetencion } = params.gestionGarantia;
+
+    if (accion === 'DEVOLVER_TOTAL' || accion === 'DEVOLVER_PARCIAL') {
+      validarPermisoActor(
+        params.actor,
+        PERMISOS.CAJA_GASTOS_REGISTRAR,
+        'No cuenta con permisos para emitir devoluciones de garantía (requiere CAJA_GASTOS_REGISTRAR)'
+      );
+
+      const montoDev =
+        accion === 'DEVOLVER_TOTAL'
+          ? garantia.saldoComprometido
+          : Math.min(garantia.saldoComprometido, Math.max(0, Math.floor(montoDevolver ?? 0)));
+
+      if (montoDev > 0) {
+        const cuentaGarantiaId = await resolverCuentaActivaLocal(
+          db,
+          reserva.localId,
+          ctaGarantiaReq ?? garantia.cuentaId ?? undefined,
+          'efectivo'
+        );
+        const movGarantiaId = `mov-gar-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+
+        ops.push(
+          db.insert(movimientosCaja).values({
+            id: movGarantiaId,
+            localId: reserva.localId,
+            contratoId: contrato?.id ?? null,
+            cuentaId: cuentaGarantiaId,
+            tipo: 'EGRESO',
+            categoria: 'REEMBOLSO_GARANTIA',
+            monto: montoDev,
+            metodoPago: 'efectivo',
+            concepto: `Devolución de fianza de garantía #${reserva.codigo}`,
+            referencia: `GAR-DEV-${reserva.codigo}`,
+            estado: 'CONFIRMADO',
+            creadoPorId: usuarioResponsableId,
+            fechaMovimiento: ahora,
+            creadoEn: ahora,
+            actualizadoEn: ahora,
+          }),
+          db.insert(auditoriaFinanciera).values({
+            id: `aud-gar-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            localId: reserva.localId,
+            entidad: 'GARANTIA',
+            entidadId: garantia.id,
+            accion: 'DEVOLVER_GARANTIA',
+            montoAnterior: garantia.saldoComprometido,
+            montoNuevo: garantia.saldoComprometido - montoDev,
+            motivo: `Devolución ${accion === 'DEVOLVER_TOTAL' ? 'total' : 'parcial'} de fianza de garantía`,
+            usuarioId: usuarioResponsableId,
+            detallesJson: JSON.stringify({
+              reservaId: reserva.id,
+              contratoId: contrato?.id ?? null,
+              montoDevuelto: montoDev,
+            }),
+            creadoEn: ahora,
+          })
+        );
+
+        const nuevoDevuelto = garantia.montoDevuelto + montoDev;
+        const nuevoSaldoComprometido = Math.max(0, garantia.saldoComprometido - montoDev);
+        const nuevoEstadoGarantia: EstadoDepositoGarantia =
+          nuevoSaldoComprometido === 0 && accion === 'DEVOLVER_TOTAL'
+            ? 'DEVUELTO_TOTAL'
+            : 'DEVUELTO_PARCIAL';
+
+        ops.push(
+          db
+            .update(depositosGarantia)
+            .set({
+              montoDevuelto: nuevoDevuelto,
+              saldoComprometido: nuevoSaldoComprometido,
+              estado: nuevoEstadoGarantia,
+              fechaDevolucionReal: ahora,
+              referenciaDevolucion: `DEV-${reserva.codigo}`,
+              observaciones: motivoRetencion ?? garantia.observaciones,
+              actualizadoEn: ahora,
+            })
+            .where(eq(depositosGarantia.id, garantia.id))
+        );
+      }
+    } else if (accion === 'RETENER_CARGOS') {
+      const montoRet = Math.min(
+        garantia.saldoComprometido,
+        Math.max(0, Math.floor(montoDevolver ?? garantia.saldoComprometido))
+      );
+      const nuevoRetenido = garantia.montoRetenido + montoRet;
+      const nuevoSaldoComprometido = Math.max(0, garantia.saldoComprometido - montoRet);
+      const motivoRet = motivoRetencion ?? params.motivoSobrecosto ?? 'Retención aplicada a cargos/daños';
+
+      ops.push(
+        db
+          .update(depositosGarantia)
+          .set({
+            montoRetenido: nuevoRetenido,
+            saldoComprometido: nuevoSaldoComprometido,
+            estado: 'APLICADO_CARGOS',
+            motivoRetencion: motivoRet,
+            actualizadoEn: ahora,
+          })
+          .where(eq(depositosGarantia.id, garantia.id)),
+        db.insert(auditoriaFinanciera).values({
+          id: `aud-gar-ret-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          localId: reserva.localId,
+          entidad: 'GARANTIA',
+          entidadId: garantia.id,
+          accion: 'MODIFICAR',
+          montoAnterior: garantia.saldoComprometido,
+          montoNuevo: nuevoSaldoComprometido,
+          motivo: `Retención aplicada a cargos/daños: ${motivoRet}`,
+          usuarioId: usuarioResponsableId,
+          detallesJson: JSON.stringify({
+            reservaId: reserva.id,
+            contratoId: contrato?.id ?? null,
+            montoRetenido: montoRet,
+            motivoRetencion: motivoRet,
+          }),
+          creadoEn: ahora,
+        })
+      );
+    } else if (accion === 'DEJAR_CUSTODIA') {
+      ops.push(
+        db
+          .update(depositosGarantia)
+          .set({
+            estado: 'EN_REVISION',
+            observaciones: motivoRetencion ?? 'Fianza en custodia para revisión técnica',
+            actualizadoEn: ahora,
+          })
+          .where(eq(depositosGarantia.id, garantia.id)),
+        db.insert(auditoriaFinanciera).values({
+          id: `aud-gar-rev-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          localId: reserva.localId,
+          entidad: 'GARANTIA',
+          entidadId: garantia.id,
+          accion: 'MODIFICAR',
+          montoAnterior: garantia.saldoComprometido,
+          montoNuevo: garantia.saldoComprometido,
+          motivo: 'Fianza dejada en custodia para revisión técnica',
+          usuarioId: usuarioResponsableId,
+          detallesJson: JSON.stringify({ reservaId: reserva.id }),
+          creadoEn: ahora,
+        })
+      );
+    }
   }
 
   // Acta de recepción R2
@@ -817,6 +1089,22 @@ export async function devolverYCerrarAlquilerD1(
         creadoEn: ahora,
         actualizadoEn: ahora,
       })
+    );
+  }
+
+  // Si la reserva estaba pausada, desactivar el evento de pausa
+  if (reserva.estado === 'PAUSADA') {
+    ops.push(
+      db
+        .update(eventosAlquiler)
+        .set({ activo: false })
+        .where(
+          and(
+            eq(eventosAlquiler.reservaId, reserva.id),
+            eq(eventosAlquiler.tipoEvento, 'PAUSA'),
+            eq(eventosAlquiler.activo, true)
+          )
+        )
     );
   }
 
@@ -917,11 +1205,21 @@ export async function devolverYCerrarAlquilerD1(
   await resolverEstadoActualVehiculo(db, reserva.vehiculoId);
 
   const reservaAct = await resolverReservaPorIdOCodigo(db, reserva.id);
-  const contratoAct = contrato ? await resolverContratoPorReservaId(db, reserva.id) : null;
+  const contratoAct = contrato ? (await resolverContratoPorReservaId(db, reserva.id)) ?? null : null;
+  const garantiaAct = garantia
+    ? (
+        await db
+          .select()
+          .from(depositosGarantia)
+          .where(eq(depositosGarantia.id, garantia.id))
+          .limit(1)
+      )[0] ?? null
+    : null;
 
   return {
     reserva: reservaAct!,
     contrato: contratoAct,
+    garantia: garantiaAct,
     mensajeLegal,
   };
 }
@@ -940,19 +1238,17 @@ export async function registrarEvaluacionEntregaClienteD1(
     throw new ErrorCicloAlquiler('NOT_FOUND', 'Reserva no encontrada');
   }
 
-  // Validación de acceso seguro
+  // Validación de acceso seguro (cierra brecha de walk-ins sin clienteId)
   if (params.tokenAccesoPublico) {
     if (!reserva.tokenAccesoPublico || params.tokenAccesoPublico !== reserva.tokenAccesoPublico) {
       throw new ErrorCicloAlquiler('FORBIDDEN', 'Token de acceso público inválido');
     }
-  } else if (params.clienteId) {
-    if (reserva.clienteId && params.clienteId !== reserva.clienteId) {
-      throw new ErrorCicloAlquiler('FORBIDDEN', 'No autorizado para evaluar esta reserva');
-    }
+  } else if (params.clienteId && reserva.clienteId && params.clienteId === reserva.clienteId) {
+    // Propietario registrado auténtico
   } else {
     throw new ErrorCicloAlquiler(
       'FORBIDDEN',
-      'Se requiere tokenAccesoPublico o clienteId para registrar la evaluación'
+      'No autorizado para evaluar esta reserva (se requiere tokenAccesoPublico válido o coincidencia de clienteId)'
     );
   }
 
@@ -1120,6 +1416,13 @@ export async function cancelarReservaD1(
 
   const ahora = new Date();
   const motivo = params.motivoCancelacion ?? 'Cancelación de reserva';
+  const usuarioResponsableId =
+    params.usuarioId ?? params.actor?.usuarioId ?? reserva.clienteId ?? 'usr-sistema-canc';
+
+  const nuevoTotalLiquidado =
+    params.resolucionFinanciera === 'RETENER_SALDO_LOCAL'
+      ? (contrato?.totalPagado ?? reserva.montoAbonoReportado)
+      : 0;
 
   const ops: unknown[] = [
     db
@@ -1127,6 +1430,7 @@ export async function cancelarReservaD1(
       .set({
         estado: 'CANCELADA',
         motivoCancelacion: motivo,
+        totalCotizado: nuevoTotalLiquidado,
         canceladoPorId: params.usuarioId ?? params.actor?.usuarioId ?? null,
         canceladoEn: ahora,
         actualizadoEn: ahora,
@@ -1159,57 +1463,259 @@ export async function cancelarReservaD1(
         .set({
           estadoContrato: 'ANULADO',
           motivoAnulacion: motivo,
+          totalLiquidado: nuevoTotalLiquidado,
           anuladoPorId: params.usuarioId ?? params.actor?.usuarioId ?? null,
           anuladoEn: ahora,
           saldoPendiente: 0,
+          clausulaEncargado:
+            params.resolucionFinanciera === 'RETENER_SALDO_LOCAL'
+              ? `Saldo retenido a favor del local por cancelación: ${motivo}`
+              : contrato.clausulaEncargado,
           actualizadoEn: ahora,
         })
         .where(eq(contratosAlquiler.id, contrato.id))
     );
   }
 
-  if (contrato && contrato.totalPagado > 0 && params.resolucionFinanciera === 'REEMBOLSAR_EGRESO') {
-    const usuarioResponsableId = params.usuarioId ?? params.actor?.usuarioId ?? reserva.clienteId ?? 'usr-sistema-canc';
-    const movReembId = `mov-canc-reemb-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+  // Depósito de garantía asociado si existe
+  const [garantia] = await db
+    .select()
+    .from(depositosGarantia)
+    .where(
+      and(
+        eq(depositosGarantia.localId, reserva.localId),
+        or(
+          eq(depositosGarantia.contratoId, contrato?.id ?? ''),
+          eq(depositosGarantia.contratoId, contrato?.numeroContrato ?? ''),
+          eq(depositosGarantia.contratoId, reserva.codigo)
+        )
+      )
+    )
+    .limit(1);
+
+  if (params.resolucionFinanciera === 'REEMBOLSAR_EGRESO') {
+    if (contrato && contrato.totalPagado > 0) {
+      const cuentaReembolsoId = await resolverCuentaActivaLocal(
+        db,
+        reserva.localId,
+        params.cuentaReembolsoId,
+        'efectivo'
+      );
+      const movReembId = `mov-canc-reemb-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+      ops.push(
+        db.insert(movimientosCaja).values({
+          id: movReembId,
+          localId: reserva.localId,
+          contratoId: contrato.id,
+          cuentaId: cuentaReembolsoId,
+          tipo: 'EGRESO',
+          categoria: 'REEMBOLSO_ALQUILER',
+          monto: contrato.totalPagado,
+          metodoPago: 'efectivo',
+          concepto: `Reembolso por cancelación de reserva #${reserva.codigo}`,
+          referencia: `REEMB-${reserva.codigo}`,
+          estado: 'CONFIRMADO',
+          creadoPorId: usuarioResponsableId,
+          fechaMovimiento: ahora,
+          creadoEn: ahora,
+          actualizadoEn: ahora,
+        }),
+        db.insert(auditoriaFinanciera).values({
+          id: `aud-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          localId: reserva.localId,
+          entidad: 'MOVIMIENTO',
+          entidadId: movReembId,
+          accion: 'CREAR',
+          montoAnterior: null,
+          montoNuevo: contrato.totalPagado,
+          motivo: 'Reembolso por cancelación de reserva',
+          usuarioId: usuarioResponsableId,
+          detallesJson: JSON.stringify({ reservaId: reserva.id, totalPagado: contrato.totalPagado }),
+          creadoEn: ahora,
+        })
+      );
+    }
+
+    if (garantia && garantia.saldoComprometido > 0) {
+      const cuentaGarId = await resolverCuentaActivaLocal(
+        db,
+        reserva.localId,
+        params.cuentaReembolsoId ?? garantia.cuentaId ?? undefined,
+        'efectivo'
+      );
+      const movGarId = `mov-canc-gar-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+      ops.push(
+        db.insert(movimientosCaja).values({
+          id: movGarId,
+          localId: reserva.localId,
+          contratoId: contrato?.id ?? null,
+          cuentaId: cuentaGarId,
+          tipo: 'EGRESO',
+          categoria: 'REEMBOLSO_GARANTIA',
+          monto: garantia.saldoComprometido,
+          metodoPago: 'efectivo',
+          concepto: `Reembolso de fianza por cancelación #${reserva.codigo}`,
+          referencia: `GAR-DEV-${reserva.codigo}`,
+          estado: 'CONFIRMADO',
+          creadoPorId: usuarioResponsableId,
+          fechaMovimiento: ahora,
+          creadoEn: ahora,
+          actualizadoEn: ahora,
+        }),
+        db
+          .update(depositosGarantia)
+          .set({
+            montoDevuelto: garantia.montoDevuelto + garantia.saldoComprometido,
+            saldoComprometido: 0,
+            estado: 'DEVUELTO_TOTAL',
+            fechaDevolucionReal: ahora,
+            referenciaDevolucion: `DEV-${reserva.codigo}`,
+            observaciones: `Devolución de fianza por cancelación: ${motivo}`,
+            actualizadoEn: ahora,
+          })
+          .where(eq(depositosGarantia.id, garantia.id)),
+        db.insert(auditoriaFinanciera).values({
+          id: `aud-gar-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          localId: reserva.localId,
+          entidad: 'GARANTIA',
+          entidadId: garantia.id,
+          accion: 'DEVOLVER_GARANTIA',
+          montoAnterior: garantia.saldoComprometido,
+          montoNuevo: 0,
+          motivo: `Devolución de fianza por cancelación: ${motivo}`,
+          usuarioId: usuarioResponsableId,
+          detallesJson: JSON.stringify({ reservaId: reserva.id, garantiaId: garantia.id }),
+          creadoEn: ahora,
+        })
+      );
+    }
+  } else if (params.resolucionFinanciera === 'ANULAR_MOVIMIENTOS') {
     ops.push(
-      db.insert(movimientosCaja).values({
-        id: movReembId,
-        localId: reserva.localId,
-        contratoId: contrato.id,
-        cuentaId: params.cuentaReembolsoId ?? 'cta-caja-default',
-        tipo: 'EGRESO',
-        categoria: 'REEMBOLSO_ALQUILER',
-        monto: contrato.totalPagado,
-        metodoPago: 'efectivo',
-        concepto: `Reembolso por cancelación de reserva #${reserva.codigo}`,
-        referencia: `REEMB-${reserva.codigo}`,
-        estado: 'CONFIRMADO',
-        creadoPorId: usuarioResponsableId,
-        fechaMovimiento: ahora,
-        creadoEn: ahora,
-        actualizadoEn: ahora,
-      }),
+      db
+        .update(movimientosCaja)
+        .set({
+          estado: 'ANULADO',
+          motivoAnulacion: motivo,
+          anuladoPorId: usuarioResponsableId,
+          anuladoEn: ahora,
+          actualizadoEn: ahora,
+        })
+        .where(
+          and(
+            eq(movimientosCaja.localId, reserva.localId),
+            or(
+              eq(movimientosCaja.contratoId, contrato?.id ?? ''),
+              eq(movimientosCaja.contratoId, contrato?.numeroContrato ?? ''),
+              eq(movimientosCaja.contratoId, reserva.codigo),
+              eq(movimientosCaja.contratoId, reserva.id)
+            ),
+            eq(movimientosCaja.estado, 'CONFIRMADO')
+          )
+        ),
       db.insert(auditoriaFinanciera).values({
         id: `aud-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         localId: reserva.localId,
         entidad: 'MOVIMIENTO',
-        entidadId: movReembId,
-        accion: 'CREAR',
-        montoAnterior: null,
-        montoNuevo: contrato.totalPagado,
-        motivo: 'Reembolso por cancelación de reserva',
+        entidadId: contrato?.id ?? reserva.id,
+        accion: 'ANULAR',
+        montoAnterior: contrato?.totalPagado ?? reserva.montoAbonoReportado,
+        montoNuevo: 0,
+        motivo: `Anulación de movimientos por cancelación: ${motivo}`,
         usuarioId: usuarioResponsableId,
-        detallesJson: JSON.stringify({ reservaId: reserva.id, totalPagado: contrato.totalPagado }),
+        detallesJson: JSON.stringify({ reservaId: reserva.id, resolucionFinanciera: 'ANULAR_MOVIMIENTOS' }),
         creadoEn: ahora,
       })
     );
+
+    if (garantia && garantia.saldoComprometido > 0) {
+      ops.push(
+        db
+          .update(depositosGarantia)
+          .set({
+            saldoComprometido: 0,
+            estado: 'DEVUELTO_TOTAL',
+            observaciones: `Anulación de fianza por cancelación: ${motivo}`,
+            actualizadoEn: ahora,
+          })
+          .where(eq(depositosGarantia.id, garantia.id)),
+        db.insert(auditoriaFinanciera).values({
+          id: `aud-gar-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          localId: reserva.localId,
+          entidad: 'GARANTIA',
+          entidadId: garantia.id,
+          accion: 'ANULAR',
+          montoAnterior: garantia.saldoComprometido,
+          montoNuevo: 0,
+          motivo: `Anulación de fianza por cancelación: ${motivo}`,
+          usuarioId: usuarioResponsableId,
+          detallesJson: JSON.stringify({ reservaId: reserva.id, garantiaId: garantia.id }),
+          creadoEn: ahora,
+        })
+      );
+    }
+  } else if (params.resolucionFinanciera === 'RETENER_SALDO_LOCAL') {
+    ops.push(
+      db.insert(auditoriaFinanciera).values({
+        id: `aud-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        localId: reserva.localId,
+        entidad: 'MOVIMIENTO',
+        entidadId: contrato?.id ?? reserva.id,
+        accion: 'MODIFICAR',
+        montoAnterior: contrato?.totalPagado ?? reserva.montoAbonoReportado,
+        montoNuevo: contrato?.totalPagado ?? reserva.montoAbonoReportado,
+        motivo: `Saldo retenido a favor del local por cancelación: ${motivo}`,
+        usuarioId: usuarioResponsableId,
+        detallesJson: JSON.stringify({ reservaId: reserva.id, resolucionFinanciera: 'RETENER_SALDO_LOCAL' }),
+        creadoEn: ahora,
+      })
+    );
+
+    if (garantia && garantia.saldoComprometido > 0) {
+      ops.push(
+        db
+          .update(depositosGarantia)
+          .set({
+            montoRetenido: garantia.montoRetenido + garantia.saldoComprometido,
+            saldoComprometido: 0,
+            estado: 'APLICADO_CARGOS',
+            motivoRetencion: `Fianza retenida a favor del local por cancelación: ${motivo}`,
+            actualizadoEn: ahora,
+          })
+          .where(eq(depositosGarantia.id, garantia.id)),
+        db.insert(auditoriaFinanciera).values({
+          id: `aud-gar-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          localId: reserva.localId,
+          entidad: 'GARANTIA',
+          entidadId: garantia.id,
+          accion: 'MODIFICAR',
+          montoAnterior: garantia.saldoComprometido,
+          montoNuevo: 0,
+          motivo: `Fianza retenida a favor del local por cancelación: ${motivo}`,
+          usuarioId: usuarioResponsableId,
+          detallesJson: JSON.stringify({ reservaId: reserva.id, garantiaId: garantia.id }),
+          creadoEn: ahora,
+        })
+      );
+    }
   }
 
   await ejecutarBatchOSecuencial(db, ops);
+
+  // Reconciliación financiera integral con D1
+  if (params.resolucionFinanciera && (contrato || reserva.montoAbonoReportado > 0)) {
+    await reconciliarSaldosContratoYReservaD1(
+      db,
+      reserva.localId,
+      contrato?.id,
+      reserva.id,
+      usuarioResponsableId
+    );
+  }
+
   await resolverEstadoActualVehiculo(db, reserva.vehiculoId);
 
   const reservaAct = await resolverReservaPorIdOCodigo(db, reserva.id);
-  const contratoAct = contrato ? await resolverContratoPorReservaId(db, reserva.id) : null;
+  const contratoAct = contrato ? (await resolverContratoPorReservaId(db, reserva.id)) ?? null : null;
 
   return {
     reserva: reservaAct!,
@@ -1242,7 +1748,18 @@ export async function anularAlquilerD1(
     : null;
 
   let contrato = params.contratoId
-    ? (await db.select().from(contratosAlquiler).where(eq(contratosAlquiler.id, params.contratoId)).limit(1))[0]
+    ? (
+        await db
+          .select()
+          .from(contratosAlquiler)
+          .where(
+            or(
+              eq(contratosAlquiler.id, params.contratoId),
+              eq(contratosAlquiler.numeroContrato, params.contratoId)
+            )
+          )
+          .limit(1)
+      )[0]
     : null;
 
   if (!contrato && reserva) {
@@ -1276,12 +1793,21 @@ export async function anularAlquilerD1(
   }
 
   const ahora = new Date();
+  const usuarioResponsableId =
+    params.usuarioId ?? params.actor?.usuarioId ?? reserva.clienteId ?? 'usr-sistema-anul';
+
+  const nuevoTotalLiquidado =
+    params.resolucionFinanciera === 'RETENER_SALDO_LOCAL'
+      ? (contrato?.totalPagado ?? reserva.montoAbonoReportado)
+      : 0;
+
   const ops: unknown[] = [
     db
       .update(reservas)
       .set({
         estado: 'CANCELADA',
         motivoCancelacion: params.motivoAnulacion,
+        totalCotizado: nuevoTotalLiquidado,
         canceladoPorId: params.usuarioId ?? params.actor?.usuarioId ?? null,
         canceladoEn: ahora,
         actualizadoEn: ahora,
@@ -1314,23 +1840,51 @@ export async function anularAlquilerD1(
         .set({
           estadoContrato: 'ANULADO',
           motivoAnulacion: params.motivoAnulacion,
+          totalLiquidado: nuevoTotalLiquidado,
           anuladoPorId: params.usuarioId ?? params.actor?.usuarioId ?? null,
           anuladoEn: ahora,
           saldoPendiente: 0,
+          clausulaEncargado:
+            params.resolucionFinanciera === 'RETENER_SALDO_LOCAL'
+              ? `Saldo retenido a favor del local por anulación: ${params.motivoAnulacion}`
+              : contrato.clausulaEncargado,
           actualizadoEn: ahora,
         })
         .where(eq(contratosAlquiler.id, contrato.id))
     );
+  }
 
-    if (contrato.totalPagado > 0 && params.resolucionFinanciera === 'REEMBOLSAR_EGRESO') {
-      const usuarioResponsableId = params.usuarioId ?? params.actor?.usuarioId ?? reserva.clienteId ?? 'usr-sistema-anul';
+  // Depósito de garantía asociado si existe
+  const [garantia] = await db
+    .select()
+    .from(depositosGarantia)
+    .where(
+      and(
+        eq(depositosGarantia.localId, reserva.localId),
+        or(
+          eq(depositosGarantia.contratoId, contrato?.id ?? ''),
+          eq(depositosGarantia.contratoId, contrato?.numeroContrato ?? ''),
+          eq(depositosGarantia.contratoId, reserva.codigo)
+        )
+      )
+    )
+    .limit(1);
+
+  if (params.resolucionFinanciera === 'REEMBOLSAR_EGRESO') {
+    if (contrato && contrato.totalPagado > 0) {
+      const cuentaReembolsoId = await resolverCuentaActivaLocal(
+        db,
+        reserva.localId,
+        params.cuentaReembolsoId,
+        'efectivo'
+      );
       const movId = `mov-anul-reemb-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
       ops.push(
         db.insert(movimientosCaja).values({
           id: movId,
           localId: reserva.localId,
           contratoId: contrato.id,
-          cuentaId: params.cuentaReembolsoId ?? 'cta-caja-default',
+          cuentaId: cuentaReembolsoId,
           tipo: 'EGRESO',
           categoria: 'REEMBOLSO_ALQUILER',
           monto: contrato.totalPagado,
@@ -1358,13 +1912,195 @@ export async function anularAlquilerD1(
         })
       );
     }
+
+    if (garantia && garantia.saldoComprometido > 0) {
+      const cuentaGarId = await resolverCuentaActivaLocal(
+        db,
+        reserva.localId,
+        params.cuentaReembolsoId ?? garantia.cuentaId ?? undefined,
+        'efectivo'
+      );
+      const movGarId = `mov-anul-gar-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+      ops.push(
+        db.insert(movimientosCaja).values({
+          id: movGarId,
+          localId: reserva.localId,
+          contratoId: contrato?.id ?? null,
+          cuentaId: cuentaGarId,
+          tipo: 'EGRESO',
+          categoria: 'REEMBOLSO_GARANTIA',
+          monto: garantia.saldoComprometido,
+          metodoPago: 'efectivo',
+          concepto: `Reembolso de fianza por anulación #${reserva.codigo}`,
+          referencia: `GAR-DEV-${reserva.codigo}`,
+          estado: 'CONFIRMADO',
+          creadoPorId: usuarioResponsableId,
+          fechaMovimiento: ahora,
+          creadoEn: ahora,
+          actualizadoEn: ahora,
+        }),
+        db
+          .update(depositosGarantia)
+          .set({
+            montoDevuelto: garantia.montoDevuelto + garantia.saldoComprometido,
+            saldoComprometido: 0,
+            estado: 'DEVUELTO_TOTAL',
+            fechaDevolucionReal: ahora,
+            referenciaDevolucion: `DEV-${reserva.codigo}`,
+            observaciones: `Devolución de fianza por anulación: ${params.motivoAnulacion}`,
+            actualizadoEn: ahora,
+          })
+          .where(eq(depositosGarantia.id, garantia.id)),
+        db.insert(auditoriaFinanciera).values({
+          id: `aud-gar-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          localId: reserva.localId,
+          entidad: 'GARANTIA',
+          entidadId: garantia.id,
+          accion: 'DEVOLVER_GARANTIA',
+          montoAnterior: garantia.saldoComprometido,
+          montoNuevo: 0,
+          motivo: `Devolución de fianza por anulación: ${params.motivoAnulacion}`,
+          usuarioId: usuarioResponsableId,
+          detallesJson: JSON.stringify({ reservaId: reserva.id, garantiaId: garantia.id }),
+          creadoEn: ahora,
+        })
+      );
+    }
+  } else if (params.resolucionFinanciera === 'ANULAR_MOVIMIENTOS') {
+    ops.push(
+      db
+        .update(movimientosCaja)
+        .set({
+          estado: 'ANULADO',
+          motivoAnulacion: params.motivoAnulacion,
+          anuladoPorId: usuarioResponsableId,
+          anuladoEn: ahora,
+          actualizadoEn: ahora,
+        })
+        .where(
+          and(
+            eq(movimientosCaja.localId, reserva.localId),
+            or(
+              eq(movimientosCaja.contratoId, contrato?.id ?? ''),
+              eq(movimientosCaja.contratoId, contrato?.numeroContrato ?? ''),
+              eq(movimientosCaja.contratoId, reserva.codigo),
+              eq(movimientosCaja.contratoId, reserva.id)
+            ),
+            eq(movimientosCaja.estado, 'CONFIRMADO')
+          )
+        ),
+      db.insert(auditoriaFinanciera).values({
+        id: `aud-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        localId: reserva.localId,
+        entidad: 'MOVIMIENTO',
+        entidadId: contrato?.id ?? reserva.id,
+        accion: 'ANULAR',
+        montoAnterior: contrato?.totalPagado ?? reserva.montoAbonoReportado,
+        montoNuevo: 0,
+        motivo: `Anulación de movimientos por anulación de contrato: ${params.motivoAnulacion}`,
+        usuarioId: usuarioResponsableId,
+        detallesJson: JSON.stringify({
+          reservaId: reserva.id,
+          contratoId: contrato?.id,
+          resolucionFinanciera: 'ANULAR_MOVIMIENTOS',
+        }),
+        creadoEn: ahora,
+      })
+    );
+
+    if (garantia && garantia.saldoComprometido > 0) {
+      ops.push(
+        db
+          .update(depositosGarantia)
+          .set({
+            saldoComprometido: 0,
+            estado: 'DEVUELTO_TOTAL',
+            observaciones: `Anulación de fianza por anulación: ${params.motivoAnulacion}`,
+            actualizadoEn: ahora,
+          })
+          .where(eq(depositosGarantia.id, garantia.id)),
+        db.insert(auditoriaFinanciera).values({
+          id: `aud-gar-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          localId: reserva.localId,
+          entidad: 'GARANTIA',
+          entidadId: garantia.id,
+          accion: 'ANULAR',
+          montoAnterior: garantia.saldoComprometido,
+          montoNuevo: 0,
+          motivo: `Anulación de fianza por anulación: ${params.motivoAnulacion}`,
+          usuarioId: usuarioResponsableId,
+          detallesJson: JSON.stringify({ reservaId: reserva.id, garantiaId: garantia.id }),
+          creadoEn: ahora,
+        })
+      );
+    }
+  } else if (params.resolucionFinanciera === 'RETENER_SALDO_LOCAL') {
+    ops.push(
+      db.insert(auditoriaFinanciera).values({
+        id: `aud-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        localId: reserva.localId,
+        entidad: 'MOVIMIENTO',
+        entidadId: contrato?.id ?? reserva.id,
+        accion: 'MODIFICAR',
+        montoAnterior: contrato?.totalPagado ?? reserva.montoAbonoReportado,
+        montoNuevo: contrato?.totalPagado ?? reserva.montoAbonoReportado,
+        motivo: `Saldo retenido a favor del local por anulación: ${params.motivoAnulacion}`,
+        usuarioId: usuarioResponsableId,
+        detallesJson: JSON.stringify({
+          reservaId: reserva.id,
+          contratoId: contrato?.id,
+          resolucionFinanciera: 'RETENER_SALDO_LOCAL',
+        }),
+        creadoEn: ahora,
+      })
+    );
+
+    if (garantia && garantia.saldoComprometido > 0) {
+      ops.push(
+        db
+          .update(depositosGarantia)
+          .set({
+            montoRetenido: garantia.montoRetenido + garantia.saldoComprometido,
+            saldoComprometido: 0,
+            estado: 'APLICADO_CARGOS',
+            motivoRetencion: `Fianza retenida a favor del local por anulación: ${params.motivoAnulacion}`,
+            actualizadoEn: ahora,
+          })
+          .where(eq(depositosGarantia.id, garantia.id)),
+        db.insert(auditoriaFinanciera).values({
+          id: `aud-gar-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          localId: reserva.localId,
+          entidad: 'GARANTIA',
+          entidadId: garantia.id,
+          accion: 'MODIFICAR',
+          montoAnterior: garantia.saldoComprometido,
+          montoNuevo: 0,
+          motivo: `Fianza retenida a favor del local por anulación: ${params.motivoAnulacion}`,
+          usuarioId: usuarioResponsableId,
+          detallesJson: JSON.stringify({ reservaId: reserva.id, garantiaId: garantia.id }),
+          creadoEn: ahora,
+        })
+      );
+    }
   }
 
   await ejecutarBatchOSecuencial(db, ops);
+
+  // Reconciliación financiera integral con D1
+  if (params.resolucionFinanciera && (contrato || reserva.montoAbonoReportado > 0)) {
+    await reconciliarSaldosContratoYReservaD1(
+      db,
+      reserva.localId,
+      contrato?.id,
+      reserva.id,
+      usuarioResponsableId
+    );
+  }
+
   await resolverEstadoActualVehiculo(db, reserva.vehiculoId);
 
   const reservaAct = await resolverReservaPorIdOCodigo(db, reserva.id);
-  const contratoAct = contrato ? await resolverContratoPorReservaId(db, reserva.id) : null;
+  const contratoAct = contrato ? (await resolverContratoPorReservaId(db, reserva.id)) ?? null : null;
 
   return {
     reserva: reservaAct!,

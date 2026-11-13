@@ -1067,4 +1067,650 @@ describe('Ciclo de Alquiler - Transiciones, Cierre, Evaluación y Anulación', (
     });
     assert.equal(resReapertura.reserva.estado, 'PENDIENTE');
   });
+
+  it('6. Regresión RBAC Inviolable: La omisión de actor o actor.rol en operaciones administrativas rechaza con FORBIDDEN (cero bypass)', async () => {
+    const mockDbDummy = {
+      select: () => ({
+        from: () => ({
+          where: () => crearMockQuery([]),
+          limit: () => Promise.resolve([]),
+          then: (r: (v: unknown) => unknown) => r([]),
+        }),
+      }),
+      session: new MockD1Session(),
+      batch: crearMockBatch(),
+    } as unknown as AppDb;
+
+    // A. pausarAlquilerD1 sin actor -> FORBIDDEN
+    await assert.rejects(
+      async () => {
+        await pausarAlquilerD1(mockDbDummy, { reservaId: 'res-dummy-01' });
+      },
+      (err: unknown) => {
+        assert.ok(err instanceof ErrorCicloAlquiler);
+        assert.equal(err.code, 'FORBIDDEN');
+        return true;
+      }
+    );
+
+    // B. reanudarAlquilerD1 sin actor -> FORBIDDEN
+    await assert.rejects(
+      async () => {
+        await reanudarAlquilerD1(mockDbDummy, { reservaId: 'res-dummy-01' });
+      },
+      (err: unknown) => {
+        assert.ok(err instanceof ErrorCicloAlquiler);
+        assert.equal(err.code, 'FORBIDDEN');
+        return true;
+      }
+    );
+
+    // C. prorrogarAlquilerD1 con actor sin rol -> FORBIDDEN
+    await assert.rejects(
+      async () => {
+        await prorrogarAlquilerD1(mockDbDummy, {
+          reservaId: 'res-dummy-01',
+          diasExtra: 1,
+          modalidadTarifa: 'TARIFA_ESTANDAR',
+          actor: { usuarioId: 'usr-sin-rol' } as unknown as ContextoActorCiclo,
+        });
+      },
+      (err: unknown) => {
+        assert.ok(err instanceof ErrorCicloAlquiler);
+        assert.equal(err.code, 'FORBIDDEN');
+        return true;
+      }
+    );
+
+    // D. devolverYCerrarAlquilerD1 sin actor -> FORBIDDEN
+    await assert.rejects(
+      async () => {
+        await devolverYCerrarAlquilerD1(mockDbDummy, {
+          reservaId: 'res-dummy-01',
+          medidorUsoRetorno: 10_000,
+        });
+      },
+      (err: unknown) => {
+        assert.ok(err instanceof ErrorCicloAlquiler);
+        assert.equal(err.code, 'FORBIDDEN');
+        return true;
+      }
+    );
+
+    // E. anularAlquilerD1 sin actor -> FORBIDDEN
+    await assert.rejects(
+      async () => {
+        await anularAlquilerD1(mockDbDummy, {
+          contratoId: 'ctr-dummy-01',
+          motivoAnulacion: 'Motivo válido de más de 5 caracteres',
+        });
+      },
+      (err: unknown) => {
+        assert.ok(err instanceof ErrorCicloAlquiler);
+        assert.equal(err.code, 'FORBIDDEN');
+        return true;
+      }
+    );
+
+    // F. reabrirReservaD1 sin actor -> FORBIDDEN
+    await assert.rejects(
+      async () => {
+        await reabrirReservaD1(mockDbDummy, { reservaId: 'res-dummy-01' });
+      },
+      (err: unknown) => {
+        assert.ok(err instanceof ErrorCicloAlquiler);
+        assert.equal(err.code, 'FORBIDDEN');
+        return true;
+      }
+    );
+  });
+
+  it('7. Gestión integral de fianza en cierre de alquiler: DEVOLVER_TOTAL, DEVOLVER_PARCIAL y RETENER_CARGOS mutan depositos_garantia, asientan en caja y bloquean ASESOR', async () => {
+    const reserva = {
+      id: 'res-gar-01',
+      codigo: 'FLX-444001',
+      localId,
+      vehiculoId,
+      fechaInicio: '2026-12-01',
+      fechaFin: '2026-12-05',
+      fechaFinOriginal: '2026-12-05',
+      diasAlquiler: 5,
+      precioDiaCotizado: 100_000,
+      totalCotizado: 500_000,
+      estado: 'EN_CURSO',
+    };
+
+    const contrato = {
+      id: 'ctr-gar-01',
+      numeroContrato: 'CTR-444001',
+      reservaId: 'res-gar-01',
+      localId,
+      vehiculoId,
+      cargosOtrosLocal: 0,
+      ajusteDescuentoLocal: 0,
+      totalLiquidado: 500_000,
+      totalPagado: 500_000,
+      saldoPendiente: 0,
+      estadoPago: 'PAGADO',
+      estadoContrato: 'VIGENTE',
+    };
+
+    const depositoInicial = {
+      id: 'dep-gar-01',
+      localId,
+      contratoId: 'ctr-gar-01',
+      clienteId: 'usr-cli-1',
+      clienteNombre: 'Cliente Fianza',
+      vehiculoId,
+      montoEsperado: 400_000,
+      montoRecibido: 400_000,
+      montoRetenido: 0,
+      montoDevuelto: 0,
+      saldoComprometido: 400_000,
+      estado: 'RECIBIDO_CUSTODIA',
+      cuentaId: 'cta-caja-activa-1',
+      metodoPago: 'efectivo',
+    };
+
+    const cuentasStore = [
+      { id: 'cta-caja-activa-1', localId, tipo: 'CAJA_EFECTIVO', activo: true },
+      { id: 'cta-inactiva', localId, tipo: 'CAJA_EFECTIVO', activo: false },
+    ];
+
+    let reservasStore: Record<string, unknown>[] = [{ ...reserva }];
+    let contratosStore: Record<string, unknown>[] = [{ ...contrato }];
+    let depositosStore: Record<string, unknown>[] = [{ ...depositoInicial }];
+    let movimientosStore: Record<string, unknown>[] = [];
+    let auditoriaStore: Record<string, unknown>[] = [];
+
+    const mockDb = {
+      select: () => ({
+        from: (table: unknown) => ({
+          where: (clause?: unknown) => {
+            if (table === reservas) return crearMockQuery(filtrarReservas(reservasStore, clause));
+            if (table === contratosAlquiler) return crearMockQuery(filtrarContratos(contratosStore, clause));
+            if (table === vehiculos) return crearMockQuery([{ id: vehiculoId, localId, kilometraje: 10_000 }]);
+            if (table === depositosGarantia) return crearMockQuery(depositosStore);
+            if (table === cuentasFinancieras) {
+              return crearMockQuery(
+                cuentasStore.filter((c) => {
+                  if (!clause) return true;
+                  return buscarEnChunks(clause, c.id) || buscarEnChunks(clause, c.tipo);
+                })
+              );
+            }
+            if (table === mantenimientosVehiculo) return crearMockQuery([]);
+            return crearMockQuery([]);
+          },
+          limit: (n?: number) => {
+            let data: unknown[] = [];
+            if (table === reservas) data = reservasStore;
+            else if (table === contratosAlquiler) data = contratosStore;
+            else if (table === depositosGarantia) data = depositosStore;
+            return Promise.resolve(n != null ? data.slice(0, n) : data);
+          },
+          then: (r: (v: unknown) => unknown) => r(reservasStore),
+        }),
+      }),
+      insert: (table: unknown) => ({
+        values: (vals: Record<string, unknown>) => {
+          if (table === movimientosCaja) movimientosStore.push(vals);
+          if (table === auditoriaFinanciera) auditoriaStore.push(vals);
+          if (table === inspeccionesPericiales) return { then: (r: (v: unknown) => unknown) => r([vals]) };
+          return {
+            onConflictDoNothing: async () => [vals],
+            then: (resolve: (v: unknown) => unknown) => resolve([vals]),
+          };
+        },
+      }),
+      update: (table: unknown) => ({
+        set: (vals: Record<string, unknown>) => ({
+          where: async (whereClause?: unknown) => {
+            if (table === depositosGarantia) {
+              depositosStore = depositosStore.map((g) => ({ ...g, ...vals }));
+            }
+            if (table === reservas) {
+              reservasStore = reservasStore.map((r) => ({ ...r, ...vals }));
+            }
+            if (table === contratosAlquiler) {
+              contratosStore = contratosStore.map((c) => ({ ...c, ...vals }));
+            }
+            return [];
+          },
+        }),
+      }),
+      session: new MockD1Session(),
+      batch: crearMockBatch(),
+    } as unknown as AppDb;
+
+    const actorAsesor: ContextoActorCiclo = { rol: 'ASESOR', usuarioId: 'usr-asesor-1', localId };
+    const actorAdmin: ContextoActorCiclo = { rol: 'ADMIN', usuarioId: 'usr-admin-1', localId };
+
+    // A. ASESOR intenta devolver fianza -> FORBIDDEN (lacks CAJA_GASTOS_REGISTRAR)
+    await assert.rejects(
+      async () => {
+        await devolverYCerrarAlquilerD1(mockDb, {
+          reservaId: reserva.id,
+          medidorUsoRetorno: 10_500,
+          gestionGarantia: { accion: 'DEVOLVER_TOTAL' },
+          actor: actorAsesor,
+        });
+      },
+      (err: unknown) => {
+        assert.ok(err instanceof ErrorCicloAlquiler);
+        assert.equal(err.code, 'FORBIDDEN');
+        return true;
+      }
+    );
+
+    // B. Cuenta inactiva o inexistente rechaza con BAD_REQUEST (comprueba que no hay 'cta-caja-default')
+    await assert.rejects(
+      async () => {
+        await devolverYCerrarAlquilerD1(mockDb, {
+          reservaId: reserva.id,
+          medidorUsoRetorno: 10_500,
+          gestionGarantia: { accion: 'DEVOLVER_TOTAL', cuentaId: 'cta-inactiva' },
+          actor: actorAdmin,
+        });
+      },
+      (err: unknown) => {
+        assert.ok(err instanceof ErrorCicloAlquiler);
+        assert.equal(err.code, 'BAD_REQUEST');
+        return true;
+      }
+    );
+
+    // C. ADMIN ejecuta DEVOLVER_TOTAL exitosamente
+    const resDevTotal = await devolverYCerrarAlquilerD1(mockDb, {
+      reservaId: reserva.id,
+      medidorUsoRetorno: 10_500,
+      gestionGarantia: { accion: 'DEVOLVER_TOTAL' },
+      actor: actorAdmin,
+    });
+
+    assert.equal(resDevTotal.reserva.estado, 'COMPLETADA');
+    assert.equal(resDevTotal.garantia?.estado, 'DEVUELTO_TOTAL');
+    assert.equal(resDevTotal.garantia?.saldoComprometido, 0);
+    assert.equal(resDevTotal.garantia?.montoDevuelto, 400_000);
+
+    const egresoFianza = movimientosStore.find((m) => m['categoria'] === 'REEMBOLSO_GARANTIA');
+    assert.ok(egresoFianza, 'Debe asentar egreso en movimientosCaja');
+    assert.equal(egresoFianza['monto'], 400_000);
+    assert.equal(egresoFianza['cuentaId'], 'cta-caja-activa-1'); // Cuenta activa resuelta, jamás 'cta-caja-default'
+    assert.equal(egresoFianza['contratoId'], 'ctr-gar-01');
+
+    const auditFianza = auditoriaStore.find((a) => a['accion'] === 'DEVOLVER_GARANTIA');
+    assert.ok(auditFianza, 'Debe registrar auditoriaFinanciera');
+    assert.equal(auditFianza['entidad'], 'GARANTIA');
+
+    // D. Probar DEVOLVER_PARCIAL
+    depositosStore = [{ ...depositoInicial }];
+    reservasStore = [{ ...reserva }];
+    contratosStore = [{ ...contrato }];
+    movimientosStore = [];
+
+    const resDevParcial = await devolverYCerrarAlquilerD1(mockDb, {
+      reservaId: reserva.id,
+      medidorUsoRetorno: 10_500,
+      gestionGarantia: { accion: 'DEVOLVER_PARCIAL', montoDevolver: 150_000 },
+      actor: actorAdmin,
+    });
+
+    assert.equal(resDevParcial.garantia?.estado, 'DEVUELTO_PARCIAL');
+    assert.equal(resDevParcial.garantia?.montoDevuelto, 150_000);
+    assert.equal(resDevParcial.garantia?.saldoComprometido, 250_000);
+
+    // E. Probar RETENER_CARGOS
+    depositosStore = [{ ...depositoInicial }];
+    reservasStore = [{ ...reserva }];
+    contratosStore = [{ ...contrato }];
+
+    const resRetener = await devolverYCerrarAlquilerD1(mockDb, {
+      reservaId: reserva.id,
+      medidorUsoRetorno: 10_500,
+      gestionGarantia: {
+        accion: 'RETENER_CARGOS',
+        montoDevolver: 400_000,
+        motivoRetencion: 'Deducible por choque trasero',
+      },
+      actor: actorAdmin,
+    });
+
+    assert.equal(resRetener.garantia?.estado, 'APLICADO_CARGOS');
+    assert.equal(resRetener.garantia?.montoRetenido, 400_000);
+    assert.equal(resRetener.garantia?.saldoComprometido, 0);
+  });
+
+  it('8. Cancelación y Anulación con resoluciones financieras: ANULAR_MOVIMIENTOS marca movimientos ANULADO y reconcilia saldos; anulación por numeroContrato (Minor 1) y contratoId UUID (Minor 2)', async () => {
+    const reserva = {
+      id: 'res-anul-01',
+      codigo: 'FLX-222001',
+      localId,
+      vehiculoId,
+      fechaInicio: '2026-12-15',
+      fechaFin: '2026-12-18',
+      estado: 'CONFIRMADA',
+      montoAbonoReportado: 150_000,
+      totalCotizado: 450_000,
+    };
+
+    const contrato = {
+      id: 'ctr-uuid-anul-01',
+      numeroContrato: 'CTR-222001',
+      reservaId: 'res-anul-01',
+      localId,
+      vehiculoId,
+      totalLiquidado: 450_000,
+      totalPagado: 150_000,
+      saldoPendiente: 300_000,
+      estadoContrato: 'BORRADOR',
+    };
+
+    const deposito = {
+      id: 'dep-anul-01',
+      localId,
+      contratoId: 'ctr-uuid-anul-01',
+      montoEsperado: 300_000,
+      montoRecibido: 300_000,
+      montoRetenido: 0,
+      montoDevuelto: 0,
+      saldoComprometido: 300_000,
+      estado: 'RECIBIDO_CUSTODIA',
+      cuentaId: 'cta-activa-1',
+    };
+
+    const movIngreso = {
+      id: 'mov-ing-01',
+      localId,
+      contratoId: 'ctr-uuid-anul-01',
+      tipo: 'INGRESO',
+      categoria: 'ABONO_CONTRATO',
+      monto: 150_000,
+      estado: 'CONFIRMADO',
+    };
+
+    let reservasStore: Record<string, unknown>[] = [{ ...reserva }];
+    let contratosStore: Record<string, unknown>[] = [{ ...contrato }];
+    let depositosStore: Record<string, unknown>[] = [{ ...deposito }];
+    let movimientosStore: Record<string, unknown>[] = [{ ...movIngreso }];
+    let auditoriaStore: Record<string, unknown>[] = [];
+
+    const mockDb = {
+      select: () => ({
+        from: (table: unknown) => ({
+          where: (clause?: unknown) => {
+            if (table === reservas) return crearMockQuery(filtrarReservas(reservasStore, clause));
+            if (table === contratosAlquiler) return crearMockQuery(filtrarContratos(contratosStore, clause));
+            if (table === depositosGarantia) return crearMockQuery(depositosStore);
+            if (table === vehiculos) return crearMockQuery([{ id: vehiculoId, localId }]);
+            if (table === cuentasFinancieras) return crearMockQuery([{ id: 'cta-activa-1', localId, tipo: 'CAJA_EFECTIVO', activo: true }]);
+            if (table === movimientosCaja) {
+              return crearMockQuery(
+                movimientosStore.filter((m) => {
+                  if (!clause) return true;
+                  return buscarEnChunks(clause, String(m['contratoId'])) || buscarEnChunks(clause, String(m['localId']));
+                })
+              );
+            }
+            return crearMockQuery([]);
+          },
+          limit: (n?: number) => {
+            let data: unknown[] = [];
+            if (table === reservas) data = reservasStore;
+            else if (table === contratosAlquiler) data = contratosStore;
+            else if (table === depositosGarantia) data = depositosStore;
+            return Promise.resolve(n != null ? data.slice(0, n) : data);
+          },
+          then: (r: (v: unknown) => unknown) => r(reservasStore),
+        }),
+      }),
+      insert: (table: unknown) => ({
+        values: (vals: Record<string, unknown>) => {
+          if (table === movimientosCaja) movimientosStore.push(vals);
+          if (table === auditoriaFinanciera) auditoriaStore.push(vals);
+          return {
+            onConflictDoNothing: async () => [vals],
+            then: (resolve: (v: unknown) => unknown) => resolve([vals]),
+          };
+        },
+      }),
+      update: (table: unknown) => ({
+        set: (vals: Record<string, unknown>) => ({
+          where: async (whereClause?: unknown) => {
+            if (table === movimientosCaja) {
+              movimientosStore = movimientosStore.map((m) => ({ ...m, ...vals }));
+            }
+            if (table === depositosGarantia) {
+              depositosStore = depositosStore.map((g) => ({ ...g, ...vals }));
+            }
+            if (table === reservas) {
+              reservasStore = reservasStore.map((r) => ({ ...r, ...vals }));
+            }
+            if (table === contratosAlquiler) {
+              contratosStore = contratosStore.map((c) => ({ ...c, ...vals }));
+            }
+            return [];
+          },
+        }),
+      }),
+      session: new MockD1Session(),
+      batch: crearMockBatch(),
+    } as unknown as AppDb;
+
+    const actorAdmin: ContextoActorCiclo = { rol: 'ADMIN', usuarioId: 'usr-admin-1', localId };
+
+    // Minor 1: anularAlquilerD1 consultando por numeroContrato ('CTR-222001') en vez del UUID
+    const resAnulacion = await anularAlquilerD1(mockDb, {
+      contratoId: 'CTR-222001',
+      motivoAnulacion: 'Anulación con anulación total de movimientos',
+      resolucionFinanciera: 'ANULAR_MOVIMIENTOS',
+      actor: actorAdmin,
+    });
+
+    assert.equal(resAnulacion.contrato?.estadoContrato, 'ANULADO');
+    assert.equal(resAnulacion.reserva.estado, 'CANCELADA');
+
+    // Comprobar que los movimientos en caja pasaron a 'ANULADO'
+    const movActualizado = movimientosStore.find((m) => m['id'] === 'mov-ing-01');
+    assert.equal(movActualizado?.['estado'], 'ANULADO');
+
+    // Comprobar que la fianza fue liberada
+    assert.equal(depositosStore[0]?.['estado'], 'DEVUELTO_TOTAL');
+    assert.equal(depositosStore[0]?.['saldoComprometido'], 0);
+
+    // Minor 2: cuando se emite un reembolso por anulación, el movimiento debe guardar el UUID del contrato
+    reservasStore = [{ ...reserva }];
+    contratosStore = [{ ...contrato }];
+    depositosStore = [{ ...deposito }];
+    movimientosStore = [{ ...movIngreso, estado: 'CONFIRMADO' }];
+
+    await anularAlquilerD1(mockDb, {
+      contratoId: 'CTR-222001',
+      motivoAnulacion: 'Anulación con reembolso de dinero al cliente',
+      resolucionFinanciera: 'REEMBOLSAR_EGRESO',
+      cuentaReembolsoId: 'cta-activa-1',
+      actor: actorAdmin,
+    });
+
+    const egresoReembolso = movimientosStore.find((m) => m['categoria'] === 'REEMBOLSO_ALQUILER');
+    assert.ok(egresoReembolso);
+    assert.equal(egresoReembolso['contratoId'], 'ctr-uuid-anul-01'); // Minor 2 verificado: contrato.id, no numeroContrato
+  });
+
+  it('9. Cierre de alquiler con reserva en estado PAUSADA: desactiva los eventos de PAUSA activos (activo: false)', async () => {
+    const reservaPausada = {
+      id: 'res-pausa-cierre-01',
+      codigo: 'FLX-666001',
+      localId,
+      vehiculoId,
+      fechaInicio: '2026-12-01',
+      fechaFin: '2026-12-08',
+      fechaFinOriginal: '2026-12-05',
+      diasAlquiler: 8,
+      totalCotizado: 500_000,
+      estado: 'PAUSADA',
+    };
+
+    const contrato = {
+      id: 'ctr-pausa-cierre-01',
+      numeroContrato: 'CTR-666001',
+      reservaId: 'res-pausa-cierre-01',
+      localId,
+      vehiculoId,
+      cargosOtrosLocal: 0,
+      ajusteDescuentoLocal: 0,
+      totalLiquidado: 500_000,
+      totalPagado: 500_000,
+      saldoPendiente: 0,
+      estadoPago: 'PAGADO',
+      estadoContrato: 'SUSPENDIDO',
+    };
+
+    const eventoPausaActivo = {
+      id: 'evt-pausa-activa-01',
+      localId,
+      reservaId: 'res-pausa-cierre-01',
+      vehiculoId,
+      tipoEvento: 'PAUSA',
+      activo: true,
+    };
+
+    let reservasStore: Record<string, unknown>[] = [{ ...reservaPausada }];
+    let contratosStore: Record<string, unknown>[] = [{ ...contrato }];
+    let eventosStore: Record<string, unknown>[] = [{ ...eventoPausaActivo }];
+
+    const mockDb = {
+      select: () => ({
+        from: (table: unknown) => ({
+          where: (clause?: unknown) => {
+            if (table === reservas) return crearMockQuery(filtrarReservas(reservasStore, clause));
+            if (table === contratosAlquiler) return crearMockQuery(filtrarContratos(contratosStore, clause));
+            if (table === vehiculos) return crearMockQuery([{ id: vehiculoId, localId, kilometraje: 15_000 }]);
+            if (table === depositosGarantia) return crearMockQuery([]);
+            if (table === cuentasFinancieras) return crearMockQuery([]);
+            if (table === mantenimientosVehiculo) return crearMockQuery([]);
+            return crearMockQuery([]);
+          },
+          limit: (n?: number) => {
+            let data: unknown[] = [];
+            if (table === reservas) data = reservasStore;
+            else if (table === contratosAlquiler) data = contratosStore;
+            return Promise.resolve(n != null ? data.slice(0, n) : data);
+          },
+          then: (r: (v: unknown) => unknown) => r(reservasStore),
+        }),
+      }),
+      insert: () => ({
+        values: (vals: Record<string, unknown>) => ({
+          onConflictDoNothing: async () => [vals],
+          then: (resolve: (v: unknown) => unknown) => resolve([vals]),
+        }),
+      }),
+      update: (table: unknown) => ({
+        set: (vals: Record<string, unknown>) => ({
+          where: async (whereClause?: unknown) => {
+            if (table === eventosAlquiler) {
+              eventosStore = eventosStore.map((e) => {
+                if (!whereClause || buscarEnChunks(whereClause, 'PAUSA')) {
+                  return { ...e, ...vals };
+                }
+                return e;
+              });
+            }
+            if (table === reservas) {
+              reservasStore = reservasStore.map((r) => ({ ...r, ...vals }));
+            }
+            if (table === contratosAlquiler) {
+              contratosStore = contratosStore.map((c) => ({ ...c, ...vals }));
+            }
+            return [];
+          },
+        }),
+      }),
+      session: new MockD1Session(),
+      batch: crearMockBatch(),
+    } as unknown as AppDb;
+
+    const actorAdmin: ContextoActorCiclo = { rol: 'ADMIN', usuarioId: 'usr-admin-1', localId };
+
+    const resCierre = await devolverYCerrarAlquilerD1(mockDb, {
+      reservaId: 'res-pausa-cierre-01',
+      medidorUsoRetorno: 15_200,
+      actor: actorAdmin,
+    });
+
+    assert.equal(resCierre.reserva.estado, 'COMPLETADA');
+    const eventoPausa = eventosStore.find((e) => e['tipoEvento'] === 'PAUSA');
+    assert.equal(eventoPausa?.['activo'], false, 'El evento de pausa debe quedar inactivo al cerrar el alquiler');
+  });
+
+  it('10. Brecha de seguridad en evaluación: Walk-in sin clienteId rechaza atacante autenticado sin token con FORBIDDEN', async () => {
+    const reservaWalkin = {
+      id: 'res-walkin-01',
+      codigo: 'FLX-111001',
+      localId,
+      vehiculoId,
+      clienteId: null, // Walk-in presencial sin cuenta de usuario
+      tokenAccesoPublico: 'token-privado-walkin-99',
+      estado: 'EN_CURSO',
+    };
+
+    let evaluacionesStore: Record<string, unknown>[] = [];
+
+    const mockDb = {
+      select: () => ({
+        from: (table: unknown) => ({
+          where: (clause?: unknown) => {
+            if (table === reservas) return crearMockQuery(filtrarReservas([reservaWalkin], clause));
+            return crearMockQuery([]);
+          },
+          limit: () => Promise.resolve([reservaWalkin]),
+          then: (r: (v: unknown) => unknown) => r([reservaWalkin]),
+        }),
+      }),
+      insert: (table: unknown) => ({
+        values: (vals: Record<string, unknown>) => {
+          if (table === evaluacionesEntregaCliente) evaluacionesStore.push(vals);
+          return {
+            onConflictDoNothing: async () => [vals],
+            then: (resolve: (v: unknown) => unknown) => resolve([vals]),
+          };
+        },
+      }),
+      session: new MockD1Session(),
+      batch: crearMockBatch(),
+    } as unknown as AppDb;
+
+    // A. Atacante envía su propio clienteId intentando evaluar el alquiler de un walk-in ajeno -> FORBIDDEN
+    await assert.rejects(
+      async () => {
+        await registrarEvaluacionEntregaClienteD1(mockDb, {
+          reservaId: 'res-walkin-01',
+          clienteId: 'usr-intruso-aleatorio', // Intruso
+          calificacionGeneral: 'SOBRESALIENTE',
+          puntajeNumerico: 5,
+          aspectosDestacados: ['Rapidez'],
+          desempenoVehiculo: 'IMPECABLE',
+        });
+      },
+      (err: unknown) => {
+        assert.ok(err instanceof ErrorCicloAlquiler);
+        assert.equal(err.code, 'FORBIDDEN');
+        return true;
+      }
+    );
+
+    // B. Con el tokenAccesoPublico correcto del walk-in -> Éxito
+    const resEval = await registrarEvaluacionEntregaClienteD1(mockDb, {
+      reservaId: 'res-walkin-01',
+      tokenAccesoPublico: 'token-privado-walkin-99',
+      calificacionGeneral: 'SOBRESALIENTE',
+      puntajeNumerico: 5,
+      aspectosDestacados: ['Atención en mostrador'],
+      desempenoVehiculo: 'IMPECABLE',
+    });
+
+    assert.equal(resEval.ok, true);
+    assert.equal(evaluacionesStore.length, 1);
+  });
 });
