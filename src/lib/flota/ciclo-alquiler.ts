@@ -669,7 +669,7 @@ export async function vincularReservasHuerfanasPorCorreoD1(
     ops.push(
       db
         .update(depositosGarantia)
-        .set({ clienteId: userId })
+        .set({ clienteId: userId, actualizadoEn: ahora })
         .where(
           and(
             or(

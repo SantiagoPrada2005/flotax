@@ -393,6 +393,11 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
 
     assert.equal(totalVinculadas, 2, 'Debe vincular las 2 reservas coincidentes');
     assert.equal(updateReservasVals?.['clienteId'], 'usr-nuevo-registrado');
+    assert.equal(updateGarantiasVals?.['clienteId'], 'usr-nuevo-registrado');
+    assert.ok(
+      updateGarantiasVals?.['actualizadoEn'] instanceof Date,
+      'depositosGarantia debe incluir actualizadoEn con la fecha de vinculación'
+    );
   });
 
   it('4. confirmarReservaD1: devuelve requiereAutorizacionSinDocs si no hay KYC/docs; con autorizarSinDocumentos pasa a CONFIRMADA, inserta evento AUTORIZACION_SIN_DOCS y crea BORRADOR', async () => {

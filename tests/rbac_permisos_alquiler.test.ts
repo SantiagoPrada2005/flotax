@@ -14,9 +14,9 @@ describe('RBAC y Enums del Ciclo de Alquiler', () => {
     const permisosAdmin = obtenerPermisosBasePorRol('ADMIN');
     const permisosAsesor = obtenerPermisosBasePorRol('ASESOR');
     assert.equal(permisosAdmin.includes(PERMISOS.CONTRATOS_ANULAR), true);
-    assert.equal(permisosAdmin.includes((PERMISOS as Record<string, string>).CONTRATOS_PAUSAR), true);
+    assert.equal(permisosAdmin.includes(PERMISOS.CONTRATOS_PAUSAR), true);
 
-    assert.equal(permisosAsesor.includes((PERMISOS as Record<string, string>).CONTRATOS_PAUSAR), false);
+    assert.equal(permisosAsesor.includes(PERMISOS.CONTRATOS_PAUSAR), false);
     assert.equal(permisosAsesor.includes(PERMISOS.CONTRATOS_MODIFICAR_TARIFA), false);
     assert.equal(permisosAsesor.includes(PERMISOS.NOVEDADES_CARGOS_APROBAR), false);
     assert.equal(permisosAsesor.includes(PERMISOS.CONTRATOS_ANULAR), false);

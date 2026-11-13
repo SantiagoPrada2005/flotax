@@ -468,4 +468,243 @@ describe('Reconciliación Real de Caja y Garantías D1 - FlotaX', () => {
       'Jamás debe insertar en movimientosCaja si la reserva pertenece a otro local'
     );
   });
+
+  it('7. registrarMovimientoRepo para local-A con cuentaId de local-B aplica filtro de localId y nunca asienta cuenta ajena', async () => {
+    let cuentaInsertadaEnMovimiento: string | null = null;
+    const queriesCuentasFinancieras: unknown[] = [];
+
+    function contieneEnSQL(sqlObj: unknown, texto: string): boolean {
+      if (!sqlObj) return false;
+      if (typeof sqlObj === 'string') return sqlObj.includes(texto);
+      if (typeof sqlObj === 'object') {
+        if ('value' in sqlObj) {
+          const val = (sqlObj as { value: unknown }).value;
+          if (typeof val === 'string' && val.includes(texto)) return true;
+          if (Array.isArray(val) && val.some((v) => typeof v === 'string' && v.includes(texto))) return true;
+        }
+        if ('queryChunks' in sqlObj && Array.isArray((sqlObj as { queryChunks: unknown[] }).queryChunks)) {
+          return (sqlObj as { queryChunks: unknown[] }).queryChunks.some((c) => contieneEnSQL(c, texto));
+        }
+      }
+      return false;
+    }
+
+    const mockDb = {
+      select: () => ({
+        from: (tabla: unknown) => ({
+          where: (predicado?: unknown) => {
+            if (tabla === cuentasFinancieras) {
+              queriesCuentasFinancieras.push(predicado);
+              const esConsultaLocalA = contieneEnSQL(predicado, 'local-A');
+              const esConsultaCtaAjena = contieneEnSQL(predicado, 'cta-local-b');
+
+              // Si consulta cuenta ajena pero con localId == local-A, no existe coincidencia (retorna vacío)
+              if (esConsultaCtaAjena && esConsultaLocalA) {
+                return {
+                  limit: async () => [],
+                };
+              }
+              // Si consulta cta-local-b sin exigir localId (la vulnerabilidad antes del fix):
+              if (esConsultaCtaAjena && !esConsultaLocalA) {
+                return {
+                  limit: async () => [{ id: 'cta-local-b' }],
+                };
+              }
+              // Si consulta la cuenta propia de local-A o el fallback de primera cuenta de local-A:
+              if (esConsultaLocalA) {
+                return {
+                  limit: async () => [{ id: 'cta-local-a-default' }],
+                };
+              }
+            }
+            return {
+              limit: async () => [],
+            };
+          },
+        }),
+      }),
+      insert: (tabla: unknown) => ({
+        values: (vals: Record<string, unknown>) => {
+          if (tabla === movimientosCaja) {
+            cuentaInsertadaEnMovimiento = (vals.cuentaId as string) ?? null;
+          }
+          return {
+            tabla,
+            vals,
+            onConflictDoNothing: async () => [],
+            then: (resolve: (val: unknown) => unknown) => resolve({ tabla, vals }),
+          };
+        },
+      }),
+    } as unknown as AppDb;
+
+    const res = await registrarMovimientoRepo({
+      localId: 'local-A',
+      tipo: 'INGRESO',
+      categoria: 'ABONO_CONTRATO',
+      concepto: 'Intento de asentar abono con cuenta de otro patio',
+      monto: 200_000,
+      metodoPago: 'efectivo',
+      cuentaId: 'cta-local-b',
+      usuarioId: 'usr-operador-1',
+      db: mockDb,
+    });
+
+    // 1. Debe verificar que ctaCheck incluye localId: 'local-A'
+    const primeraQuery = queriesCuentasFinancieras[0];
+    assert.ok(
+      contieneEnSQL(primeraQuery, 'local-A'),
+      'La primera consulta ctaCheck a cuentasFinancieras debe estar aislada por localId'
+    );
+
+    // 2. El movimiento insertado en D1 debe usar el fallback de local-A, jamás la cuenta ajena de local-B
+    assert.notEqual(
+      cuentaInsertadaEnMovimiento,
+      'cta-local-b',
+      'Jamás debe insertar un movimiento con la cuenta ajena de otro local'
+    );
+    assert.equal(
+      cuentaInsertadaEnMovimiento,
+      'cta-local-a-default',
+      'Debe asignar la cuenta propia del local-A'
+    );
+
+    // 3. El objeto retornado debe reflejar la cuenta efectiva
+    assert.equal(
+      res.cuentaId,
+      'cta-local-a-default',
+      'El movimiento retornado debe reflejar la cuentaId efectiva corregida'
+    );
+  });
+
+  it('8. reconciliarSaldosContratoYReservaD1 retiene estadoPago EN_MORA ante pago parcial hasta cubrir el saldo total', async () => {
+    let contratoActualizado: Record<string, unknown> | null = null;
+
+    const mockContratoEnMora = {
+      id: 'ctr-mora-1',
+      numeroContrato: 'CTR-MORA-01',
+      reservaId: 'res-mora-1',
+      localId: 'local-1',
+      clienteId: 'usr-cliente-1',
+      totalLiquidado: 300_000,
+      totalPagado: 0,
+      saldoPendiente: 300_000,
+      estadoPago: 'EN_MORA',
+    };
+
+    const mockReserva = {
+      id: 'res-mora-1',
+      codigo: 'FLX-MORA-01',
+      localId: 'local-1',
+      clienteId: 'usr-cliente-1',
+      totalCotizado: 300_000,
+      montoAbonoReportado: 0,
+    };
+
+    let movimientosSimulados: Array<{
+      id: string;
+      tipo: string;
+      categoria: string;
+      monto: number;
+      estado: string;
+      contratoId: string;
+    }> = [];
+
+    const mockDb = {
+      select: () => ({
+        from: (tabla: unknown) => ({
+          where: () => {
+            if (tabla === movimientosCaja) {
+              return Promise.resolve(movimientosSimulados);
+            }
+            return {
+              limit: async () => {
+                if (tabla === contratosAlquiler) return [mockContratoEnMora];
+                if (tabla === reservas) return [mockReserva];
+                return [];
+              },
+            };
+          },
+        }),
+      }),
+      update: (tabla: unknown) => ({
+        set: (vals: Record<string, unknown>) => {
+          if (tabla === contratosAlquiler) {
+            contratoActualizado = vals;
+          }
+          return {
+            where: () => ({ tabla, vals }),
+          };
+        },
+      }),
+      insert: () => ({
+        values: () => ({}),
+      }),
+      batch: async () => {},
+    } as unknown as AppDb;
+
+    // Caso 8.1: Pago parcial de 100.000 sobre deuda de 300.000 -> Retiene EN_MORA
+    movimientosSimulados = [
+      {
+        id: 'mov-parcial-1',
+        tipo: 'INGRESO',
+        categoria: 'PAGO_ALQUILER',
+        monto: 100_000,
+        estado: 'CONFIRMADO',
+        contratoId: 'CTR-MORA-01',
+      },
+    ];
+
+    const resParcial = await reconciliarSaldosContratoYReservaD1(
+      mockDb,
+      'local-1',
+      'ctr-mora-1',
+      undefined,
+      'usr-operador-1'
+    );
+
+    assert.equal(
+      resParcial.estadoPago,
+      'EN_MORA',
+      'Un contrato en mora debe permanecer EN_MORA si el pago es solo parcial'
+    );
+    assert.equal(resParcial.totalPagadoNeto, 100_000);
+    assert.equal(resParcial.saldoPendiente, 200_000);
+    assert.equal(
+      contratoActualizado?.['estadoPago'],
+      'EN_MORA',
+      'El update en D1 debe persistir EN_MORA'
+    );
+
+    // Caso 8.2: Pago completo restante (+200.000, total = 300.000) -> Pasa a PAGADO
+    movimientosSimulados.push({
+      id: 'mov-parcial-2',
+      tipo: 'INGRESO',
+      categoria: 'PAGO_ALQUILER',
+      monto: 200_000,
+      estado: 'CONFIRMADO',
+      contratoId: 'CTR-MORA-01',
+    });
+
+    const resCompleto = await reconciliarSaldosContratoYReservaD1(
+      mockDb,
+      'local-1',
+      'ctr-mora-1',
+      undefined,
+      'usr-operador-1'
+    );
+
+    assert.equal(
+      resCompleto.estadoPago,
+      'PAGADO',
+      'Una vez cubierto el totalLiquidado, pasa a PAGADO'
+    );
+    assert.equal(resCompleto.totalPagadoNeto, 300_000);
+    assert.equal(resCompleto.saldoPendiente, 0);
+    assert.equal(
+      contratoActualizado?.['estadoPago'],
+      'PAGADO',
+      'El update en D1 debe persistir PAGADO'
+    );
+  });
 });

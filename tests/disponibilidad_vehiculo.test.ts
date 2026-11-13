@@ -10,6 +10,7 @@ import {
   obtenerBloquesNoDisponiblesD1,
   obtenerEstadoDocumentalVehiculoD1,
 } from '../src/lib/flota/disponibilidad.ts';
+import { listarVehiculos } from '../src/lib/flota/repositorio.ts';
 import { resolverEstadoActualVehiculo } from '../src/lib/mantenimientos/repositorio.ts';
 import type { BloqueNoDisponible } from '../src/lib/flota/types.ts';
 import {
@@ -19,12 +20,29 @@ import {
   documentosVehiculo,
 } from '../src/db/schema/index.ts';
 
+function contieneEnSQL(sqlObj: unknown, texto: string): boolean {
+  if (!sqlObj) return false;
+  if (typeof sqlObj === 'string') return sqlObj.includes(texto);
+  if (typeof sqlObj === 'object') {
+    if ('value' in sqlObj) {
+      const val = (sqlObj as { value: unknown }).value;
+      if (typeof val === 'string' && val.includes(texto)) return true;
+      if (Array.isArray(val) && val.some((v) => typeof v === 'string' && v.includes(texto))) return true;
+    }
+    if ('queryChunks' in sqlObj && Array.isArray((sqlObj as { queryChunks: unknown[] }).queryChunks)) {
+      return (sqlObj as { queryChunks: unknown[] }).queryChunks.some((c) => contieneEnSQL(c, texto));
+    }
+  }
+  return false;
+}
+
 describe('Disponibilidad de Vehículos - FlotaX', () => {
   const vehiculoIdPrueba = 'veh-test-mazda-cx30';
   const hoyPrueba = '2026-11-05';
 
   function crearMockDb(config: {
     vehiculo?: { id: string; activo: boolean; estado: string; categoria?: string };
+    vehiculosLista?: any[];
     mantenimientos?: Array<{ id: string; fechaInicio: string; fechaFin: string; etiqueta?: string; estado: string }>;
     reservas?: Array<{ id: string; codigo: string; fechaInicio: string; fechaFin: string; estado: string }>;
     documentos?: Array<{ id: string; vehiculoId: string; tipoDocumento: string; fechaVencimiento: string | null; vigente: boolean }>;
@@ -34,7 +52,7 @@ describe('Disponibilidad de Vehículos - FlotaX', () => {
         from: (table: unknown) => {
           let datos: unknown[] = [];
           if (table === vehiculos) {
-            datos = config.vehiculo ? [config.vehiculo] : [];
+            datos = config.vehiculosLista ?? (config.vehiculo ? [config.vehiculo] : []);
           } else if (table === mantenimientosVehiculo) {
             datos = config.mantenimientos ?? [];
           } else if (table === reservas) {
@@ -43,19 +61,43 @@ describe('Disponibilidad de Vehículos - FlotaX', () => {
             datos = config.documentos ?? [];
           }
 
-          const queryResult = {
-            limit: () => Promise.resolve(datos),
+          const crearQueryResult = (items: unknown[]) => ({
+            limit: (n?: number) => Promise.resolve(n != null ? items.slice(0, n) : items),
             orderBy: () => ({
-              limit: () => Promise.resolve(datos),
-              then: (resolve: any) => resolve(datos),
+              limit: (n?: number) => Promise.resolve(n != null ? items.slice(0, n) : items),
+              then: (resolve: any) => resolve(items),
             }),
-            then: (resolve: any) => resolve(datos),
-          };
+            then: (resolve: any) => resolve(items),
+          });
 
           return {
-            where: () => queryResult,
-            orderBy: () => queryResult,
-            limit: () => Promise.resolve(datos),
+            where: (predicado?: unknown) => {
+              let filtrados = datos;
+              if (table === reservas && config.reservas) {
+                filtrados = config.reservas.filter((r) => {
+                  if (predicado && contieneEnSQL(predicado, r.id)) {
+                    return false;
+                  }
+                  return true;
+                });
+              } else if (table === vehiculos && (config.vehiculosLista || config.vehiculo)) {
+                const lista = config.vehiculosLista ?? (config.vehiculo ? [config.vehiculo] : []);
+                filtrados = lista.filter((v: any) => {
+                  if (predicado) {
+                    if (contieneEnSQL(predicado, 'FUERA_SERVICIO') && v.estado === 'FUERA_SERVICIO') {
+                      return false;
+                    }
+                    if (contieneEnSQL(predicado, 'NO_DISPONIBLE') && v.estado === 'NO_DISPONIBLE') {
+                      return false;
+                    }
+                  }
+                  return true;
+                });
+              }
+              return crearQueryResult(filtrados);
+            },
+            orderBy: () => crearQueryResult(datos),
+            limit: (n?: number) => Promise.resolve(n != null ? datos.slice(0, n) : datos),
             then: (resolve: any) => resolve(datos),
           };
         },
@@ -554,5 +596,143 @@ describe('Disponibilidad de Vehículos - FlotaX', () => {
       [],
       'No debe reportar faltantes ya que ambos documentos están cargados'
     );
+  });
+
+  test('17. verificarDisponibilidadVehiculo con reservaExcluirId no colisiona con la misma reserva al pausar o extender', async () => {
+    const reservaIdPropia = 'res-propia-101';
+    const mockDbConReserva = crearMockDb({
+      vehiculo: { id: vehiculoIdPrueba, activo: true, estado: 'DISPONIBLE' },
+      reservas: [
+        {
+          id: reservaIdPropia,
+          codigo: 'RES-PROP-01',
+          fechaInicio: '2026-11-10',
+          fechaFin: '2026-11-15',
+          estado: 'CONFIRMADA',
+        },
+      ],
+      mantenimientos: [],
+    });
+
+    // Sin reservaExcluirId: la reserva solapada bloquea el rango
+    const dictamenSinExclusion = await verificarDisponibilidadVehiculo(
+      mockDbConReserva,
+      vehiculoIdPrueba,
+      '2026-11-10',
+      '2026-11-15',
+      hoyPrueba
+    );
+    assert.equal(dictamenSinExclusion.disponible, false);
+    assert.equal(dictamenSinExclusion.ocupado, true);
+
+    // Con reservaExcluirId = reservaIdPropia: la reserva se auto-excluye y reporta DISPONIBLE
+    const dictamenConExclusion = await verificarDisponibilidadVehiculo(
+      mockDbConReserva,
+      vehiculoIdPrueba,
+      '2026-11-10',
+      '2026-11-15',
+      hoyPrueba,
+      reservaIdPropia
+    );
+    assert.equal(
+      dictamenConExclusion.disponible,
+      true,
+      'Debe reportar disponible cuando la única reserva solapada coincide con reservaExcluirId'
+    );
+    assert.equal(dictamenConExclusion.ocupado, false);
+    assert.equal(dictamenConExclusion.estadoSugerido, 'DISPONIBLE');
+  });
+
+  test('18. listarVehiculos preserva NO_DISPONIBLE en D1 sin reservas solapadas y lo filtra cuando soloDisponibles: true', async () => {
+    const vehiculoBloqueado = {
+      id: 'veh-bloqueado-1',
+      localId: 'local-patio-norte',
+      marca: 'Toyota',
+      modelo: 'Corolla',
+      anio: 2023,
+      categoria: 'SEDAN',
+      categoriaEtiqueta: 'Sedán',
+      placa: 'XYZ-789',
+      estado: 'NO_DISPONIBLE',
+      precioDia: 140000,
+      depositoGarantia: 500000,
+      transmision: 'Automática',
+      combustible: 'Gasolina',
+      capacidadPasajeros: 5,
+      autonomiaKm: null,
+      kilometraje: 20000,
+      imagenUrl: '/images/corolla.jpg',
+      destacado: false,
+      descripcion: 'Bloqueado administrativamente',
+      especificacionesBentoJson: null,
+      tipoUsoContador: 'KM',
+      horasMotor: null,
+      minutosUso: null,
+      activo: true,
+      creadoEn: new Date(),
+      actualizadoEn: new Date(),
+    };
+
+    const vehiculoDisponible = {
+      id: 'veh-disponible-2',
+      localId: 'local-patio-norte',
+      marca: 'Mazda',
+      modelo: 'CX-30',
+      anio: 2024,
+      categoria: 'SUV',
+      categoriaEtiqueta: 'Camioneta',
+      placa: 'FLX-123',
+      estado: 'DISPONIBLE',
+      precioDia: 160000,
+      depositoGarantia: 500000,
+      transmision: 'Automática',
+      combustible: 'Gasolina',
+      capacidadPasajeros: 5,
+      autonomiaKm: null,
+      kilometraje: 10000,
+      imagenUrl: '/images/cx30.jpg',
+      destacado: false,
+      descripcion: 'Disponible',
+      especificacionesBentoJson: null,
+      tipoUsoContador: 'KM',
+      horasMotor: null,
+      minutosUso: null,
+      activo: true,
+      creadoEn: new Date(),
+      actualizadoEn: new Date(),
+    };
+
+    const mockDbFlota = crearMockDb({
+      vehiculosLista: [vehiculoBloqueado, vehiculoDisponible],
+      reservas: [],
+      mantenimientos: [],
+    });
+
+    // Caso A: Sin soloDisponibles (o false), el vehículo en D1 con NO_DISPONIBLE NO debe resetearse a DISPONIBLE
+    const listaGeneral = await listarVehiculos(mockDbFlota, {
+      soloDisponibles: false,
+      hoyISO: hoyPrueba,
+    });
+    assert.equal(listaGeneral.length, 2);
+    const itemBloqueado = listaGeneral.find((v) => v.id === 'veh-bloqueado-1');
+    assert.ok(itemBloqueado, 'El vehículo bloqueado debe figurar en la lista general');
+    assert.equal(
+      itemBloqueado.estado,
+      'NO_DISPONIBLE',
+      'El estado NO_DISPONIBLE en D1 debe preservarse y jamás mutar a DISPONIBLE'
+    );
+
+    // Caso B: Con soloDisponibles: true, el vehículo con NO_DISPONIBLE debe ser filtrado (tanto en SQL como en el resultado final)
+    const listaSoloDisponibles = await listarVehiculos(mockDbFlota, {
+      soloDisponibles: true,
+      hoyISO: hoyPrueba,
+    });
+    assert.equal(
+      listaSoloDisponibles.length,
+      1,
+      'Solo debe retornar la unidad realmente DISPONIBLE'
+    );
+    assert.equal(listaSoloDisponibles[0]?.id, 'veh-disponible-2');
+    assert.equal(listaSoloDisponibles[0]?.estado, 'DISPONIBLE');
   });
 });

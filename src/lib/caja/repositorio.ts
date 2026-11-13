@@ -496,6 +496,8 @@ export async function reconciliarSaldosContratoYReservaD1(
   let estadoPago: 'PENDIENTE' | 'PARCIAL' | 'PAGADO' | 'EN_MORA' = 'PENDIENTE';
   if (totalPagadoNeto >= totalLiquidado && totalLiquidado > 0) {
     estadoPago = 'PAGADO';
+  } else if (contrato?.estadoPago === 'EN_MORA' && saldoPendiente > 0) {
+    estadoPago = 'EN_MORA';
   } else if (totalPagadoNeto > 0) {
     estadoPago = 'PARCIAL';
   } else {
@@ -724,7 +726,12 @@ export async function registrarMovimientoRepo(params: {
     const ctaCheck = await params.db
       .select({ id: cuentasFinancieras.id })
       .from(cuentasFinancieras)
-      .where(eq(cuentasFinancieras.id, cuentaEfectivaId))
+      .where(
+        and(
+          eq(cuentasFinancieras.id, cuentaEfectivaId),
+          eq(cuentasFinancieras.localId, params.localId)
+        )
+      )
       .limit(1);
 
     if (!ctaCheck[0]) {
@@ -738,6 +745,8 @@ export async function registrarMovimientoRepo(params: {
         cuentaEfectivaId = primeraCta[0].id;
       }
     }
+
+    nuevoMov.cuentaId = cuentaEfectivaId;
 
     await params.db.insert(movimientosCaja).values({
       id: nuevoMov.id,

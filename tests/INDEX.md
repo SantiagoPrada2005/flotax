@@ -26,8 +26,6 @@
 ## Invariants & Directory Rules
 
 - All additions, deletions, or public API modifications must be reflected in this index.
-- Las pruebas deben ejecutarse con `pnpm test`; no añadir frameworks ni dependencias de test.
-- Los tests importan código de `src/` sin duplicar lógica de dominio.
 - Maintain strict boundary encapsulation and domain layer separation.
 
 <!-- Reconciled by codebase-index -->

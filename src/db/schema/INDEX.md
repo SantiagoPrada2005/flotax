@@ -33,7 +33,6 @@
 ## Invariants & Directory Rules
 
 - All additions, deletions, or public API modifications must be reflected in this index.
-- Los dominios cerrados de cada columna se declaran aquí con `text('columna', { enum: [...] })` y se consumen vía `$inferSelect`; ningún módulo de `src/lib` debe redeclarar esas uniones.
 - Maintain strict boundary encapsulation and domain layer separation.
 
 <!-- Reconciled by codebase-index -->

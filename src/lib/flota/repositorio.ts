@@ -74,6 +74,7 @@ export async function listarVehiculos(
     }
     if (opciones?.soloDisponibles) {
       condiciones.push(ne(vehiculos.estado, 'FUERA_SERVICIO'));
+      condiciones.push(ne(vehiculos.estado, 'NO_DISPONIBLE'));
     }
 
     const rows = await db
@@ -132,8 +133,8 @@ export async function listarVehiculos(
     const items = rows.map((row) => {
       const item = mapD1ToVehiculoItem(row);
 
-      // Si el vehículo está fuera de servicio permanentemente, se respeta
-      if (item.estado === 'FUERA_SERVICIO') {
+      // Si el vehículo está fuera de servicio permanentemente o administrativamente no disponible, se respeta
+      if (item.estado === 'FUERA_SERVICIO' || item.estado === 'NO_DISPONIBLE') {
         return item;
       }
 
