@@ -391,9 +391,9 @@ export default function AlquilerEnProcesoCard({
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
-                            stroke-width="2.2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
+                            strokeWidth="2.2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
                             className={`h-3.5 w-3.5 transition-transform duration-150 ${
                               isExpanded ? 'rotate-180 text-white' : ''
                             }`}
