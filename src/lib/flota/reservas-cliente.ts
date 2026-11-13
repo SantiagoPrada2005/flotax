@@ -13,8 +13,10 @@ export type EstadoReservaCliente =
   | 'EN_CURSO'
   | 'CONFIRMADA'
   | 'PENDIENTE'
+  | 'PAUSADA'
   | 'COMPLETADA'
-  | 'RECHAZADA';
+  | 'RECHAZADA'
+  | 'CANCELADA';
 
 export type ModalidadEntregaReserva = 'PATIO_PRINCIPAL' | 'DOMICILIO_MEDELLIN';
 
@@ -28,11 +30,11 @@ export type EstadoGarantiaReserva =
 
 export interface DatosConductorReserva {
   nombreCompleto: string;
-  tipoDocumento: 'CC' | 'CE' | 'PASAPORTE';
-  numeroDocumento: string;
-  categoriaLicencia: 'B1' | 'B2' | 'A2' | 'C1';
+  tipoDocumento?: 'CC' | 'CE' | 'PASAPORTE' | 'NIT' | null | undefined;
+  numeroDocumento?: string | null | undefined;
+  categoriaLicencia?: 'B1' | 'B2' | 'A2' | 'C1' | string | null | undefined;
   telefono: string;
-  correo: string;
+  correo?: string | null | undefined;
   ley1581Aceptada: boolean;
 }
 
@@ -109,6 +111,10 @@ export interface ReservaClienteItem {
   nivelCargaPorcentaje: number;
   requiereMantenimientoRetorno?: boolean | undefined;
   motivoRechazo?: string | undefined;
+  tokenAccesoPublico?: string | null | undefined;
+  clienteId?: string | null | undefined;
+  localId?: string | null | undefined;
+  eventosRecientes?: unknown[] | undefined;
   puntosR2Custom?: PuntoInspeccionR2[] | undefined;
   evaluacionEntrega?: EvaluacionEntregaServicio | undefined;
 }
@@ -1180,9 +1186,9 @@ export function formatearRangoReservaHumano(
 }
 
 /**
- * Consolida la entrega/devolución del vehículo por parte del cliente junto con
- * su evaluación interactiva del servicio prestado, marcando la reserva como
- * `COMPLETADA` y liberando la garantía si no hay novedades críticas.
+ * Almacena la evaluación interactiva del servicio prestado por el cliente en el
+ * wizard de retorno sin cerrar administrativamente el contrato ni forzar COMPLETADA.
+ * El cierre formal, recepción pericial y liquidación de fianza los ejecuta el local.
  */
 export function registrarEntregaClienteConEvaluacion(
   reserva: ReservaClienteItem,
@@ -1196,10 +1202,7 @@ export function registrarEntregaClienteConEvaluacion(
 
   const actualizada: ReservaClienteItem = {
     ...reserva,
-    estado: 'COMPLETADA',
-    montoReportado: reserva.totalAlquiler,
-    estadoGarantia: tieneAlertaTecnica ? 'CUSTODIA_ACTIVA' : 'LIBERADA',
-    kilometrajeRetorno: reserva.kilometrajeEntrega + reserva.diasAlquiler * 68,
+    estado: reserva.estado,
     requiereMantenimientoRetorno: tieneAlertaTecnica,
     evaluacionEntrega: evaluacion,
   };

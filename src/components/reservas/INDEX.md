@@ -7,8 +7,10 @@
 
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
+| [`AlquilerCicloModals.tsx`](./AlquilerCicloModals.tsx) | Islas React 19: Modales del Ciclo Operativo | `ModalPausar`, `ModalProrrogar`, `ModalDevolverCerrar`, `ModalCancelarAnular` | `react`, `@/db/schema`, `astro:actions` |
 | [`AlquilerDetalleView.tsx`](./AlquilerDetalleView.tsx) | Isla React 19: Vista Dedicada de Alquiler, Inspección R2 y Ciclo Operativo | `AlquilerDetalleView`, `AlquilerDetalleViewProps` | `@/lib/flota`, `astro:actions`, `astro:transitions/client` |
 | [`MisReservasHub.tsx`](./MisReservasHub.tsx) | Isla React 19: Calendario Suizo + Agenda de Alquileres (Cliente y Admin) | `MisReservasHub`, `MisReservasHubProps` | `@/lib/flota`, `astro:actions`, `astro:transitions/client` |
+| [`SemaforoDocumentalPanel.tsx`](./SemaforoDocumentalPanel.tsx) | Componente React 19: Semáforo Documental | `SemaforoDocumentalPanel`, `SemaforoDocumentalPanelProps` | `react`, `lucide-react`, `@/lib/flota` |
 | [`VehiculoEntregaWizard.tsx`](./VehiculoEntregaWizard.tsx) | Isla React 19: Full-Screen Wizard (100dvh) de Entrega y Evaluación del Servicio | `VehiculoEntregaWizard`, `VehiculoEntregaWizardProps` | `@/lib/flota`, `astro:actions`, `astro:transitions/client` |
 
 ## Invariants & Directory Rules

@@ -14,6 +14,7 @@ export interface VehiculoEntregaWizardProps {
   reservaInicial: ReservaClienteItem;
   hoyISO: string;
   retornoHref?: string | undefined;
+  tokenAccesoPublico?: string | null | undefined;
 }
 
 type PasoWizard = 0 | 1 | 2 | 3;
@@ -82,11 +83,22 @@ export default function VehiculoEntregaWizard({
   reservaInicial,
   hoyISO: _hoyISO,
   retornoHref,
+  tokenAccesoPublico,
 }: VehiculoEntregaWizardProps) {
   const [reserva, setReserva] = useState<ReservaClienteItem>(reservaInicial);
-  const destinoVolver = retornoHref ?? `/reservas/${reserva.codigo}`;
+  const destinoVolver = retornoHref ?? `/reservas/${reserva.codigo}${tokenAccesoPublico ? `?token=${encodeURIComponent(tokenAccesoPublico)}` : ''}`;
   const [pasoActual, setPasoActual] = useState<PasoWizard>(0);
   const [maxPasoDesbloqueado, setMaxPasoDesbloqueado] = useState<PasoWizard>(1);
+
+  // En modo operador, redirigir directamente al cockpit administrativo de devolución
+  useEffect(() => {
+    if (
+      retornoHref?.startsWith('/admin') ||
+      (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin'))
+    ) {
+      navigate(`/admin/reservas/${reserva.codigo}`);
+    }
+  }, [retornoHref, reserva.codigo]);
 
   // Estado Paso 2: Checklist interactivo de unidad (Ref 03 Device Key style)
   const [checklist, setChecklist] = useState<ChecklistEntregaCliente>(
@@ -238,17 +250,10 @@ export default function VehiculoEntregaWizard({
       completadaEnISO: new Date().toISOString(),
     };
 
-    const tieneAlertaTecnica =
-      evaluacion.calificacionGeneral === 'ATENCION_REQUERIDA' ||
-      evaluacion.desempenoVehiculo === 'DETALLE_MENOR';
-
+    // En modo cliente nunca se marca COMPLETADA localmente ni se libera la garantía;
+    // la evaluación/chequeo previo queda registrada y la administración valida recepción y caja en patio.
     const actualizada: ReservaClienteItem = {
       ...reserva,
-      estado: 'COMPLETADA',
-      montoReportado: reserva.totalAlquiler,
-      estadoGarantia: tieneAlertaTecnica ? 'CUSTODIA_ACTIVA' : 'LIBERADA',
-      kilometrajeRetorno: reserva.kilometrajeEntrega + reserva.diasAlquiler * 68,
-      requiereMantenimientoRetorno: tieneAlertaTecnica,
       evaluacionEntrega: evaluacion,
     };
     setReserva(actualizada);
@@ -266,6 +271,8 @@ export default function VehiculoEntregaWizard({
         cabinaSinObjetos: checklist.cabinaSinObjetos,
         telemetriaVerificada: checklist.telemetriaVerificada,
         llavesEntregadas: checklist.llavesEntregadas,
+        combustibleNivel: checklist.combustibleNivel,
+        tokenAccesoPublico: tokenAccesoPublico ?? undefined,
       });
   }, [
     sintesisCompletada,
@@ -274,6 +281,7 @@ export default function VehiculoEntregaWizard({
     comentario,
     checklist,
     reserva,
+    tokenAccesoPublico,
   ]);
 
   const toggleItemChecklist = (
@@ -963,21 +971,21 @@ export default function VehiculoEntregaWizard({
               onClick={() => irAPaso(3)}
               className="ios-press-bounce flex min-h-[54px] w-full items-center justify-center gap-2 rounded-full bg-[#111827] px-6 py-3.5 font-display text-sm font-bold text-white shadow-lg transition hover:bg-[#1F2937] cursor-pointer"
             >
-              <span>Finalizar entrega y liberar garantía</span>
+              <span>Enviar reporte y evaluación de retorno</span>
               <span>→</span>
             </button>
           </div>
         </section>
 
         {/* ===================================================================
-            VISTA 04 (100dvh): SÍNTESIS 92%->100% Y PAZ Y SALVO (REF. 02)
+            VISTA 04 (100dvh): SÍNTESIS 92%->100% Y REPORTE RECIBIDO
             =================================================================== */}
         <section
-          aria-label="Paso 4: Síntesis de cierre y liberación de garantía"
+          aria-label="Paso 4: Síntesis de evaluación y reporte de retorno"
           className="relative flex h-dvh w-full flex-col justify-between overflow-hidden bg-white px-6 pt-16 pb-6 safe-bottom"
         >
           <div className="mx-auto flex h-full w-full max-w-[420px] flex-col justify-between">
-            {/* Bloque Central Monumental: Contador Porcentual + Barra Achurada (Ref 02) */}
+            {/* Bloque Central Monumental: Contador Porcentual + Barra Achurada */}
             <div className="mt-4 flex flex-col items-center text-center space-y-3">
               <span
                 aria-live="polite"
@@ -988,8 +996,8 @@ export default function VehiculoEntregaWizard({
 
               <h2 className="font-display text-[22px] sm:text-[24px] font-bold tracking-tight text-[#111827] leading-snug">
                 {sintesisCompletada
-                  ? '¡Entrega completada y garantía liberada!'
-                  : 'Estamos cerrando tu entrega y liberando tu garantía'}
+                  ? '¡Evaluación de retorno enviada!'
+                  : 'Registrando evaluación y reporte de retorno...'}
               </h2>
 
               {/* Barra de Progreso Horizontal con Achurado +62.3° */}
@@ -1002,17 +1010,17 @@ export default function VehiculoEntregaWizard({
                 </div>
                 <p className="mt-2 font-mono text-[11px] font-semibold text-[#4B5563]">
                   {sintesisCompletada
-                    ? `Paz y salvo digital #${reserva.codigo} verificado en Cloudflare R2`
-                    : 'Consolidando acta R2 y evaluación del servicio...'}
+                    ? `Reporte previo #${reserva.codigo} enviado. El local validará la recepción física de la unidad, liquidación y liberación de la fianza en patio.`
+                    : 'Consolidando evaluación y checklist previo de retorno...'}
                 </p>
               </div>
             </div>
 
-            {/* Tarjeta Checklist Secuencial en Vivo (Ref 02 Daily Recommendation List) */}
+            {/* Tarjeta Checklist Secuencial en Vivo */}
             <div className="my-auto rounded-[26px] border border-[#9CA3AF]/45 bg-[#EDEDED]/85 p-5 space-y-3.5">
               <div className="flex items-center justify-between border-b border-[#9CA3AF]/30 pb-2.5">
                 <span className="font-display text-xs font-bold text-[#111827]">
-                  Resumen de cierre para #{reserva.codigo}
+                  Resumen de entrega para #{reserva.codigo}
                 </span>
                 <span className="font-mono text-[10px] font-bold text-[#4B5563]">
                   {reserva.vehiculo.placa}
@@ -1061,10 +1069,8 @@ export default function VehiculoEntregaWizard({
               >
                 <span>
                   {sintesisCompletada
-                    ? (retornoHref?.startsWith('/admin')
-                        ? 'Ver comprobante en la reserva'
-                        : 'Ver comprobante de cierre en mi reserva')
-                    : 'Procesando cierre pericial...'}
+                    ? 'Ver estado en mi reserva'
+                    : 'Procesando reporte...'}
                 </span>
               </button>
             </div>

@@ -41,6 +41,12 @@ const ESTADOS_INFO: Record<
     badgeClass: 'bg-[#EDEDED] text-[#4B5563] border border-[#9CA3AF]/40',
     ariaText: 'Vehículo fuera de servicio',
   },
+  NO_DISPONIBLE: {
+    label: 'NO DISPONIBLE',
+    dotClass: 'bg-[#4B5563] ring-2 ring-[#4B5563]/30',
+    badgeClass: 'bg-[#1F2937] text-[#EDEDED] border border-[#4B5563]',
+    ariaText: 'Vehículo no disponible por pausa o restricción administrativa',
+  },
 };
 
 export default function AvailabilityHeader({ vehiculo, onBack }: AvailabilityHeaderProps) {

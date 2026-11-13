@@ -64,11 +64,19 @@ function decodificarCursor(cursor: string): { fecha: Date; id: string } | null {
 }
 
 export class ServicioNotificaciones {
+  private readonly db: AppDb;
+  private readonly canales: readonly CanalNotificacion[];
+  private readonly logger?: ILogger | undefined;
+
   constructor(
-    private readonly db: AppDb,
-    private readonly canales: readonly CanalNotificacion[] = [],
-    private readonly logger?: ILogger | undefined
-  ) {}
+    db: AppDb,
+    canales: readonly CanalNotificacion[] = [],
+    logger?: ILogger | undefined
+  ) {
+    this.db = db;
+    this.canales = canales;
+    this.logger = logger;
+  }
 
   /**
    * Persiste el aviso para cada destinatario del scope y lo despacha a los canales externos.

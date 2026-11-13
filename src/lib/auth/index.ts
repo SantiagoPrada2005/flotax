@@ -6,6 +6,8 @@ import * as authSchema from '@/db/schema/auth';
 import type { D1Database, SendEmail } from '@cloudflare/workers-types';
 import { getEmailService } from '@/lib/email';
 import { getLogger } from '@/lib/logger';
+import { eq } from 'drizzle-orm';
+import { vincularReservasHuerfanasPorCorreoD1 } from '@/lib/flota/ciclo-alquiler';
 
 export interface AuthEnv {
   BETTER_AUTH_URL?: string;
@@ -171,6 +173,32 @@ export function createAuth(d1: D1Database, env?: AuthEnv, options?: CreateAuthOp
         activo: { type: 'boolean', required: false, defaultValue: true },
       },
     },
+    databaseHooks: {
+      session: {
+        create: {
+          after: async (session) => {
+            const logger = getLogger(env, { module: 'auth-session-hook' });
+            try {
+              const userRows = await db
+                .select({ email: authSchema.user.email })
+                .from(authSchema.user)
+                .where(eq(authSchema.user.id, session.userId))
+                .limit(1);
+              const userEmail = userRows[0]?.email;
+              if (userEmail) {
+                await vincularReservasHuerfanasPorCorreoD1(db, session.userId, userEmail);
+              }
+            } catch (error) {
+              await logger.error(
+                'Error al vincular reservas huérfanas en hook de sesión',
+                error,
+                { userId: session.userId }
+              );
+            }
+          },
+        },
+      },
+    },
   });
 }
 
@@ -183,4 +211,6 @@ export * from './permisos';
 export * from './rbac';
 export * from './session';
 export * from './guard';
+export * from './capacidades-alquiler';
+export * from './acceso-reserva';
 

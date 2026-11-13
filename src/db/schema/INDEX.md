@@ -12,6 +12,7 @@
 | [`clientes_local.ts`](./clientes_local.ts) | Esquema Drizzle | Tabla `clientesLocal` (cartera de clientes por local) | `drizzle-orm/sqlite-core` |
 | [`contratos.ts`](./contratos.ts) | Esquema Drizzle + Dominios | Tabla `contratosAlquiler` (1:1 con `reservas`); enums `estadosPagoContrato`, `estadosContratoAlquiler`, `ContratoAlquilerSelect`, `ContratoAlquilerInsert` | `drizzle-orm/sqlite-core`, `./reservas`, `./locales`, `./vehiculos`, `./auth` |
 | [`documentos_vehiculo.ts`](./documentos_vehiculo.ts) | Esquema Drizzle + Dominios | Tabla `documentosVehiculo`; enum `tiposDocumentoVehiculo`, `DocumentoVehiculoSelect`, `DocumentoVehiculoInsert` | `drizzle-orm/sqlite-core`, `./locales`, `./vehiculos`, `./auth` |
+| [`eventos_alquiler.ts`](./eventos_alquiler.ts) | Esquema Drizzle + Dominios | Tabla `eventosAlquiler`; enums `tiposEventoAlquiler`, `actoresEventoAlquiler`, `EventoAlquilerSelect`, `EventoAlquilerInsert` | `drizzle-orm/sqlite-core`, `./reservas`, `./locales`, `./vehiculos`, `./auth` |
 | [`incidentes.ts`](./incidentes.ts) | Esquema Drizzle + Dominios | Tabla `incidentesSistema`; enums `nivelesIncidente`, `estadosIncidente` | `drizzle-orm/sqlite-core` |
 | [`index.ts`](./index.ts) | Barrel Export | Re-exporta todos los esquemas, enums y tipos de base de datos | Todos los esquemas locales |
 | [`inspecciones.ts`](./inspecciones.ts) | Esquema Drizzle + Dominios | Tablas `plantillasInspeccion`, `inspeccionesPericiales`, `puntosInspeccionR2`, `evaluacionesEntregaCliente`; enums e interfaces de checklist pericial R2 | `drizzle-orm/sqlite-core`, `./reservas`, `./contratos`, `./multimedia_vehiculo`, `./vehiculos` |
@@ -32,7 +33,6 @@
 ## Invariants & Directory Rules
 
 - All additions, deletions, or public API modifications must be reflected in this index.
-- Los dominios cerrados de cada columna se declaran aquí con `text('columna', { enum: [...] })` y se consumen vía `$inferSelect`; ningún módulo de `src/lib` debe redeclarar esas uniones.
 - Maintain strict boundary encapsulation and domain layer separation.
 
 <!-- Reconciled by codebase-index -->

@@ -68,7 +68,7 @@ export interface FiltrosBusquedaVehiculo {
   localId?: string | undefined;
 }
 
-export type MotivoBloqueoDisponibilidad = 'RESERVADO' | 'MANTENIMIENTO';
+export type MotivoBloqueoDisponibilidad = 'RESERVADO' | 'MANTENIMIENTO' | 'NO_DISPONIBLE';
 
 export interface BloqueNoDisponible {
   id: string;
@@ -91,7 +91,15 @@ export type EstadoDiaCalendario =
   | 'PASADO'
   | 'DISPONIBLE'
   | 'RESERVADO'
-  | 'MANTENIMIENTO';
+  | 'MANTENIMIENTO'
+  | 'NO_DISPONIBLE';
+
+export interface EstadoDocumentalVehiculo {
+  tieneVencidos: boolean;
+  faltantesSinCarga: Array<'SOAT' | 'TECNICO_MECANICA'>;
+  vencidos: Array<{ tipo: string; fechaVencimiento: string }>;
+  requiereRtm: boolean;
+}
 
 export interface DiaCalendarioItem {
   fechaISO: string;       // YYYY-MM-DD

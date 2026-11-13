@@ -6,6 +6,7 @@ import { obtenerReservaPorCodigoD1 } from '@/lib/flota/repositorio-reservas';
 import { resolveClientTimeContext } from '@/lib/time/client-time';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
+import { validarAccesoReservaLectura } from '@/lib/auth';
 
 const { codigo } = Astro.params;
 
@@ -13,6 +14,8 @@ if (!codigo) {
   return Astro.redirect('/reservas');
 }
 
+const tokenQuery = Astro.url.searchParams.get('token');
+const usuario = Astro.locals.usuario;
 const { dateString: hoyISO } = resolveClientTimeContext(Astro.request);
 const db = env.DB ? getDb(env.DB) : undefined;
 let reservaInicial = await obtenerReservaPorCodigoD1(db, codigo);
@@ -23,6 +26,22 @@ if (!reservaInicial) {
 if (!reservaInicial) {
   return Astro.redirect('/reservas');
 }
+
+const tieneAcceso = validarAccesoReservaLectura(reservaInicial, usuario, tokenQuery);
+if (!tieneAcceso) {
+  if (!usuario) {
+    const returnTo = encodeURIComponent(Astro.url.pathname + Astro.url.search);
+    return Astro.redirect(`/login?redirect=${returnTo}`);
+  }
+  return new Response('Acceso no autorizado a esta reserva.', { status: 403 });
+}
+
+const tokenPublicoValido =
+  tokenQuery && tokenQuery.trim() === reservaInicial.tokenAccesoPublico
+    ? tokenQuery.trim()
+    : usuario?.id === reservaInicial.clienteId
+      ? reservaInicial.tokenAccesoPublico ?? null
+      : null;
 ---
 
 <LayoutApp
@@ -38,6 +57,7 @@ if (!reservaInicial) {
       codigo={codigo.toUpperCase()}
       reservaInicial={reservaInicial}
       hoyISO={hoyISO}
+      tokenAccesoPublico={tokenPublicoValido}
     />
   </div>
 </LayoutApp>

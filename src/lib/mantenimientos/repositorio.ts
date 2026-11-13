@@ -148,29 +148,47 @@ export async function resolverEstadoActualVehiculo(
     if (mantenimientoActivo) {
       nuevoEstado = 'MANTENIMIENTO';
     } else {
-      // Evaluar reservas vigentes para hoy (incluyendo PENDIENTE radicadas por clientes)
-      const [reservaActiva] = await db
+      // Evaluar si existe una reserva en pausa vigente hoy (NO_DISPONIBLE)
+      const [reservaPausada] = await db
         .select({ id: reservas.id })
         .from(reservas)
         .where(
           and(
             eq(reservas.vehiculoId, vehiculoId),
-            or(
-              eq(reservas.estado, 'EN_CURSO'),
-              and(
-                inArray(reservas.estado, ['CONFIRMADA', 'PENDIENTE']),
-                lte(reservas.fechaInicio, hoyISO),
-                gte(reservas.fechaFin, hoyISO)
-              )
-            )
+            eq(reservas.estado, 'PAUSADA'),
+            lte(reservas.fechaInicio, hoyISO),
+            gte(reservas.fechaFin, hoyISO)
           )
         )
         .limit(1);
 
-      if (reservaActiva) {
-        nuevoEstado = 'RESERVADO';
+      if (reservaPausada) {
+        nuevoEstado = 'NO_DISPONIBLE';
       } else {
-        nuevoEstado = 'DISPONIBLE';
+        // Evaluar reservas vigentes para hoy (incluyendo PENDIENTE radicadas por clientes)
+        const [reservaActiva] = await db
+          .select({ id: reservas.id })
+          .from(reservas)
+          .where(
+            and(
+              eq(reservas.vehiculoId, vehiculoId),
+              or(
+                eq(reservas.estado, 'EN_CURSO'),
+                and(
+                  inArray(reservas.estado, ['CONFIRMADA', 'PENDIENTE']),
+                  lte(reservas.fechaInicio, hoyISO),
+                  gte(reservas.fechaFin, hoyISO)
+                )
+              )
+            )
+          )
+          .limit(1);
+
+        if (reservaActiva) {
+          nuevoEstado = 'RESERVADO';
+        } else {
+          nuevoEstado = 'DISPONIBLE';
+        }
       }
     }
 

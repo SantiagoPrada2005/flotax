@@ -3,12 +3,6 @@
 **Responsibility**: Plantillas HTML de correos electrónicos transaccionales con diseño responsive y tokens canónicos de FlotaX.
 **Architectural Layer**: Presentation / Email Layer
 
-## Subdirectories & Child Modules
-
-| Subdirectory | Responsibility | Index |
-| :--- | :--- | :--- |
-| *(None)* | - | - |
-
 ## File Manifest
 
 | File | Role / Pattern | Public Exports / API | Key Dependencies |

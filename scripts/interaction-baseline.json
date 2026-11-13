@@ -3,8 +3,7 @@
     "ios-press-bounce": 1
   },
   "src/components/alquiler/RentalWizardFlow.tsx": {
-    "ios-press-bounce": 6,
-    "focus-outline-none": 6
+    "ios-press-bounce": 2
   },
   "src/components/auth/AuthVectorBackground.tsx": {
     "duration-over-320": 4
@@ -18,16 +17,20 @@
     "focus-outline-none": 3
   },
   "src/components/caja/CajaBarraFlujo.tsx": {
-    "transition-all": 3,
-    "ios-press-bounce": 1
+    "transition-all": 5
+  },
+  "src/components/caja/CajaDashboardIsland.tsx": {
+    "transition-all": 12
   },
   "src/components/caja/CajaGraficosHorizontal.tsx": {
-    "transition-all": 4,
-    "ios-press-bounce": 1
+    "transition-all": 3
+  },
+  "src/components/caja/CajaKpiCard.tsx": {
+    "transition-all": 1
   },
   "src/components/caja/CajaMovimientosFilterBar.tsx": {
-    "transition-all": 3,
-    "ios-press-bounce": 3,
+    "transition-all": 4,
+    "ios-press-bounce": 4,
     "focus-outline-none": 1
   },
   "src/components/caja/ModalArqueoCierre.tsx": {
@@ -49,15 +52,6 @@
   "src/components/dashboard/BentoHeroCard.astro": {
     "hover-shadow": 1
   },
-  "src/components/dashboard/BentoMetricsGrid.astro": {
-    "transition-all": 2,
-    "hover-shadow": 2
-  },
-  "src/components/dashboard/BentoOperationsCard.astro": {
-    "transition-all": 1,
-    "hover-transform": 1,
-    "hover-shadow": 1
-  },
   "src/components/dashboard/InteractiveSplineCard.tsx": {
     "transition-all": 3,
     "duration-over-320": 1,
@@ -72,9 +66,9 @@
     "ios-press-bounce": 4
   },
   "src/components/dashboard/TelemetryBentoGrid.tsx": {
-    "transition-all": 5,
+    "transition-all": 7,
     "hover-shadow": 1,
-    "group-hover-transform": 2,
+    "group-hover-transform": 1,
     "ios-press-bounce": 12
   },
   "src/components/dashboard/TelemetryVisualModals.tsx": {
@@ -198,7 +192,7 @@
   },
   "src/components/navigation/UserDropdownMenu.tsx": {
     "transition-all": 1,
-    "ios-press-bounce": 7
+    "ios-press-bounce": 8
   },
   "src/components/notificaciones/NotificacionesBell.tsx": {
     "ios-press-bounce": 1
@@ -228,13 +222,13 @@
     "focus-outline-none": 3
   },
   "totals": {
-    "transition-all": 84,
+    "transition-all": 98,
     "duration-over-320": 10,
-    "hover-transform": 2,
-    "hover-shadow": 9,
-    "group-hover-transform": 8,
-    "ios-press-bounce": 144,
-    "focus-outline-none": 53,
+    "hover-transform": 1,
+    "hover-shadow": 6,
+    "group-hover-transform": 7,
+    "ios-press-bounce": 140,
+    "focus-outline-none": 47,
     "clickable-div-no-keydown": 11
   }
 }

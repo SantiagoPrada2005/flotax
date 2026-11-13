@@ -7,12 +7,19 @@ import { renderDeveloperAlertEmail } from '../templates/alert-email';
 
 export class EmailAlertSink implements ILogSink {
   readonly name = 'email-alert';
+  private readonly emailService: EmailService;
+  private readonly config: AlertThrottleConfig;
+  private readonly d1?: D1Database | undefined;
 
   constructor(
-    private readonly emailService: EmailService,
-    private readonly config: AlertThrottleConfig,
-    private readonly d1?: D1Database | undefined
-  ) {}
+    emailService: EmailService,
+    config: AlertThrottleConfig,
+    d1?: D1Database | undefined
+  ) {
+    this.emailService = emailService;
+    this.config = config;
+    this.d1 = d1;
+  }
 
   async write(entry: LogEntry): Promise<void> {
     // 1. Filtrar por umbral de severidad: solo 'error' y 'fatal' activan alertas a desarrolladores

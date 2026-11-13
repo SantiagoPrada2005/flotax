@@ -5,29 +5,33 @@ import {
   formatearRangoReservaHumano,
   obtenerPuntosInspeccionPorVehiculo,
   obtenerRubrosWaybillReserva,
-  type EstadoGarantiaReserva,
   type EstadoPuntoR2,
   type EstadoReservaCliente,
   type PuntoInspeccionR2,
   type ReservaClienteItem,
 } from '@/lib/flota';
+import type { CapacidadesOperacionAlquiler } from '@/lib/auth/capacidades-alquiler';
+import SemaforoDocumentalPanel from './SemaforoDocumentalPanel';
+import {
+  ModalPausar,
+  ModalProrrogar,
+  ModalDevolverCerrar,
+  ModalCancelarAnular,
+} from './AlquilerCicloModals';
 
 export interface AlquilerDetalleViewProps {
   codigo: string;
   reservaInicial: ReservaClienteItem;
   hoyISO: string;
   modo?: 'cliente' | 'admin' | undefined;
+  capacidades?: CapacidadesOperacionAlquiler | undefined;
+  cuentasFinancieras?: Array<{ id: string; nombre: string; tipo: string }> | undefined;
+  tokenAccesoPublico?: string | null | undefined;
 }
 
 type TabDetalleAlquiler = 'INSPECCION' | 'WAYBILL' | 'HIGHLIGHTS';
 
 const TOTAL_TICKS_BARRA = 28;
-
-const MOTIVOS_RECHAZO_CANONICOS = [
-  'Licencia o documento pendiente de validación',
-  'Comprobante de abono no verificado en caja',
-  'Unidad programada para revisión preventiva',
-] as const;
 
 const ETIQUETA_ESTADO_CABECERA: Readonly<
   Record<EstadoReservaCliente, string>
@@ -35,8 +39,10 @@ const ETIQUETA_ESTADO_CABECERA: Readonly<
   PENDIENTE: 'Solicitud pendiente de revisión',
   CONFIRMADA: 'Confirmada · Lista para entrega R2',
   EN_CURSO: 'En curso · Unidad en ruta',
+  PAUSADA: 'Alquiler en pausa',
   COMPLETADA: 'Completada · Contrato cerrado',
   RECHAZADA: 'Solicitud rechazada',
+  CANCELADA: 'Reserva cancelada',
 };
 
 const formatCop = (val: number): string =>
@@ -51,6 +57,9 @@ export default function AlquilerDetalleView({
   reservaInicial,
   hoyISO: _hoyISO,
   modo = 'cliente',
+  capacidades,
+  cuentasFinancieras = [],
+  tokenAccesoPublico,
 }: AlquilerDetalleViewProps) {
   const esAdmin = modo === 'admin';
 
@@ -59,19 +68,26 @@ export default function AlquilerDetalleView({
   const [puntoActivoId, setPuntoActivoId] = useState<string>('r2-carroceria');
   const [rubroActivoId, setRubroActivoId] = useState<string>('total-contrato');
 
-  // Estados de interactividad administrativa
+  // Estados de interactividad operativa y modales RBAC
   const [toastMensaje, setToastMensaje] = useState<string | null>(null);
   const [editandoDictamen, setEditandoDictamen] = useState<boolean>(false);
   const [borradorDictamen, setBorradorDictamen] = useState<string>('');
   const [metodoCobroSaldo, setMetodoCobroSaldo] = useState<
     'efectivo' | 'transferencia' | 'tarjeta'
   >('transferencia');
-  const [mostrarPanelRechazo, setMostrarPanelRechazo] =
-    useState<boolean>(false);
-  const [motivoRechazoSeleccionado, setMotivoRechazoSeleccionado] =
-    useState<string>(MOTIVOS_RECHAZO_CANONICOS[0]);
-  const [requiereMantenimientoAlCerrar, setRequiereMantenimientoAlCerrar] =
-    useState<boolean>(false);
+  const [cuentaCobroId, setCuentaCobroId] = useState<string>(
+    cuentasFinancieras?.[0]?.id ?? ''
+  );
+  const [autorizarSinDocumentos, setAutorizarSinDocumentos] = useState<boolean>(false);
+  const [modalPausarAbierto, setModalPausarAbierto] = useState<boolean>(false);
+  const [modalProrrogarAbierto, setModalProrrogarAbierto] = useState<boolean>(false);
+  const [modalDevolverAbierto, setModalDevolverAbierto] = useState<boolean>(false);
+  const [modalCancelarAbierto, setModalCancelarAbierto] = useState<boolean>(false);
+  const [tipoModalCancelar, setTipoModalCancelar] = useState<
+    'CANCELAR' | 'ANULAR' | 'RECHAZAR'
+  >('CANCELAR');
+  const [operacionCargando, setOperacionCargando] = useState<boolean>(false);
+  const [errorOperacion, setErrorOperacion] = useState<string | null>(null);
 
   const mostrarAviso = (texto: string) => {
     setToastMensaje(texto);
@@ -82,9 +98,6 @@ export default function AlquilerDetalleView({
 
   useEffect(() => {
     setReserva(reservaInicial);
-    setRequiereMantenimientoAlCerrar(
-      Boolean(reservaInicial.requiereMantenimientoRetorno)
-    );
   }, [reservaInicial]);
 
   const { vehiculo, specsBento } = reserva;
@@ -161,6 +174,40 @@ export default function AlquilerDetalleView({
   };
 
   // --- Acciones Operativas Estación 1: Inspección R2 ---
+  const persistirInspeccionR2EnD1 = async (
+    puntos: PuntoInspeccionR2[],
+    km: number,
+    carga: number
+  ) => {
+    try {
+      const res = await actions.reservas.guardarInspeccionR2({
+        reservaId: reserva.codigo,
+        tipoActo:
+          reserva.estado === 'EN_CURSO' || reserva.estado === 'COMPLETADA'
+            ? 'RECEPCION'
+            : 'ENTREGA',
+        medidorUso: km,
+        nivelEnergiaPct: carga,
+        puntosR2: puntos.map((p) => ({
+          zona: p.zona,
+          etiqueta: p.etiqueta,
+          dictamen: p.dictamen,
+          estado: p.estado,
+          coordX: p.coordX,
+          coordY: p.coordY,
+        })),
+      });
+      if (res?.error) {
+        setErrorOperacion(res.error.message ?? 'No se pudo guardar la inspección en D1');
+        mostrarAviso('Error al guardar inspección en D1');
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error de conexión al persistir inspección';
+      setErrorOperacion(msg);
+      mostrarAviso(msg);
+    }
+  };
+
   const cambiarEstadoPuntoR2 = (nuevoEstado: EstadoPuntoR2) => {
     const etiquetaSugerida =
       nuevoEstado === 'NOVEDAD'
@@ -183,6 +230,11 @@ export default function AlquilerDetalleView({
       ...reserva,
       puntosR2Custom: nuevosPuntos,
     });
+    persistirInspeccionR2EnD1(
+      nuevosPuntos,
+      reserva.kilometrajeEntrega,
+      reserva.nivelCargaPorcentaje
+    );
     mostrarAviso(`Punto "${puntoSeleccionado.zona}" marcado como ${etiquetaSugerida}`);
   };
 
@@ -206,6 +258,11 @@ export default function AlquilerDetalleView({
       puntosR2Custom: nuevosPuntos,
     });
     setEditandoDictamen(false);
+    persistirInspeccionR2EnD1(
+      nuevosPuntos,
+      reserva.kilometrajeEntrega,
+      reserva.nivelCargaPorcentaje
+    );
     mostrarAviso('Dictamen pericial R2 actualizado');
   };
 
@@ -231,106 +288,187 @@ export default function AlquilerDetalleView({
       nivelCargaPorcentaje: nuevaCarga,
       puntosR2Custom: nuevosPuntos,
     });
+    persistirInspeccionR2EnD1(nuevosPuntos, nuevoKm, nuevaCarga);
   };
 
   // --- Acciones Operativas Estación 2: Waybill & Caja ---
   const asentarCobroSaldoPatio = async () => {
-    if (saldoPatioPendiente <= 0) return;
-    const montoCobrado = saldoPatioPendiente;
-    const actualizada: ReservaClienteItem = {
-      ...reserva,
-      montoReportado: reserva.totalAlquiler,
-    };
-    guardarCambioReserva(actualizada);
-    setRubroActivoId('abono-verificado');
-    mostrarAviso(
-      `Cobro de ${formatCop(montoCobrado)} (${metodoCobroSaldo}) asentado · 100% pagado`
-    );
-
+    if (saldoPatioPendiente <= 0 || operacionCargando) return;
+    setOperacionCargando(true);
+    setErrorOperacion(null);
     try {
-      await actions.reservas.registrarCobroWaybill({
+      const res = await actions.reservas.registrarCobroWaybill({
         codigo: reserva.codigo,
-        monto: montoCobrado,
+        monto: saldoPatioPendiente,
         metodoPago: metodoCobroSaldo,
+        cuentaId: cuentaCobroId || undefined,
       });
-    } catch {
-      // Persistido localmente
+
+      if (res.error) {
+        setErrorOperacion(res.error.message);
+        mostrarAviso(`Error cobro: ${res.error.message}`);
+      } else {
+        const montoCobrado = saldoPatioPendiente;
+        const actualizada: ReservaClienteItem = {
+          ...reserva,
+          montoReportado: reserva.totalAlquiler,
+        };
+        guardarCambioReserva(actualizada);
+        setRubroActivoId('abono-verificado');
+        mostrarAviso(
+          `Cobro de ${formatCop(montoCobrado)} (${metodoCobroSaldo}) asentado · 100% pagado`
+        );
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error inesperado al registrar cobro.';
+      setErrorOperacion(msg);
+      mostrarAviso(msg);
+    } finally {
+      setOperacionCargando(false);
     }
   };
 
-  const cambiarEstadoGarantia = (nuevoEstadoGarantia: EstadoGarantiaReserva) => {
-    guardarCambioReserva({
-      ...reserva,
-      estadoGarantia: nuevoEstadoGarantia,
-    });
-    setRubroActivoId('deposito-garantia');
-    const etiqueta =
-      nuevoEstadoGarantia === 'LIBERADA'
-        ? 'liberada a favor del cliente'
-        : nuevoEstadoGarantia === 'RETENIDA_NOVEDAD'
-          ? 'retenida por novedad en peritaje'
-          : 'en custodia activa';
-    mostrarAviso(`Garantía R2 ${etiqueta}`);
-  };
 
-  // --- Acciones Operativas Ciclo de Vida (Máquina de Estados) ---
-  const ejecutarTransicionEstado = async (
-    nuevoEstado: EstadoReservaCliente,
-    opciones?: {
-      motivoRechazo?: string | undefined;
-      requiereMantenimiento?: boolean | undefined;
-    }
-  ) => {
-    const actualizada: ReservaClienteItem = {
-      ...reserva,
-      estado: nuevoEstado,
-      motivoRechazo: opciones?.motivoRechazo ?? reserva.motivoRechazo,
-      requiereMantenimientoRetorno:
-        opciones?.requiereMantenimiento ?? reserva.requiereMantenimientoRetorno,
-      estadoGarantia:
-        nuevoEstado === 'COMPLETADA'
-          ? cantidadNovedadesR2 > 0
-            ? 'RETENIDA_NOVEDAD'
-            : 'LIBERADA'
-          : nuevoEstado === 'CONFIRMADA' || nuevoEstado === 'EN_CURSO'
-            ? 'CUSTODIA_ACTIVA'
-            : reserva.estadoGarantia,
-      montoReportado:
-        nuevoEstado === 'COMPLETADA'
-          ? reserva.totalAlquiler
-          : reserva.montoReportado,
-    };
-
-    guardarCambioReserva(actualizada);
-    setMostrarPanelRechazo(false);
-
-    const mensajesPorEstado: Record<EstadoReservaCliente, string> = {
-      PENDIENTE: `Reserva #${reserva.codigo} reabierta para revisión en patio`,
-      CONFIRMADA: `Reserva #${reserva.codigo} confirmada · Cliente notificado`,
-      EN_CURSO: `Acta de entrega R2 completada · Unidad ${vehiculo.placa} en alquiler`,
-      COMPLETADA: opciones?.requiereMantenimiento
-        ? `Devolución registrada · Unidad ${vehiculo.placa} enviada a Mantenimiento`
-        : `Contrato #${reserva.codigo} cerrado · Unidad ${vehiculo.placa} disponible`,
-      RECHAZADA: `Solicitud #${reserva.codigo} rechazada y notificada`,
-    };
-
-    mostrarAviso(mensajesPorEstado[nuevoEstado]);
-
+  // --- Acciones Operativas Ciclo de Vida (Máquina de Estados D1) ---
+  const confirmarReservaOperativa = async () => {
+    if (operacionCargando) return;
+    setOperacionCargando(true);
+    setErrorOperacion(null);
     try {
-      await actions.reservas.cambiarEstado({
+      const res = await actions.reservas.confirmarReserva({
         codigo: reserva.codigo,
-        vehiculoId: vehiculo.id,
-        vehiculoNombre: `${vehiculo.marca} ${vehiculo.modelo}`,
-        rangoFechas: formatearRangoReservaHumano(
-          reserva.fechaInicio,
-          reserva.fechaFin
-        ),
-        nuevoEstado,
-        motivoRechazo: opciones?.motivoRechazo,
-        requiereMantenimiento: opciones?.requiereMantenimiento,
+        autorizarSinDocumentos,
+        notaAutorizacion: autorizarSinDocumentos
+          ? 'Confirmación autorizada bajo responsabilidad del local en patio'
+          : undefined,
       });
-    } catch {
-      // Estado sincronizado en cliente
+
+      if (res.error) {
+        setErrorOperacion(res.error.message);
+        mostrarAviso(res.error.message);
+      } else if (res.data?.requiereAutorizacionSinDocs) {
+        const adv = res.data.advertencias;
+        const listaDetalles = [
+          ...(adv?.cliente?.detalles ?? []),
+          ...(adv?.vehiculo?.detalles ?? []),
+        ];
+        const detalle = listaDetalles.join(', ') || 'Documentación incompleta.';
+        setErrorOperacion(
+          `${detalle} Marca la casilla "Autorizar operación bajo responsabilidad del local" para continuar.`
+        );
+        mostrarAviso('Documentación pendiente');
+      } else if (res.data?.reserva) {
+        guardarCambioReserva({
+          ...reserva,
+          estado: 'CONFIRMADA',
+        });
+        mostrarAviso(`Reserva #${reserva.codigo} confirmada exitosamente`);
+      }
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : 'Error al confirmar la reserva';
+      setErrorOperacion(msg);
+      mostrarAviso(msg);
+    } finally {
+      setOperacionCargando(false);
+    }
+  };
+
+  const entregarVehiculoOperativo = async () => {
+    if (operacionCargando) return;
+    setOperacionCargando(true);
+    setErrorOperacion(null);
+    try {
+      const res = await actions.reservas.entregarVehiculo({
+        codigo: reserva.codigo,
+        medidorUsoEntrega: reserva.kilometrajeEntrega,
+        nivelEnergiaEntregaPct: reserva.nivelCargaPorcentaje,
+        autorizarSinDocumentos,
+        notaAutorizacion: autorizarSinDocumentos
+          ? 'Entrega autorizada bajo responsabilidad del local'
+          : undefined,
+      });
+
+      if (res.error) {
+        setErrorOperacion(res.error.message);
+        mostrarAviso(res.error.message);
+      } else if (res.data?.reserva) {
+        guardarCambioReserva({
+          ...reserva,
+          estado: 'EN_CURSO',
+          kilometrajeEntrega:
+            res.data.reserva.kilometrajeEntrega ?? reserva.kilometrajeEntrega,
+        });
+        mostrarAviso(
+          `Vehículo entregado · Contrato vigente · Unidad ${vehiculo.placa} en ruta`
+        );
+      }
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : 'Error al entregar el vehículo';
+      setErrorOperacion(msg);
+      mostrarAviso(msg);
+    } finally {
+      setOperacionCargando(false);
+    }
+  };
+
+  const reanudarAlquilerOperativo = async () => {
+    if (operacionCargando) return;
+    setOperacionCargando(true);
+    setErrorOperacion(null);
+    try {
+      const res = await actions.reservas.reanudarAlquiler({
+        codigo: reserva.codigo,
+      });
+
+      if (res.error) {
+        setErrorOperacion(res.error.message);
+        mostrarAviso(res.error.message);
+      } else if (res.data?.reserva) {
+        guardarCambioReserva({
+          ...reserva,
+          estado: 'EN_CURSO',
+        });
+        mostrarAviso('Alquiler reanudado · Unidad de nuevo en curso');
+      }
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : 'Error al reanudar el alquiler';
+      setErrorOperacion(msg);
+      mostrarAviso(msg);
+    } finally {
+      setOperacionCargando(false);
+    }
+  };
+
+  const reabrirReservaOperativa = async () => {
+    if (operacionCargando) return;
+    setOperacionCargando(true);
+    setErrorOperacion(null);
+    try {
+      const res = await actions.reservas.reabrirReserva({
+        codigo: reserva.codigo,
+        motivoReapertura: 'Reapertura operativa desde patio',
+      });
+
+      if (res.error) {
+        setErrorOperacion(res.error.message);
+        mostrarAviso(res.error.message);
+      } else if (res.data?.reserva) {
+        guardarCambioReserva({
+          ...reserva,
+          estado: 'PENDIENTE',
+        });
+        mostrarAviso(`Reserva #${reserva.codigo} reabierta para revisión`);
+      }
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : 'Error al reabrir la reserva';
+      setErrorOperacion(msg);
+      mostrarAviso(msg);
+    } finally {
+      setOperacionCargando(false);
     }
   };
 
@@ -617,12 +755,12 @@ export default function AlquilerDetalleView({
                       type="text"
                       value={borradorDictamen}
                       onChange={(e) => setBorradorDictamen(e.target.value)}
-                      className="flex-1 rounded-[12px] bg-[#EDEDED] px-3 py-1.5 text-base text-[#111827] outline-none"
+                      className="flex-1 min-h-[44px] rounded-[12px] bg-[#EDEDED] px-3 py-1.5 text-base text-[#111827] outline-none"
                     />
                     <button
                       type="button"
                       onClick={guardarDictamenEditado}
-                      className="min-h-[38px] rounded-full bg-[#111827] px-3.5 py-1.5 text-xs font-bold text-white cursor-pointer"
+                      className="min-h-[44px] rounded-full bg-[#111827] px-4 py-2 text-xs font-bold text-white cursor-pointer"
                     >
                       Guardar
                     </button>
@@ -638,7 +776,7 @@ export default function AlquilerDetalleView({
                 type="button"
                 onClick={ciclarVista}
                 aria-label="Ver liquidación Waybill"
-                className="ios-press-bounce flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#EDEDED]/75 text-[#111827] hover:bg-[#EDEDED] cursor-pointer"
+                className="flex h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full bg-[#EDEDED]/75 text-[#111827] hover:bg-[#EDEDED] cursor-pointer"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -729,7 +867,7 @@ export default function AlquilerDetalleView({
                           type="button"
                           onClick={() => ajustarTelemetriaPatio(-50, 0)}
                           aria-label="Restar 50 km"
-                          className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs font-bold text-[#111827] cursor-pointer"
+                          className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-white text-xs font-bold text-[#111827] cursor-pointer"
                         >
                           -
                         </button>
@@ -737,7 +875,7 @@ export default function AlquilerDetalleView({
                           type="button"
                           onClick={() => ajustarTelemetriaPatio(50, 0)}
                           aria-label="Sumar 50 km"
-                          className="flex h-8 w-8 items-center justify-center rounded-full bg-[#111827] text-xs font-bold text-white cursor-pointer"
+                          className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-[#111827] text-xs font-bold text-white cursor-pointer"
                         >
                           +
                         </button>
@@ -758,7 +896,7 @@ export default function AlquilerDetalleView({
                           type="button"
                           onClick={() => ajustarTelemetriaPatio(0, -10)}
                           aria-label="Restar 10% de carga"
-                          className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs font-bold text-[#111827] cursor-pointer"
+                          className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-white text-xs font-bold text-[#111827] cursor-pointer"
                         >
                           -
                         </button>
@@ -766,7 +904,7 @@ export default function AlquilerDetalleView({
                           type="button"
                           onClick={() => ajustarTelemetriaPatio(0, 10)}
                           aria-label="Sumar 10% de carga"
-                          className="flex h-8 w-8 items-center justify-center rounded-full bg-[#111827] text-xs font-bold text-white cursor-pointer"
+                          className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-[#111827] text-xs font-bold text-white cursor-pointer"
                         >
                           +
                         </button>
@@ -848,7 +986,7 @@ export default function AlquilerDetalleView({
                 type="button"
                 onClick={ciclarVista}
                 aria-label="Ver expediente y especificaciones"
-                className="ios-press-bounce flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#EDEDED]/75 text-[#111827] hover:bg-[#EDEDED] cursor-pointer"
+                className="flex h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full bg-[#EDEDED]/75 text-[#111827] hover:bg-[#EDEDED] cursor-pointer"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -911,7 +1049,7 @@ export default function AlquilerDetalleView({
                     strokeLinecap="round"
                     strokeDasharray={circunferencia}
                     strokeDashoffset={offsetArco}
-                    className="transition-all duration-500"
+                    className="transition-[stroke-dashoffset] duration-300"
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-2">
@@ -977,35 +1115,55 @@ export default function AlquilerDetalleView({
               <div className="space-y-2 pt-1">
                 {saldoPatioPendiente > 0 ? (
                   <div className="flex flex-wrap items-center justify-between gap-2 rounded-[18px] bg-[#EDEDED]/75 p-2.5">
-                    <div className="flex items-center gap-1">
-                      {(
-                        [
-                          { id: 'transferencia', label: 'Bre-B / PSE' },
-                          { id: 'efectivo', label: 'Efectivo' },
-                          { id: 'tarjeta', label: 'Datáfono' },
-                        ] as const
-                      ).map((m) => (
-                        <button
-                          key={m.id}
-                          type="button"
-                          onClick={() => setMetodoCobroSaldo(m.id)}
-                          className={`rounded-full px-2.5 py-1 text-[10px] font-bold cursor-pointer ${
-                            metodoCobroSaldo === m.id
-                              ? 'bg-[#111827] text-white'
-                              : 'bg-white text-[#4B5563]'
-                          }`}
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <div className="flex items-center gap-1">
+                        {(
+                          [
+                            { id: 'transferencia', label: 'Bre-B / PSE' },
+                            { id: 'efectivo', label: 'Efectivo' },
+                            { id: 'tarjeta', label: 'Datáfono' },
+                          ] as const
+                        ).map((m) => (
+                          <button
+                            key={m.id}
+                            type="button"
+                            onClick={() => setMetodoCobroSaldo(m.id)}
+                            className={`min-h-[44px] rounded-full px-3 py-1.5 text-xs font-bold cursor-pointer ${
+                              metodoCobroSaldo === m.id
+                                ? 'bg-[#111827] text-white'
+                                : 'bg-white text-[#4B5563]'
+                            }`}
+                          >
+                            {m.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      {cuentasFinancieras && cuentasFinancieras.length > 0 && (
+                        <select
+                          value={cuentaCobroId}
+                          onChange={(e) => setCuentaCobroId(e.target.value)}
+                          className="min-h-[44px] rounded-[10px] border border-[#9CA3AF]/40 bg-white px-3 py-2 text-base font-medium text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                          aria-label="Cuenta receptora del abono"
                         >
-                          {m.label}
-                        </button>
-                      ))}
+                          {cuentasFinancieras.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.nombre}
+                            </option>
+                          ))}
+                        </select>
+                      )}
                     </div>
 
                     <button
                       type="button"
+                      disabled={operacionCargando}
                       onClick={asentarCobroSaldoPatio}
-                      className="ios-press-bounce min-h-[38px] rounded-full bg-[#111827] px-3.5 py-1.5 text-[11px] font-bold text-white hover:bg-[#1F2937] cursor-pointer"
+                      className="min-h-[44px] rounded-full bg-[#111827] px-4 py-2 text-xs font-bold text-white hover:bg-[#1F2937] disabled:opacity-50 cursor-pointer"
                     >
-                      Asentar saldo ({formatCop(saldoPatioPendiente)})
+                      {operacionCargando
+                        ? 'Asentando...'
+                        : `Asentar saldo (${formatCop(saldoPatioPendiente)})`}
                     </button>
                   </div>
                 ) : (
@@ -1018,31 +1176,37 @@ export default function AlquilerDetalleView({
                 )}
 
                 {/* Control de Depósito de Garantía */}
-                <div className="flex items-center justify-between gap-2 rounded-[18px] bg-[#EDEDED]/65 px-3 py-2">
+                <div className="flex flex-wrap items-center justify-between gap-2 rounded-[18px] bg-[#EDEDED]/65 px-3.5 py-2.5">
                   <span className="text-[11px] font-semibold text-[#4B5563]">
                     Garantía ({formatCop(vehiculo.depositoGarantia)}):
                   </span>
-                  <div className="flex items-center gap-1">
-                    {(
-                      [
-                        { id: 'CUSTODIA_ACTIVA', label: 'En custodia' },
-                        { id: 'LIBERADA', label: 'Liberar' },
-                        { id: 'RETENIDA_NOVEDAD', label: 'Retener' },
-                      ] as const
-                    ).map((g) => (
-                      <button
-                        key={g.id}
-                        type="button"
-                        onClick={() => cambiarEstadoGarantia(g.id)}
-                        className={`rounded-full px-2.5 py-1 text-[10px] font-bold cursor-pointer ${
-                          reserva.estadoGarantia === g.id
-                            ? 'bg-[#111827] text-white'
-                            : 'bg-white text-[#4B5563]'
-                        }`}
-                      >
-                        {g.label}
-                      </button>
-                    ))}
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-bold ${
+                        reserva.estadoGarantia === 'CUSTODIA_ACTIVA'
+                          ? 'bg-[#111827] text-white'
+                          : reserva.estadoGarantia === 'LIBERADA'
+                            ? 'bg-[#EDEDED] text-[#111827] border border-[#9CA3AF]/60'
+                            : 'bg-[#1F2937] text-white border border-[#4B5563]'
+                      }`}
+                    >
+                      {reserva.estadoGarantia === 'CUSTODIA_ACTIVA'
+                        ? 'En custodia activa'
+                        : reserva.estadoGarantia === 'LIBERADA'
+                          ? 'Liberada al cliente'
+                          : 'Retenida por novedad'}
+                    </span>
+
+                    {capacidades?.puedeGestionarGarantias &&
+                      (reserva.estado === 'EN_CURSO' || reserva.estado === 'PAUSADA') && (
+                        <button
+                          type="button"
+                          onClick={() => setModalDevolverAbierto(true)}
+                          className="min-h-[44px] rounded-full bg-[#111827] px-3.5 py-1.5 text-xs font-bold text-white hover:bg-[#1F2937] cursor-pointer inline-flex items-center"
+                        >
+                          Devolución / Liquidar
+                        </button>
+                      )}
                   </div>
                 </div>
               </div>
@@ -1065,7 +1229,7 @@ export default function AlquilerDetalleView({
                 type="button"
                 onClick={ciclarVista}
                 aria-label="Volver a inspección"
-                className="ios-press-bounce flex h-9 w-9 items-center justify-center rounded-full bg-[#EDEDED]/75 text-[#111827] cursor-pointer"
+                className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-[#EDEDED]/75 text-[#111827] cursor-pointer"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -1199,136 +1363,215 @@ export default function AlquilerDetalleView({
         )}
 
         {/* ===================================================================
-            BARRA DE CICLO DE VIDA OPERATIVO (THUMB-ZONE · SOLO EN MODO ADMIN)
+            SEMÁFORO DOCUMENTAL Y BARRA DE CICLO DE VIDA OPERATIVO (RBAC D1)
             =================================================================== */}
         {esAdmin && (
-          <div className="border-t border-[#EDEDED] pt-3.5 space-y-2.5">
-            {/* Etapa 1: Solicitud PENDIENTE -> Confirmar o Rechazar */}
+          <div className="border-t border-[#EDEDED] pt-3.5 space-y-3">
+            {/* Panel Semáforo: KYC Cliente + SOAT / RTM Vehículo */}
+            <SemaforoDocumentalPanel
+              reserva={reserva}
+              autorizarSinDocumentos={autorizarSinDocumentos}
+              onToggleAutorizarSinDocs={setAutorizarSinDocumentos}
+              onDocumentosActualizados={() => {
+                mostrarAviso('Expediente documental del cliente actualizado');
+              }}
+            />
+
+            {errorOperacion && (
+              <div
+                role="alert"
+                className="rounded-[18px] border border-[#9CA3AF]/40 bg-[#111827] px-4 py-3 text-xs text-white"
+              >
+                <div className="flex items-start gap-2">
+                  <span className="font-bold text-[#EDEDED]">Atención:</span>
+                  <span className="flex-1">{errorOperacion}</span>
+                  <button
+                    type="button"
+                    onClick={() => setErrorOperacion(null)}
+                    aria-label="Cerrar aviso de error"
+                    className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-[11px] text-[#9CA3AF] hover:text-white cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Etapa 1: PENDIENTE -> Confirmar o Rechazar */}
             {reserva.estado === 'PENDIENTE' && (
-              <div className="space-y-2.5">
-                {mostrarPanelRechazo ? (
-                  <div className="rounded-[20px] bg-[#EDEDED]/85 p-3 space-y-2.5 animate-fade-up">
-                    <span className="block text-[11px] font-bold text-[#111827]">
-                      Selecciona el motivo para notificar al cliente:
-                    </span>
-                    <select
-                      value={motivoRechazoSeleccionado}
-                      onChange={(e) =>
-                        setMotivoRechazoSeleccionado(e.target.value)
-                      }
-                      className="w-full rounded-[12px] bg-white px-3 py-2 text-base font-medium text-[#111827] outline-none"
-                    >
-                      {MOTIVOS_RECHAZO_CANONICOS.map((motivo) => (
-                        <option key={motivo} value={motivo}>
-                          {motivo}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setMostrarPanelRechazo(false)}
-                        className="min-h-[42px] flex-1 rounded-full bg-white px-4 py-2 text-xs font-bold text-[#111827] cursor-pointer"
-                      >
-                        Cancelar
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          ejecutarTransicionEstado('RECHAZADA', {
-                            motivoRechazo: motivoRechazoSeleccionado,
-                          })
-                        }
-                        className="min-h-[42px] flex-1 rounded-full bg-[#111827] px-4 py-2 text-xs font-bold text-white cursor-pointer"
-                      >
-                        Confirmar rechazo
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setMostrarPanelRechazo(true)}
-                      className="ios-press-bounce min-h-[44px] rounded-full bg-[#EDEDED] px-4 py-2.5 text-xs font-bold text-[#111827] hover:bg-[#9CA3AF]/40 cursor-pointer"
-                    >
-                      Rechazar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => ejecutarTransicionEstado('CONFIRMADA')}
-                      className="ios-press-bounce min-h-[44px] flex-1 rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] cursor-pointer"
-                    >
-                      Confirmar reserva y notificar
-                    </button>
-                  </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {capacidades?.puedeConfirmarRechazar && (
+                  <button
+                    type="button"
+                    disabled={operacionCargando}
+                    onClick={() => {
+                      setTipoModalCancelar('RECHAZAR');
+                      setModalCancelarAbierto(true);
+                    }}
+                    className="min-h-[44px] rounded-full bg-[#EDEDED] px-4 py-2.5 text-xs font-bold text-[#111827] hover:bg-[#9CA3AF]/40 disabled:opacity-50 cursor-pointer"
+                  >
+                    Rechazar
+                  </button>
+                )}
+                {capacidades?.puedeConfirmarRechazar && (
+                  <button
+                    type="button"
+                    disabled={operacionCargando}
+                    onClick={confirmarReservaOperativa}
+                    className="min-h-[44px] flex-1 rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] disabled:opacity-50 cursor-pointer"
+                  >
+                    {operacionCargando
+                      ? 'Confirmando...'
+                      : 'Confirmar reserva y notificar'}
+                  </button>
                 )}
               </div>
             )}
 
-            {/* Etapa 2: Reserva CONFIRMADA -> Entrega del vehículo (Check-in R2) */}
+            {/* Etapa 2: CONFIRMADA -> Entrega del vehículo (Contrato VIGENTE) o Cancelar */}
             {reserva.estado === 'CONFIRMADA' && (
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => ejecutarTransicionEstado('EN_CURSO')}
-                  className="ios-press-bounce min-h-[44px] w-full rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] cursor-pointer"
-                >
-                  Confirmar entrega y salida R2 · Pasar a En curso
-                </button>
+              <div className="flex flex-wrap items-center gap-2">
+                {capacidades?.puedeEntregar && (
+                  <button
+                    type="button"
+                    disabled={operacionCargando}
+                    onClick={entregarVehiculoOperativo}
+                    className="min-h-[44px] flex-1 rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] disabled:opacity-50 cursor-pointer"
+                  >
+                    {operacionCargando
+                      ? 'Entregando...'
+                      : 'Confirmar entrega y salida R2 (Vigente)'}
+                  </button>
+                )}
+                {capacidades?.puedeConfirmarRechazar && (
+                  <button
+                    type="button"
+                    disabled={operacionCargando}
+                    onClick={() => {
+                      setTipoModalCancelar('CANCELAR');
+                      setModalCancelarAbierto(true);
+                    }}
+                    className="min-h-[44px] rounded-full bg-[#EDEDED] px-4 py-2.5 text-xs font-bold text-[#111827] hover:bg-[#9CA3AF]/40 disabled:opacity-50 cursor-pointer"
+                  >
+                    Cancelar reserva
+                  </button>
+                )}
               </div>
             )}
 
-            {/* Etapa 3: Reserva EN_CURSO -> Devolución + ¿Requiere mantenimiento? + Cierre */}
+            {/* Etapa 3: EN_CURSO -> Pausar, Prorrogar, Devolver o Anular */}
             {reserva.estado === 'EN_CURSO' && (
               <div className="space-y-2">
-                <div className="flex items-center justify-between gap-2 rounded-[18px] bg-[#EDEDED]/70 px-3 py-2">
-                  <span className="text-[11px] font-semibold text-[#4B5563]">
-                    ¿Requiere taller al recibir?
-                  </span>
-                  <div className="flex items-center gap-1">
+                <div className="grid grid-cols-2 gap-2">
+                  {capacidades?.puedePausar && (
                     <button
                       type="button"
-                      onClick={() => setRequiereMantenimientoAlCerrar(false)}
-                      className={`rounded-full px-2.5 py-1 text-[10px] font-bold cursor-pointer ${
-                        !requiereMantenimientoAlCerrar
-                          ? 'bg-[#111827] text-white'
-                          : 'bg-white text-[#4B5563]'
-                      }`}
+                      disabled={operacionCargando}
+                      onClick={() => setModalPausarAbierto(true)}
+                      className="min-h-[44px] rounded-full bg-[#EDEDED] px-3.5 py-2 text-xs font-bold text-[#111827] hover:bg-[#9CA3AF]/40 disabled:opacity-50 cursor-pointer"
                     >
-                      No · Disponible
+                      Pausar (+1 día $0)
                     </button>
+                  )}
+                  {capacidades?.puedeProrrogarEstandar && (
                     <button
                       type="button"
-                      onClick={() => setRequiereMantenimientoAlCerrar(true)}
-                      className={`rounded-full px-2.5 py-1 text-[10px] font-bold cursor-pointer ${
-                        requiereMantenimientoAlCerrar
-                          ? 'bg-[#111827] text-white'
-                          : 'bg-white text-[#4B5563]'
-                      }`}
+                      disabled={operacionCargando}
+                      onClick={() => setModalProrrogarAbierto(true)}
+                      className="min-h-[44px] rounded-full bg-[#EDEDED] px-3.5 py-2 text-xs font-bold text-[#111827] hover:bg-[#9CA3AF]/40 disabled:opacity-50 cursor-pointer"
                     >
-                      Sí · Mantenimiento
+                      Prorrogar alquiler
                     </button>
-                  </div>
+                  )}
                 </div>
 
                 <button
                   type="button"
-                  onClick={() =>
-                    ejecutarTransicionEstado('COMPLETADA', {
-                      requiereMantenimiento: requiereMantenimientoAlCerrar,
-                    })
-                  }
-                  className="ios-press-bounce min-h-[44px] w-full rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] cursor-pointer"
+                  disabled={operacionCargando}
+                  onClick={() => setModalDevolverAbierto(true)}
+                  className="min-h-[44px] w-full rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] disabled:opacity-50 cursor-pointer"
                 >
-                  Registrar devolución y cerrar contrato
+                  Devolver y cerrar contrato
                 </button>
+
+                {capacidades?.puedeAnularContrato && (
+                  <button
+                    type="button"
+                    disabled={operacionCargando}
+                    onClick={() => {
+                      setTipoModalCancelar('ANULAR');
+                      setModalCancelarAbierto(true);
+                    }}
+                    className="min-h-[44px] w-full text-center text-[11px] font-semibold text-[#4B5563] hover:text-[#111827] cursor-pointer"
+                  >
+                    Anular contrato y alquiler
+                  </button>
+                )}
               </div>
             )}
 
-            {/* Etapa 4: Reserva COMPLETADA o RECHAZADA -> Estado archivado + Reabrir */}
+            {/* Etapa 4: PAUSADA -> Reanudar, Prorrogar, Devolver o Anular */}
+            {reserva.estado === 'PAUSADA' && (
+              <div className="space-y-2">
+                <div className="rounded-[16px] bg-[#EDEDED]/85 p-3 text-xs text-[#111827]">
+                  <span className="font-bold">Alquiler pausado por acuerdo.</span>
+                  <p className="mt-0.5 text-[11px] text-[#4B5563]">
+                    La unidad está temporalmente resguardada. La pausa no genera costos adicionales ($0).
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  {capacidades?.puedePausar && (
+                    <button
+                      type="button"
+                      disabled={operacionCargando}
+                      onClick={reanudarAlquilerOperativo}
+                      className="min-h-[44px] rounded-full bg-[#111827] px-4 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] disabled:opacity-50 cursor-pointer"
+                    >
+                      {operacionCargando ? 'Reanudando...' : 'Reanudar alquiler'}
+                    </button>
+                  )}
+                  {capacidades?.puedeProrrogarEstandar && (
+                    <button
+                      type="button"
+                      disabled={operacionCargando}
+                      onClick={() => setModalProrrogarAbierto(true)}
+                      className="min-h-[44px] rounded-full bg-[#EDEDED] px-4 py-2.5 text-xs font-bold text-[#111827] hover:bg-[#9CA3AF]/40 disabled:opacity-50 cursor-pointer"
+                    >
+                      Prorrogar alquiler
+                    </button>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  disabled={operacionCargando}
+                  onClick={() => setModalDevolverAbierto(true)}
+                  className="min-h-[44px] w-full rounded-full border border-[#9CA3AF]/50 bg-white px-5 py-2.5 text-xs font-bold text-[#111827] hover:bg-[#EDEDED] disabled:opacity-50 cursor-pointer"
+                >
+                  Devolver y cerrar contrato
+                </button>
+
+                {capacidades?.puedeAnularContrato && (
+                  <button
+                    type="button"
+                    disabled={operacionCargando}
+                    onClick={() => {
+                      setTipoModalCancelar('ANULAR');
+                      setModalCancelarAbierto(true);
+                    }}
+                    className="min-h-[44px] w-full text-center text-[11px] font-semibold text-[#4B5563] hover:text-[#111827] cursor-pointer"
+                  >
+                    Anular contrato y alquiler
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Etapa 5: COMPLETADA / RECHAZADA / CANCELADA -> Resumen + Reabrir */}
             {(reserva.estado === 'COMPLETADA' ||
-              reserva.estado === 'RECHAZADA') && (
+              reserva.estado === 'RECHAZADA' ||
+              reserva.estado === 'CANCELADA') && (
               <div className="flex items-center justify-between gap-2 rounded-[18px] bg-[#EDEDED]/75 px-3.5 py-2.5">
                 <div className="min-w-0">
                   <span className="block text-xs font-bold text-[#111827]">
@@ -1336,7 +1579,9 @@ export default function AlquilerDetalleView({
                       ? reserva.requiereMantenimientoRetorno
                         ? 'Contrato cerrado · Unidad en mantenimiento'
                         : 'Contrato cerrado · Unidad disponible en patio'
-                      : 'Solicitud rechazada'}
+                      : reserva.estado === 'RECHAZADA'
+                        ? 'Solicitud rechazada'
+                        : 'Reserva cancelada'}
                   </span>
                   {reserva.motivoRechazo && (
                     <span className="block text-[11px] text-[#4B5563] truncate">
@@ -1345,17 +1590,39 @@ export default function AlquilerDetalleView({
                   )}
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => ejecutarTransicionEstado('PENDIENTE')}
-                  className="ios-press-bounce shrink-0 rounded-full bg-white px-3 py-1.5 text-[11px] font-bold text-[#111827] cursor-pointer"
-                >
-                  Reabrir
-                </button>
+                {capacidades?.puedeAnularContrato && (
+                  <button
+                    type="button"
+                    disabled={operacionCargando}
+                    onClick={reabrirReservaOperativa}
+                    className="shrink-0 min-h-[44px] rounded-full bg-white px-4 py-2 text-xs font-bold text-[#111827] hover:bg-[#EDEDED] disabled:opacity-50 cursor-pointer"
+                  >
+                    {operacionCargando ? 'Reabriendo...' : 'Reabrir'}
+                  </button>
+                )}
               </div>
             )}
           </div>
         )}
+
+        {/* Cliente: Opción de cancelar solicitud pendiente sin abono */}
+        {!esAdmin &&
+          modo === 'cliente' &&
+          reserva.estado === 'PENDIENTE' &&
+          reserva.montoReportado === 0 && (
+            <div className="border-t border-[#EDEDED] pt-3.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setTipoModalCancelar('CANCELAR');
+                  setModalCancelarAbierto(true);
+                }}
+                className="min-h-[44px] w-full rounded-full border border-[#9CA3AF]/40 bg-white px-4 py-2.5 text-xs font-semibold text-[#4B5563] hover:text-[#111827] cursor-pointer"
+              >
+                Cancelar mi solicitud de alquiler
+              </button>
+            </div>
+          )}
 
         {/* ===================================================================
             BARRA DE ENTREGA Y EVALUACIÓN INTERACTIVA (100DVH WIZARD)
@@ -1384,10 +1651,14 @@ export default function AlquilerDetalleView({
                   navigate(
                     esAdmin
                       ? `/reservas/${reserva.codigo}/entrega?retorno=/admin/reservas/${reserva.codigo}`
-                      : `/reservas/${reserva.codigo}/entrega`
+                      : `/reservas/${reserva.codigo}/entrega${
+                          tokenAccesoPublico
+                            ? `?token=${encodeURIComponent(tokenAccesoPublico)}`
+                            : ''
+                        }`
                   )
                 }
-                className="ios-press-bounce shrink-0 rounded-full bg-white px-3 py-1.5 text-[11px] font-bold text-[#111827] cursor-pointer"
+                className="ios-press-bounce shrink-0 min-h-[44px] rounded-full bg-white px-4 py-2 text-xs font-bold text-[#111827] cursor-pointer"
               >
                 Ver resumen
               </button>
@@ -1399,7 +1670,11 @@ export default function AlquilerDetalleView({
                 navigate(
                   esAdmin
                     ? `/reservas/${reserva.codigo}/entrega?retorno=/admin/reservas/${reserva.codigo}`
-                    : `/reservas/${reserva.codigo}/entrega`
+                    : `/reservas/${reserva.codigo}/entrega${
+                        tokenAccesoPublico
+                          ? `?token=${encodeURIComponent(tokenAccesoPublico)}`
+                          : ''
+                      }`
                 )
               }
               className="ios-press-bounce flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#1F2937] cursor-pointer"
@@ -1417,6 +1692,54 @@ export default function AlquilerDetalleView({
           </section>
         </div>
       </div>
+
+      {/* Modales del ciclo de vida RBAC */}
+      <ModalPausar
+        isOpen={modalPausarAbierto}
+        onClose={() => setModalPausarAbierto(false)}
+        reserva={reserva}
+        onExito={(actualizada, msg) => {
+          guardarCambioReserva(actualizada);
+          if (msg) mostrarAviso(msg);
+        }}
+      />
+
+      <ModalProrrogar
+        isOpen={modalProrrogarAbierto}
+        onClose={() => setModalProrrogarAbierto(false)}
+        reserva={reserva}
+        capacidades={capacidades}
+        onExito={(actualizada, msg) => {
+          guardarCambioReserva(actualizada);
+          if (msg) mostrarAviso(msg);
+        }}
+      />
+
+      <ModalDevolverCerrar
+        isOpen={modalDevolverAbierto}
+        onClose={() => setModalDevolverAbierto(false)}
+        reserva={reserva}
+        hoyISO={_hoyISO}
+        capacidades={capacidades}
+        cuentasFinancieras={cuentasFinancieras}
+        onExito={(actualizada, msg) => {
+          guardarCambioReserva(actualizada);
+          if (msg) mostrarAviso(msg);
+        }}
+      />
+
+      <ModalCancelarAnular
+        isOpen={modalCancelarAbierto}
+        onClose={() => setModalCancelarAbierto(false)}
+        reserva={reserva}
+        tipo={tipoModalCancelar}
+        cuentasFinancieras={cuentasFinancieras}
+        tokenAccesoPublico={tokenAccesoPublico}
+        onExito={(actualizada, msg) => {
+          guardarCambioReserva(actualizada);
+          if (msg) mostrarAviso(msg);
+        }}
+      />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { actions } from 'astro:actions';
+import { navigate } from 'astro:transitions/client';
 import {
   calcularCotizacionAlquiler,
   encontrarPrimerRangoDisponible,
@@ -8,6 +9,7 @@ import {
   type BloqueNoDisponible,
   type VehiculoItem,
 } from '@/lib/flota';
+import type { EstadoDocumentalVehiculo } from '@/lib/flota/disponibilidad';
 import EditorialAvailabilityCalendar from './EditorialAvailabilityCalendar';
 
 export interface UsuarioSesionCliente {
@@ -27,6 +29,9 @@ export interface RentalWizardFlowProps {
   fechaInicioInicial?: string | undefined;
   fechaFinInicial?: string | undefined;
   pasoInicial?: 1 | 2 | 3 | 4 | undefined;
+  estadoDocumental?: EstadoDocumentalVehiculo | undefined;
+  localId?: string | undefined;
+  sedeNombre?: string | undefined;
 }
 
 type PasoWizard = 1 | 2 | 3 | 4;
@@ -35,9 +40,9 @@ interface DatosConductorState {
   nombreCompleto: string;
   correo: string;
   telefono: string;
-  tipoDocumento: 'CC' | 'CE' | 'PASAPORTE';
+  tipoDocumento: 'CC' | 'CE' | 'PASAPORTE' | '';
   numeroDocumento: string;
-  categoriaLicencia: 'B1' | 'B2' | 'A2' | 'C1';
+  categoriaLicencia: 'B1' | 'B2' | 'A2' | 'C1' | '';
   modalidadEntrega: 'PATIO_PRINCIPAL' | 'DOMICILIO_MEDELLIN';
 }
 
@@ -79,6 +84,9 @@ export default function RentalWizardFlow({
   fechaInicioInicial,
   fechaFinInicial,
   pasoInicial = 1,
+  estadoDocumental,
+  localId,
+  sedeNombre,
 }: RentalWizardFlowProps) {
   const [paso, setPaso] = useState<PasoWizard>(pasoInicial);
   const [bloques, setBloques] = useState<BloqueNoDisponible[]>(bloquesIniciales ?? []);
@@ -132,10 +140,12 @@ export default function RentalWizardFlow({
   );
   const [referenciaComprobante, setReferenciaComprobante] = useState('');
   const [errorValidacion, setErrorValidacion] = useState<string | null>(null);
+  const [enviandoReserva, setEnviandoReserva] = useState(false);
   const [solicitudRadicada, setSolicitudRadicada] = useState<{
     codigo: string;
     creadaEn: string;
     montoReportado: number;
+    tokenAccesoPublico?: string | null | undefined;
   } | null>(null);
 
   const cotizacion = useMemo(() => {
@@ -163,6 +173,12 @@ export default function RentalWizardFlow({
     setErrorValidacion(null);
 
     if (paso === 1) {
+      if (estadoDocumental?.tieneVencidos) {
+        setErrorValidacion(
+          'Esta unidad se encuentra temporalmente en actualización de documentos legales (SOAT / Tecnomecánica). No es posible avanzar con la reserva.'
+        );
+        return;
+      }
       if (!fechaInicio) {
         setErrorValidacion('Selecciona al menos un día disponible en el calendario.');
         return;
@@ -183,14 +199,17 @@ export default function RentalWizardFlow({
     }
 
     if (paso === 2) {
-      if (
-        !conductor.nombreCompleto.trim() ||
-        !conductor.numeroDocumento.trim() ||
-        !conductor.telefono.trim()
-      ) {
-        setErrorValidacion(
-          'Completa tu nombre, documento de identidad y teléfono de contacto para el contrato.'
-        );
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!conductor.nombreCompleto.trim()) {
+        setErrorValidacion('Por favor ingresa tu nombre completo.');
+        return;
+      }
+      if (!conductor.telefono.trim()) {
+        setErrorValidacion('Por favor ingresa tu número de WhatsApp o celular de contacto.');
+        return;
+      }
+      if (!conductor.correo.trim() || !emailRegex.test(conductor.correo.trim())) {
+        setErrorValidacion('Ingresa un correo electrónico de contacto válido.');
         return;
       }
       setPaso(3);
@@ -211,12 +230,14 @@ export default function RentalWizardFlow({
     }
 
     if (paso === 4) {
+      if (enviandoReserva) return;
       const montoReportado =
         modalidadPago === 'ABONO_30'
           ? cotizacion.abonoMinimoReserva
           : cotizacion.totalAlquiler;
 
       setErrorValidacion(null);
+      setEnviandoReserva(true);
 
       try {
         const { data, error } = await actions.reservas.crearReserva({
@@ -233,14 +254,16 @@ export default function RentalWizardFlow({
             conductor.modalidadEntrega === 'DOMICILIO_MEDELLIN'
               ? 'Dirección coordinada para Medellín / Valle de Aburrá'
               : undefined,
-          sedeNombre: 'Patio Norte Medellín',
+          sedeNombre: sedeNombre || 'Patio Norte Medellín',
+          localId: localId || undefined,
           modalidadPagoInicial: modalidadPago,
           metodoAbonoInicial: metodoAbono,
           montoAbonoReportado: montoReportado,
+          referenciaAbonoInicial: referenciaComprobante.trim() || undefined,
           contactoNombre: conductor.nombreCompleto.trim(),
-          contactoTipoDocumento: conductor.tipoDocumento,
-          contactoNumeroDocumento: conductor.numeroDocumento.trim(),
-          contactoCategoriaLicencia: conductor.categoriaLicencia,
+          contactoTipoDocumento: conductor.tipoDocumento || undefined,
+          contactoNumeroDocumento: conductor.numeroDocumento?.trim() || undefined,
+          contactoCategoriaLicencia: conductor.categoriaLicencia || undefined,
           contactoTelefono: conductor.telefono.trim(),
           contactoCorreo: conductor.correo.trim(),
           ley1581Aceptada: aceptaLey1581,
@@ -272,6 +295,7 @@ export default function RentalWizardFlow({
           codigo: data.codigo,
           creadaEn: data.reserva.creadaEn,
           montoReportado,
+          tokenAccesoPublico: data.tokenAccesoPublico,
         });
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } catch (err) {
@@ -280,6 +304,8 @@ export default function RentalWizardFlow({
             ? err.message
             : 'Ocurrió un error al procesar tu solicitud.'
         );
+      } finally {
+        setEnviandoReserva(false);
       }
     }
   };
@@ -351,18 +377,36 @@ export default function RentalWizardFlow({
           </div>
 
           <div className="mt-6 flex flex-col sm:flex-row gap-3">
-            <a
-              href="/reservas"
-              className="ios-press-bounce flex-1 min-h-[48px] inline-flex items-center justify-center rounded-full bg-[#111827] px-6 py-3 text-sm font-bold text-white shadow-fab"
-            >
-              Ver estado en Mis Reservas
-            </a>
-            <a
-              href="/catalogo"
-              className="ios-press-bounce min-h-[48px] inline-flex items-center justify-center rounded-full bg-[#EDEDED] border border-[#9CA3AF]/60 px-6 py-3 text-sm font-bold text-[#111827]"
+            {solicitudRadicada.tokenAccesoPublico ? (
+              <button
+                type="button"
+                onClick={() =>
+                  navigate(
+                    `/reservas/${solicitudRadicada.codigo}?token=${encodeURIComponent(
+                      solicitudRadicada.tokenAccesoPublico!
+                    )}`
+                  )
+                }
+                className="flex-1 min-h-[48px] inline-flex items-center justify-center rounded-full bg-[#111827] px-6 py-3 text-sm font-bold text-white shadow-fab cursor-pointer hover:bg-[#1F2937]"
+              >
+                Ver mi reserva
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => navigate('/reservas')}
+                className="flex-1 min-h-[48px] inline-flex items-center justify-center rounded-full bg-[#111827] px-6 py-3 text-sm font-bold text-white shadow-fab cursor-pointer hover:bg-[#1F2937]"
+              >
+                Ver estado en Mis Reservas
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => navigate('/catalogo')}
+              className="min-h-[48px] inline-flex items-center justify-center rounded-full bg-[#EDEDED] border border-[#9CA3AF]/60 px-6 py-3 text-sm font-bold text-[#111827] cursor-pointer hover:bg-[#9CA3AF]/20"
             >
               Volver al catálogo
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -435,7 +479,19 @@ export default function RentalWizardFlow({
 
         {/* PASO 1: Componente Único de Calendario + Imagen del Vehículo */}
         {paso === 1 && (
-          <div className="animate-fade-up">
+          <div className="animate-fade-up space-y-3">
+            {estadoDocumental?.tieneVencidos && (
+              <div className="rounded-[20px] bg-[#111827] border border-[#9CA3AF]/40 p-4 text-white space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center rounded-full bg-[#EDEDED] px-2.5 py-0.5 text-[11px] font-bold text-[#111827]">
+                    En actualización de documentos
+                  </span>
+                </div>
+                <p className="text-xs text-[#EDEDED]/90 leading-relaxed">
+                  Esta unidad se encuentra temporalmente en trámite de actualización de documentos legales (SOAT / Tecnomecánica). Las fechas no están disponibles para reserva en línea en este momento.
+                </p>
+              </div>
+            )}
             <EditorialAvailabilityCalendar
               vehiculo={vehiculo}
               hoyISO={hoyISO}
@@ -463,7 +519,7 @@ export default function RentalWizardFlow({
               </div>
               <a
                 href={urlLoginRetorno}
-                className="ios-press-bounce shrink-0 min-h-[44px] inline-flex items-center justify-center rounded-full bg-[#1F2937] px-4 py-2 text-xs font-bold text-white shadow-xs"
+                className="shrink-0 min-h-[44px] inline-flex items-center justify-center rounded-full bg-[#1F2937] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#111827]"
               >
                 Iniciar sesión
               </a>
@@ -488,10 +544,10 @@ export default function RentalWizardFlow({
           <div className="rounded-[28px] bg-white border border-[#9CA3AF]/40 p-5 space-y-4 shadow-xs">
             <div>
               <h2 className="font-display text-xl font-black tracking-tight text-[#111827]">
-                Credenciales del conductor
+                Datos de contacto y conductor
               </h2>
               <p className="mt-0.5 text-xs text-[#4B5563]">
-                La cédula y la licencia se validan para preparar el acta de entrega en patio.
+                Datos para radicar tu solicitud y preparar la reserva en patio.
               </p>
             </div>
 
@@ -501,18 +557,70 @@ export default function RentalWizardFlow({
                   htmlFor="conductor-nombre"
                   className="block text-xs font-bold text-[#111827] mb-1.5"
                 >
-                  Nombre completo del titular
+                  Nombre completo del titular <span className="text-[#111827]">*</span>
                 </label>
                 <input
                   id="conductor-nombre"
                   type="text"
+                  required
                   value={conductor.nombreCompleto}
                   onChange={(e) =>
                     setConductor((prev) => ({ ...prev, nombreCompleto: e.target.value }))
                   }
                   placeholder="Ej. Santiago Restrepo"
-                  className="w-full min-h-[48px] rounded-[12px] bg-[#EDEDED] border border-[#9CA3AF] px-3.5 py-2.5 text-base text-[#111827] placeholder:text-[#4B5563] focus:outline-none focus:ring-2 focus:ring-[#111827]"
+                  className="w-full min-h-[48px] rounded-[12px] bg-[#EDEDED] border border-[#9CA3AF] px-3.5 py-2.5 text-base text-[#111827] placeholder:text-[#4B5563] focus-visible:ring-2 focus-visible:ring-[#111827]"
                 />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label
+                    htmlFor="conductor-correo"
+                    className="block text-xs font-bold text-[#111827] mb-1.5"
+                  >
+                    Correo electrónico <span className="text-[#111827]">*</span>
+                  </label>
+                  <input
+                    id="conductor-correo"
+                    type="email"
+                    required
+                    value={conductor.correo}
+                    onChange={(e) =>
+                      setConductor((prev) => ({ ...prev, correo: e.target.value }))
+                    }
+                    placeholder="Ej. santiago@ejemplo.com"
+                    className="w-full min-h-[48px] rounded-[12px] bg-[#EDEDED] border border-[#9CA3AF] px-3.5 py-2.5 text-base text-[#111827] placeholder:text-[#4B5563] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="conductor-telefono"
+                    className="block text-xs font-bold text-[#111827] mb-1.5"
+                  >
+                    WhatsApp / Celular <span className="text-[#111827]">*</span>
+                  </label>
+                  <input
+                    id="conductor-telefono"
+                    type="tel"
+                    required
+                    value={conductor.telefono}
+                    onChange={(e) =>
+                      setConductor((prev) => ({ ...prev, telefono: e.target.value }))
+                    }
+                    placeholder="Ej. 300 456 7890"
+                    className="w-full min-h-[48px] rounded-[12px] bg-[#EDEDED] border border-[#9CA3AF] px-3.5 py-2.5 text-base text-[#111827] placeholder:text-[#4B5563] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                  />
+                </div>
+              </div>
+
+              <div className="rounded-[16px] bg-[#EDEDED] border border-[#9CA3AF]/40 p-3.5 text-xs text-[#4B5563]">
+                <p className="font-semibold text-[#111827] mb-1">
+                  Documento y licencia opcionales en este paso
+                </p>
+                <p>
+                  Si aún no tienes tu documento de identidad o licencia a mano, puedes enviar tu solicitud igual; el equipo de patio revisará tu documentación física antes de confirmar o entregar el vehículo.
+                </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -521,7 +629,7 @@ export default function RentalWizardFlow({
                     htmlFor="conductor-tipo-doc"
                     className="block text-xs font-bold text-[#111827] mb-1.5"
                   >
-                    Tipo doc.
+                    Tipo doc. (Opcional)
                   </label>
                   <select
                     id="conductor-tipo-doc"
@@ -532,8 +640,9 @@ export default function RentalWizardFlow({
                         tipoDocumento: e.target.value as DatosConductorState['tipoDocumento'],
                       }))
                     }
-                    className="w-full min-h-[48px] rounded-[12px] bg-[#EDEDED] border border-[#9CA3AF] px-3 py-2.5 text-base text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#111827]"
+                    className="w-full min-h-[48px] rounded-[12px] bg-[#EDEDED] border border-[#9CA3AF] px-3 py-2.5 text-base text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
                   >
+                    <option value="">Sin especificar aún</option>
                     <option value="CC">Cédula (CC)</option>
                     <option value="CE">Cédula Extranjería (CE)</option>
                     <option value="PASAPORTE">Pasaporte</option>
@@ -545,7 +654,7 @@ export default function RentalWizardFlow({
                     htmlFor="conductor-num-doc"
                     className="block text-xs font-bold text-[#111827] mb-1.5"
                   >
-                    Número de documento
+                    Número de documento (Opcional)
                   </label>
                   <input
                     id="conductor-num-doc"
@@ -556,55 +665,35 @@ export default function RentalWizardFlow({
                       setConductor((prev) => ({ ...prev, numeroDocumento: e.target.value }))
                     }
                     placeholder="Ej. 1037645890"
-                    className="w-full min-h-[48px] rounded-[12px] bg-[#EDEDED] border border-[#9CA3AF] px-3.5 py-2.5 text-base text-[#111827] placeholder:text-[#4B5563] focus:outline-none focus:ring-2 focus:ring-[#111827]"
+                    className="w-full min-h-[48px] rounded-[12px] bg-[#EDEDED] border border-[#9CA3AF] px-3.5 py-2.5 text-base text-[#111827] placeholder:text-[#4B5563] focus-visible:ring-2 focus-visible:ring-[#111827]"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label
-                    htmlFor="conductor-telefono"
-                    className="block text-xs font-bold text-[#111827] mb-1.5"
-                  >
-                    WhatsApp / Celular
-                  </label>
-                  <input
-                    id="conductor-telefono"
-                    type="tel"
-                    value={conductor.telefono}
-                    onChange={(e) =>
-                      setConductor((prev) => ({ ...prev, telefono: e.target.value }))
-                    }
-                    placeholder="Ej. 300 456 7890"
-                    className="w-full min-h-[48px] rounded-[12px] bg-[#EDEDED] border border-[#9CA3AF] px-3.5 py-2.5 text-base text-[#111827] placeholder:text-[#4B5563] focus:outline-none focus:ring-2 focus:ring-[#111827]"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="conductor-licencia"
-                    className="block text-xs font-bold text-[#111827] mb-1.5"
-                  >
-                    Categoría de licencia vigente
-                  </label>
-                  <select
-                    id="conductor-licencia"
-                    value={conductor.categoriaLicencia}
-                    onChange={(e) =>
-                      setConductor((prev) => ({
-                        ...prev,
-                        categoriaLicencia: e.target
-                          .value as DatosConductorState['categoriaLicencia'],
-                      }))
-                    }
-                    className="w-full min-h-[48px] rounded-[12px] bg-[#EDEDED] border border-[#9CA3AF] px-3 py-2.5 text-base text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#111827]"
-                  >
-                    <option value="B1">Categoría B1 (Automóviles / SUV)</option>
-                    <option value="B2">Categoría B2 / C1 (Servicio Público)</option>
-                    <option value="A2">Categoría A2 (Motocicletas)</option>
-                  </select>
-                </div>
+              <div>
+                <label
+                  htmlFor="conductor-licencia"
+                  className="block text-xs font-bold text-[#111827] mb-1.5"
+                >
+                  Categoría de licencia (Opcional)
+                </label>
+                <select
+                  id="conductor-licencia"
+                  value={conductor.categoriaLicencia}
+                  onChange={(e) =>
+                    setConductor((prev) => ({
+                      ...prev,
+                      categoriaLicencia: e.target
+                        .value as DatosConductorState['categoriaLicencia'],
+                    }))
+                  }
+                  className="w-full min-h-[48px] rounded-[12px] bg-[#EDEDED] border border-[#9CA3AF] px-3 py-2.5 text-base text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                >
+                  <option value="">Sin especificar aún</option>
+                  <option value="B1">Categoría B1 (Automóviles / SUV)</option>
+                  <option value="B2">Categoría B2 / C1 (Servicio Público)</option>
+                  <option value="A2">Categoría A2 (Motocicletas)</option>
+                </select>
               </div>
 
               <div>
@@ -883,7 +972,7 @@ export default function RentalWizardFlow({
                 value={referenciaComprobante}
                 onChange={(e) => setReferenciaComprobante(e.target.value)}
                 placeholder="Ej. Comprobante #948201 o llego a las 10:00 AM"
-                className="w-full min-h-[48px] rounded-[12px] bg-[#EDEDED] border border-[#9CA3AF] px-3.5 py-2.5 text-base text-[#111827] placeholder:text-[#4B5563] focus:outline-none focus:ring-2 focus:ring-[#111827]"
+                className="w-full min-h-[48px] rounded-[12px] bg-[#EDEDED] border border-[#9CA3AF] px-3.5 py-2.5 text-base text-[#111827] placeholder:text-[#4B5563] focus-visible:ring-2 focus-visible:ring-[#111827]"
               />
             </div>
           </div>
@@ -943,28 +1032,39 @@ export default function RentalWizardFlow({
             </button>
           )}
 
-          <button
-            type="button"
-            onClick={avanzarPaso}
-            className="ios-press-bounce min-h-[48px] rounded-full bg-[#111827] hover:bg-[#1F2937] text-white px-6 py-3 text-xs sm:text-sm font-bold shadow-fab inline-flex items-center gap-2 cursor-pointer"
-          >
-            <span>
-              {paso === 1 && 'Confirmar fechas'}
-              {paso === 2 && 'Ver resumen'}
-              {paso === 3 && 'Continuar al abono'}
-              {paso === 4 && 'Enviar solicitud'}
-            </span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              className="h-4 w-4"
-            >
-              <path d="m9 18 6-6-6-6" />
-            </svg>
-          </button>
+          {(() => {
+            const estaBloqueadoPorDocs = Boolean(paso === 1 && estadoDocumental?.tieneVencidos);
+            const estaDeshabilitado = estaBloqueadoPorDocs || (paso === 4 && enviandoReserva);
+            return (
+              <button
+                type="button"
+                disabled={estaDeshabilitado}
+                onClick={avanzarPaso}
+                className={`min-h-[48px] rounded-full px-6 py-3 text-xs sm:text-sm font-bold shadow-fab inline-flex items-center gap-2 ${
+                  estaDeshabilitado
+                    ? 'bg-[#4B5563] text-[#9CA3AF] opacity-60 cursor-not-allowed'
+                    : 'bg-[#111827] hover:bg-[#1F2937] text-white cursor-pointer'
+                }`}
+              >
+                <span>
+                  {paso === 1 && (estaBloqueadoPorDocs ? 'En actualización de documentos' : 'Confirmar fechas')}
+                  {paso === 2 && 'Ver resumen'}
+                  {paso === 3 && 'Continuar al abono'}
+                  {paso === 4 && (enviandoReserva ? 'Enviando solicitud...' : 'Enviar solicitud')}
+                </span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  className="h-4 w-4"
+                >
+                  <path d="m9 18 6-6-6-6" />
+                </svg>
+              </button>
+            );
+          })()}
         </div>
       </div>
     </div>

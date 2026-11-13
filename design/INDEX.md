@@ -3,12 +3,6 @@
 **Responsibility**: Diseños visuales vectoriales (Pencil / .pen), assets gráficos exportados y especificaciones UI/UX.
 **Architectural Layer**: Design System / Visual Assets
 
-## Subdirectories & Child Modules
-
-| Subdirectory | Responsibility | Index |
-| :--- | :--- | :--- |
-| [`landing-assets/`](./landing-assets/) | Directory `landing-assets` | *(No index)* |
-
 ## File Manifest
 
 | File | Role / Pattern | Public Exports / API | Key Dependencies |

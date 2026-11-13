@@ -3,12 +3,6 @@
 **Responsibility**: Dominio financiero y de caja operativa: cálculos de balance, liquidación de depósitos de garantía, repositorio transaccional D1 y exportación de reportes.
 **Architectural Layer**: Domain & Infrastructure Layer
 
-## Subdirectories & Child Modules
-
-| Subdirectory | Responsibility | Index |
-| :--- | :--- | :--- |
-| *(None)* | - | - |
-
 ## File Manifest
 
 | File | Role / Pattern | Public Exports / API | Key Dependencies |

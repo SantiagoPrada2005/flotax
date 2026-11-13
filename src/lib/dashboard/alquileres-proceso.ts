@@ -109,6 +109,7 @@ export interface MapearReservaAAlquilerEnProcesoParams {
     | 'totalPagado'
     | 'firmaArrendatarioR2Key'
     | 'fechaHoraEntregaReal'
+    | 'fechaHoraDevolucionReal'
     | 'actualizadoEn'
   > | null;
   inspeccionEntrega: Pick<
@@ -133,10 +134,16 @@ export function mapearReservaAAlquilerEnProceso(
 
   if (
     verificacion?.estado === 'APROBADO' ||
-    (contrato?.estadoContrato === 'VIGENTE' && contrato?.fechaHoraEntregaReal)
+    Boolean(reserva.autorizadoSinDocumentosPorId) ||
+    (contrato?.estadoContrato === 'VIGENTE' && contrato?.fechaHoraEntregaReal) ||
+    reserva.estado === 'EN_CURSO' ||
+    reserva.estado === 'PAUSADA' ||
+    reserva.estado === 'COMPLETADA'
   ) {
     estadoKyc = 'COMPLETADO';
-    detalleKyc = 'Identidad validada';
+    detalleKyc = reserva.autorizadoSinDocumentosPorId
+      ? 'Autorizado sin documentos'
+      : 'Identidad validada';
   } else if (verificacion?.estado === 'EN_REVISION') {
     estadoKyc = 'EN_PROCESO';
     detalleKyc = 'En revisión de documentos';
@@ -150,8 +157,12 @@ export function mapearReservaAAlquilerEnProceso(
   let detalleAbono = 'Pendiente de abono';
 
   if (
-    reserva.montoAbonoReportado > 0 ||
     (contrato?.totalPagado ?? 0) > 0 ||
+    reserva.montoAbonoReportado > 0 ||
+    reserva.estado === 'CONFIRMADA' ||
+    reserva.estado === 'EN_CURSO' ||
+    reserva.estado === 'PAUSADA' ||
+    reserva.estado === 'COMPLETADA' ||
     (contrato?.estadoContrato === 'VIGENTE' && contrato?.fechaHoraEntregaReal)
   ) {
     estadoAbono = 'COMPLETADO';
@@ -159,36 +170,39 @@ export function mapearReservaAAlquilerEnProceso(
       (contrato?.totalPagado ?? 0) > 0
         ? 'Liquidado en caja'
         : 'Abono confirmado';
-  } else if (reserva.estado === 'CONFIRMADA' || reserva.estado === 'EN_CURSO') {
-    estadoAbono = 'COMPLETADO';
-    detalleAbono = 'Abono confirmado';
   }
 
   // Paso 3: Inspección Pericial Fotográfica
   let estadoPeritaje: EstadoPasoContrato = 'PENDIENTE';
   let detallePeritaje = 'Pendiente de inicio';
 
-  if (inspeccionEntrega?.finalizadaEn) {
+  if (
+    inspeccionEntrega?.finalizadaEn ||
+    reserva.estado === 'EN_CURSO' ||
+    reserva.estado === 'PAUSADA' ||
+    reserva.estado === 'COMPLETADA' ||
+    (contrato?.estadoContrato === 'VIGENTE' && contrato?.fechaHoraEntregaReal)
+  ) {
     estadoPeritaje = 'COMPLETADO';
     detallePeritaje = 'Acta R2 sellada';
   } else if (inspeccionEntrega?.iniciadaEn) {
     estadoPeritaje = 'EN_PROCESO';
     detallePeritaje = 'Capturando evidencia en patio';
-  } else if (
-    contrato?.estadoContrato === 'VIGENTE' &&
-    contrato?.fechaHoraEntregaReal
-  ) {
-    estadoPeritaje = 'COMPLETADO';
-    detallePeritaje = 'Acta R2 sellada';
   }
 
   // Paso 4: Firma de Contrato y Entrega
   let estadoFirma: EstadoPasoContrato = 'PENDIENTE';
   let detalleFirma = 'Pendiente de firma final';
 
-  if (
-    contrato?.estadoContrato === 'VIGENTE' &&
-    contrato?.fechaHoraEntregaReal
+  if (reserva.estado === 'COMPLETADA') {
+    estadoFirma = 'COMPLETADO';
+    detalleFirma = 'Vehículo devuelto y contrato cerrado';
+  } else if (reserva.estado === 'PAUSADA') {
+    estadoFirma = 'PAUSADO';
+    detalleFirma = 'Alquiler pausado por acuerdo';
+  } else if (
+    reserva.estado === 'EN_CURSO' ||
+    (contrato?.estadoContrato === 'VIGENTE' && contrato?.fechaHoraEntregaReal)
   ) {
     estadoFirma = 'COMPLETADO';
     detalleFirma = 'Contrato firmado y llaves entregadas';
@@ -205,19 +219,16 @@ export function mapearReservaAAlquilerEnProceso(
   let completadoEn: string | null = null;
   let esperandoRespuestaDesde: string | null = null;
 
-  const esCompletado =
-    contrato?.estadoContrato === 'VIGENTE' &&
-    contrato?.fechaHoraEntregaReal !== null &&
-    contrato?.fechaHoraEntregaReal !== undefined;
-
-  if (esCompletado && contrato?.fechaHoraEntregaReal) {
+  if (reserva.estado === 'COMPLETADA') {
     estado = 'COMPLETADO';
-    const fechaEntrega = contrato.fechaHoraEntregaReal;
+    const fechaCierre =
+      contrato?.fechaHoraDevolucionReal ?? reserva.actualizadoEn;
     completadoEn =
-      fechaEntrega instanceof Date
-        ? fechaEntrega.toISOString()
-        : new Date(fechaEntrega).toISOString();
+      fechaCierre instanceof Date
+        ? fechaCierre.toISOString()
+        : new Date(fechaCierre).toISOString();
   } else if (
+    reserva.estado === 'PAUSADA' ||
     verificacion?.estado === 'RECHAZADO' ||
     contrato?.estadoContrato === 'ANULADO'
   ) {
@@ -225,12 +236,16 @@ export function mapearReservaAAlquilerEnProceso(
   } else {
     estado = 'EN_PROCESO';
     if (contrato && !contrato.firmaArrendatarioR2Key) {
-      const baseDate = inspeccionEntrega?.finalizadaEn ?? contrato.actualizadoEn;
+      const baseDate =
+        inspeccionEntrega?.finalizadaEn ?? contrato.actualizadoEn;
       esperandoRespuestaDesde =
         baseDate instanceof Date
           ? baseDate.toISOString()
           : new Date(baseDate).toISOString();
-    } else if (inspeccionEntrega?.finalizadaEn && !contrato?.fechaHoraEntregaReal) {
+    } else if (
+      inspeccionEntrega?.finalizadaEn &&
+      !contrato?.fechaHoraEntregaReal
+    ) {
       const baseDate = inspeccionEntrega.finalizadaEn;
       esperandoRespuestaDesde =
         baseDate instanceof Date
@@ -242,12 +257,17 @@ export function mapearReservaAAlquilerEnProceso(
   // Resumen textual de la etapa actual
   let etapaActualResumen: string;
   if (estado === 'COMPLETADO') {
-    etapaActualResumen = 'Contrato activo • Llaves entregadas';
+    etapaActualResumen = 'Contrato cerrado • Devolución finalizada';
   } else if (estado === 'PAUSADO') {
-    etapaActualResumen =
-      verificacion?.estado === 'RECHAZADO'
-        ? 'Documentos rechazados'
-        : 'Proceso de alquiler pausado';
+    if (reserva.estado === 'PAUSADA') {
+      etapaActualResumen = 'Alquiler pausado por acuerdo';
+    } else if (verificacion?.estado === 'RECHAZADO') {
+      etapaActualResumen = 'Documentos rechazados';
+    } else {
+      etapaActualResumen = 'Proceso de alquiler pausado';
+    }
+  } else if (reserva.estado === 'EN_CURSO') {
+    etapaActualResumen = 'En curso • Unidad en ruta';
   } else if (estadoFirma === 'EN_PROCESO') {
     etapaActualResumen = 'Firma de contrato y entrega';
   } else if (estadoPeritaje === 'EN_PROCESO') {
@@ -328,6 +348,7 @@ export async function listarAlquileresEnProcesoD1(
         contratoTotalPagado: contratosAlquiler.totalPagado,
         contratoFirmaArrendatarioR2Key: contratosAlquiler.firmaArrendatarioR2Key,
         contratoFechaHoraEntregaReal: contratosAlquiler.fechaHoraEntregaReal,
+        contratoFechaHoraDevolucionReal: contratosAlquiler.fechaHoraDevolucionReal,
         contratoActualizadoEn: contratosAlquiler.actualizadoEn,
       })
       .from(reservas)
@@ -336,7 +357,13 @@ export async function listarAlquileresEnProcesoD1(
       .where(
         and(
           eq(reservas.localId, localId),
-          inArray(reservas.estado, ['PENDIENTE', 'CONFIRMADA', 'EN_CURSO'])
+          inArray(reservas.estado, [
+            'PENDIENTE',
+            'CONFIRMADA',
+            'EN_CURSO',
+            'PAUSADA',
+            'COMPLETADA',
+          ])
         )
       )
       .all();
@@ -430,6 +457,7 @@ export async function listarAlquileresEnProcesoD1(
               totalPagado: row.contratoTotalPagado ?? 0,
               firmaArrendatarioR2Key: row.contratoFirmaArrendatarioR2Key ?? null,
               fechaHoraEntregaReal: row.contratoFechaHoraEntregaReal ?? null,
+              fechaHoraDevolucionReal: row.contratoFechaHoraDevolucionReal ?? null,
               actualizadoEn: row.contratoActualizadoEn,
             }
           : null;

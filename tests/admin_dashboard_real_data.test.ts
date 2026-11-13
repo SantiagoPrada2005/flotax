@@ -194,21 +194,24 @@ describe('Mapeo de Alquileres en Proceso (D1 a UI)', () => {
     assert.equal(pasos.find((p) => p.id === 'peritaje')?.estado, 'EN_PROCESO');
   });
 
-  it('3. Reserva EN_CURSO con contrato VIGENTE, pago, entrega real e inspección finalizada mapea a COMPLETADO con completadoEn', () => {
+  it('3. Reserva COMPLETADA con contrato cerrado, pago, devolución real e inspección finalizada mapea a COMPLETADO con completadoEn', () => {
     const fechaEntrega = new Date('2026-11-12T15:00:00.000Z');
     const reserva = crearReservaBase({
-      estado: 'EN_CURSO',
+      estado: 'COMPLETADA',
       montoAbonoReportado: 300_000,
+      fechaDevolucionReal: '2026-11-12',
+      actualizadoEn: fechaEntrega,
     });
     const item = mapearReservaAAlquilerEnProceso({
       reserva,
       vehiculo: { placa: 'BMW-240', imagenUrl: '/images/vehiculos/dark-coupe.webp' },
       contrato: {
         numeroContrato: 'CTR-849204',
-        estadoContrato: 'VIGENTE',
+        estadoContrato: 'CERRADO_PAZ_Y_SALVO',
         totalPagado: 705_000,
         firmaArrendatarioR2Key: 'firmas/ctr-849204-cliente.png',
         fechaHoraEntregaReal: fechaEntrega,
+        fechaHoraDevolucionReal: fechaEntrega,
         actualizadoEn: fechaEntrega,
       },
       inspeccionEntrega: {

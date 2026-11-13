@@ -17,6 +17,7 @@ import {
 import { getLogger } from '@/lib/logger';
 import { aplicarPoliticaCacheHtml } from '@/lib/pwa/cache-policy';
 import { env } from 'cloudflare:workers';
+import { esRutaDetalleConTokenPublico } from '@/lib/auth';
 
 const ADMIN_PREFIX = '/admin';
 
@@ -232,7 +233,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const usuario = context.locals.usuario;
 
   // Acceso sin autenticación a cualquier ruta protegida
-  if (isProtectedRoute(pathname) && !user) {
+  const esInvitadoConToken = esRutaDetalleConTokenPublico(
+    pathname,
+    context.url.searchParams
+  );
+  if (isProtectedRoute(pathname) && !user && !esInvitadoConToken) {
     const returnTo = encodeURIComponent(pathname + context.url.search);
     return redirigir(`/login?redirect=${returnTo}`);
   }

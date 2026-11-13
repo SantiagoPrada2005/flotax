@@ -74,6 +74,7 @@ export async function listarVehiculos(
     }
     if (opciones?.soloDisponibles) {
       condiciones.push(ne(vehiculos.estado, 'FUERA_SERVICIO'));
+      condiciones.push(ne(vehiculos.estado, 'NO_DISPONIBLE'));
     }
 
     const rows = await db
@@ -93,12 +94,13 @@ export async function listarVehiculos(
       db
         .select({
           vehiculoId: reservas.vehiculoId,
+          estado: reservas.estado,
         })
         .from(reservas)
         .where(
           and(
             inArray(reservas.vehiculoId, ids),
-            inArray(reservas.estado, ['CONFIRMADA', 'PENDIENTE', 'EN_CURSO']),
+            inArray(reservas.estado, ['CONFIRMADA', 'PENDIENTE', 'EN_CURSO', 'PAUSADA']),
             lte(reservas.fechaInicio, ventanaFin),
             gte(reservas.fechaFin, ventanaInicio)
           )
@@ -121,21 +123,30 @@ export async function listarVehiculos(
     const vehiculosConMantenimiento = new Set(
       mantenimientosOcupados.map((m) => m.vehiculoId)
     );
+    const vehiculosConPausa = new Set(
+      reservasOcupadas.filter((r) => r.estado === 'PAUSADA').map((r) => r.vehiculoId)
+    );
     const vehiculosConReserva = new Set(
-      reservasOcupadas.map((r) => r.vehiculoId)
+      reservasOcupadas.filter((r) => r.estado !== 'PAUSADA').map((r) => r.vehiculoId)
     );
 
     const items = rows.map((row) => {
       const item = mapD1ToVehiculoItem(row);
 
-      // Si el vehículo está fuera de servicio permanentemente, se respeta
-      if (item.estado === 'FUERA_SERVICIO') {
+      // Si el vehículo está fuera de servicio permanentemente o administrativamente no disponible, se respeta
+      if (item.estado === 'FUERA_SERVICIO' || item.estado === 'NO_DISPONIBLE') {
         return item;
       }
 
       // Si tiene mantenimiento activo en la ventana evaluada
       if (vehiculosConMantenimiento.has(item.id)) {
         item.estado = 'MANTENIMIENTO';
+        return item;
+      }
+
+      // Si tiene reserva en pausa (NO_DISPONIBLE) en la ventana evaluada
+      if (vehiculosConPausa.has(item.id)) {
+        item.estado = 'NO_DISPONIBLE';
         return item;
       }
 

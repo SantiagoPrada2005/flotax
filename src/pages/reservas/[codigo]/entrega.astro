@@ -7,6 +7,7 @@ import { resolveClientTimeContext } from '@/lib/time/client-time';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
 import { sanitizarRetornoEntrega } from '@/lib/auth/portal-modo';
+import { validarAccesoReservaLectura } from '@/lib/auth';
 
 const { codigo } = Astro.params;
 const modoOperador = Astro.locals.modoPortal === 'ADMIN';
@@ -15,6 +16,8 @@ if (!codigo) {
   return Astro.redirect(modoOperador ? '/admin/reservas' : '/reservas');
 }
 
+const tokenQuery = Astro.url.searchParams.get('token');
+const usuario = Astro.locals.usuario;
 const { dateString: hoyISO } = resolveClientTimeContext(Astro.request);
 const db = env.DB ? getDb(env.DB) : undefined;
 let reservaInicial = await obtenerReservaPorCodigoD1(db, codigo);
@@ -26,13 +29,29 @@ if (!reservaInicial) {
   return Astro.redirect(modoOperador ? '/admin/reservas' : '/reservas');
 }
 
+const tieneAcceso = validarAccesoReservaLectura(reservaInicial, usuario, tokenQuery);
+if (!tieneAcceso) {
+  if (!usuario) {
+    const returnTo = encodeURIComponent(Astro.url.pathname + Astro.url.search);
+    return Astro.redirect(`/login?redirect=${returnTo}`);
+  }
+  return new Response('Acceso no autorizado a esta reserva.', { status: 403 });
+}
+
+const tokenPublicoValido =
+  tokenQuery && tokenQuery.trim() === reservaInicial.tokenAccesoPublico
+    ? tokenQuery.trim()
+    : usuario?.id === reservaInicial.clienteId
+      ? reservaInicial.tokenAccesoPublico ?? null
+      : null;
+
 const retornoParam = Astro.url.searchParams.get('retorno');
 const retornoValido = sanitizarRetornoEntrega(retornoParam);
 const retornoHref =
   retornoValido ??
   (modoOperador
     ? `/admin/reservas/${codigo.toUpperCase()}`
-    : `/reservas/${codigo.toUpperCase()}`);
+    : `/reservas/${codigo.toUpperCase()}${tokenPublicoValido ? `?token=${tokenPublicoValido}` : ''}`);
 ---
 
 <LayoutApp
@@ -46,5 +65,6 @@ const retornoHref =
     reservaInicial={reservaInicial}
     hoyISO={hoyISO}
     retornoHref={retornoHref}
+    tokenAccesoPublico={tokenPublicoValido}
   />
 </LayoutApp>

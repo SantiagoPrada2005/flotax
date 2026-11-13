@@ -1,41 +1,141 @@
 ---
 import LayoutAdmin from '@/layouts/LayoutAdmin.astro';
+import { requireLocalAuth, PERMISOS } from '@/lib/auth';
+import { env } from 'cloudflare:workers';
+import { getDb } from '@/lib/db';
+import { reservas, vehiculos, inspeccionesPericiales } from '@/db/schema';
+import { and, desc, eq, inArray } from 'drizzle-orm';
+
+const usuario = requireLocalAuth(Astro, PERMISOS.RESERVAS_LEER);
+const localId = usuario.localActivo.id;
+const db = env.DB ? getDb(env.DB) : null;
+
+const activas = db
+  ? await db
+      .select({
+        codigo: reservas.codigo,
+        estado: reservas.estado,
+        contactoNombre: reservas.contactoNombre,
+        fechaInicio: reservas.fechaInicio,
+        vehiculoPlaca: vehiculos.placa,
+        vehiculoMarca: vehiculos.marca,
+        vehiculoModelo: vehiculos.modelo,
+      })
+      .from(reservas)
+      .innerJoin(vehiculos, eq(reservas.vehiculoId, vehiculos.id))
+      .where(and(eq(reservas.localId, localId), inArray(reservas.estado, ['CONFIRMADA', 'EN_CURSO', 'PAUSADA'])))
+      .orderBy(desc(reservas.fechaInicio))
+      .limit(15)
+  : [];
+
+const inspecciones = db
+  ? await db
+      .select({
+        id: inspeccionesPericiales.id,
+        tipoActo: inspeccionesPericiales.tipoActo,
+        estadoGeneral: inspeccionesPericiales.estadoGeneral,
+        medidorUso: inspeccionesPericiales.medidorUso,
+        reservaCodigo: reservas.codigo,
+        vehiculoPlaca: vehiculos.placa,
+      })
+      .from(inspeccionesPericiales)
+      .innerJoin(reservas, eq(inspeccionesPericiales.reservaId, reservas.id))
+      .innerJoin(vehiculos, eq(inspeccionesPericiales.vehiculoId, vehiculos.id))
+      .where(eq(inspeccionesPericiales.localId, localId))
+      .orderBy(desc(inspeccionesPericiales.finalizadaEn))
+      .limit(6)
+  : [];
+
+const ETIQUETAS: Record<string, string> = {
+  CONFIRMADA: 'Lista para entrega',
+  EN_CURSO: 'En circulación',
+  PAUSADA: 'En pausa acordada',
+};
 ---
 
-<LayoutAdmin title="FlotaX — Operaciones y Peritaje" activeTab="fleet">
-  <div class="mx-auto w-full max-w-md sm:max-w-xl px-4 py-3 space-y-4">
-    <header class="pt-1 pb-1">
-      <p class="text-xs font-semibold uppercase tracking-wider text-[#4B5563]">
-        Control Pericial
-      </p>
-      <div class="mt-0.5 flex items-baseline justify-between">
-        <h1 class="font-display text-2xl font-black tracking-tight text-[#111827] sm:text-3xl">
-          Entrega y Devolución
+<LayoutAdmin title="Operaciones y Patio — FlotaX" activeTab="fleet">
+  <div class="mx-auto w-full max-w-4xl px-4 sm:px-6 py-4 sm:py-6 space-y-6">
+    <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-wider text-[#4B5563]">
+          Patio operativo · {usuario.localActivo.nombre}
+        </p>
+        <h1 class="font-display text-2xl sm:text-3xl font-black tracking-tight text-[#111827]">
+          Operaciones y Peritaje R2
         </h1>
-        <a
-          href="/admin/operaciones/nueva"
-          class="inline-flex min-h-[40px] items-center gap-1.5 rounded-full bg-[#111827] px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#1F2937] active:scale-95"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="h-3.5 w-3.5">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          Nueva Inspección
-        </a>
       </div>
+      <a
+        href="/admin/reservas"
+        class="inline-flex min-h-[44px] items-center justify-center rounded-full bg-[#111827] px-4 py-2 text-xs font-bold text-white hover:bg-[#1F2937]"
+      >
+        Ver todas las reservas
+      </a>
     </header>
 
-    <div class="rounded-[28px] bg-white p-5 border border-[#9CA3AF]/30 shadow-md">
-      <div class="flex items-center justify-between pb-3 border-b border-[#9CA3AF]/20">
-        <h2 class="font-display text-base font-bold text-[#111827]">Inspecciones Periciales</h2>
-        <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
-          <span class="h-1.5 w-1.5 rounded-full bg-emerald-600"></span>
-          Cloudflare R2 Activo
-        </span>
-      </div>
-      <p class="mt-4 text-xs text-[#4B5563] text-center py-6">
-        Registro fotográfico pericial con zero egress para check-in y check-out.
-      </p>
-    </div>
+    <section aria-labelledby="sec-operaciones-activas" class="space-y-3">
+      <h2 id="sec-operaciones-activas" class="font-display text-base font-extrabold text-[#111827]">
+        Unidades activas en patio y ruta ({activas.length})
+      </h2>
+      {activas.length === 0 ? (
+        <div class="rounded-[24px] bg-white border border-[#9CA3AF]/40 p-6 text-center text-xs text-[#4B5563]">
+          No hay reservas activas en este momento (Confirmadas, En curso o Pausadas).
+        </div>
+      ) : (
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {activas.map((item) => (
+            <a
+              href={`/admin/reservas/${item.codigo}`}
+              class="flex items-center justify-between gap-3 rounded-[20px] bg-white border border-[#9CA3AF]/40 p-3.5 hover:border-[#111827] transition-colors"
+            >
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <span class="rounded-full bg-[#111827] px-2 py-0.5 font-mono text-[10px] font-bold text-white">
+                    {item.vehiculoPlaca}
+                  </span>
+                  <span class="text-xs font-bold text-[#111827] truncate">
+                    {item.vehiculoMarca} {item.vehiculoModelo}
+                  </span>
+                </div>
+                <p class="mt-1 text-xs text-[#4B5563] truncate">{item.contactoNombre} · #{item.codigo}</p>
+                <span class="inline-block mt-1 text-[10px] font-semibold text-[#111827]">
+                  {ETIQUETAS[item.estado] ?? item.estado} · {item.fechaInicio}
+                </span>
+              </div>
+              <span class="shrink-0 text-xs font-bold text-[#111827]">Gestionar →</span>
+            </a>
+          ))}
+        </div>
+      )}
+    </section>
+
+    <section aria-labelledby="sec-inspecciones-r2" class="space-y-3">
+      <h2 id="sec-inspecciones-r2" class="font-display text-base font-extrabold text-[#111827]">
+        Inspecciones periciales recientes (Cloudflare R2)
+      </h2>
+      {inspecciones.length === 0 ? (
+        <div class="rounded-[24px] bg-white border border-[#9CA3AF]/40 p-6 text-center text-xs text-[#4B5563]">
+          No se registran inspecciones recientes en este patio.
+        </div>
+      ) : (
+        <div class="space-y-2">
+          {inspecciones.map((insp) => (
+            <div class="flex items-center justify-between gap-3 rounded-[18px] bg-white border border-[#9CA3AF]/30 p-3">
+              <div class="min-w-0">
+                <span class="font-bold text-xs text-[#111827]">
+                  {insp.tipoActo === 'ENTREGA' ? 'Salida / Entrega' : 'Retorno / Devolución'} · {insp.vehiculoPlaca}
+                </span>
+                <p class="text-[11px] text-[#4B5563]">{insp.medidorUso.toLocaleString('es-CO')} km · {insp.estadoGeneral}</p>
+              </div>
+              <a
+                href={`/admin/reservas/${insp.reservaCodigo}`}
+                class="min-h-[44px] inline-flex items-center px-3 py-1 text-xs font-bold text-[#111827] hover:underline"
+              >
+                Ver #{insp.reservaCodigo}
+              </a>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   </div>
 </LayoutAdmin>
