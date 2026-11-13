@@ -7,7 +7,10 @@
 
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
+| [`ciclo-alquiler-transiciones.ts`](./ciclo-alquiler-transiciones.ts) | Máquina de Estados / Dominio | `pausarAlquilerD1`, `reanudarAlquilerD1`, `prorrogarAlquilerD1`, `devolverYCerrarAlquilerD1`, `registrarEvaluacionEntregaClienteD1`, `rechazarReservaD1`, `cancelarReservaD1`, `anularAlquilerD1`, `reabrirReservaD1` | `@/db/schema`, `./errores`, `drizzle-orm` |
+| [`ciclo-alquiler.ts`](./ciclo-alquiler.ts) | Orquestador Transaccional | `crearReservaConValidaciones`, `confirmarReservaD1`, `guardarInspeccionR2D1`, `entregarVehiculoConContratoD1`, `registrarOActualizarDocumentosClienteRapidoD1`, `ejecutarBatchOSecuencial` | `@/db/schema`, `./ciclo-alquiler-transiciones`, `./errores`, `drizzle-orm` |
 | [`disponibilidad.ts`](./disponibilidad.ts) | Motor de Franjas y Tarifas | `verificarDisponibilidadVehiculo`, `obtenerBloquesNoDisponiblesD1`, `construirCalendarioMes`, `calcularCotizacionAlquiler`, `esRangoDisponibleValido`, `encontrarPrimerRangoDisponible`, `formatearFechaCorta`, `sumarDiasISO`, `obtenerBloquesNoDisponibles` | `./types`, `@/lib/time/client-time`, `@/db/schema`, `drizzle-orm` |
+| [`errores.ts`](./errores.ts) | Dominio de Errores | `ErrorCicloAlquiler`, `ErrorCicloAlquilerCode` | - |
 | [`index.ts`](./index.ts) | Barrel Export | Re-exporta todos los contratos y funciones del dominio flota | `./types`, `./mock-vehiculos`, `./disponibilidad`, `./reservas-cliente`, `./repositorio`, `./repositorio-reservas`, `./locales-captacion` |
 | [`locales-captacion.ts`](./locales-captacion.ts) | Servicio de Dominio Anti-Fuga | `LocalPublicoContexto`, `COOKIE_LOCAL_CAPTACION`, `obtenerLocalPorSlugOId`, `obtenerLocalCatalogoPorDefecto`, `registrarCaptacionClienteEnLocal`, `actualizarConfigCatalogoLocal` | `@/db/schema`, `drizzle-orm` |
 | [`mock-vehiculos.ts`](./mock-vehiculos.ts) | Repositorio y Búsqueda | `FLOTA_CANONICA`, `buscarVehiculos`, `obtenerVehiculoPorId` | `./types` |

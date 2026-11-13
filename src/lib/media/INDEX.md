@@ -12,8 +12,7 @@
 
 ## Invariants & Directory Rules
 
-- Prohibido el uso de bibliotecas externas pesadas; toda la compresión debe ejecutarse mediante las APIs nativas del navegador (`HTMLCanvasElement`, `Blob`, `FileReader`).
-- Las imágenes procesadas para verificación pericial deben optimizarse para un peso menor a 400 KB manteniendo legibilidad tipográfica y OCR.
-- Todo objeto de historial de vehículo en R2 debe seguir la convención jerárquica de `r2-vehiculo-keys.ts`.
+- All additions, deletions, or public API modifications must be reflected in this index.
+- Maintain strict boundary encapsulation and domain layer separation.
 
 <!-- Reconciled by codebase-index -->

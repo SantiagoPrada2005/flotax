@@ -7,7 +7,7 @@
 
 | Subdirectory | Responsibility | Index |
 | :--- | :--- | :--- |
-| [`schema/`](./schema/) | Definición canónica de tablas, relaciones y tipos del ORM Drizzle para SQLite/Cloudflare D1 (Multi-tenant y Better Auth). | [INDEX.md](./schema/INDEX.md) |
+| [`schema/`](./schema/) | Definición canónica de tablas, relaciones y tipos del ORM Drizzle para SQLite/Cloudflare D1 (Multi-tenant, Better Auth, Flota, Historial Multimedia R2, Reservas, Contratos, Peritaje y Caja). | [INDEX.md](./schema/INDEX.md) |
 
 ## File Manifest
 

@@ -3,9 +3,11 @@
 **Responsibility**: Componentes de autenticación, flujos de acceso OTP, fondos vectoriales automotrices y wizards de inducción de personal operativo.
 **Architectural Layer**: Presentation / Auth Domain Components
 
-## Directory Sub-Manifest
+## Subdirectories & Child Modules
 
-- [`assets/`](./assets/INDEX.md): Componentes SVG vectoriales nativos extraídos de `design/logo.pen` (Blueprint, Sketch 3-vistas, CAD 3D, Stencil).
+| Subdirectory | Responsibility | Index |
+| :--- | :--- | :--- |
+| [`assets/`](./assets/) | Biblioteca de primitivas vectoriales SVG nativas para fondos automotrices del flujo de autenticación FlotaX. | [INDEX.md](./assets/INDEX.md) |
 
 ## File Manifest
 

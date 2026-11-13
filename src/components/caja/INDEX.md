@@ -3,12 +3,6 @@
 **Responsibility**: Componentes interactivos de UI para el módulo de Caja, Arqueos, Flujos Financieros, Depósitos de Garantía y Transferencias entre Patios.
 **Architectural Layer**: Presentation Layer (Tier 2 Domain Modules)
 
-## Subdirectories & Child Modules
-
-| Subdirectory | Responsibility | Index |
-| :--- | :--- | :--- |
-| *(None)* | - | - |
-
 ## File Manifest
 
 | File | Role / Pattern | Public Exports / API | Key Dependencies |

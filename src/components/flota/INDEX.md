@@ -7,8 +7,8 @@
 
 | Subdirectory | Responsibility | Index |
 | :--- | :--- | :--- |
-| [`disponibilidad/`](./disponibilidad/) | Componentes de cabecera, tarjeta de taller activo y tablero de disponibilidad mensual con calendario. | [INDEX.md](./disponibilidad/INDEX.md) |
-| [`wizard/`](./wizard/) | Componentes atómicos del asistente multi-paso de creación/edición de vehículos (Stepper, Steps 1-8). | [INDEX.md](./wizard/INDEX.md) |
+| [`disponibilidad/`](./disponibilidad/) | Componentes React 19 para la gestión visual de disponibilidad, cabecera de unidad, órdenes activas de taller, wizard typeform de mantenimiento, modal de egreso de taller e isla coordinadora. | [INDEX.md](./disponibilidad/INDEX.md) |
+| [`wizard/`](./wizard/) | Experiencia inmersiva de pantalla completa («Una pantalla, una tarea», máx. 4 entradas) inspirada en Apple/iOS para el registro y edición de unidades vehiculares en FlotaX. | [INDEX.md](./wizard/INDEX.md) |
 
 ## File Manifest
 

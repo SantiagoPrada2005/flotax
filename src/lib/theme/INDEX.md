@@ -15,4 +15,3 @@
 - Maintain strict boundary encapsulation and domain layer separation.
 
 <!-- Reconciled by codebase-index -->
-

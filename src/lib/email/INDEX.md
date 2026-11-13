@@ -7,7 +7,7 @@
 
 | Subdirectory | Responsibility | Index |
 | :--- | :--- | :--- |
-| [`templates/`](./templates/) | Plantillas HTML transaccionales con tokens canónicos (OTP, reservas, inspecciones). | [INDEX.md](./templates/INDEX.md) |
+| [`templates/`](./templates/) | Plantillas HTML de correos electrónicos transaccionales con diseño responsive y tokens canónicos de FlotaX. | [INDEX.md](./templates/INDEX.md) |
 
 ## File Manifest
 

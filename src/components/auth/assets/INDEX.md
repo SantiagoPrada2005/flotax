@@ -15,7 +15,6 @@
 ## Invariants & Directory Rules
 
 - All additions, deletions, or public API modifications must be reflected in this index.
-- All components use `viewBox="0 0 456 500"` and `vectorEffect="non-scaling-stroke"`.
-- Canonical palette: `#111827`, `#1F2937`, `#4B5563`, `#9CA3AF`, `#EDEDED`.
+- Maintain strict boundary encapsulation and domain layer separation.
 
 <!-- Reconciled by codebase-index -->

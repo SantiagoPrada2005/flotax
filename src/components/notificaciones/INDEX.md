@@ -3,12 +3,6 @@
 **Responsibility**: Componentes interactivos de UI para el sistema de notificaciones in-app y gestión del ciclo de vida Web Push en cliente.
 **Architectural Layer**: Presentation Layer (Tier 2 Domain Modules)
 
-## Subdirectories & Child Modules
-
-| Subdirectory | Responsibility | Index |
-| :--- | :--- | :--- |
-| *(None)* | - | - |
-
 ## File Manifest
 
 | File | Role / Pattern | Public Exports / API | Key Dependencies |

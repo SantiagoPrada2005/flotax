@@ -3,12 +3,6 @@
 **Responsibility**: Dominio y motor de notificaciones multi-canal (In-App Fan-Out en D1, Web Push RFC 8292/8291 con WebCrypto y Email transaccional Cloudflare).
 **Architectural Layer**: Domain & Infrastructure Layer
 
-## Subdirectories & Child Modules
-
-| Subdirectory | Responsibility | Index |
-| :--- | :--- | :--- |
-| *(None)* | - | - |
-
 ## File Manifest
 
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
