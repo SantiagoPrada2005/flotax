@@ -34,9 +34,22 @@ import {
 } from './flota';
 import {
   crearReservaAction,
-  cambiarEstadoReservaAction,
+  confirmarReservaAction,
+  rechazarReservaAction,
+  guardarInspeccionR2Action,
+  entregarVehiculoAction,
+  pausarAlquilerAction,
+  reanudarAlquilerAction,
+  prorrogarAlquilerAction,
+  devolverYCerrarAlquilerAction,
+  cancelarReservaAction,
+  anularContratoAction,
+  reabrirReservaAction,
   registrarCobroWaybillAction,
   registrarEntregaEvaluacionAction,
+  registrarOActualizarDocumentosRapidoAction,
+  buscarClientesLocalAction,
+  cambiarEstadoReservaAction,
 } from './reservas';
 import { actualizarPerfilAction } from './perfil';
 import {
@@ -94,9 +107,23 @@ export const server = {
   },
   reservas: {
     crearReserva: crearReservaAction,
-    cambiarEstado: cambiarEstadoReservaAction,
+    confirmarReserva: confirmarReservaAction,
+    rechazarReserva: rechazarReservaAction,
+    guardarInspeccionR2: guardarInspeccionR2Action,
+    entregarVehiculo: entregarVehiculoAction,
+    pausarAlquiler: pausarAlquilerAction,
+    reanudarAlquiler: reanudarAlquilerAction,
+    prorrogarAlquiler: prorrogarAlquilerAction,
+    devolverYCerrarAlquiler: devolverYCerrarAlquilerAction,
+    cancelarReserva: cancelarReservaAction,
+    anularContrato: anularContratoAction,
+    reabrirReserva: reabrirReservaAction,
     registrarCobroWaybill: registrarCobroWaybillAction,
     registrarEntregaEvaluacion: registrarEntregaEvaluacionAction,
+    registrarOActualizarDocumentosRapido:
+      registrarOActualizarDocumentosRapidoAction,
+    buscarClientesLocal: buscarClientesLocalAction,
+    cambiarEstado: cambiarEstadoReservaAction,
   },
   mantenimientos: {
     crearMantenimiento,

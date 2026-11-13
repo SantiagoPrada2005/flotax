@@ -11,12 +11,16 @@ import {
   type PuntoInspeccionR2,
   type ReservaClienteItem,
 } from '@/lib/flota';
+import type { CapacidadesOperacionAlquiler } from '@/lib/auth';
 
 export interface AlquilerDetalleViewProps {
   codigo: string;
   reservaInicial: ReservaClienteItem;
   hoyISO: string;
   modo?: 'cliente' | 'admin' | undefined;
+  capacidades?: CapacidadesOperacionAlquiler | undefined;
+  cuentasFinancieras?: Array<{ id: string; nombre: string; tipo: string }> | undefined;
+  tokenAccesoPublico?: string | null | undefined;
 }
 
 type TabDetalleAlquiler = 'INSPECCION' | 'WAYBILL' | 'HIGHLIGHTS';

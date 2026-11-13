@@ -202,6 +202,8 @@ export function mapRowToReservaItem(
     nivelCargaPorcentaje: contratoRow?.nivelEnergiaEntregaPct ?? 100,
     motivoRechazo: reservaRow.motivoRechazo ?? undefined,
     tokenAccesoPublico: reservaRow.tokenAccesoPublico ?? undefined,
+    clienteId: reservaRow.clienteId ?? undefined,
+    localId: reservaRow.localId ?? undefined,
     eventosRecientes: eventosRows,
     puntosR2Custom: puntosR2Rows,
     evaluacionEntrega,

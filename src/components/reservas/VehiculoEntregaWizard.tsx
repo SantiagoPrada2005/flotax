@@ -14,6 +14,7 @@ export interface VehiculoEntregaWizardProps {
   reservaInicial: ReservaClienteItem;
   hoyISO: string;
   retornoHref?: string | undefined;
+  tokenAccesoPublico?: string | null | undefined;
 }
 
 type PasoWizard = 0 | 1 | 2 | 3;

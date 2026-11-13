@@ -211,4 +211,6 @@ export * from './permisos';
 export * from './rbac';
 export * from './session';
 export * from './guard';
+export * from './capacidades-alquiler';
+export * from './acceso-reserva';
 

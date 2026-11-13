@@ -6,10 +6,21 @@ import { obtenerReservaPorCodigoD1 } from '@/lib/flota/repositorio-reservas';
 import { resolveClientTimeContext } from '@/lib/time/client-time';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
+import {
+  validarAccesoReservaLectura,
+  calcularCapacidadesOperacionAlquiler,
+} from '@/lib/auth';
+import { cuentasFinancieras } from '@/db/schema';
+import { and, eq } from 'drizzle-orm';
 
 const { codigo } = Astro.params;
 
 if (!codigo) {
+  return Astro.redirect('/admin/reservas');
+}
+
+const usuario = Astro.locals.usuario;
+if (!usuario || !usuario.localActivo) {
   return Astro.redirect('/admin/reservas');
 }
 
@@ -23,6 +34,31 @@ if (!reservaInicial) {
 if (!reservaInicial) {
   return Astro.redirect('/admin/reservas');
 }
+
+const tieneAcceso = validarAccesoReservaLectura(reservaInicial, usuario);
+if (!tieneAcceso) {
+  return new Response('Acceso no autorizado a esta reserva.', { status: 403 });
+}
+
+let cuentasLocal: Array<{ id: string; nombre: string; tipo: string }> = [];
+if (db && usuario.localActivo.id) {
+  cuentasLocal = await db
+    .select({
+      id: cuentasFinancieras.id,
+      nombre: cuentasFinancieras.nombre,
+      tipo: cuentasFinancieras.tipo,
+    })
+    .from(cuentasFinancieras)
+    .where(
+      and(
+        eq(cuentasFinancieras.localId, usuario.localActivo.id),
+        eq(cuentasFinancieras.activo, true)
+      )
+    )
+    .all();
+}
+
+const capacidades = calcularCapacidadesOperacionAlquiler(usuario.localActivo);
 ---
 
 <LayoutAdmin
@@ -38,6 +74,8 @@ if (!reservaInicial) {
       reservaInicial={reservaInicial}
       hoyISO={hoyISO}
       modo="admin"
+      capacidades={capacidades}
+      cuentasFinancieras={cuentasLocal}
     />
   </div>
 </LayoutAdmin>

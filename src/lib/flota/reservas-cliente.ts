@@ -112,6 +112,8 @@ export interface ReservaClienteItem {
   requiereMantenimientoRetorno?: boolean | undefined;
   motivoRechazo?: string | undefined;
   tokenAccesoPublico?: string | null | undefined;
+  clienteId?: string | null | undefined;
+  localId?: string | null | undefined;
   eventosRecientes?: unknown[] | undefined;
   puntosR2Custom?: PuntoInspeccionR2[] | undefined;
   evaluacionEntrega?: EvaluacionEntregaServicio | undefined;
