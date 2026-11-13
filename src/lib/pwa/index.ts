@@ -38,3 +38,11 @@ export {
   desactivarFlotaxLoading,
   resolverVarianteTransicionPortal,
 } from './loading';
+
+export {
+  type PageSlideDirection,
+  type NavOrderMatch,
+  resolveNavTabOrder,
+  resolveNavSlideDirection,
+  initHorizontalPageTransitions,
+} from './page-transitions';

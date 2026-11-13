@@ -8,7 +8,7 @@
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
 | [`BottomNav.astro`](./BottomNav.astro) | Orquestador SSR Barra Inferior Móvil | Componente `<BottomNav activeTab="..." />` | [`BottomNavIsland.tsx`](./BottomNavIsland.tsx) |
-| [`BottomNavIsland.tsx`](./BottomNavIsland.tsx) | Isla React 19: Dock Flotante iOS 27 | Componente `<BottomNavIsland ... />` | Tokens de física de resorte y háptica |
+| [`BottomNavIsland.tsx`](./BottomNavIsland.tsx) | Isla React 19: Dock Flotante Líquido con Muesca Cóncava | Componente `<BottomNavIsland ... />` | [`liquid-notch.ts`](./liquid-notch.ts), física spring y háptica |
 | [`ExitAdminButton.tsx`](./ExitAdminButton.tsx) | Botón Conmutador a Portal Cliente | Componente `<ExitAdminButton />` | `astro:actions`, `astro:transitions/client` |
 | [`FlotaxErrorStateIsland.tsx`](./FlotaxErrorStateIsland.tsx) | Isla React 19: Contingencia Perimetral 404, Sin Internet (Offline) y 500 | Componente `<FlotaxErrorStateIsland ... />`, `FlotaxErrorMode`, `FlotaxErrorStateIslandProps` | `astro:transitions/client`, CacheStorage PWA |
 | [`FlotaxLoaderPreviewIsland.tsx`](./FlotaxLoaderPreviewIsland.tsx) | Isla React 19: Simulador e Inspector Interactivo de Carga | Componente `<FlotaxLoaderPreviewIsland />` | [`FlotaxLoadingScreen.tsx`](./FlotaxLoadingScreen.tsx), `astro:transitions/client` |
@@ -21,6 +21,7 @@
 | [`TopBarIsland.tsx`](./TopBarIsland.tsx) | Isla React 19: Encabezado Minimalista con Activador de Menú | Componente `<TopBarIsland ... />`, `TopBarIslandProps` | `astro:transitions/client`, `@/lib/pwa`, [`NotificacionesBell.tsx`](../notificaciones/NotificacionesBell.tsx), [`UserDropdownMenu.tsx`](./UserDropdownMenu.tsx) |
 | [`TopBarSearch.tsx`](./TopBarSearch.tsx) | Isla React 19: Buscador Morphing iOS 27 (Módulo Auxiliar) | Componente `<TopBarSearch ... />`, `TopBarSearchProps` | [`VehicleSearchSpotlight.tsx`](../flota/VehicleSearchSpotlight.tsx) |
 | [`UserDropdownMenu.tsx`](./UserDropdownMenu.tsx) | Isla React 19: Menú Desplegable Flotante de Usuario | Componente `<UserDropdownMenu ... />`, `UserDropdownMenuProps` | `astro:transitions/client`, `@/lib/auth/client` |
+| [`liquid-notch.ts`](./liquid-notch.ts) | Geometría SVG Paramétrica de Muesca Cóncava | `buildLiquidNotchPath`, `computeIconProximity`, `LIQUID_DOCK_GEOMETRY` | TypeScript puro sin dependencias |
 
 ## Invariants & Directory Rules
 

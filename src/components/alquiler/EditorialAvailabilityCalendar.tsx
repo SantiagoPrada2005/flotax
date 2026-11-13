@@ -99,7 +99,13 @@ export default function EditorialAvailabilityCalendar({
   const manejarToqueDia = (dia: DiaCalendarioItem) => {
     if (dia.estado !== 'DISPONIBLE') {
       if (dia.etiquetaBloqueo) {
-        setAvisoFranja(`Ocupado: ${dia.etiquetaBloqueo}`);
+        setAvisoFranja(
+          dia.estado === 'NO_DISPONIBLE'
+            ? dia.etiquetaBloqueo
+            : `Ocupado: ${dia.etiquetaBloqueo}`
+        );
+      } else if (dia.estado === 'NO_DISPONIBLE') {
+        setAvisoFranja('Vehículo no disponible en esta fecha');
       }
       return;
     }
@@ -357,6 +363,9 @@ export default function EditorialAvailabilityCalendar({
           } else if (dia.estado === 'PASADO') {
             clasesCirculo =
               'bg-[#EDEDED]/40 text-[#9CA3AF] font-normal cursor-not-allowed opacity-55';
+          } else if (dia.estado === 'NO_DISPONIBLE') {
+            clasesCirculo =
+              'bg-[#1F2937]/15 text-[#4B5563] font-medium border border-[#4B5563]/50 cursor-not-allowed';
           } else {
             clasesCirculo =
               'bg-[#4B5563]/15 text-[#4B5563]/65 font-medium border border-[#9CA3AF]/35 cursor-not-allowed';
@@ -387,14 +396,16 @@ export default function EditorialAvailabilityCalendar({
                 aria-label={`${dia.numeroDia} de ${calendarioMes.nombreMes.toLowerCase()}, ${
                   dia.estado === 'DISPONIBLE'
                     ? 'Disponible'
-                    : dia.etiquetaBloqueo ?? 'No disponible'
+                    : dia.etiquetaBloqueo ?? (dia.estado === 'NO_DISPONIBLE' ? 'No disponible' : 'Ocupado')
                 }`}
                 aria-pressed={enRango}
                 className={`ios-press-bounce relative flex h-10 w-10 sm:h-11 sm:w-11 flex-col items-center justify-center rounded-full text-xs tabular-nums select-none cursor-pointer ${clasesCirculo}`}
               >
                 <span
                   className={
-                    dia.estado === 'RESERVADO' || dia.estado === 'MANTENIMIENTO'
+                    dia.estado === 'RESERVADO' ||
+                    dia.estado === 'MANTENIMIENTO' ||
+                    dia.estado === 'NO_DISPONIBLE'
                       ? 'line-through decoration-[#4B5563]/70'
                       : ''
                   }

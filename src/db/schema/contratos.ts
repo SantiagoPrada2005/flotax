@@ -16,6 +16,7 @@ export type EstadoPagoContrato = (typeof estadosPagoContrato)[number];
 export const estadosContratoAlquiler = [
   'BORRADOR',
   'VIGENTE',
+  'PAUSADO',
   'CERRADO_PAZ_Y_SALVO',
   'CERRADO_CON_SALDO',
   'INCUMPLIMIENTO_PENAL',
@@ -49,16 +50,21 @@ export const contratosAlquiler = sqliteTable(
     arrendatarioNombre: text('arrendatario_nombre').notNull(),
     arrendatarioTipoDocumento: text('arrendatario_tipo_documento', {
       enum: tiposDocumentoIdentidad,
-    }).notNull(),
-    arrendatarioNumeroDocumento: text('arrendatario_numero_documento').notNull(),
+    }),
+    arrendatarioNumeroDocumento: text('arrendatario_numero_documento'),
     arrendatarioCiudadExpedicion: text('arrendatario_ciudad_expedicion'),
-    arrendatarioLicenciaNumero: text('arrendatario_licencia_numero').notNull(),
+    arrendatarioLicenciaNumero: text('arrendatario_licencia_numero'),
     arrendatarioLicenciaCategoria: text('arrendatario_licencia_categoria', {
       enum: categoriasLicenciaConduccion,
-    }).notNull(),
+    }),
     arrendatarioDomicilio: text('arrendatario_domicilio'),
     arrendatarioTelefono: text('arrendatario_telefono').notNull(),
-    arrendatarioCorreo: text('arrendatario_correo').notNull(),
+    arrendatarioCorreo: text('arrendatario_correo'),
+
+    // Autorización operativa sin documentos
+    autorizadoSinDocumentosPorId: text('autorizado_sin_documentos_por_id').references(
+      () => user.id
+    ),
 
     // Consentimientos legales obligatorios
     ley1581Aceptada: integer('ley_1581_aceptada', { mode: 'boolean' })
@@ -93,6 +99,10 @@ export const contratosAlquiler = sqliteTable(
     cargosMora: integer('cargos_mora').notNull().default(0),
     cargosNovedadesDanos: integer('cargos_novedades_danos').notNull().default(0),
     cargosCombustibleLavado: integer('cargos_combustible_lavado').notNull().default(0),
+    cargosOtrosLocal: integer('cargos_otros_local').notNull().default(0),
+    detalleOtrosCargos: text('detalle_otros_cargos'),
+    ajusteDescuentoLocal: integer('ajuste_descuento_local').notNull().default(0),
+    clausulaEncargado: text('clausula_encargado'),
     totalLiquidado: integer('total_liquidado').notNull(),
     totalPagado: integer('total_pagado').notNull().default(0),
     saldoPendiente: integer('saldo_pendiente').notNull(),
@@ -102,6 +112,11 @@ export const contratosAlquiler = sqliteTable(
     estadoContrato: text('estado_contrato', { enum: estadosContratoAlquiler })
       .notNull()
       .default('VIGENTE'),
+
+    // Trazabilidad de anulación
+    motivoAnulacion: text('motivo_anulacion'),
+    anuladoPorId: text('anulado_por_id').references(() => user.id),
+    anuladoEn: integer('anulado_en', { mode: 'timestamp' }),
 
     // Soportes criptográficos y documentales en Cloudflare R2
     firmaArrendadorR2Key: text('firma_arrendador_r2_key'),

@@ -8,6 +8,7 @@ export const estadosReserva = [
   'PENDIENTE',
   'CONFIRMADA',
   'EN_CURSO',
+  'PAUSADA',
   'COMPLETADA',
   'RECHAZADA',
   'CANCELADA',
@@ -62,6 +63,8 @@ export const reservas = sqliteTable(
     // Ventana temporal de reserva y modalidad de entrega
     fechaInicio: text('fecha_inicio').notNull(), // YYYY-MM-DD
     fechaFin: text('fecha_fin').notNull(), // YYYY-MM-DD
+    fechaFinOriginal: text('fecha_fin_original'), // YYYY-MM-DD inicializada al crear
+    fechaDevolucionReal: text('fecha_devolucion_real'), // YYYY-MM-DD al cerrar anticipada o normalmente
     diasAlquiler: integer('dias_alquiler').notNull(),
     estado: text('estado', { enum: estadosReserva }).notNull().default('PENDIENTE'),
     modalidadEntrega: text('modalidad_entrega', { enum: modalidadesEntregaReserva })
@@ -69,6 +72,7 @@ export const reservas = sqliteTable(
       .default('PATIO_PRINCIPAL'),
     direccionEntrega: text('direccion_entrega'),
     sedeNombre: text('sede_nombre').notNull(),
+    tokenAccesoPublico: text('token_acceso_publico'),
 
     // Snapshot de cotización inicial y abono de reserva (en COP)
     precioDiaCotizado: integer('precio_dia_cotizado').notNull(),
@@ -92,18 +96,25 @@ export const reservas = sqliteTable(
     contactoNombre: text('contacto_nombre').notNull(),
     contactoTipoDocumento: text('contacto_tipo_documento', {
       enum: tiposDocumentoIdentidad,
-    }).notNull(),
-    contactoNumeroDocumento: text('contacto_numero_documento').notNull(),
+    }),
+    contactoNumeroDocumento: text('contacto_numero_documento'),
     contactoCategoriaLicencia: text('contacto_categoria_licencia', {
       enum: categoriasLicenciaConduccion,
-    }).notNull(),
+    }),
     contactoTelefono: text('contacto_telefono').notNull(),
-    contactoCorreo: text('contacto_correo').notNull(),
+    contactoCorreo: text('contacto_correo'),
     ley1581Aceptada: integer('ley_1581_aceptada', { mode: 'boolean' })
       .notNull()
       .default(true),
 
-    // Trazabilidad de aprobación o rechazo operativo
+    // Trazabilidad de aprobación, autorización sin documentos o rechazo operativo
+    autorizadoSinDocumentosPorId: text('autorizado_sin_documentos_por_id').references(
+      () => user.id
+    ),
+    notaAutorizacionDocumentos: text('nota_autorizacion_documentos'),
+    motivoCancelacion: text('motivo_cancelacion'),
+    canceladoPorId: text('cancelado_por_id').references(() => user.id),
+    canceladoEn: integer('cancelado_en', { mode: 'timestamp' }),
     motivoRechazo: text('motivo_rechazo'),
     creadoPorId: text('creado_por_id').references(() => user.id),
     confirmadoPorId: text('confirmado_por_id').references(() => user.id),

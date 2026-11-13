@@ -16,6 +16,7 @@ export interface TopBarIslandProps {
   usuarioCorreo?: string | null | undefined;
   usuarioLocalNombre?: string | null | undefined;
   tieneAccesoAdmin?: boolean | undefined;
+  modoPortal?: 'ADMIN' | 'CLIENTE' | undefined;
   clavePublicaVapid?: string | undefined;
   localCaptacionNombre?: string | undefined;
 }
@@ -31,15 +32,23 @@ export default function TopBarIsland({
   usuarioNombre,
   usuarioCorreo,
   usuarioLocalNombre,
+  tieneAccesoAdmin = false,
+  modoPortal,
   clavePublicaVapid,
   localCaptacionNombre,
 }: TopBarIslandProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isStandalone, setIsStandalone] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDatasetAdmin, setIsDatasetAdmin] = useState(false);
+  const [liveModoPortal, setLiveModoPortal] = useState<'ADMIN' | 'CLIENTE'>(
+    modoPortal ?? (navVariant === 'admin' ? 'ADMIN' : 'CLIENTE')
+  );
   const menuContainerRef = useRef<HTMLDivElement | null>(null);
+  const propsRef = useRef({ modoPortal, navVariant });
+  propsRef.current = { modoPortal, navVariant };
 
-  const isAdminVariant = navVariant === 'admin';
+  const isAdminVariant = navVariant === 'admin' || isDatasetAdmin;
   const brandLabel = localCaptacionNombre || 'FlotaX';
   const brandHref = isAdminVariant ? '/admin' : '/catalogo';
 
@@ -49,11 +58,35 @@ export default function TopBarIsland({
     .trim();
 
   useEffect(() => {
+    if (modoPortal) {
+      setLiveModoPortal(modoPortal);
+    }
+  }, [modoPortal]);
+
+  useEffect(() => {
     setIsStandalone(isStandalonePwa());
+    const syncPortalMode = () => {
+      const datasetModo = document.documentElement.dataset.portalModo;
+      if (datasetModo === 'ADMIN' || datasetModo === 'CLIENTE') {
+        setIsDatasetAdmin(datasetModo === 'ADMIN');
+        setLiveModoPortal(datasetModo);
+      } else {
+        const { modoPortal: currentModoPortal, navVariant: currentNavVariant } =
+          propsRef.current;
+        setIsDatasetAdmin(false);
+        setLiveModoPortal(
+          currentModoPortal ?? (currentNavVariant === 'admin' ? 'ADMIN' : 'CLIENTE')
+        );
+      }
+    };
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
     const handleInstalled = () => setIsStandalone(true);
-    const handleRouteSync = () => setIsMenuOpen(false);
+    const handleRouteSync = () => {
+      setIsMenuOpen(false);
+      syncPortalMode();
+    };
 
+    syncPortalMode();
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('appinstalled', handleInstalled);
     document.addEventListener('astro:page-load', handleRouteSync);
@@ -108,6 +141,7 @@ export default function TopBarIsland({
 
   return (
     <header
+      style={{ viewTransitionName: 'flotax-top-bar' }}
       className={`fixed top-0 left-0 right-0 z-30 flex h-14 items-center justify-between px-3.5 sm:px-6 transition-all duration-200 ${
         isScrolled
           ? 'bg-white/90 dark:bg-[#111827]/90 backdrop-blur-xl border-b border-[#9CA3AF]/25 dark:border-white/10 shadow-[0_4px_18px_-8px_rgba(17,24,39,0.08)] dark:shadow-[0_4px_18px_-8px_rgba(0,0,0,0.4)]'
@@ -241,6 +275,8 @@ export default function TopBarIsland({
           usuarioCorreo={usuarioCorreo}
           usuarioImagen={usuarioImagen}
           usuarioLocalNombre={usuarioLocalNombre}
+          tieneAccesoAdmin={tieneAccesoAdmin}
+          modoPortal={liveModoPortal}
           onTriggerHaptic={triggerHaptic}
         />
       </div>

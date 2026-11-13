@@ -12,6 +12,7 @@ export const PERMISOS = {
   CONTRATOS_CREAR: 'contratos:crear',
   CONTRATOS_MODIFICAR_TARIFA: 'contratos:modificar_tarifa',
   CONTRATOS_FINALIZAR: 'contratos:finalizar',
+  CONTRATOS_PAUSAR: 'contratos:pausar',
   CONTRATOS_ANULAR: 'contratos:anular',
 
   // --- 3. MÓDULO ENTREGAS, RECEPCIONES E INSPECCIÓN R2 ---

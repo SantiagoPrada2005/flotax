@@ -1,10 +1,14 @@
 import {
+  esGastoOperativo,
+  esIngresoOperativo,
   formatearMonedaCOP,
   formatearMonedaCompactaCOP,
   type MovimientoCajaSelect,
-  type ResumenFinancieroCompleto,
 } from '@/lib/caja';
-import { FLOTA_CANONICA, type VehiculoItem } from '@/lib/flota';
+import type { CategoriaVehiculo, VehiculoItem } from '@/lib/flota';
+import { DEFAULT_TIMEZONE, toClientISODate } from '@/lib/time/client-time';
+import type { ContratoAlquilerSelect, ReservaSelect } from '@/db/schema';
+import type { DatosMetricasLocalD1 } from './repositorio';
 import type {
   DailyCompanyMovementItem,
   DailyMovementCurvePoint,
@@ -20,14 +24,27 @@ import type {
 } from './types';
 
 export interface BuildMetricsInput {
-  readonly yardName?: string | undefined;
-  readonly cityLabel?: string | undefined;
-  readonly operatorName?: string | undefined;
+  readonly yardName?: string | null | undefined;
+  readonly cityLabel?: string | null | undefined;
+  readonly operatorName?: string | null | undefined;
   readonly timezone?: string | undefined;
   readonly dateLabel?: string | undefined;
+  readonly hoyISO?: string | undefined;
   readonly vehiculos?: readonly VehiculoItem[] | undefined;
-  readonly estadoFinanciero?: ResumenFinancieroCompleto | undefined;
+  readonly datosD1?: DatosMetricasLocalD1 | undefined;
 }
+
+const DATOS_D1_VACIOS: DatosMetricasLocalD1 = {
+  reservas: [],
+  contratosVigentes: [],
+  movimientosConfirmados: [],
+};
+
+const ESTADOS_RESERVA_ACTIVA: ReadonlySet<string> = new Set([
+  'EN_CURSO',
+  'CONFIRMADA',
+  'PENDIENTE',
+]);
 
 const NOMBRES_MESES: readonly { corto: string; largo: string }[] = [
   { corto: 'Ene', largo: 'Enero' },
@@ -47,17 +64,21 @@ const NOMBRES_MESES: readonly { corto: string; largo: string }[] = [
 const CATEGORIAS_LEGIBLES: Readonly<Record<string, string>> = {
   PAGO_ALQUILER: 'Pago de alquiler',
   ABONO_CONTRATO: 'Abono de reserva',
+  EXTENSION_ALQUILER: 'Prórroga de alquiler',
   PRORROGA_ALQUILER: 'Prórroga de alquiler',
-  RECARGO_ENTREGA_TARDIA: 'Recargo entrega tardía',
+  SERVICIOS_ADICIONALES: 'Servicios adicionales',
+  COBRO_DANOS_MULTAS: 'Cobro de daños y multas',
   COBRO_DANOS: 'Reposición por novedad',
+  DEPOSITO_GARANTIA: 'Depósito de garantía',
+  INGRESO_EXTRAORDINARIO: 'Ingreso extraordinario',
   OTRO_INGRESO: 'Ingreso operativo',
   MANTENIMIENTO_REPARACION: 'Mantenimiento preventivo',
+  COMBUSTIBLE_OPERACION: 'Combustible / Carga EV',
   LIMPIEZA_ALISTAMIENTO: 'Lavado y alistamiento',
-  COMBUSTIBLE_CARGA: 'Combustible / Carga EV',
   SEGUROS_IMPUESTOS: 'Póliza e impuestos',
-  COMISIONES_PASARELA: 'Comisión de recaudo',
-  INSUMOS_PATIO: 'Insumos de patio',
-  NOMINA_OPERATIVA: 'Operación de turno',
+  COMISIONES_BANCARIAS: 'Comisión de recaudo',
+  REEMBOLSO_GARANTIA: 'Reembolso de garantía',
+  COMPRAS_ADMINISTRATIVAS: 'Insumos de patio',
   OTRO_EGRESO: 'Gasto operativo',
 };
 
@@ -65,18 +86,90 @@ const METODOS_PAGO_LEGIBLES: Readonly<Record<string, string>> = {
   efectivo: 'Efectivo',
   transferencia: 'Transferencia',
   tarjeta: 'Tarjeta',
-  billetera_digital: 'Billetera digital',
-  pasarela: 'Pasarela en línea',
+  especie: 'Especie',
+  otro: 'Otro',
 };
+
+const ETIQUETAS_CATEGORIA_VEHICULO: Readonly<Record<CategoriaVehiculo, string>> = {
+  SEDAN: 'Automóviles Sedán',
+  SUV: 'Camionetas SUV',
+  MOTO: 'Motocicletas',
+  PATINETA: 'Patinetas Eléctricas',
+  UTILITARIO: 'Utilitarios',
+};
+
+const FRANJAS_HORARIAS: readonly { id: string; label: string; minHora: number; maxHora: number }[] = [
+  { id: 'hr-0', label: '06h-09h', minHora: 0, maxHora: 8 },
+  { id: 'hr-1', label: '09h-12h', minHora: 9, maxHora: 11 },
+  { id: 'hr-2', label: '12h-15h', minHora: 12, maxHora: 14 },
+  { id: 'hr-3', label: '15h-18h', minHora: 15, maxHora: 17 },
+  { id: 'hr-4', label: '18h-22h', minHora: 18, maxHora: 23 },
+];
 
 function esAutomovil(vehiculo: VehiculoItem): boolean {
   return vehiculo.categoria === 'SEDAN' || vehiculo.categoria === 'SUV';
 }
 
-function formatearHora(fecha: Date): string {
-  const horas = String(fecha.getUTCHours()).padStart(2, '0');
-  const minutos = String(fecha.getUTCMinutes()).padStart(2, '0');
-  return `${horas}:${minutos}`;
+function parsearFechaISOUTC(fechaISO: string): { anio: number; mes: number; dia: number } {
+  const partes = fechaISO.split('-');
+  const anio = parseInt(partes[0] ?? '', 10);
+  const mes = parseInt(partes[1] ?? '', 10);
+  const dia = parseInt(partes[2] ?? '', 10);
+  if (
+    !Number.isFinite(anio) ||
+    !Number.isFinite(mes) ||
+    !Number.isFinite(dia) ||
+    mes < 1 ||
+    mes > 12 ||
+    dia < 1 ||
+    dia > 31
+  ) {
+    const ahora = new Date();
+    return {
+      anio: ahora.getUTCFullYear(),
+      mes: ahora.getUTCMonth() + 1,
+      dia: ahora.getUTCDate(),
+    };
+  }
+  return { anio, mes, dia };
+}
+
+function sumarDiasISO(fechaISO: string, deltaDias: number): string {
+  const { anio, mes, dia } = parsearFechaISOUTC(fechaISO);
+  const d = new Date(Date.UTC(anio, mes - 1, dia + deltaDias));
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function diasEntreISO(inicioISO: string, finISO: string): number {
+  const ini = parsearFechaISOUTC(inicioISO);
+  const fin = parsearFechaISOUTC(finISO);
+  const tsIni = Date.UTC(ini.anio, ini.mes - 1, ini.dia);
+  const tsFin = Date.UTC(fin.anio, fin.mes - 1, fin.dia);
+  return Math.round((tsFin - tsIni) / 86_400_000);
+}
+
+function formatearHoraLocal(fecha: Date, timezone: string): string {
+  const formateado = new Intl.DateTimeFormat('es-CO', {
+    timeZone: timezone,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(fecha);
+  return formateado.startsWith('24:') ? `00:${formateado.slice(3)}` : formateado;
+}
+
+function obtenerHoraLocal(fecha: Date, timezone: string): number {
+  const horaStr = new Intl.DateTimeFormat('en-US', {
+    timeZone: timezone,
+    hour: '2-digit',
+    hour12: false,
+  }).format(fecha);
+  const hora = parseInt(horaStr, 10);
+  if (!Number.isFinite(hora) || hora === 24) return 0;
+  return hora;
 }
 
 function extraerPlacaDeTexto(
@@ -94,77 +187,91 @@ function extraerPlacaDeTexto(
 
 function construirFlotaAlquilada(
   flota: readonly VehiculoItem[],
-  estadoFinanciero?: ResumenFinancieroCompleto
+  datosD1: DatosMetricasLocalD1,
+  hoyISO: string,
+  timezone: string
 ): RentedFleetComplement {
-  const fuenteFlota = flota.length > 0 ? flota : FLOTA_CANONICA;
-  const automoviles = fuenteFlota.filter(esAutomovil);
-  const otrasUnidades = fuenteFlota.filter((v) => !esAutomovil(v));
+  const automoviles = flota.filter(esAutomovil);
+  const otrasUnidades = flota.filter((v) => !esAutomovil(v));
 
-  const autosReservadosDirectos = automoviles.filter((v) => v.estado === 'RESERVADO');
-  const contratosActivos = (estadoFinanciero?.carteraContratos ?? []).filter(
-    (c) => c.estadoPago === 'PARCIAL' || c.estadoPago === 'PENDIENTE'
-  );
+  const contratosPorVehiculo = new Map<string, ContratoAlquilerSelect>();
+  for (const contrato of datosD1.contratosVigentes) {
+    if (!contratosPorVehiculo.has(contrato.vehiculoId)) {
+      contratosPorVehiculo.set(contrato.vehiculoId, contrato);
+    }
+  }
+
+  const reservasPorId = new Map<string, ReservaSelect>();
+  const reservasActivasPorVehiculo = new Map<string, ReservaSelect>();
+  for (const reserva of datosD1.reservas) {
+    reservasPorId.set(reserva.id, reserva);
+    if (
+      ESTADOS_RESERVA_ACTIVA.has(reserva.estado) &&
+      reserva.fechaInicio <= hoyISO &&
+      reserva.fechaFin >= hoyISO &&
+      !reservasActivasPorVehiculo.has(reserva.vehiculoId)
+    ) {
+      reservasActivasPorVehiculo.set(reserva.vehiculoId, reserva);
+    }
+  }
 
   const itemsAlquilados: RentedAutomobileItem[] = [];
 
-  if (autosReservadosDirectos.length > 0) {
-    autosReservadosDirectos.forEach((auto, idx) => {
-      const contrato = contratosActivos[idx];
-      itemsAlquilados.push({
-        id: auto.id,
-        plate: auto.placa,
-        brandModel: `${auto.marca} ${auto.modelo}`,
-        categoryLabel: auto.categoriaEtiqueta,
-        transmissionLabel: auto.transmision,
-        fuelLabel: auto.combustible,
-        dailyRate: auto.precioDia,
-        dailyRateFormatted: `${formatearMonedaCOP(auto.precioDia)}/día`,
-        clientName: contrato?.clienteNombre ?? 'Cliente verificado en patio',
-        returnLabel: contrato ? `Entrega ${contrato.fechaFin}` : 'Retorno programado',
-        contractCode: contrato?.codigoContrato ?? `FLX-90${idx + 11}`,
-        daysActive: 3 + (idx % 3),
-      });
-    });
-  } else {
-    // Reconciliación con contratos vigentes o respaldo operativo coherente de automóviles
-    const candidatos = automoviles.filter((v) => v.estado !== 'MANTENIMIENTO' && v.estado !== 'FUERA_SERVICIO');
-    const muestraActiva = candidatos.slice(0, Math.min(3, candidatos.length));
+  for (const auto of automoviles) {
+    const contrato = contratosPorVehiculo.get(auto.id);
+    const reserva = contrato
+      ? (reservasPorId.get(contrato.reservaId) ?? reservasActivasPorVehiculo.get(auto.id))
+      : reservasActivasPorVehiculo.get(auto.id);
 
-    const clientesRespaldo = [
-      { nombre: 'Carlos Andrés Mendoza', retorno: 'Retorno 16 Oct · 18:00', codigo: 'FLX-821940', dias: 4 },
-      { nombre: 'Sebastián Correa Londoño', retorno: 'Retorno 18 Oct · 16:00', codigo: 'FLX-512094', dias: 5 },
-      { nombre: 'Valeria Gómez Arango', retorno: 'Retorno 17 Oct · 12:00', codigo: 'FLX-309418', dias: 3 },
-    ] as const;
+    const estaAlquilado =
+      auto.estado === 'RESERVADO' || contrato !== undefined || reserva !== undefined;
+    if (!estaAlquilado) continue;
 
-    muestraActiva.forEach((auto, idx) => {
-      const contrato = contratosActivos[idx];
-      const respaldo = clientesRespaldo[idx % clientesRespaldo.length]!;
-      itemsAlquilados.push({
-        id: auto.id,
-        plate: contrato?.vehiculoPlaca ?? auto.placa,
-        brandModel: `${auto.marca} ${auto.modelo}`,
-        categoryLabel: auto.categoriaEtiqueta,
-        transmissionLabel: auto.transmision,
-        fuelLabel: auto.combustible,
-        dailyRate: auto.precioDia,
-        dailyRateFormatted: `${formatearMonedaCOP(auto.precioDia)}/día`,
-        clientName: contrato?.clienteNombre ?? respaldo.nombre,
-        returnLabel: contrato ? `Retorno ${contrato.fechaFin}` : respaldo.retorno,
-        contractCode: contrato?.codigoContrato ?? respaldo.codigo,
-        daysActive: respaldo.dias,
-      });
+    const fechaInicio =
+      reserva?.fechaInicio ??
+      (contrato?.fechaHoraEntregaReal
+        ? toClientISODate(new Date(contrato.fechaHoraEntregaReal), timezone)
+        : hoyISO);
+    const diasActivos = Math.max(1, diasEntreISO(fechaInicio, hoyISO) + 1);
+
+    const returnLabel = reserva?.fechaFin
+      ? `Retorno ${reserva.fechaFin}`
+      : contrato?.fechaHoraDevolucionPactada
+        ? `Retorno ${toClientISODate(new Date(contrato.fechaHoraDevolucionPactada), timezone)}`
+        : 'Retorno programado';
+
+    itemsAlquilados.push({
+      id: auto.id,
+      plate: auto.placa,
+      brandModel: `${auto.marca} ${auto.modelo}`,
+      categoryLabel: auto.categoriaEtiqueta,
+      transmissionLabel: auto.transmision,
+      fuelLabel: auto.combustible,
+      dailyRate: auto.precioDia,
+      dailyRateFormatted: `${formatearMonedaCOP(auto.precioDia)}/día`,
+      clientName: contrato?.arrendatarioNombre ?? reserva?.contactoNombre ?? 'Reserva en curso',
+      returnLabel,
+      contractCode: contrato?.numeroContrato ?? reserva?.codigo ?? auto.placa,
+      daysActive: diasActivos,
     });
   }
 
-  const totalAutos = Math.max(automoviles.length, itemsAlquilados.length, 1);
-  const alquiladosAutos = Math.min(itemsAlquilados.length, totalAutos);
+  const totalAutos = automoviles.length;
+  const alquiladosAutos = itemsAlquilados.length;
   const mantenimientoAutos = automoviles.filter(
     (v) => v.estado === 'MANTENIMIENTO' || v.estado === 'FUERA_SERVICIO'
   ).length;
   const disponiblesAutos = Math.max(0, totalAutos - alquiladosAutos - mantenimientoAutos);
 
-  const otrasAlquiladas = otrasUnidades.filter((v) => v.estado === 'RESERVADO').length || (otrasUnidades.length > 0 ? 1 : 0);
-  const ocupacionAutosPct = Math.round((alquiladosAutos / totalAutos) * 100);
+  const otrasAlquiladas = otrasUnidades.filter(
+    (v) =>
+      v.estado === 'RESERVADO' ||
+      contratosPorVehiculo.has(v.id) ||
+      reservasActivasPorVehiculo.has(v.id)
+  ).length;
+
+  const ocupacionAutosPct =
+    totalAutos > 0 ? Math.min(100, Math.round((alquiladosAutos / totalAutos) * 100)) : 0;
   const sumaTarifaDiaria = itemsAlquilados.reduce((acc, item) => acc + item.dailyRate, 0);
 
   return {
@@ -174,167 +281,119 @@ function construirFlotaAlquilada(
     availableAutomobilesCount: disponiblesAutos,
     maintenanceAutomobilesCount: mantenimientoAutos,
     otherRentedUnitsCount: otrasAlquiladas,
-    totalFleetCount: fuenteFlota.length,
+    totalFleetCount: flota.length,
     activeDailyRunRateFormatted: formatearMonedaCOP(sumaTarifaDiaria),
     rentedAutomobiles: itemsAlquilados,
   };
 }
 
-function obtenerMovimientosJornadaMasReciente(
-  movimientos: readonly MovimientoCajaSelect[]
-): readonly MovimientoCajaSelect[] {
-  const operativos = movimientos.filter(
-    (m) => m.estado === 'CONFIRMADO' && (m.tipo === 'INGRESO' || m.tipo === 'EGRESO')
-  );
-  if (operativos.length === 0) return [];
+function construirCurvaMovimientosDiarios(
+  movimientosConfirmados: readonly MovimientoCajaSelect[],
+  hoyISO: string,
+  timezone: string
+): readonly DailyMovementCurvePoint[] {
+  const totalesPorDia = new Map<string, { income: number; expense: number }>();
 
-  let maxTs = 0;
-  for (const m of operativos) {
-    const ts = new Date(m.fechaMovimiento).getTime();
-    if (ts > maxTs) maxTs = ts;
+  for (const mov of movimientosConfirmados) {
+    if (mov.estado !== 'CONFIRMADO') continue;
+    const fechaISO = toClientISODate(new Date(mov.fechaMovimiento), timezone);
+    const actual = totalesPorDia.get(fechaISO) ?? { income: 0, expense: 0 };
+    if (esIngresoOperativo(mov)) {
+      actual.income += mov.monto;
+    } else if (esGastoOperativo(mov)) {
+      actual.expense += mov.monto;
+    }
+    totalesPorDia.set(fechaISO, actual);
   }
 
-  const fechaAncla = new Date(maxTs);
-  const anio = fechaAncla.getUTCFullYear();
-  const mes = fechaAncla.getUTCMonth();
-  const dia = fechaAncla.getUTCDate();
+  const offsets = [-4, -3, -2, -1, 0] as const;
+  return offsets.map((offset, idx) => {
+    const fechaISO = sumarDiasISO(hoyISO, offset);
+    const partes = fechaISO.split('-');
+    const dia = partes[2] ?? '01';
+    const mes = partes[1] ?? '01';
+    const esHoy = offset === 0;
+    const totales = totalesPorDia.get(fechaISO) ?? { income: 0, expense: 0 };
+    const net = totales.income - totales.expense;
 
-  return operativos
-    .filter((m) => {
-      const f = new Date(m.fechaMovimiento);
-      return (
-        f.getUTCFullYear() === anio &&
-        f.getUTCMonth() === mes &&
-        f.getUTCDate() === dia
-      );
-    })
-    .sort(
-      (a, b) =>
-        new Date(b.fechaMovimiento).getTime() - new Date(a.fechaMovimiento).getTime()
-    );
+    return {
+      id: `flujo-dia-${idx}`,
+      dateKey: fechaISO,
+      label: esHoy ? 'Hoy' : `${dia}/${mes}`,
+      isToday: esHoy,
+      income: totales.income,
+      incomeFormatted: formatearMonedaCOP(totales.income),
+      incomeCompactFormatted: formatearMonedaCompactaCOP(totales.income),
+      expense: totales.expense,
+      expenseFormatted: formatearMonedaCOP(totales.expense),
+      expenseCompactFormatted: formatearMonedaCompactaCOP(totales.expense),
+      netBalance: net,
+      netBalanceFormatted: `${net >= 0 ? '+ ' : '- '}${formatearMonedaCOP(Math.abs(net))}`,
+    };
+  });
 }
 
 function construirMovimientosDiarios(
   dateLabel: string,
   flota: readonly VehiculoItem[],
-  estadoFinanciero?: ResumenFinancieroCompleto
+  movimientosConfirmados: readonly MovimientoCajaSelect[],
+  hoyISO: string,
+  timezone: string
 ): DailyMovementsSummary {
   const mapaPlacas = new Map<string, string>();
-  for (const v of flota.length > 0 ? flota : FLOTA_CANONICA) {
+  for (const v of flota) {
     mapaPlacas.set(v.id, v.placa);
   }
 
-  const movimientosDia = obtenerMovimientosJornadaMasReciente(
-    estadoFinanciero?.todosMovimientos ?? []
-  );
+  const movimientosHoy = movimientosConfirmados
+    .filter((m) => {
+      if (m.estado !== 'CONFIRMADO') return false;
+      if (m.tipo !== 'INGRESO' && m.tipo !== 'EGRESO') return false;
+      return toClientISODate(new Date(m.fechaMovimiento), timezone) === hoyISO;
+    })
+    .sort(
+      (a, b) =>
+        new Date(b.fechaMovimiento).getTime() - new Date(a.fechaMovimiento).getTime()
+    );
 
-  const items: DailyCompanyMovementItem[] =
-    movimientosDia.length > 0
-      ? movimientosDia.map((m) => {
-        const esIngreso = m.tipo === 'INGRESO';
-        const fecha = new Date(m.fechaMovimiento);
-        const placa = extraerPlacaDeTexto(m.concepto, m.vehiculoId, mapaPlacas);
-        const signo = esIngreso ? '+ ' : '- ';
-        return {
-          id: m.id,
-          kind: esIngreso ? 'INGRESO' : 'EGRESO',
-          title: m.concepto,
-          categoryLabel: CATEGORIAS_LEGIBLES[m.categoria] ?? 'Operación de patio',
-          timeLabel: formatearHora(fecha),
-          amount: m.monto,
-          amountFormatted: `${signo}${formatearMonedaCOP(m.monto)}`,
-          vehiclePlate: placa,
-          paymentMethodLabel: METODOS_PAGO_LEGIBLES[m.metodoPago] ?? m.metodoPago,
-          referenceCode: m.contratoId ?? m.referencia,
-          notes:
-            m.observaciones ??
-            (esIngreso
-              ? 'Ingreso registrado por alquiler de unidad en patio.'
-              : 'Egreso operativo aplicado a alistamiento o mantenimiento.'),
-        };
-      })
-      : [
-        {
-          id: 'mov-sem-1',
-          kind: 'INGRESO',
-          title: 'Anticipo entrega BMW M2 Competition',
-          categoryLabel: 'Pago de alquiler',
-          timeLabel: '14:20',
-          amount: 729_000,
-          amountFormatted: `+ ${formatearMonedaCOP(729_000)}`,
-          vehiclePlate: 'BMW-240',
-          paymentMethodLabel: 'Efectivo',
-          referenceCode: 'FLX-512094',
-          notes: 'Entrega de vehículo en patio con inspección fotográfica aprobada.',
-        },
-        {
-          id: 'mov-sem-2',
-          kind: 'INGRESO',
-          title: 'Abono reserva Mercedes-Benz EQB 350',
-          categoryLabel: 'Abono de reserva',
-          timeLabel: '11:15',
-          amount: 400_000,
-          amountFormatted: `+ ${formatearMonedaCOP(400_000)}`,
-          vehiclePlate: 'FLX-801',
-          paymentMethodLabel: 'Transferencia',
-          referenceCode: 'FLX-821940',
-          notes: 'Reserva confirmada de SUV eléctrica por 4 días.',
-        },
-        {
-          id: 'mov-sem-3',
-          kind: 'EGRESO',
-          title: 'Alineación y filtro preventivo en taller',
-          categoryLabel: 'Mantenimiento preventivo',
-          timeLabel: '10:10',
-          amount: 185_000,
-          amountFormatted: `- ${formatearMonedaCOP(185_000)}`,
-          vehiclePlate: 'FLX-773',
-          paymentMethodLabel: 'Efectivo',
-          referenceCode: 'OP-9082',
-          notes: 'Puesta a punto preventiva antes de próxima reserva.',
-        },
-        {
-          id: 'mov-sem-4',
-          kind: 'INGRESO',
-          title: 'Prórroga Mazda CX-30 Grand Touring (2 días)',
-          categoryLabel: 'Prórroga de alquiler',
-          timeLabel: '09:05',
-          amount: 390_000,
-          amountFormatted: `+ ${formatearMonedaCOP(390_000)}`,
-          vehiclePlate: 'MOV-304',
-          paymentMethodLabel: 'Billetera digital',
-          referenceCode: 'FLX-309418',
-          notes: 'Extensión solicitada por el cliente activo.',
-        },
-        {
-          id: 'mov-sem-5',
-          kind: 'EGRESO',
-          title: 'Lavado cerámico y alistamiento de cabina',
-          categoryLabel: 'Lavado y alistamiento',
-          timeLabel: '08:30',
-          amount: 70_000,
-          amountFormatted: `- ${formatearMonedaCOP(70_000)}`,
-          vehiclePlate: 'FLX-801',
-          paymentMethodLabel: 'Transferencia',
-          referenceCode: 'OP-9079',
-          notes: 'Alistamiento de unidades entregadas en turno matutino.',
-        },
-      ];
+  const items: DailyCompanyMovementItem[] = movimientosHoy.map((m) => {
+    const esIngreso = m.tipo === 'INGRESO';
+    const fecha = new Date(m.fechaMovimiento);
+    const placa = extraerPlacaDeTexto(m.concepto, m.vehiculoId, mapaPlacas);
+    const signo = esIngreso ? '+ ' : '- ';
+    return {
+      id: m.id,
+      kind: esIngreso ? 'INGRESO' : 'EGRESO',
+      title: m.concepto,
+      categoryLabel: CATEGORIAS_LEGIBLES[m.categoria] ?? 'Operación de patio',
+      timeLabel: formatearHoraLocal(fecha, timezone),
+      amount: m.monto,
+      amountFormatted: `${signo}${formatearMonedaCOP(m.monto)}`,
+      vehiclePlate: placa,
+      paymentMethodLabel: METODOS_PAGO_LEGIBLES[m.metodoPago] ?? m.metodoPago,
+      referenceCode: m.contratoId ?? m.referencia,
+      notes:
+        m.observaciones ??
+        (esIngreso
+          ? 'Ingreso registrado por alquiler de unidad en patio.'
+          : 'Egreso operativo aplicado a alistamiento o mantenimiento.'),
+    };
+  });
 
-  const ingresos = items.filter((i) => i.kind === 'INGRESO');
-  const egresos = items.filter((i) => i.kind === 'EGRESO');
+  const ingresosOperativosHoy = movimientosHoy.filter(esIngresoOperativo);
+  const egresosOperativosHoy = movimientosHoy.filter(esGastoOperativo);
 
-  const totalIncome = ingresos.reduce((acc, i) => acc + i.amount, 0);
-  const totalExpense = egresos.reduce((acc, i) => acc + i.amount, 0);
+  const totalIncome = ingresosOperativosHoy.reduce((acc, m) => acc + m.monto, 0);
+  const totalExpense = egresosOperativosHoy.reduce((acc, m) => acc + m.monto, 0);
   const netDailyBalance = totalIncome - totalExpense;
   const volumenBruto = totalIncome + totalExpense;
   const incomeSharePct =
-    volumenBruto > 0 ? Math.round((totalIncome / volumenBruto) * 100) : 100;
+    volumenBruto > 0 ? Math.round((totalIncome / volumenBruto) * 100) : 0;
 
   const curvePoints = construirCurvaMovimientosDiarios(
-    totalIncome,
-    totalExpense,
-    estadoFinanciero
+    movimientosConfirmados,
+    hoyISO,
+    timezone
   );
 
   return {
@@ -349,218 +408,230 @@ function construirMovimientosDiarios(
     netDailyBalanceFormatted: `${netDailyBalance >= 0 ? '+ ' : '- '}${formatearMonedaCOP(Math.abs(netDailyBalance))}`,
     netDailyBalanceCompactFormatted: `${netDailyBalance >= 0 ? '+' : '-'}${formatearMonedaCompactaCOP(Math.abs(netDailyBalance))}`,
     incomeSharePct,
-    incomeCount: ingresos.length,
-    expenseCount: egresos.length,
+    incomeCount: ingresosOperativosHoy.length,
+    expenseCount: egresosOperativosHoy.length,
     curvePoints,
     items,
   };
 }
 
-function construirCurvaMovimientosDiarios(
-  todayIncome: number,
-  todayExpense: number,
-  estadoFinanciero?: ResumenFinancieroCompleto
-): readonly DailyMovementCurvePoint[] {
-  const serieReal = (estadoFinanciero?.graficoFlujo ?? []).slice(-5);
-  if (serieReal.length >= 4) {
-    return serieReal.map((p, idx) => {
-      const esUltimo = idx === serieReal.length - 1;
-      const net = p.ingresos - p.egresos;
-      return {
-        id: `flujo-dia-${idx}`,
-        dateKey: p.fecha,
-        label: esUltimo ? 'Hoy' : p.etiqueta,
-        isToday: esUltimo,
-        income: p.ingresos,
-        incomeFormatted: formatearMonedaCOP(p.ingresos),
-        incomeCompactFormatted: formatearMonedaCompactaCOP(p.ingresos),
-        expense: p.egresos,
-        expenseFormatted: formatearMonedaCOP(p.egresos),
-        expenseCompactFormatted: formatearMonedaCompactaCOP(p.egresos),
-        netBalance: net,
-        netBalanceFormatted: `${net >= 0 ? '+ ' : '- '}${formatearMonedaCOP(Math.abs(net))}`,
-      };
-    });
+function construirGananciaDiariaVehiculos(
+  flota: readonly VehiculoItem[],
+  movimientosConfirmados: readonly MovimientoCajaSelect[],
+  hoyISO: string,
+  timezone: string
+): DailyVehicleEarningsSummary {
+  const vehiculosPorId = new Map<string, VehiculoItem>();
+  for (const v of flota) {
+    vehiculosPorId.set(v.id, v);
   }
 
-  const baseDias: readonly { offset: number; ing: number; egr: number }[] = [
-    { offset: -4, ing: 1_240_000, egr: 290_000 },
-    { offset: -3, ing: 1_490_000, egr: 220_000 },
-    { offset: -2, ing: 1_680_000, egr: 275_000 },
-    { offset: -1, ing: 1_360_000, egr: 210_000 },
-    {
-      offset: 0,
-      ing: todayIncome > 0 ? todayIncome : 1_519_000,
-      egr: todayExpense > 0 ? todayExpense : 255_000,
-    },
-  ];
-
-  const hoy = new Date();
-  return baseDias.map((item, idx) => {
-    const f = new Date(hoy.getTime() + item.offset * 86_400_000);
-    const dia = String(f.getUTCDate()).padStart(2, '0');
-    const mes = String(f.getUTCMonth() + 1).padStart(2, '0');
-    const anio = f.getUTCFullYear();
-    const esHoy = item.offset === 0;
-    const net = item.ing - item.egr;
-
-    return {
-      id: `flujo-sem-${idx}`,
-      dateKey: `${anio}-${mes}-${dia}`,
-      label: esHoy ? 'Hoy' : `${dia}/${mes}`,
-      isToday: esHoy,
-      income: item.ing,
-      incomeFormatted: formatearMonedaCOP(item.ing),
-      incomeCompactFormatted: formatearMonedaCompactaCOP(item.ing),
-      expense: item.egr,
-      expenseFormatted: formatearMonedaCOP(item.egr),
-      expenseCompactFormatted: formatearMonedaCompactaCOP(item.egr),
-      netBalance: net,
-      netBalanceFormatted: `${net >= 0 ? '+ ' : '- '}${formatearMonedaCOP(Math.abs(net))}`,
-    };
-  });
-}
-
-function construirGananciaDiariaVehiculos(
-  dailyMovements: DailyMovementsSummary,
-  rentedFleet: RentedFleetComplement
-): DailyVehicleEarningsSummary {
-  const gananciaBrutaVehiculos =
-    dailyMovements.totalIncome > 0 ? dailyMovements.totalIncome : 1_519_000;
-  const promedioDiario = 1_320_000;
-  const variationPct = Math.round(
-    ((gananciaBrutaVehiculos - promedioDiario) / promedioDiario) * 100
+  const ingresosOperativos = movimientosConfirmados.filter(esIngresoOperativo);
+  const ingresosHoy = ingresosOperativos.filter(
+    (m) => toClientISODate(new Date(m.fechaMovimiento), timezone) === hoyISO
   );
 
-  const unidadesAportantes = Math.max(
-    rentedFleet.rentedAutomobilesCount + rentedFleet.otherRentedUnitsCount,
-    dailyMovements.incomeCount,
-    1
+  const todayEarnings = ingresosHoy.reduce((acc, m) => acc + m.monto, 0);
+
+  const hace29DiasISO = sumarDiasISO(hoyISO, -29);
+  const ingresosUltimos30Dias = new Map<string, number>();
+  for (const mov of ingresosOperativos) {
+    const fechaISO = toClientISODate(new Date(mov.fechaMovimiento), timezone);
+    if (fechaISO >= hace29DiasISO && fechaISO <= hoyISO) {
+      ingresosUltimos30Dias.set(
+        fechaISO,
+        (ingresosUltimos30Dias.get(fechaISO) ?? 0) + mov.monto
+      );
+    }
+  }
+
+  const total30Dias = Array.from(ingresosUltimos30Dias.values()).reduce(
+    (acc, v) => acc + v,
+    0
   );
-  const promedioPorVehiculo = Math.round(gananciaBrutaVehiculos / unidadesAportantes);
+  const dailyAverage =
+    ingresosUltimos30Dias.size > 0
+      ? Math.round(total30Dias / ingresosUltimos30Dias.size)
+      : 0;
 
-  const montoAutos = Math.round(gananciaBrutaVehiculos * 0.72);
-  const montoSuvEv = Math.round(gananciaBrutaVehiculos * 0.19);
-  const montoMotosOtros = Math.max(0, gananciaBrutaVehiculos - montoAutos - montoSuvEv);
+  const variationPct =
+    dailyAverage > 0
+      ? Math.round(((todayEarnings - dailyAverage) / dailyAverage) * 100)
+      : 0;
 
-  const byCategory: readonly VehicleEarningsCategorySlice[] = [
-    {
-      id: 'cat-autos',
-      label: 'Automóviles (Sedán y Coupé)',
-      rentedCount: Math.max(1, rentedFleet.rentedAutomobilesCount - 1),
-      amount: montoAutos,
-      amountFormatted: formatearMonedaCOP(montoAutos),
-      sharePct: 72,
-    },
-    {
-      id: 'cat-suv',
-      label: 'Camionetas SUV y Eléctricos',
-      rentedCount: Math.min(2, Math.max(1, rentedFleet.rentedAutomobilesCount)),
-      amount: montoSuvEv,
-      amountFormatted: formatearMonedaCOP(montoSuvEv),
-      sharePct: 19,
-    },
-    {
-      id: 'cat-motos',
-      label: 'Motos y Movilidad Ligera',
-      rentedCount: Math.max(1, rentedFleet.otherRentedUnitsCount),
-      amount: montoMotosOtros,
-      amountFormatted: formatearMonedaCOP(montoMotosOtros),
-      sharePct: 9,
-    },
-  ];
+  const vehiculosAportantes = new Set<string>();
+  for (const mov of ingresosHoy) {
+    if (mov.vehiculoId) {
+      vehiculosAportantes.add(mov.vehiculoId);
+    }
+  }
+  const contributingVehiclesCount =
+    vehiculosAportantes.size > 0
+      ? vehiculosAportantes.size
+      : todayEarnings > 0
+        ? 1
+        : 0;
 
-  const pesosHorarios: readonly { hora: string; factor: number; ops: number }[] = [
-    { hora: '08h', factor: 0.14, ops: 1 },
-    { hora: '10h', factor: 0.24, ops: 2 },
-    { hora: '12h', factor: 0.18, ops: 1 },
-    { hora: '14h', factor: 0.28, ops: 2 },
-    { hora: '16h', factor: 0.16, ops: 1 },
-  ];
+  const averagePerVehicle =
+    contributingVehiclesCount > 0
+      ? Math.round(todayEarnings / contributingVehiclesCount)
+      : 0;
 
-  const maxFactor = 0.28;
-  const hourlySlots: readonly HourlyEarningsSlot[] = pesosHorarios.map((slot, idx) => {
-    const monto = Math.round(gananciaBrutaVehiculos * slot.factor);
-    return {
-      id: `hr-${idx}`,
-      hourLabel: slot.hora,
-      amount: monto,
-      amountFormatted: formatearMonedaCOP(monto),
-      compactFormatted: formatearMonedaCompactaCOP(monto),
-      heightPct: Math.round((slot.factor / maxFactor) * 100),
-      operationsCount: slot.ops,
-    };
-  });
+  const acumuladorCategorias = new Map<
+    string,
+    { label: string; amount: number; vehiculos: Set<string> }
+  >();
+
+  if (todayEarnings > 0) {
+    for (const mov of ingresosHoy) {
+      const vehiculo = mov.vehiculoId ? vehiculosPorId.get(mov.vehiculoId) : undefined;
+      const catKey = vehiculo ? vehiculo.categoria : 'OTROS';
+      const catLabel = vehiculo
+        ? ETIQUETAS_CATEGORIA_VEHICULO[vehiculo.categoria]
+        : 'Otros ingresos operativos';
+
+      const entrada = acumuladorCategorias.get(catKey) ?? {
+        label: catLabel,
+        amount: 0,
+        vehiculos: new Set<string>(),
+      };
+      entrada.amount += mov.monto;
+      if (mov.vehiculoId) {
+        entrada.vehiculos.add(mov.vehiculoId);
+      }
+      acumuladorCategorias.set(catKey, entrada);
+    }
+  }
+
+  const byCategory: readonly VehicleEarningsCategorySlice[] = Array.from(
+    acumuladorCategorias.entries()
+  )
+    .filter(([, datos]) => datos.amount > 0)
+    .map(([key, datos]) => ({
+      id: `cat-${key.toLowerCase()}`,
+      label: datos.label,
+      rentedCount: datos.vehiculos.size,
+      amount: datos.amount,
+      amountFormatted: formatearMonedaCOP(datos.amount),
+      sharePct:
+        todayEarnings > 0 ? Math.round((datos.amount / todayEarnings) * 100) : 0,
+    }));
+
+  const acumuladorFranjas = FRANJAS_HORARIAS.map((f) => ({
+    id: f.id,
+    label: f.label,
+    minHora: f.minHora,
+    maxHora: f.maxHora,
+    amount: 0,
+    ops: 0,
+  }));
+
+  for (const mov of ingresosHoy) {
+    const hora = obtenerHoraLocal(new Date(mov.fechaMovimiento), timezone);
+    const franja =
+      acumuladorFranjas.find((f) => hora >= f.minHora && hora <= f.maxHora) ??
+      acumuladorFranjas[acumuladorFranjas.length - 1]!;
+    franja.amount += mov.monto;
+    franja.ops += 1;
+  }
+
+  const maxSlotAmount = Math.max(...acumuladorFranjas.map((f) => f.amount), 0);
+  const hourlySlots: readonly HourlyEarningsSlot[] = acumuladorFranjas.map((slot) => ({
+    id: slot.id,
+    hourLabel: slot.label,
+    amount: slot.amount,
+    amountFormatted: formatearMonedaCOP(slot.amount),
+    compactFormatted: formatearMonedaCompactaCOP(slot.amount),
+    heightPct: maxSlotAmount > 0 ? Math.round((slot.amount / maxSlotAmount) * 100) : 0,
+    operationsCount: slot.ops,
+  }));
 
   const signo = variationPct >= 0 ? '+' : '';
 
   return {
-    todayEarnings: gananciaBrutaVehiculos,
-    todayEarningsFormatted: formatearMonedaCOP(gananciaBrutaVehiculos),
-    todayEarningsCompactFormatted: formatearMonedaCompactaCOP(gananciaBrutaVehiculos),
-    dailyAverage: promedioDiario,
-    dailyAverageFormatted: formatearMonedaCOP(promedioDiario),
+    todayEarnings,
+    todayEarningsFormatted: formatearMonedaCOP(todayEarnings),
+    todayEarningsCompactFormatted: formatearMonedaCompactaCOP(todayEarnings),
+    dailyAverage,
+    dailyAverageFormatted: formatearMonedaCOP(dailyAverage),
     variationPct,
     variationLabel: `${signo}${variationPct}% vs promedio diario`,
-    contributingVehiclesCount: unidadesAportantes,
-    averagePerVehicleFormatted: formatearMonedaCOP(promedioPorVehiculo),
+    contributingVehiclesCount,
+    averagePerVehicleFormatted: formatearMonedaCOP(averagePerVehicle),
     byCategory,
     hourlySlots,
   };
 }
 
 function construirOcupacionMensual(
-  rentedFleet: RentedFleetComplement,
-  estadoFinanciero?: ResumenFinancieroCompleto
+  flota: readonly VehiculoItem[],
+  datosD1: DatosMetricasLocalD1,
+  hoyISO: string,
+  timezone: string
 ): MonthlyFleetOccupancySummary {
-  const ahora = new Date();
-  const mesActualIdx = ahora.getUTCMonth(); // 0..11
-  const anioActual = ahora.getUTCFullYear();
+  const { anio: anioActual, mes: mesActualNumero } = parsearFechaISOUTC(hoyISO);
+  const mesActualIdx = mesActualNumero - 1;
 
-  const ingresosMesReal = estadoFinanciero?.indicadores.ingresosPeriodo ?? 0;
-  const gananciasMesActual = ingresosMesReal > 2_500_000 ? ingresosMesReal : 18_450_000;
-  const reservasMesActual = Math.max(
-    24,
-    (estadoFinanciero?.carteraContratos.length ?? 0) * 5
+  const reservasValidas = datosD1.reservas.filter(
+    (r) => r.estado !== 'CANCELADA' && r.estado !== 'RECHAZADA'
   );
-  const ocupacionActual = Math.max(68, Math.min(94, rentedFleet.automobilesOccupancyPct || 78));
+  const ingresosOperativos = datosD1.movimientosConfirmados.filter(esIngresoOperativo);
 
-  const perfilSeisMeses: readonly {
-    offset: number;
-    reservas: number;
-    ocupacion: number;
-    ganancia: number;
-  }[] = [
-      { offset: -5, reservas: 16, ocupacion: 61, ganancia: 12_200_000 },
-      { offset: -4, reservas: 19, ocupacion: 68, ganancia: 14_350_000 },
-      { offset: -3, reservas: 22, ocupacion: 74, ganancia: 16_100_000 },
-      { offset: -2, reservas: 18, ocupacion: 65, ganancia: 13_800_000 },
-      { offset: -1, reservas: 23, ocupacion: 79, ganancia: 17_290_000 },
-      {
-        offset: 0,
-        reservas: reservasMesActual,
-        ocupacion: ocupacionActual,
-        ganancia: gananciasMesActual,
-      },
-    ];
+  const offsets = [-5, -4, -3, -2, -1, 0] as const;
 
-  const months: MonthlyOccupancyPoint[] = perfilSeisMeses.map((item) => {
-    const fechaMes = new Date(Date.UTC(anioActual, mesActualIdx + item.offset, 1));
+  const months: MonthlyOccupancyPoint[] = offsets.map((offset) => {
+    const fechaMes = new Date(Date.UTC(anioActual, mesActualIdx + offset, 1));
     const mIdx = fechaMes.getUTCMonth();
     const mAnio = fechaMes.getUTCFullYear();
+    const mesNumero = mIdx + 1;
+    const ymKey = `${mAnio}-${String(mesNumero).padStart(2, '0')}`;
+    const diasDelMes = new Date(Date.UTC(mAnio, mesNumero, 0)).getUTCDate();
+    const primerDiaMesISO = `${ymKey}-01`;
+    const ultimoDiaMesISO = `${ymKey}-${String(diasDelMes).padStart(2, '0')}`;
+
+    const reservasMes = reservasValidas.filter(
+      (r) => r.fechaInicio <= ultimoDiaMesISO && r.fechaFin >= primerDiaMesISO
+    );
+
+    let diasOcupadosMes = 0;
+    for (const r of reservasMes) {
+      const inicioEfectivo =
+        r.fechaInicio > primerDiaMesISO ? r.fechaInicio : primerDiaMesISO;
+      const finEfectivo =
+        r.fechaFin < ultimoDiaMesISO ? r.fechaFin : ultimoDiaMesISO;
+      if (finEfectivo >= inicioEfectivo) {
+        diasOcupadosMes += diasEntreISO(inicioEfectivo, finEfectivo) + 1;
+      }
+    }
+
+    const ocupacionPct =
+      flota.length > 0
+        ? Math.min(
+            100,
+            Math.max(0, Math.round((diasOcupadosMes / (flota.length * diasDelMes)) * 100))
+          )
+        : 0;
+
+    const gananciaMes = ingresosOperativos
+      .filter((m) =>
+        toClientISODate(new Date(m.fechaMovimiento), timezone).startsWith(ymKey)
+      )
+      .reduce((acc, m) => acc + m.monto, 0);
+
     const infoMes = NOMBRES_MESES[mIdx] ?? { corto: 'Oct', largo: 'Octubre' };
-    const promedioReserva = Math.round(item.ganancia / Math.max(1, item.reservas));
+    const promedioReserva =
+      reservasMes.length > 0 ? Math.round(gananciaMes / reservasMes.length) : 0;
 
     return {
-      id: `mes-${mAnio}-${mIdx + 1}`,
+      id: `mes-${mAnio}-${mesNumero}`,
       monthShort: infoMes.corto,
       monthFull: `${infoMes.largo} ${mAnio}`,
-      isCurrentMonth: item.offset === 0,
-      reservationsCount: item.reservas,
-      occupancyPct: item.ocupacion,
-      earnings: item.ganancia,
-      earningsFormatted: formatearMonedaCOP(item.ganancia),
-      earningsCompactFormatted: formatearMonedaCompactaCOP(item.ganancia),
+      isCurrentMonth: offset === 0,
+      reservationsCount: reservasMes.length,
+      occupancyPct: ocupacionPct,
+      earnings: gananciaMes,
+      earningsFormatted: formatearMonedaCOP(gananciaMes),
+      earningsCompactFormatted: formatearMonedaCompactaCOP(gananciaMes),
       avgReservationFormatted: formatearMonedaCOP(promedioReserva),
     };
   });
@@ -590,22 +661,33 @@ function construirOcupacionMensual(
   };
 }
 
-export function getYardMetricsSnapshot(input: BuildMetricsInput = {}): YardMetricsSnapshot {
+export function getYardMetricsSnapshot(
+  input: BuildMetricsInput = {}
+): YardMetricsSnapshot {
   const yardName = input.yardName ?? 'Patio Principal';
   const cityLabel = input.cityLabel ?? 'Medellín';
   const operatorName = input.operatorName ?? 'Operador';
-  const timezone = input.timezone ?? 'America/Bogota';
-  const dateLabel = input.dateLabel ?? 'Hoy';
-  const flota = input.vehiculos ?? FLOTA_CANONICA;
+  const timezone = input.timezone ?? DEFAULT_TIMEZONE;
+  const hoyISO = input.hoyISO ?? toClientISODate(new Date(), timezone);
+  const dateLabel = input.dateLabel ?? hoyISO;
+  const flota = input.vehiculos ?? [];
+  const datosD1 = input.datosD1 ?? DATOS_D1_VACIOS;
 
-  const rentedFleet = construirFlotaAlquilada(flota, input.estadoFinanciero);
+  const rentedFleet = construirFlotaAlquilada(flota, datosD1, hoyISO, timezone);
   const dailyMovements = construirMovimientosDiarios(
     dateLabel,
     flota,
-    input.estadoFinanciero
+    datosD1.movimientosConfirmados,
+    hoyISO,
+    timezone
   );
-  const dailyEarnings = construirGananciaDiariaVehiculos(dailyMovements, rentedFleet);
-  const monthlyOccupancy = construirOcupacionMensual(rentedFleet, input.estadoFinanciero);
+  const dailyEarnings = construirGananciaDiariaVehiculos(
+    flota,
+    datosD1.movimientosConfirmados,
+    hoyISO,
+    timezone
+  );
+  const monthlyOccupancy = construirOcupacionMensual(flota, datosD1, hoyISO, timezone);
 
   return {
     yardName,

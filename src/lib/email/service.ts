@@ -52,7 +52,11 @@ function normalizeSender(sender: RecipientInput): string | CfEmailAddress {
  * Adaptador oficial para Cloudflare Workers send_email binding
  */
 export class CloudflareEmailAdapter implements IEmailSender {
-  constructor(private readonly emailBinding: SendEmail) {}
+  private readonly emailBinding: SendEmail;
+
+  constructor(emailBinding: SendEmail) {
+    this.emailBinding = emailBinding;
+  }
 
   async send(options: SendEmailOptions): Promise<EmailResult> {
     try {
@@ -139,13 +143,15 @@ export interface EmailServiceConfig {
  * Servicio de Dominio para orquestar envíos de correo en FlotaX
  */
 export class EmailService {
+  private readonly sender: IEmailSender;
   private readonly defaultFrom: string;
   private readonly authFrom: string;
 
   constructor(
-    private readonly sender: IEmailSender,
+    sender: IEmailSender,
     config?: EmailServiceConfig | undefined
   ) {
+    this.sender = sender;
     this.defaultFrom =
       config?.defaultFrom || 'FlotaX <notificaciones@flotax.innovaweb.pro>';
     this.authFrom =

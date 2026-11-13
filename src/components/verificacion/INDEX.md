@@ -13,9 +13,7 @@
 
 ## Invariants & Directory Rules
 
-- Diseñado para ejecución a pantalla completa (`100dvh`) con estética institucional Fintech y tokens canónicos de FlotaX (`#111827`, `#1F2937`, `#4B5563`, `#9CA3AF`, `#EDEDED`).
-- Ergonomía móvil estricta (inputs $\ge$ 16px / `text-base` para prevención de zoom en WebKit iOS).
-- Cero manipulación imperativa del DOM; gestión reactiva de estado con React 19.
-- Subida directa de evidencias fotográficas en base64 hacia Cloudflare R2 (`BUCKET_MULTIMEDIA`) a través de `actions.verificacion.subirFoto`.
+- All additions, deletions, or public API modifications must be reflected in this index.
+- Maintain strict boundary encapsulation and domain layer separation.
 
 <!-- Reconciled by codebase-index -->

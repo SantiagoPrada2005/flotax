@@ -7,9 +7,9 @@
 
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
+| [`AlquilerEnProcesoCard.tsx`](./AlquilerEnProcesoCard.tsx) | React 19 Island | `AlquilerEnProcesoCard`, `AlquilerEnProcesoCardProps`, `AlquilerEnProcesoItem`, `AlquilerEnProcesoResponse`, `EstadoAlquilerEnProceso`, `EstadoPasoContrato`, `PasoProcesoContrato`, `TiemposConfigAlquilerEnProceso`, `DEFAULT_TIEMPOS_ALQUILER_PROCESO`, `MOCK_ALQUILERES_EN_PROCESO`, `obtenerPasosProcesoContrato`, `resolverYOrdenarAlquileres` | `react`, `@/db/schema` |
 | [`BentoHeroCard.astro`](./BentoHeroCard.astro) | Astro UI Component | Astro Template | - |
-| [`BentoMetricsGrid.astro`](./BentoMetricsGrid.astro) | Astro UI Component | Astro Template | - |
-| [`BentoOperationsCard.astro`](./BentoOperationsCard.astro) | Astro UI Component | Astro Template | - |
+| [`BentoMetricsGrid.astro`](./BentoMetricsGrid.astro) | Astro UI Component | Astro Template | `@/db/schema` |
 | [`InteractiveSplineCard.tsx`](./InteractiveSplineCard.tsx) | React 19 Island | `InteractiveSplineCard`, `InteractiveSplineCardProps` | `@/lib/metricas` |
 | [`MetricsInteractiveHub.tsx`](./MetricsInteractiveHub.tsx) | React 19 Island | `MetricsInteractiveHub`, `MetricsInteractiveHubProps` | `@/lib/metricas`, `InteractiveSplineCard`, `TelemetryBentoGrid`, `TelemetryVisualModals` |
 | [`TelemetryBentoGrid.tsx`](./TelemetryBentoGrid.tsx) | React 19 Island | `TelemetryBentoGrid`, `TelemetryBentoGridProps`, `TelemetryBentoViewMode` | `@/lib/caja`, `@/lib/metricas` |

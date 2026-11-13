@@ -7,7 +7,7 @@
 
 | Subdirectory | Responsibility | Index |
 | :--- | :--- | :--- |
-| [`[id]/`](./[id]/) | Operaciones por unidad: edición y disponibilidad técnica | [INDEX.md](./[id]/INDEX.md) |
+| [`[id]/`](./[id]/) | Enrutamiento para operaciones por unidad de flota: edición de especificaciones técnicas y tablero dedicado de disponibilidad y mantenimiento. | [INDEX.md](./[id]/INDEX.md) |
 
 ## File Manifest
 

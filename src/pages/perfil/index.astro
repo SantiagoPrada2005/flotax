@@ -51,9 +51,11 @@ const perfilData = {
   esSuperAdmin: usuario.esSuperAdmin,
   imagen: usuario.imagen,
 };
+
+const modoOperador = Astro.locals.modoPortal === 'ADMIN';
 ---
 
-<LayoutApp title="FlotaX — Perfil" activeTab="profile" navVariant="client">
+<LayoutApp title="FlotaX — Perfil" activeTab="profile" navVariant={modoOperador ? 'admin' : 'client'}>
   <div class="mx-auto w-full max-w-md sm:max-w-xl px-4 py-3 pb-24">
     {/* Componente Integral de Perfil con Fidelidad Visual Apple (Referencia After) */}
     <PerfilEditorCard
@@ -62,6 +64,7 @@ const perfilData = {
       membresias={membresias}
       localActivoNombre={usuario.localActivo?.nombre}
       estadoVerificacion={estadoVerificacion}
+      modoActual={Astro.locals.modoPortal}
     />
   </div>
 </LayoutApp>

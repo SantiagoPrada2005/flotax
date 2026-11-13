@@ -74,6 +74,8 @@ Astro.response.headers.set('Accept-CH', 'Sec-CH-Prefers-Color-Scheme');
   data-theme={esOscuroInicial ? "dark" : "light"}
   style={esOscuroInicial ? "background-color: #111827; color-scheme: dark;" : "background-color: #ededed; color-scheme: light;"}
   data-autenticado={Astro.locals.usuario ? 'true' : 'false'}
+  data-has-sidebar={!hideNav && isAdmin ? 'true' : 'false'}
+  data-portal-modo={Astro.locals.modoPortal}
 >
   <head>
     <meta charset="UTF-8" />
@@ -131,8 +133,12 @@ Astro.response.headers.set('Accept-CH', 'Sec-CH-Prefers-Color-Scheme');
     />
     <ClientRouter />
 
-    <!-- Sincronizador de tema e idioma durante transiciones SPA -->
+    <!-- Sincronizador de tema, idioma y transiciones horizontales durante navegación SPA -->
     <script>
+      import { initHorizontalPageTransitions } from '@/lib/pwa';
+
+      initHorizontalPageTransitions();
+
       const sincronizarTema = () => {
         try {
           const tema = localStorage.getItem('flotax_theme') || 'sistema';

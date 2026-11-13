@@ -2,6 +2,7 @@
 import LayoutApp from '@/layouts/LayoutApp.astro';
 import RentalWizardFlow from '@/components/alquiler/RentalWizardFlow';
 import { obtenerVehiculoAsync, obtenerBloquesNoDisponiblesD1 } from '@/lib/flota';
+import { obtenerEstadoDocumentalVehiculoD1 } from '@/lib/flota/disponibilidad';
 import { resolveClientTimeContext } from '@/lib/time/client-time';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
@@ -24,6 +25,16 @@ const bloques = db
   ? await obtenerBloquesNoDisponiblesD1(db, vehiculo.id, hoyISO, 180)
   : [];
 
+// Evaluar documentos legales del vehículo (SOAT, RTM)
+const estadoDocumental = db
+  ? await obtenerEstadoDocumentalVehiculoD1(db, vehiculo.id, vehiculo.categoria, hoyISO)
+  : {
+      tieneVencidos: false,
+      faltantesSinCarga: [],
+      vencidos: [],
+      requiereRtm: vehiculo.categoria !== 'PATINETA',
+    };
+
 const desdeParam = Astro.url.searchParams.get('desde') ?? undefined;
 const hastaParam = Astro.url.searchParams.get('hasta') ?? undefined;
 const stepParam = Astro.url.searchParams.get('step');
@@ -41,6 +52,9 @@ const usuarioActual = usuarioLocals
       numeroDocumento: usuarioLocals.numeroDocumento,
     }
   : null;
+
+const localId = localCautivo?.id ?? vehiculo.localId ?? undefined;
+const sedeNombre = localCautivo?.nombre ?? undefined;
 ---
 
 <LayoutApp
@@ -59,6 +73,9 @@ const usuarioActual = usuarioLocals
       fechaInicioInicial={desdeParam}
       fechaFinInicial={hastaParam}
       pasoInicial={pasoInicial}
+      estadoDocumental={estadoDocumental}
+      localId={localId}
+      sedeNombre={sedeNombre}
     />
   </div>
 </LayoutApp>

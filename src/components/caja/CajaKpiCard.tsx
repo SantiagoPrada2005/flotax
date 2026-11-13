@@ -115,9 +115,9 @@ export function calcularPathSplineReal(
  */
 export interface CajaBentoHeroCardProps {
   montoDisponible: number;
-  saldoEfectivo: number;
-  saldoBancos: number;
-  depositosRetenidos: number;
+  saldoEfectivo?: number | undefined;
+  saldoBancos?: number | undefined;
+  depositosRetenidos?: number | undefined;
   yardName?: string | undefined;
   dateLabel?: string | undefined;
   puntosHistoricos?: PuntoGraficoFlujo[] | undefined;
@@ -126,16 +126,92 @@ export interface CajaBentoHeroCardProps {
 
 export function CajaBentoHeroCard({
   montoDisponible,
-  saldoEfectivo,
-  saldoBancos,
-  depositosRetenidos,
+  saldoEfectivo: _saldoEfectivo = 0,
+  saldoBancos: _saldoBancos = 0,
+  depositosRetenidos = 0,
   yardName = 'Patio Central',
   dateLabel = 'Tesorería en Tiempo Real',
   puntosHistoricos: _puntosHistoricos = [],
   onClick,
 }: CajaBentoHeroCardProps) {
-  const totalCuentas = Math.max(1, saldoEfectivo + saldoBancos);
-  const pctEfectivo = Math.round((saldoEfectivo / totalCuentas) * 100);
+  return (
+    <article
+      onClick={onClick}
+      onKeyDown={onClick ? crearManejadorTeclado(onClick) : undefined}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      className={`relative overflow-hidden rounded-[24px] sm:rounded-[30px] bg-[#111827] p-5 sm:p-7 text-white shadow-xl border border-white/10 ${onClick ? 'fx-pressable cursor-pointer hover:border-white/25' : ''
+        }`}
+    >
+      <div className="relative z-10 flex flex-col space-y-3 sm:space-y-4">
+        {/* Pill de Tag Canónico con Azul FlotaX */}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/90 backdrop-blur-md border border-white/10">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#2D6BFF]" />
+            <span>Tesorería & Saldo Disponible Real</span>
+          </div>
+
+          <span className="text-xs font-medium text-[#9CA3AF]">
+            {dateLabel} • {yardName}
+          </span>
+        </div>
+
+        {/* Monto Destacado en Space Grotesk */}
+        <div>
+          <div className="flex items-baseline gap-2">
+            <p className="font-display text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-[#EDEDED]">
+              {formatearMonedaCOP(montoDisponible)}
+            </p>
+            <span className="rounded-md bg-white/10 px-2 py-0.5 font-mono text-xs font-bold text-[#9CA3AF]">
+              COP
+            </span>
+          </div>
+          <p className="mt-1.5 text-xs sm:text-sm font-medium text-[#9CA3AF]">
+            Fondos líquidos operativos libres de reservas
+            {depositosRetenidos > 0 && (
+              <span className="block sm:inline sm:ml-1 text-[#EDEDED]/90">
+                • {formatearMonedaCOP(depositosRetenidos)} en custodia
+              </span>
+            )}
+          </p>
+        </div>
+
+        {/* Pie informativo sutil */}
+        <div className="flex items-center justify-between pt-2 border-t border-white/10 text-xs text-[#9CA3AF]">
+          <div className="flex items-center gap-2">
+
+          </div>
+          <span className="text-xs font-semibold text-white hover:underline cursor-pointer flex items-center gap-1">
+            <span>Ver cuentas</span>
+            <span>→</span>
+          </span>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+/**
+ * Tarjeta Bento: Distribución de Fondos
+ * Card independiente ubicada bajo Tesorería, mostrando el desglose proporcional
+ * entre efectivo en gaveta y fondos en bancos/billeteras.
+ */
+export interface CajaDistribucionFondosCardProps {
+  saldoEfectivo: number;
+  saldoBancos: number;
+  totalCuentas?: number | undefined;
+  onClick?: (() => void) | undefined;
+}
+
+export function CajaDistribucionFondosCard({
+  saldoEfectivo,
+  saldoBancos,
+  totalCuentas,
+  onClick,
+}: CajaDistribucionFondosCardProps) {
+  const suma = totalCuentas ?? Math.max(1, saldoEfectivo + saldoBancos);
+  const total = Math.max(1, suma);
+  const pctEfectivo = Math.round((saldoEfectivo / total) * 100);
   const pctBancos = Math.max(0, 100 - pctEfectivo);
 
   return (
@@ -144,92 +220,80 @@ export function CajaBentoHeroCard({
       onKeyDown={onClick ? crearManejadorTeclado(onClick) : undefined}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
-      className={`relative overflow-hidden rounded-[24px] sm:rounded-[30px] bg-[#111827] p-4 sm:p-6 text-white shadow-xl border border-white/10 col-span-2 lg:col-span-4 ${
-        onClick ? 'fx-pressable cursor-pointer hover:border-white/25' : ''
-      }`}
+      className={`rounded-[24px] sm:rounded-[28px] border border-[#9CA3AF]/30 dark:border-white/10 bg-white dark:bg-[#1F2937] p-4 sm:p-5 shadow-xs transition-all ${onClick ? 'fx-pressable cursor-pointer hover:border-[#111827]/40 dark:hover:border-white/25' : ''
+        }`}
     >
-      <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
-        {/* Columna Izquierda: Identidad Financiera, Monto Principal y Botones */}
-        <div className="flex flex-col space-y-2.5 sm:space-y-3.5 flex-1">
-          {/* Pill de Tag Canónico con Azul FlotaX */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/90 backdrop-blur-md border border-white/10">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#111827]" />
-              <span>Tesorería & Saldo Disponible Real</span>
-            </div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-[#9CA3AF]/15 dark:border-white/10">
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-[#1E3A8A] dark:bg-[#475569]" />
+          <h3 className="font-display text-sm font-bold tracking-tight text-[#111827] dark:text-[#EDEDED]">
+            Distribución de Fondos
+          </h3>
+          <span className="text-[11px] text-[#4B5563] dark:text-[#9CA3AF] hidden sm:inline">
+            · Desglose de disponibilidad por canal
+          </span>
+        </div>
 
-            <span className="hidden sm:inline text-xs font-medium text-[#9CA3AF]">
-              {dateLabel} • {yardName}
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/50">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400" />
+            Operativo
+          </span>
+          {onClick && (
+            <span className="text-xs font-semibold text-[#1E3A8A] dark:text-[#9CA3AF] hover:underline cursor-pointer">
+              Ver cuentas →
             </span>
-          </div>
+          )}
+        </div>
+      </div>
 
-          {/* Monto Destacado en Space Grotesk */}
-          <div>
-            <div className="flex items-baseline gap-2">
-              <p className="font-display text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-[#EDEDED]">
-                {formatearMonedaCOP(montoDisponible)}
-              </p>
-              <span className="rounded-md bg-white/10 px-1.5 py-0.5 font-mono text-[10px] font-bold text-[#9CA3AF]">
-                COP
+      {/* Desglose en 2 Bloques Limpios */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3">
+        <div className="flex items-center justify-between rounded-xl bg-[#EDEDED]/50 dark:bg-white/5 p-3 border border-[#9CA3AF]/15 dark:border-white/5">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#111827] dark:bg-white text-white dark:text-[#111827] text-xs font-black shadow-xs">
+              $
+            </span>
+            <div>
+              <span className="block text-xs font-bold text-[#111827] dark:text-[#EDEDED]">
+                Gaveta (Efectivo)
+              </span>
+              <span className="text-[10px] text-[#4B5563] dark:text-[#9CA3AF]">
+                Caja física en patio
               </span>
             </div>
-            <p className="mt-1 text-[11px] sm:text-xs font-medium text-[#9CA3AF]">
-              Fondos líquidos operativos libres de reservas
-              {depositosRetenidos > 0 && (
-                <span className="block sm:inline sm:ml-1 text-[#EDEDED]/80">
-                  • {formatearMonedaCOP(depositosRetenidos)} en custodia
-                </span>
-              )}
-            </p>
           </div>
-
-          {/* Pie informativo sutil sin duplicar botones de cabecera */}
-          <div className="flex items-center gap-2 pt-1 text-xs text-[#9CA3AF]">
-            <span className="font-mono text-[10px] text-white/70">
-              Turno Operativo Activo
+          <div className="text-right">
+            <span className="font-mono text-xs sm:text-sm font-bold text-[#111827] dark:text-white block">
+              {formatearMonedaCOP(saldoEfectivo)}
             </span>
-            <span className="text-[#9CA3AF]/60">•</span>
-            <span className="text-[11px] text-[#9CA3AF]">
-              Clic para ver detalle de cuentas →
+            <span className="font-mono text-[11px] font-semibold text-[#4B5563] dark:text-[#9CA3AF]">
+              {pctEfectivo}%
             </span>
           </div>
         </div>
 
-        {/* Columna Derecha: Inset White Mini-Card Canónica (Idéntica a BentoHeroCard.astro) */}
-        <div className="flex shrink-0 flex-col justify-between rounded-[22px] bg-white p-3.5 sm:p-4 text-[#111827] shadow-lg ring-1 ring-black/5 min-w-[210px] sm:min-w-[240px]">
-          {/* Fila Superior con Estado Operativo */}
-          <div className="flex items-center justify-between pb-2 border-b border-[#9CA3AF]/20">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
-              Distribución de Fondos
+        <div className="flex items-center justify-between rounded-xl bg-[#EDEDED]/50 dark:bg-white/5 p-3 border border-[#9CA3AF]/15 dark:border-white/5">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#1E3A8A] dark:bg-[#1E293B] text-white text-xs font-black shadow-xs border border-[#1E3A8A]/30">
+              🏦
             </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
-              Operativo
-            </span>
+            <div>
+              <span className="block text-xs font-bold text-[#111827] dark:text-[#EDEDED]">
+                Bancos & Billeteras
+              </span>
+              <span className="text-[10px] text-[#4B5563] dark:text-[#9CA3AF]">
+                Cuentas digitales / QR
+              </span>
+            </div>
           </div>
-
-          {/* Desglose de Cuentas */}
-          <div className="my-2 space-y-2 text-xs">
-            <div className="flex items-center justify-between">
-              <span className="text-[#4B5563] flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-[#111827]" />
-                Gaveta (Efectivo):
-              </span>
-              <span className="font-mono font-bold text-[#111827]">
-                {formatearMonedaCOP(saldoEfectivo)}{' '}
-                <span className="text-[10px] text-[#4B5563] font-normal">({pctEfectivo}%)</span>
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-[#4B5563] flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-[#4B5563]" />
-                Bancos & Billeteras:
-              </span>
-              <span className="font-mono font-bold text-[#111827]">
-                {formatearMonedaCOP(saldoBancos)}{' '}
-                <span className="text-[10px] text-[#4B5563] font-normal">({pctBancos}%)</span>
-              </span>
-            </div>
+          <div className="text-right">
+            <span className="font-mono text-xs sm:text-sm font-bold text-[#111827] dark:text-white block">
+              {formatearMonedaCOP(saldoBancos)}
+            </span>
+            <span className="font-mono text-[11px] font-semibold text-[#1E3A8A] dark:text-[#9CA3AF]">
+              {pctBancos}%
+            </span>
           </div>
         </div>
       </div>
@@ -267,32 +331,31 @@ export function CajaBentoSparklineCard({
         onKeyDown={onClick ? crearManejadorTeclado(onClick) : undefined}
         role={onClick ? 'button' : undefined}
         tabIndex={onClick ? 0 : undefined}
-        className={`relative flex flex-col justify-between rounded-[20px] sm:rounded-[24px] bg-white p-3.5 sm:p-5 text-[#111827] shadow-xs border border-[#9CA3AF]/30 col-span-1 h-full min-h-[115px] sm:min-h-[130px] ${
-          onClick ? 'fx-pressable cursor-pointer hover:border-[#9CA3AF]/60' : ''
-        }`}
+        className={`relative flex flex-col justify-between rounded-[20px] sm:rounded-[24px] bg-white dark:bg-[#1F2937] p-3.5 sm:p-5 text-[#111827] dark:text-[#EDEDED] shadow-xs border border-[#9CA3AF]/30 dark:border-white/10 col-span-1 h-full min-h-[115px] sm:min-h-[130px] ${onClick ? 'fx-pressable cursor-pointer hover:border-[#2D6BFF]/50 dark:hover:border-white/20' : ''
+          }`}
       >
         <div className="flex items-center justify-between gap-1.5 sm:gap-2">
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-            <div className="flex h-6 w-6 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700 font-black text-xs sm:text-sm border border-emerald-200/60">
+            <div className="flex h-6 w-6 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-black text-xs sm:text-sm border border-emerald-200/60 dark:border-emerald-800/40">
               +
             </div>
-            <span className="text-xs sm:text-sm font-semibold text-[#4B5563] truncate">
+            <span className="text-xs sm:text-sm font-semibold text-[#4B5563] dark:text-[#9CA3AF] truncate">
               {titulo}
             </span>
           </div>
 
           {trendBadge && (
-            <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] sm:text-xs font-bold text-emerald-700 shrink-0">
+            <span className="inline-flex items-center rounded-full bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 text-[10px] sm:text-xs font-bold text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/40 shrink-0">
               {trendBadge}
             </span>
           )}
         </div>
 
         <div className="mt-3 sm:mt-4">
-          <p className="font-display text-lg sm:text-2xl lg:text-3xl font-black tracking-tight text-[#111827] tabular-nums truncate">
+          <p className="font-display text-lg sm:text-2xl lg:text-3xl font-black tracking-tight text-[#111827] dark:text-white tabular-nums truncate">
             {formatearMonedaCOP(monto)}
           </p>
-          <p className="mt-0.5 sm:mt-1 text-[11px] sm:text-xs font-medium text-[#4B5563] truncate">
+          <p className="mt-0.5 sm:mt-1 text-[11px] sm:text-xs font-medium text-[#4B5563] dark:text-[#9CA3AF] truncate">
             {subtitulo}
           </p>
         </div>
@@ -307,32 +370,31 @@ export function CajaBentoSparklineCard({
       onKeyDown={onClick ? crearManejadorTeclado(onClick) : undefined}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
-      className={`relative flex flex-col justify-between rounded-[20px] sm:rounded-[24px] bg-white p-3.5 sm:p-5 text-[#111827] shadow-xs border border-[#9CA3AF]/30 col-span-1 h-full min-h-[115px] sm:min-h-[130px] ${
-        onClick ? 'fx-pressable cursor-pointer hover:border-[#9CA3AF]/60' : ''
-      }`}
+      className={`relative flex flex-col justify-between rounded-[20px] sm:rounded-[24px] bg-white dark:bg-[#1F2937] p-3.5 sm:p-5 text-[#111827] dark:text-[#EDEDED] shadow-xs border border-[#9CA3AF]/30 dark:border-white/10 col-span-1 h-full min-h-[115px] sm:min-h-[130px] ${onClick ? 'fx-pressable cursor-pointer hover:border-[#2D6BFF]/50 dark:hover:border-white/20' : ''
+        }`}
     >
       <div className="flex items-center justify-between gap-1.5 sm:gap-2">
         <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-          <div className="flex h-6 w-6 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-700 font-black text-xs sm:text-sm border border-rose-200/60">
+          <div className="flex h-6 w-6 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 font-black text-xs sm:text-sm border border-rose-200/60 dark:border-rose-800/40">
             −
           </div>
-          <span className="text-xs sm:text-sm font-semibold text-[#4B5563] truncate">
+          <span className="text-xs sm:text-sm font-semibold text-[#4B5563] dark:text-[#9CA3AF] truncate">
             {titulo}
           </span>
         </div>
 
         {trendBadge && (
-          <span className="inline-flex items-center rounded-full bg-rose-50 px-2 py-0.5 text-[10px] sm:text-xs font-bold text-rose-700 shrink-0">
+          <span className="inline-flex items-center rounded-full bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 text-[10px] sm:text-xs font-bold text-rose-700 dark:text-rose-400 border border-rose-200/60 dark:border-rose-800/40 shrink-0">
             {trendBadge}
           </span>
         )}
       </div>
 
       <div className="mt-3 sm:mt-4">
-        <p className="font-display text-lg sm:text-2xl lg:text-3xl font-black tracking-tight text-[#111827] tabular-nums truncate">
+        <p className="font-display text-lg sm:text-2xl lg:text-3xl font-black tracking-tight text-[#111827] dark:text-white tabular-nums truncate">
           {formatearMonedaCOP(monto)}
         </p>
-        <p className="mt-0.5 sm:mt-1 text-[11px] sm:text-xs font-medium text-[#4B5563] truncate">
+        <p className="mt-0.5 sm:mt-1 text-[11px] sm:text-xs font-medium text-[#4B5563] dark:text-[#9CA3AF] truncate">
           {subtitulo}
         </p>
       </div>
@@ -372,13 +434,12 @@ export function CajaBentoPillCard({
       <button
         type="button"
         onClick={onClick}
-        className={`flex flex-col justify-between rounded-[20px] sm:rounded-[22px] bg-[#EDEDED] p-3 sm:p-4 text-left border border-[#9CA3AF]/40 shadow-xs col-span-1 ${
-          onClick ? 'fx-pressable hover:bg-white cursor-pointer' : ''
-        }`}
+        className={`flex flex-col justify-between rounded-[20px] sm:rounded-[22px] bg-white dark:bg-[#1F2937] p-3 sm:p-4 text-left border border-[#9CA3AF]/30 dark:border-white/10 shadow-xs col-span-1 ${onClick ? 'fx-pressable hover:border-[#2D6BFF]/50 dark:hover:border-white/20 cursor-pointer' : ''
+          }`}
       >
-        <div className="flex w-full items-center justify-between text-[11px] sm:text-xs font-semibold text-[#4B5563]">
+        <div className="flex w-full items-center justify-between text-[11px] sm:text-xs font-semibold text-[#4B5563] dark:text-[#9CA3AF]">
           <span className="truncate pr-1">{titulo}</span>
-          <span className="flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-[#111827] text-white shrink-0">
+          <span className="flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-[#111827] dark:bg-white text-white dark:text-[#111827] shrink-0">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="h-3 w-3">
               <path d="M5 12c0-3.8 3.1-7 7-7s7 3.2 7 7-3.1 7-7 7-7-3.2-7-7Z" />
               <circle cx="17" cy="8" r="2" fill="currentColor" />
@@ -386,19 +447,19 @@ export function CajaBentoPillCard({
           </span>
         </div>
 
-        <p className="mt-1.5 sm:mt-2 font-display text-base sm:text-xl font-extrabold tracking-tight text-[#111827] truncate">
+        <p className="mt-1.5 sm:mt-2 font-display text-base sm:text-xl font-extrabold tracking-tight text-[#111827] dark:text-white truncate">
           {formatearMonedaCOP(monto)}
         </p>
 
         {/* Barra de progreso de cobranza */}
         <div className="mt-1.5 sm:mt-2 flex items-center gap-1.5">
-          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white border border-[#9CA3AF]/40">
+          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#EDEDED] dark:bg-white/10 border border-[#9CA3AF]/30 dark:border-white/10">
             <div
               style={{ width: `${Math.min(100, Math.max(10, porcentajeBarra))}%` }}
-              className="h-full rounded-full bg-[#111827] transition-[width] duration-300"
+              className="h-full rounded-full bg-[#2D6BFF] transition-[width] duration-300"
             />
           </div>
-          <span className="font-mono text-[9px] sm:text-[10px] font-bold text-[#111827] truncate">
+          <span className="font-mono text-[9px] sm:text-[10px] font-bold text-[#4B5563] dark:text-[#9CA3AF] truncate">
             {indicadorExtra || subtitulo}
           </span>
         </div>
@@ -411,26 +472,27 @@ export function CajaBentoPillCard({
       <button
         type="button"
         onClick={onClick}
-        className={`flex flex-col justify-between rounded-[20px] sm:rounded-[22px] bg-[#EDEDED] p-3 sm:p-4 text-left border border-[#9CA3AF]/40 shadow-xs col-span-1 ${
-          onClick ? 'fx-pressable hover:bg-white cursor-pointer' : ''
-        }`}
+        className={`flex flex-col justify-between rounded-[20px] sm:rounded-[22px] bg-white dark:bg-[#1F2937] p-3 sm:p-4 text-left border border-[#9CA3AF]/30 dark:border-white/10 shadow-xs col-span-1 ${onClick ? 'fx-pressable hover:border-[#2D6BFF]/50 dark:hover:border-white/20 cursor-pointer' : ''
+          }`}
       >
-        <div className="flex w-full items-center justify-between text-[11px] sm:text-xs font-semibold text-[#4B5563]">
+        <div className="flex w-full items-center justify-between text-[11px] sm:text-xs font-semibold text-[#4B5563] dark:text-[#9CA3AF]">
           <span className="truncate pr-1">{titulo}</span>
-          <span className="h-5 w-5 sm:h-6 sm:w-6 rounded-full bg-hatch-diagonal border border-[#111827] shrink-0" />
+          <span className="h-5 w-5 sm:h-6 sm:w-6 rounded-full bg-amber-100 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-700/50 text-amber-700 dark:text-amber-400 flex items-center justify-center text-[10px] font-black shrink-0">
+            !
+          </span>
         </div>
 
-        <p className="mt-1.5 sm:mt-2 font-display text-base sm:text-xl font-extrabold tracking-tight text-[#111827] truncate">
+        <p className="mt-1.5 sm:mt-2 font-display text-base sm:text-xl font-extrabold tracking-tight text-[#111827] dark:text-white truncate">
           {formatearMonedaCOP(monto)}
         </p>
 
-        {/* Barra dual-tone con sólido #111827 y rayado */}
+        {/* Barra dual-tone */}
         <div className="mt-1.5 sm:mt-2 flex items-center gap-1.5">
-          <div className="flex h-1.5 flex-1 overflow-hidden rounded-full bg-white border border-[#9CA3AF]/40">
-            <div style={{ width: '45%' }} className="h-full bg-[#111827]" />
-            <div style={{ width: '55%' }} className="h-full bg-hatch-diagonal" />
+          <div className="flex h-1.5 flex-1 overflow-hidden rounded-full bg-[#EDEDED] dark:bg-white/10 border border-[#9CA3AF]/30 dark:border-white/10">
+            <div style={{ width: '45%' }} className="h-full bg-amber-500" />
+            <div style={{ width: '55%' }} className="h-full bg-amber-500/30" />
           </div>
-          <span className="font-mono text-[9px] sm:text-[10px] font-bold text-[#4B5563] truncate">
+          <span className="font-mono text-[9px] sm:text-[10px] font-bold text-[#4B5563] dark:text-[#9CA3AF] truncate">
             {etiquetaBadge || 'En Custodia'}
           </span>
         </div>
@@ -444,15 +506,14 @@ export function CajaBentoPillCard({
       <button
         type="button"
         onClick={onClick}
-        className={`flex flex-col justify-between rounded-[20px] sm:rounded-[22px] bg-[#111827] p-3 sm:p-4 text-left border border-white/10 shadow-xs col-span-1 ${
-          onClick ? 'fx-pressable hover:border-white/20 cursor-pointer' : ''
-        }`}
+        className={`flex flex-col justify-between rounded-[20px] sm:rounded-[22px] bg-[#111827] dark:bg-[#111827] p-3 sm:p-4 text-left border border-white/10 shadow-xs col-span-1 ${onClick ? 'fx-pressable hover:border-white/20 cursor-pointer' : ''
+          }`}
       >
         <div className="flex w-full items-center justify-between text-[11px] sm:text-xs font-semibold text-blue-200/90">
           <span className="truncate pr-1">{titulo}</span>
           <span
             className={`inline-flex items-center rounded-full px-1.5 py-0.2 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider ${esPositivo
-              ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-500/40'
+              ? 'bg-white/10 text-white border border-white/20'
               : 'bg-rose-950/60 text-rose-300 border border-rose-500/40'
               }`}
           >
@@ -481,17 +542,15 @@ export function CajaBentoPillCard({
     <button
       type="button"
       onClick={onClick}
-      className={`flex flex-row items-center justify-between gap-2.5 sm:gap-4 rounded-[18px] sm:rounded-[22px] bg-[#111827] px-3.5 py-2.5 sm:px-5 sm:py-3 text-left border border-white/10 shadow-md col-span-2 w-full ${
-        onClick ? 'fx-pressable hover:border-white/25 cursor-pointer' : ''
-      } ${className || ''}`}
+      className={`flex flex-row items-center justify-between gap-2.5 sm:gap-4 rounded-[18px] sm:rounded-[22px] bg-[#111827] dark:bg-[#1F2937] px-3.5 py-2.5 sm:px-5 sm:py-3 text-left border border-white/10 shadow-md col-span-2 w-full ${onClick ? 'fx-pressable hover:border-white/25 cursor-pointer' : ''
+        } ${className || ''}`}
     >
       <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         <div
-          className={`flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm border ${
-            esPositivo
-              ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40'
+          className={`flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm border ${esPositivo
+              ? 'bg-white/10 text-white border-white/20'
               : 'bg-rose-950/80 text-rose-300 border border-rose-500/40'
-          }`}
+            }`}
         >
           {esPositivo ? '↗' : '↘'}
         </div>
@@ -502,11 +561,10 @@ export function CajaBentoPillCard({
               {titulo}
             </span>
             <span
-              className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider shrink-0 ${
-                esPositivo
-                  ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/30'
+              className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider shrink-0 ${esPositivo
+                  ? 'bg-white/10 text-white border border-white/20'
                   : 'bg-rose-950/80 text-rose-300 border border-rose-500/30'
-              }`}
+                }`}
             >
               {etiquetaBadge || (esPositivo ? 'Superávit' : 'Déficit')}
             </span>
@@ -518,16 +576,10 @@ export function CajaBentoPillCard({
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-        <p
-          className={`font-display text-base sm:text-xl lg:text-2xl font-black tracking-tight tabular-nums ${
-            esPositivo ? 'text-emerald-400' : 'text-rose-400'
-          }`}
-        >
-          {formatearMonedaCOP(monto)}
+        <p className={`font-display text-base sm:text-xl lg:text-2xl font-black tracking-tight ${esPositivo ? 'text-white' : 'text-rose-400'}`}>
+          {esPositivo ? '+ ' : ''}{formatearMonedaCOP(monto)}
         </p>
-        <span className="text-[#9CA3AF] text-xs sm:text-sm shrink-0">
-          →
-        </span>
+        <span className="text-white/60 text-xs">→</span>
       </div>
     </button>
   );

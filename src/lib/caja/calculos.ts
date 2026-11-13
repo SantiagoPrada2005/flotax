@@ -110,12 +110,102 @@ export function esIngresoOperativo(mov: MovimientoCajaSelect): boolean {
 }
 
 /**
- * Determina si un movimiento califica como gasto operativo reconocido.
- * Regla: La restitución de garantías a clientes y transferencias internas NO son gastos operativos.
+ * Categorías de ingreso computables hacia la liquidación de un contrato de alquiler.
  */
-export function esGastoOperativo(mov: MovimientoCajaSelect): boolean {
-  if (mov.tipo !== 'EGRESO' || mov.estado !== 'CONFIRMADO') return false;
-  if (mov.categoria === 'REEMBOLSO_GARANTIA') return false;
+export const CATEGORIAS_INGRESO_CONTRATO: ReadonlySet<string> = new Set([
+  'ABONO_CONTRATO',
+  'PAGO_ALQUILER',
+  'EXTENSION_ALQUILER',
+  'SERVICIOS_ADICIONALES',
+  'COBRO_DANOS_MULTAS',
+]);
+
+/**
+ * Calcula el total pagado neto atribuible a un contrato de alquiler:
+ * Suma de ingresos confirmados ('ABONO_CONTRATO', 'PAGO_ALQUILER', 'EXTENSION_ALQUILER', 'SERVICIOS_ADICIONALES', 'COBRO_DANOS_MULTAS')
+ * menos egresos confirmados ('REEMBOLSO_ALQUILER').
+ */
+export function calcularTotalPagadoNetoContrato(
+  movimientos: Array<{
+    tipo: string;
+    categoria: string;
+    monto: number;
+    estado: string;
+  }>
+): number {
+  let ingresos = 0;
+  let reembolsos = 0;
+
+  for (const m of movimientos) {
+    if (m.estado !== 'CONFIRMADO') continue;
+    if (m.tipo === 'INGRESO' && CATEGORIAS_INGRESO_CONTRATO.has(m.categoria)) {
+      ingresos += m.monto;
+    } else if (m.tipo === 'EGRESO' && m.categoria === 'REEMBOLSO_ALQUILER') {
+      reembolsos += m.monto;
+    }
+  }
+
+  return Math.max(0, ingresos - reembolsos);
+}
+
+/**
+ * Resuelve la cuenta financiera idónea para asentar un movimiento según el método de pago:
+ * - 'efectivo' | 'EFECTIVO' -> 'CAJA_EFECTIVO'
+ * - 'transferencia' | 'tarjeta' | ... -> 'BANCO' | 'BILLETERA_DIGITAL'
+ * Si se especifica cuentaIdSolicitada y pertenece a las cuentas activas del local, se respeta dicha selección.
+ */
+export function resolverCuentaPorMetodoPago(
+  cuentas: CuentaFinancieraSelect[],
+  metodoPago: string,
+  cuentaIdSolicitada?: string | undefined
+): CuentaFinancieraSelect | undefined {
+  const cuentasActivas = cuentas.filter((c) => c.activo !== false);
+
+  if (cuentaIdSolicitada) {
+    const coincidencia = cuentasActivas.find((c) => c.id === cuentaIdSolicitada);
+    if (coincidencia) return coincidencia;
+  }
+
+  const metodoNormalizado = metodoPago.trim().toLowerCase();
+  const esEfectivo = metodoNormalizado === 'efectivo';
+
+  if (esEfectivo) {
+    const cuentaEfectivo = cuentasActivas.find((c) => c.tipo === 'CAJA_EFECTIVO');
+    if (cuentaEfectivo) return cuentaEfectivo;
+  } else {
+    const cuentaBanco = cuentasActivas.find(
+      (c) => c.tipo === 'BANCO' || c.tipo === 'BILLETERA_DIGITAL'
+    );
+    if (cuentaBanco) return cuentaBanco;
+  }
+
+  return cuentasActivas[0];
+}
+
+/**
+ * Determina si un movimiento califica como gasto operativo reconocido.
+ * Regla: La restitución de garantías, reembolsos de alquiler y transferencias internas NO son gastos operativos.
+ */
+export function esGastoOperativo(
+  movOCategoria:
+    | MovimientoCajaSelect
+    | { tipo?: string | undefined; categoria: string; estado?: string | undefined }
+    | string
+): boolean {
+  if (typeof movOCategoria === 'string') {
+    return (
+      movOCategoria !== 'REEMBOLSO_GARANTIA' &&
+      movOCategoria !== 'REEMBOLSO_ALQUILER'
+    );
+  }
+  if (movOCategoria.tipo && movOCategoria.tipo !== 'EGRESO') return false;
+  if (movOCategoria.estado && movOCategoria.estado !== 'CONFIRMADO') return false;
+  if (
+    movOCategoria.categoria === 'REEMBOLSO_GARANTIA' ||
+    movOCategoria.categoria === 'REEMBOLSO_ALQUILER'
+  ) {
+    return false;
+  }
   return true;
 }
 
@@ -285,6 +375,7 @@ export function calcularDistribucionGastosCategorias(
     LIMPIEZA_ALISTAMIENTO: 'Lavado & Alistamiento',
     SEGUROS_IMPUESTOS: 'Seguros & Impuestos',
     COMISIONES_BANCARIAS: 'Comisiones & Pasarelas',
+    REEMBOLSO_ALQUILER: 'Reembolso de Alquiler',
     REEMBOLSO_GARANTIA: 'Devolución de Garantías',
     COMPRAS_ADMINISTRATIVAS: 'Administración & Suministros',
     OTRO_EGRESO: 'Otros Gastos Operativos',

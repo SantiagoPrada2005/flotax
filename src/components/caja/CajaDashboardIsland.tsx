@@ -23,7 +23,7 @@ import {
 import {
   CajaBentoHeroCard,
   CajaBentoSparklineCard,
-  CajaBentoPillCard,
+  CajaDistribucionFondosCard,
 } from './CajaKpiCard';
 import { CajaGraficosHorizontal } from './CajaGraficosHorizontal';
 import {
@@ -69,6 +69,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
   // Modales
   const [modalMovimientoAbierto, setModalMovimientoAbierto] = useState(false);
   const [tipoModalMovimiento, setTipoModalMovimiento] = useState<TipoMovimientoCaja>('INGRESO');
+  const [contratoAbonoId, setContratoAbonoId] = useState<string | undefined>(undefined);
   const [modalTransferenciaAbierto, setModalTransferenciaAbierto] = useState(false);
   const [modalArqueoAbierto, setModalArqueoAbierto] = useState(false);
   const [modalComprobanteAbierto, setModalComprobanteAbierto] = useState(false);
@@ -94,6 +95,12 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
   const [filtroMetodo, setFiltroMetodo] = useState<string>('TODOS');
   const [filtroCuenta, setFiltroCuenta] = useState<string>('TODAS');
   const [filtroEstado, setFiltroEstado] = useState<string>('TODOS');
+
+  // Progressive Disclosure: Vista de análisis financiero y filtros por pestaña
+  const [vistaAnalisis, setVistaAnalisis] = useState<'DISTRIBUCION' | 'FLUJO'>('DISTRIBUCION');
+  const [filtroCartera, setFiltroCartera] = useState<'TODOS' | 'PENDIENTES' | 'PAGADOS'>('TODOS');
+  const [filtroGarantias, setFiltroGarantias] = useState<'TODAS' | 'CUSTODIA' | 'RESUELTAS'>('TODAS');
+  const [filtroCategoriaGasto, setFiltroCategoriaGasto] = useState<string>('TODAS');
 
   // Filtro de Reportes y Control de Desplazamiento de Pestañas
   const [reporteSeleccionado, setReporteSeleccionado] = useState<number>(1);
@@ -186,6 +193,37 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
       return true;
     });
   }, [data.todosMovimientos, filtroTipo, filtroMetodo, filtroCuenta, filtroEstado, filtroBusqueda]);
+
+  // Cartera filtrada (Progressive Disclosure)
+  const contratosFiltrados = useMemo(() => {
+    if (filtroCartera === 'PENDIENTES') return data.carteraContratos.filter((c) => c.saldoPendiente > 0);
+    if (filtroCartera === 'PAGADOS') return data.carteraContratos.filter((c) => c.saldoPendiente <= 0);
+    return data.carteraContratos;
+  }, [data.carteraContratos, filtroCartera]);
+
+  // Garantías filtradas (Progressive Disclosure)
+  const garantiasFiltradas = useMemo(() => {
+    if (filtroGarantias === 'CUSTODIA') {
+      return data.depositosGarantia.filter((g) => {
+        const saldo = Math.max(0, (g.montoRecibido || 0) - (g.montoDevuelto || 0) - (g.montoRetenido || 0));
+        return saldo > 0 || String(g.estado).toUpperCase().includes('CUSTODIA');
+      });
+    }
+    if (filtroGarantias === 'RESUELTAS') {
+      return data.depositosGarantia.filter((g) => {
+        const saldo = Math.max(0, (g.montoRecibido || 0) - (g.montoDevuelto || 0) - (g.montoRetenido || 0));
+        return saldo === 0 && !String(g.estado).toUpperCase().includes('CUSTODIA');
+      });
+    }
+    return data.depositosGarantia;
+  }, [data.depositosGarantia, filtroGarantias]);
+
+  // Gastos filtrados por categoría (Progressive Disclosure)
+  const gastosFiltrados = useMemo(() => {
+    const todosGastos = data.todosMovimientos.filter((m) => m.tipo === 'EGRESO');
+    if (filtroCategoriaGasto === 'TODAS') return todosGastos;
+    return todosGastos.filter((m) => m.categoria === filtroCategoriaGasto);
+  }, [data.todosMovimientos, filtroCategoriaGasto]);
 
   // Cálculo dinámico del período activo y recomputación en tiempo real (Nivel 1 & Nivel 2)
   const estadoPeriodo = useMemo(() => {
@@ -489,77 +527,91 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
       )}
 
       {/* Cabecera Principal con Progressive Disclosure (Sin Sobrecarga Visual) */}
-      <header className="flex flex-col gap-3.5 lg:flex-row lg:items-center lg:justify-between border-b border-[#9CA3AF]/20 pb-4">
+      <header className="flex flex-col gap-3.5 lg:flex-row lg:items-center lg:justify-between border-b border-[#9CA3AF]/20 dark:border-white/10 pb-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <span
               className={`h-2 w-2 rounded-full ${
                 data.sesionCajaActiva
-                  ? 'bg-emerald-600 animate-pulse'
+                  ? 'bg-emerald-500 animate-pulse'
                   : 'bg-[#9CA3AF]'
               }`}
             />
-            <p className="text-xs font-semibold uppercase tracking-wider text-[#4B5563] truncate">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF] truncate">
               Patio Central · {data.sesionCajaActiva ? 'Turno Activo' : 'Turno Cerrado'}
             </p>
           </div>
-          <h1 className="font-display text-2xl font-black tracking-tight text-[#111827] sm:text-3xl">
+          <h1 className="font-display text-2xl font-black tracking-tight text-[#111827] dark:text-white sm:text-3xl">
             Finanzas y Pagos
           </h1>
         </div>
 
-        {/* Acciones Operativas Directas de Caja */}
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              setTipoModalMovimiento('INGRESO');
-              setModalMovimientoAbierto(true);
-            }}
-            className="fx-press inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-emerald-700 cursor-pointer"
-          >
-            <span className="font-black">+</span>
-            <span>Registrar Ingreso</span>
-          </button>
+        {/* Barra de Acciones Financieras en Fila Única Horizontal con Scroll Silencioso */}
+        <div className="w-full lg:w-auto overflow-x-auto no-scrollbar scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden touch-pan-x py-1 -my-1">
+          <div className="flex flex-row flex-nowrap items-center gap-2 min-w-max">
+            <button
+              type="button"
+              onClick={() => {
+                setTipoModalMovimiento('INGRESO');
+                setContratoAbonoId(undefined);
+                setModalMovimientoAbierto(true);
+              }}
+              className="fx-press inline-flex h-11 min-h-[44px] shrink-0 whitespace-nowrap items-center gap-2 rounded-full bg-[#111827] dark:bg-[#2D6BFF] hover:bg-[#1F2937] dark:hover:bg-blue-600 px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs cursor-pointer border border-transparent transition-colors"
+            >
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/15 text-emerald-400 dark:text-emerald-300 font-black text-sm">
+                +
+              </span>
+              <span>Registrar Ingreso</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => {
-              setTipoModalMovimiento('EGRESO');
-              setModalMovimientoAbierto(true);
-            }}
-            className="fx-press inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-[#9CA3AF]/40 dark:border-white/10 bg-white dark:bg-[#1F2937] px-4 py-2 text-xs font-bold text-[#111827] dark:text-[#EDEDED] shadow-xs hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer"
-          >
-            <span className="text-rose-600 font-black">−</span>
-            <span>Registrar Gasto</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => {
+                setTipoModalMovimiento('EGRESO');
+                setContratoAbonoId(undefined);
+                setModalMovimientoAbierto(true);
+              }}
+              className="fx-press inline-flex h-11 min-h-[44px] shrink-0 whitespace-nowrap items-center gap-2 rounded-full border border-[#9CA3AF]/40 dark:border-white/10 bg-white dark:bg-[#1F2937] hover:bg-[#EDEDED] dark:hover:bg-white/10 px-4 py-2.5 text-xs sm:text-sm font-bold text-[#111827] dark:text-[#EDEDED] shadow-xs cursor-pointer transition-colors"
+            >
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 font-black text-sm">
+                −
+              </span>
+              <span>Registrar Gasto</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setModalTransferenciaAbierto(true)}
-            className="fx-press inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-[#9CA3AF]/40 dark:border-white/10 bg-[#EDEDED]/80 dark:bg-[#1F2937] px-3.5 py-2 text-xs font-bold text-[#111827] dark:text-[#EDEDED] hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer"
-          >
-            <span aria-hidden="true" className="font-mono">↔</span>
-            <span>Mover Dinero</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => setModalTransferenciaAbierto(true)}
+              className="fx-press inline-flex h-11 min-h-[44px] shrink-0 whitespace-nowrap items-center gap-2 rounded-full border border-[#9CA3AF]/40 dark:border-white/10 bg-white dark:bg-[#1F2937] hover:bg-[#EDEDED] dark:hover:bg-white/10 px-4 py-2.5 text-xs sm:text-sm font-bold text-[#111827] dark:text-[#EDEDED] shadow-xs cursor-pointer transition-colors"
+            >
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/60 text-[#2D6BFF] font-mono text-sm">
+                ↔
+              </span>
+              <span>Mover Dinero</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setModalArqueoAbierto(true)}
-            className={`fx-press inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold cursor-pointer ${data.sesionCajaActiva
-                ? 'bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40 dark:hover:bg-amber-500/30'
-                : 'bg-emerald-100 text-emerald-900 border border-emerald-300 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/40 dark:hover:bg-emerald-500/30'
+            <button
+              type="button"
+              onClick={() => setModalArqueoAbierto(true)}
+              className={`fx-press inline-flex h-11 min-h-[44px] shrink-0 whitespace-nowrap items-center gap-2 rounded-full border px-4 py-2.5 text-xs sm:text-sm font-bold shadow-xs cursor-pointer transition-colors ${
+                data.sesionCajaActiva
+                  ? 'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 dark:border-amber-500/40 dark:bg-amber-500/20 dark:text-amber-300 dark:hover:bg-amber-500/30'
+                  : 'border-emerald-300 bg-emerald-50 text-emerald-900 hover:bg-emerald-100 dark:border-emerald-500/40 dark:bg-emerald-500/20 dark:text-emerald-300 dark:hover:bg-emerald-500/30'
               }`}
-          >
-            <span>
-              {data.sesionCajaActiva ? 'Cierre de Turno' : 'Abrir Turno'}
-            </span>
-          </button>
+            >
+              <span
+                className={`h-2.5 w-2.5 rounded-full shrink-0 ${
+                  data.sesionCajaActiva ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'
+                }`}
+              />
+              <span>{data.sesionCajaActiva ? 'Cierre de Turno' : 'Abrir Turno'}</span>
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Pestañas de Navegación del Módulo con Auto-Centrado y Controles de Desplazamiento */}
-      <div className="relative flex items-center gap-1 rounded-2xl bg-[#EDEDED] dark:bg-white/10 p-1.5 border border-[#9CA3AF]/20 dark:border-white/10">
+      <div className="relative flex items-center gap-1 rounded-2xl bg-[#EDEDED] dark:bg-[#111827] p-1.5 border border-[#9CA3AF]/20 dark:border-white/10">
         {canScrollTabsLeft && (
           <button
             type="button"
@@ -610,7 +662,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               onClick={() => setActiveTab(tab.id)}
               className={`fx-press min-h-[40px] shrink-0 whitespace-nowrap rounded-xl px-3.5 py-2 transition-colors cursor-pointer ${
                 activeTab === tab.id
-                  ? 'bg-white text-[#111827] shadow-xs dark:bg-white/20 dark:text-white'
+                  ? 'bg-white text-[#111827] shadow-xs dark:bg-[#1F2937] dark:text-white dark:border dark:border-white/10'
                   : 'hover:text-[#111827] hover:bg-white/50 dark:text-[#D1D5DB] dark:hover:text-white dark:hover:bg-white/10'
               }`}
             >
@@ -643,25 +695,25 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
         )}
       </div>
 
-      {/* Selector de Período Global Funcional con Sincronización en Tiempo Real */}
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#9CA3AF]/30 bg-white p-1.5 sm:p-2 shadow-2xs">
-        <div className="flex flex-wrap items-center gap-1 sm:gap-1.5">
-          <span className="text-[11px] font-bold text-[#4B5563] px-1 hidden md:inline">
-            Período:
-          </span>
-          {PERIODOS_DISPONIBLES.map(({ id, label }) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setPeriodo(id)}
-              className={`fx-press rounded-lg px-2.5 sm:px-3 py-1.5 text-xs font-semibold cursor-pointer ${periodo === id
-                  ? 'bg-[#111827] text-white shadow-xs'
-                  : 'bg-[#EDEDED] text-[#4B5563] hover:text-[#111827]'
+      {/* Selector de Período Compacto e Integrado */}
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white/70 dark:bg-[#1F2937]/70 border border-[#9CA3AF]/25 dark:border-white/10 px-2.5 py-1 shadow-2xs">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <div className="inline-flex items-center gap-0.5 rounded-lg bg-[#EDEDED] dark:bg-[#111827] p-0.5 border border-[#9CA3AF]/20 dark:border-white/10">
+            {PERIODOS_DISPONIBLES.map(({ id, label }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setPeriodo(id)}
+                className={`fx-press rounded-md px-2.5 py-1 text-xs font-semibold cursor-pointer transition-all ${
+                  periodo === id
+                    ? 'bg-white text-[#111827] shadow-xs dark:bg-[#2D6BFF] dark:text-white'
+                    : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
                 }`}
-            >
-              {label}
-            </button>
-          ))}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
 
           {periodo === 'PERSONALIZADO' && (
             <div className="inline-flex items-center gap-1 text-xs">
@@ -669,37 +721,25 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                 type="date"
                 value={fechaInicioCustom}
                 onChange={(e) => setFechaInicioCustom(e.target.value)}
-                className="rounded-lg border border-[#9CA3AF]/50 px-2 py-1 text-base text-[#111827] bg-[#EDEDED]/50"
+                className="rounded-lg border border-[#9CA3AF]/40 dark:border-white/15 px-2 py-0.5 text-base sm:text-xs text-[#111827] dark:text-[#EDEDED] bg-white dark:bg-[#111827]"
               />
-              <span className="text-[#4B5563] text-xs">hasta</span>
+              <span className="text-[#9CA3AF] text-xs">a</span>
               <input
                 type="date"
                 value={fechaFinCustom}
                 onChange={(e) => setFechaFinCustom(e.target.value)}
-                className="rounded-lg border border-[#9CA3AF]/50 px-2 py-1 text-base text-[#111827] bg-[#EDEDED]/50"
+                className="rounded-lg border border-[#9CA3AF]/40 dark:border-white/15 px-2 py-0.5 text-base sm:text-xs text-[#111827] dark:text-[#EDEDED] bg-white dark:bg-[#111827]"
               />
             </div>
           )}
-
-          <button
-            type="button"
-            onClick={() =>
-              descargarCsv(
-                exportarMovimientosCsv(movimientosFiltrados),
-                `flotax_movimientos_${periodo}.csv`
-              )
-            }
-            className="fx-press inline-flex items-center gap-1 rounded-lg border border-[#9CA3AF]/30 bg-[#EDEDED]/60 px-2.5 sm:px-3 py-1.5 text-xs font-bold text-[#111827] hover:bg-[#EDEDED] cursor-pointer"
-            title="Exportar a CSV"
-          >
-            <span>⬇</span>
-            <span>Exportar</span>
-          </button>
         </div>
 
-        <span className="text-[10px] font-mono text-[#4B5563] hidden xl:inline pr-1">
-          Filtro: {estadoPeriodo.label}
-        </span>
+        <div className="flex items-center gap-1.5 text-[11px] font-medium text-[#4B5563] dark:text-[#9CA3AF] pr-1">
+          <span className="hidden sm:inline">Período:</span>
+          <span className="font-bold text-[#111827] dark:text-[#EDEDED]">
+            {estadoPeriodo.label}
+          </span>
+        </div>
       </div>
 
       {/* ============================================================== */}
@@ -711,14 +751,14 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
           {/* NIVEL 1: RESUMEN DE OPERACIÓN Y TESORERÍA (BENTO GRID) */}
           {/* ========================================================== */}
           <section aria-label="Información esencial">
-            <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#9CA3AF]/15">
+            <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#9CA3AF]/15 dark:border-white/10">
               <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-[#111827]" />
-                <h2 className="text-xs font-bold uppercase tracking-wider text-[#111827]">
+                <span className="h-2 w-2 rounded-full bg-[#2D6BFF]" />
+                <h2 className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
                   Resumen de Tesorería & Balance
                 </h2>
               </div>
-              <span className="text-[11px] font-mono text-[#4B5563]">
+              <span className="text-[11px] font-mono text-[#4B5563] dark:text-[#9CA3AF]">
                 {estadoPeriodo.label}
               </span>
             </div>
@@ -727,18 +767,23 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               {/* Hero Card Saldo Disponible Real */}
               <CajaBentoHeroCard
                 montoDisponible={estadoPeriodo.indicadores.saldoDisponibleTotal}
-                saldoEfectivo={estadoPeriodo.indicadores.saldoEfectivo}
-                saldoBancos={estadoPeriodo.indicadores.saldoBancosYTransferencias}
                 depositosRetenidos={estadoPeriodo.indicadores.depositosPorDevolver}
                 yardName="Patio Principal FlotaX"
                 dateLabel="Tesorería en Tiempo Real"
-                puntosHistoricos={estadoPeriodo.graficoFlujo}
                 onClick={() => setActiveTab('cuentas')}
               />
 
-              {/* Grid de 2 Columnas para Indicadores Operativos */}
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 items-stretch">
-                {/* Primera Fila - Tarjeta 1: Ingresos Recaudados */}
+              {/* Card de Distribución de Fondos (Independiente abajo de Tesorería) */}
+              <CajaDistribucionFondosCard
+                saldoEfectivo={estadoPeriodo.indicadores.saldoEfectivo}
+                saldoBancos={estadoPeriodo.indicadores.saldoBancosYTransferencias}
+                totalCuentas={estadoPeriodo.indicadores.saldoDisponibleTotal}
+                onClick={() => setActiveTab('cuentas')}
+              />
+
+              {/* Grid de Indicadores Operativos (Nivel 1): Ingresos y Gastos */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 items-stretch">
+                {/* Ingresos Recaudados */}
                 <CajaBentoSparklineCard
                   tipo="INGRESO"
                   titulo="Ingresos Recaudados"
@@ -748,7 +793,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                   onClick={() => setActiveTab('movimientos')}
                 />
 
-                {/* Primera Fila - Tarjeta 2: Gastos Operativos */}
+                {/* Gastos Operativos */}
                 <CajaBentoSparklineCard
                   tipo="EGRESO"
                   titulo="Gastos Operativos"
@@ -757,96 +802,112 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                   trendBadge={`${estadoPeriodo.varEgresos >= 0 ? '+' : ''}${estadoPeriodo.varEgresos}%`}
                   onClick={() => setActiveTab('gastos')}
                 />
-
-                {/* Segunda Fila: Tarjeta horizontal de distribución financiera (siempre visible, sin acordeón) */}
-                <CajaGraficosHorizontal
-                  distribucionMetodos={estadoPeriodo.graficoMetodosPago}
-                  distribucionGastos={estadoPeriodo.graficoGastosCategorias}
-                  ingresosPeriodo={estadoPeriodo.indicadores.ingresosPeriodo}
-                  egresosPeriodo={estadoPeriodo.indicadores.egresosPeriodo}
-                />
-
-                {/* Tercera Fila: Balance Financiero Neto (Superávit / Déficit) debajo de la gráfica */}
-                <CajaBentoPillCard
-                  variante="BALANCE"
-                  titulo="Balance Financiero Neto"
-                  monto={estadoPeriodo.indicadores.resultadoOperativoPeriodo}
-                  subtitulo="Resultado neto del período"
-                  etiquetaBadge={
-                    estadoPeriodo.indicadores.resultadoOperativoPeriodo >= 0
-                      ? 'Superávit'
-                      : 'Déficit'
-                  }
-                  onClick={() => setActiveTab('reportes')}
-                />
               </div>
             </div>
           </section>
 
           {/* ========================================================== */}
-          {/* NIVEL 2: ANÁLISIS VISUAL DE PROPORCIONES & CURVAS */}
+          {/* NIVEL 2: ANÁLISIS VISUAL DE PROPORCIONES & CURVAS (PROGRESSIVE DISCLOSURE) */}
           {/* ========================================================== */}
           <section aria-label="Análisis visual" className="space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-[#9CA3AF]/15">
+            <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2 border-b border-[#9CA3AF]/15 dark:border-white/10">
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-[#2D6BFF]" />
-                <h2 className="text-xs font-bold uppercase tracking-wider text-[#111827]">
-                  Distribución del Flujo Financiero
+                <h2 className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
+                  Análisis Financiero & Distribución
                 </h2>
               </div>
-              <span className="text-[11px] text-[#4B5563]">
-                Estructura entre recaudos y gastos operativos
-              </span>
+
+              {/* Selector de Vista Progresiva de Análisis (Sin 'Ver ambos') */}
+              <div className="inline-flex items-center gap-1 rounded-xl bg-[#EDEDED] dark:bg-[#111827] p-0.5 border border-[#9CA3AF]/20 dark:border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setVistaAnalisis('DISTRIBUCION')}
+                  className={`fx-press rounded-lg px-3 py-1 text-xs font-semibold cursor-pointer transition-all ${
+                    vistaAnalisis === 'DISTRIBUCION'
+                      ? 'bg-white text-[#111827] shadow-xs dark:bg-[#2D6BFF] dark:text-white'
+                      : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
+                  }`}
+                >
+                  Distribución de Gastos
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVistaAnalisis('FLUJO')}
+                  className={`fx-press rounded-lg px-3 py-1 text-xs font-semibold cursor-pointer transition-all ${
+                    vistaAnalisis === 'FLUJO'
+                      ? 'bg-white text-[#111827] shadow-xs dark:bg-[#2D6BFF] dark:text-white'
+                      : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
+                  }`}
+                >
+                  Flujo & Margen
+                </button>
+              </div>
             </div>
 
-            {/* 1. Barra Proporcional de Flujos Operativos (Clara y minimalista) */}
-            <CajaBarraFlujo
-              ingresos={estadoPeriodo.indicadores.ingresosPeriodo}
-              egresos={estadoPeriodo.indicadores.egresosPeriodo}
-              flujoNeto={estadoPeriodo.indicadores.flujoNetoCajaPeriodo}
-              distribucionGastos={estadoPeriodo.graficoGastosCategorias}
-              distribucionMetodos={estadoPeriodo.graficoMetodosPago}
-              periodoLabel={estadoPeriodo.label}
-              onExplorarDetalle={(tipo) => {
-                if (tipo === 'EGRESOS') setActiveTab('gastos');
-                else if (tipo === 'BALANCE') setActiveTab('reportes');
-                else setActiveTab('movimientos');
-              }}
-            />
+            {/* 1. Tarjeta horizontal de distribución financiera o 2. Barra Proporcional de Flujos */}
+            {vistaAnalisis === 'DISTRIBUCION' ? (
+              <CajaGraficosHorizontal
+                distribucionMetodos={estadoPeriodo.graficoMetodosPago}
+                distribucionGastos={estadoPeriodo.graficoGastosCategorias}
+                ingresosPeriodo={estadoPeriodo.indicadores.ingresosPeriodo}
+                egresosPeriodo={estadoPeriodo.indicadores.egresosPeriodo}
+              />
+            ) : (
+              <CajaBarraFlujo
+                ingresos={estadoPeriodo.indicadores.ingresosPeriodo}
+                egresos={estadoPeriodo.indicadores.egresosPeriodo}
+                flujoNeto={estadoPeriodo.indicadores.flujoNetoCajaPeriodo}
+                puntosHistoricos={estadoPeriodo.graficoFlujo}
+                distribucionGastos={estadoPeriodo.graficoGastosCategorias}
+                distribucionMetodos={estadoPeriodo.graficoMetodosPago}
+                periodoLabel={estadoPeriodo.label}
+                onExportarReporte={() =>
+                  descargarCsv(
+                    exportarMovimientosCsv(data.todosMovimientos),
+                    `reporte_flujo_caja_${periodo.toLowerCase()}.csv`
+                  )
+                }
+                onExplorarDetalle={(tipo) => {
+                  if (tipo === 'EGRESOS') setActiveTab('gastos');
+                  else if (tipo === 'BALANCE') setActiveTab('reportes');
+                  else setActiveTab('movimientos');
+                }}
+              />
+            )}
           </section>
 
           {/* ========================================================== */}
-          {/* NIVEL 3: ACTIVIDAD & MOVIMIENTOS RECIENTES */}
+          {/* NIVEL 3: ALERTAS FINANCIERAS (SI EXISTEN) */}
           {/* ========================================================== */}
-          <section aria-label="Información detallada" className="space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-[#9CA3AF]/15">
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-600" />
-                <h2 className="text-xs font-bold uppercase tracking-wider text-[#111827]">
-                  Actividad & Movimientos
-                </h2>
+          {data.alertas.length > 0 && (
+            <section aria-label="Novedades y alertas" className="space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-[#9CA3AF]/15 dark:border-white/10">
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-amber-500" />
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
+                    Novedades & Alertas
+                  </h2>
+                </div>
+                <span className="text-[11px] text-[#4B5563] dark:text-[#9CA3AF]">
+                  {data.alertas.length} {data.alertas.length === 1 ? 'pendiente' : 'pendientes'}
+                </span>
               </div>
-              <span className="text-[11px] text-[#4B5563]">
-                {data.todosMovimientos.length} registros totales
-              </span>
-            </div>
 
-            {/* Alertas Financieras si existen */}
-            {data.alertas.length > 0 && (
-              <div className="rounded-[24px] border border-[#9CA3AF]/30 bg-white p-4 sm:p-5 shadow-xs">
-                <div className="flex items-center justify-between pb-3 border-b border-[#9CA3AF]/20">
+              <div className="rounded-[24px] border border-[#9CA3AF]/30 dark:border-white/10 bg-white dark:bg-[#1F2937] p-4 sm:p-5 shadow-xs">
+                <div className="flex items-center justify-between pb-3 border-b border-[#9CA3AF]/20 dark:border-white/10">
                   <div className="flex items-center gap-2">
                     <span className="flex h-2 w-2 rounded-full bg-amber-500" />
-                    <h3 className="font-display text-sm font-bold text-[#111827]">
+                    <h3 className="font-display text-sm font-bold text-[#111827] dark:text-[#EDEDED]">
                       Novedades y Alertas ({data.alertas.length})
                     </h3>
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
                     Prioridad
                   </span>
                 </div>
 
-                <div className="mt-2 divide-y divide-[#9CA3AF]/15">
+                <div className="mt-2 divide-y divide-[#9CA3AF]/15 dark:divide-white/10">
                   {data.alertas.map((alt) => (
                     <div
                       key={alt.id}
@@ -854,18 +915,19 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                     >
                       <div className="flex items-start gap-2.5">
                         <span
-                          className={`mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold ${alt.nivel === 'URGENTE'
-                              ? 'bg-rose-100 text-rose-800'
+                          className={`mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                            alt.nivel === 'URGENTE'
+                              ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/50 dark:text-rose-300'
                               : alt.nivel === 'ALERTA'
-                                ? 'bg-amber-100 text-amber-800'
-                                : 'bg-[#EDEDED] text-[#4B5563]'
-                            }`}
+                                ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300'
+                                : 'bg-[#EDEDED] text-[#4B5563] dark:bg-white/10 dark:text-[#EDEDED]'
+                          }`}
                         >
                           !
                         </span>
                         <div>
-                          <h4 className="text-xs font-bold text-[#111827]">{alt.titulo}</h4>
-                          <p className="text-[11px] text-[#4B5563] mt-0.5">{alt.descripcion}</p>
+                          <h4 className="text-xs font-bold text-[#111827] dark:text-[#EDEDED]">{alt.titulo}</h4>
+                          <p className="text-[11px] text-[#4B5563] dark:text-[#9CA3AF] mt-0.5">{alt.descripcion}</p>
                         </div>
                       </div>
                       <button
@@ -873,7 +935,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                         onClick={() => {
                           if (alt.accionTab) setActiveTab(alt.accionTab as TabCaja);
                         }}
-                        className="inline-flex min-h-[32px] shrink-0 items-center justify-center rounded-full border border-[#9CA3AF]/40 bg-[#EDEDED]/50 px-3 text-xs font-bold text-[#111827] transition-colors hover:bg-[#EDEDED] cursor-pointer"
+                        className="inline-flex min-h-[32px] shrink-0 items-center justify-center rounded-full border border-[#9CA3AF]/40 dark:border-white/15 bg-[#EDEDED]/50 dark:bg-white/10 px-3 text-xs font-bold text-[#111827] dark:text-[#EDEDED] transition-colors hover:bg-[#EDEDED] dark:hover:bg-white/20 cursor-pointer"
                       >
                         {alt.accionTexto} →
                       </button>
@@ -881,76 +943,8 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                   ))}
                 </div>
               </div>
-            )}
-
-            {/* Movimientos Recientes */}
-            <div className="rounded-[24px] border border-[#9CA3AF]/30 bg-white p-4 sm:p-5 shadow-xs">
-              <div className="flex items-center justify-between pb-3 border-b border-[#9CA3AF]/20">
-                <div>
-                  <h3 className="font-display text-sm font-bold text-[#111827]">
-                    Últimos Movimientos Asentados
-                  </h3>
-                  <p className="text-[11px] text-[#4B5563] mt-0.5">
-                    Historial reciente del turno.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('movimientos')}
-                  className="fx-press text-xs font-bold text-[#111827] hover:underline cursor-pointer"
-                >
-                  Ver libro completo ({data.todosMovimientos.length}) →
-                </button>
-              </div>
-
-              <div className="mt-2 divide-y divide-[#9CA3AF]/15">
-                {data.movimientosRecientes.slice(0, 6).map((m) => (
-                  <button
-                    key={m.id}
-                    type="button"
-                    onClick={() => setMovimientoDetalle(m)}
-                    className="fx-pressable flex w-full items-center justify-between py-2.5 hover:bg-[#EDEDED]/40 rounded-xl px-2 text-left cursor-pointer"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${m.tipo === 'INGRESO'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : m.tipo === 'EGRESO'
-                              ? 'bg-rose-100 text-rose-800'
-                              : 'bg-blue-100 text-blue-800'
-                          }`}
-                      >
-                        {m.tipo === 'INGRESO' ? '+' : m.tipo === 'EGRESO' ? '-' : '↔'}
-                      </span>
-                      <div>
-                        <p className="text-xs font-bold text-[#111827] truncate max-w-[200px] sm:max-w-md">
-                          {m.concepto}
-                        </p>
-                        <p className="text-[10px] text-[#4B5563]">
-                          {new Date(m.fechaMovimiento).toLocaleDateString('es-CO')} · {m.metodoPago}
-                          {m.contratoId ? ` · Contrato #${m.contratoId}` : ''}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span
-                        className={`font-mono text-xs font-bold ${m.tipo === 'INGRESO'
-                            ? 'text-emerald-700'
-                            : m.tipo === 'EGRESO'
-                              ? 'text-rose-700'
-                              : 'text-[#111827]'
-                          }`}
-                      >
-                        {m.tipo === 'INGRESO' ? '+ ' : m.tipo === 'EGRESO' ? '- ' : ''}
-                        {formatearMonedaCOP(m.monto)}
-                      </span>
-                      <p className="text-[10px] text-[#9CA3AF] uppercase font-mono">{m.estado}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </section>
+            </section>
+          )}
         </div>
       )}
 
@@ -1172,56 +1166,56 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
           </div>
 
           {/* Historial de Cierres Anteriores */}
-          <div className="rounded-[24px] border border-[#9CA3AF]/30 bg-white p-5 shadow-xs">
-            <div className="flex items-center justify-between pb-3 border-b border-[#9CA3AF]/20">
-              <h3 className="font-display text-sm font-bold text-[#111827]">
+          <div className="rounded-[24px] border border-[#9CA3AF]/30 dark:border-white/10 bg-white dark:bg-[#1F2937] p-5 shadow-xs">
+            <div className="flex items-center justify-between pb-3 border-b border-[#9CA3AF]/20 dark:border-white/10">
+              <h3 className="font-display text-sm font-bold text-[#111827] dark:text-white">
                 Historial de Arqueos y Cierres ({data.historialSesionesCaja.length})
               </h3>
               <button
                 type="button"
                 onClick={() => descargarCsv(exportarSesionesCajaCsv(data.historialSesionesCaja), 'historial_arqueos_caja.csv')}
-                className="fx-press text-xs font-bold text-[#111827] hover:underline"
+                className="fx-press text-xs font-bold text-[#2D6BFF] hover:underline cursor-pointer"
               >
                 ⬇ Exportar Historial CSV
               </button>
             </div>
 
-            <div className="mt-3 divide-y divide-[#9CA3AF]/15">
+            <div className="mt-3 divide-y divide-[#9CA3AF]/15 dark:divide-white/10">
               {data.historialSesionesCaja.map((s) => (
                 <div key={s.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-[#111827]">
+                      <span className="font-mono text-xs font-bold text-[#111827] dark:text-white">
                         Sesión #{s.id}
                       </span>
                       <span
                         className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${s.estado === 'ABIERTA'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : 'bg-[#EDEDED] text-[#4B5563]'
+                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                            : 'bg-[#EDEDED] text-[#4B5563] dark:bg-white/10 dark:text-[#9CA3AF]'
                           }`}
                       >
                         {s.estado}
                       </span>
                     </div>
-                    <p className="text-[11px] text-[#4B5563] mt-0.5">
+                    <p className="text-[11px] text-[#4B5563] dark:text-[#9CA3AF] mt-0.5">
                       Apertura: {new Date(s.fechaApertura).toLocaleString('es-CO')}
                       {s.fechaCierre ? ` · Cierre: ${new Date(s.fechaCierre).toLocaleString('es-CO')}` : ''}
                     </p>
                     {s.motivoDiferencia && (
-                      <p className="text-[10px] text-rose-700 font-medium mt-0.5">
+                      <p className="text-[10px] text-rose-700 dark:text-rose-400 font-medium mt-0.5">
                         Nota de diferencia: {s.motivoDiferencia}
                       </p>
                     )}
                   </div>
                   <div className="text-left sm:text-right text-xs">
-                    <p className="font-mono font-bold text-[#111827]">
+                    <p className="font-mono font-bold text-[#111827] dark:text-white">
                       Base Inicial: {formatearMonedaCOP(s.saldoInicialContado)}
                     </p>
                     {s.saldoRealContado !== null && s.saldoRealContado !== undefined && (
-                      <p className="font-mono text-[11px] text-[#4B5563]">
+                      <p className="font-mono text-[11px] text-[#4B5563] dark:text-[#9CA3AF]">
                         Contado: {formatearMonedaCOP(s.saldoRealContado)}{' '}
                         {s.diferencia !== null && s.diferencia !== 0 && (
-                          <span className={s.diferencia > 0 ? 'text-amber-700' : 'text-rose-700'}>
+                          <span className={s.diferencia > 0 ? 'text-amber-700 dark:text-amber-400' : 'text-rose-700 dark:text-rose-400'}>
                             (Diff: {formatearMonedaCOP(s.diferencia)})
                           </span>
                         )}
@@ -1240,100 +1234,151 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
       {/* ============================================================== */}
       {activeTab === 'cartera' && (
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-[24px] border border-[#9CA3AF]/30 bg-white p-4 shadow-xs">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 rounded-[24px] border border-[#9CA3AF]/30 dark:border-white/10 bg-white dark:bg-[#1F2937] p-4 sm:p-5 shadow-xs">
             <div>
-              <h3 className="font-display text-sm font-bold text-[#111827]">
-                Cartera de Alquileres y Saldos Pendientes
-              </h3>
-              <p className="text-xs text-[#4B5563]">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-[#2D6BFF]" />
+                <h3 className="font-display text-sm font-bold text-[#111827] dark:text-white">
+                  Cartera de Alquileres y Saldos Pendientes
+                </h3>
+              </div>
+              <p className="text-xs text-[#4B5563] dark:text-[#9CA3AF] mt-0.5">
                 Total pendiente por cobrar en cartera activa:{' '}
-                <b className="text-[#111827]">{formatearMonedaCOP(data.indicadores.cuentasPorCobrar)}</b>
+                <b className="text-rose-700 dark:text-rose-400 font-mono">{formatearMonedaCOP(data.indicadores.cuentasPorCobrar)}</b>
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => descargarCsv(exportarCarteraContratosCsv(data.carteraContratos), 'cartera_flotax_alquileres.csv')}
-              className="fx-press inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-lg border border-[#9CA3AF]/40 px-3 text-xs font-bold text-[#111827] hover:bg-[#EDEDED]"
-            >
-              ⬇ Exportar Cartera CSV
-            </button>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Segmented Control Progressive Disclosure */}
+              <div className="inline-flex items-center gap-0.5 rounded-xl bg-[#EDEDED] dark:bg-[#111827] p-1 border border-[#9CA3AF]/20 dark:border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setFiltroCartera('TODOS')}
+                  className={`fx-press rounded-lg px-2.5 py-1 text-xs font-semibold cursor-pointer transition-all ${
+                    filtroCartera === 'TODOS'
+                      ? 'bg-white text-[#111827] shadow-xs dark:bg-[#2D6BFF] dark:text-white'
+                      : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
+                  }`}
+                >
+                  Todos ({data.carteraContratos.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFiltroCartera('PENDIENTES')}
+                  className={`fx-press rounded-lg px-2.5 py-1 text-xs font-semibold cursor-pointer transition-all ${
+                    filtroCartera === 'PENDIENTES'
+                      ? 'bg-white text-[#111827] shadow-xs dark:bg-[#2D6BFF] dark:text-white'
+                      : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
+                  }`}
+                >
+                  Por Cobrar ({data.carteraContratos.filter((c) => c.saldoPendiente > 0).length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFiltroCartera('PAGADOS')}
+                  className={`fx-press rounded-lg px-2.5 py-1 text-xs font-semibold cursor-pointer transition-all ${
+                    filtroCartera === 'PAGADOS'
+                      ? 'bg-white text-[#111827] shadow-xs dark:bg-[#2D6BFF] dark:text-white'
+                      : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
+                  }`}
+                >
+                  Al Día ({data.carteraContratos.filter((c) => c.saldoPendiente <= 0).length})
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => descargarCsv(exportarCarteraContratosCsv(contratosFiltrados), 'cartera_flotax_alquileres.csv')}
+                className="fx-press inline-flex min-h-[36px] cursor-pointer items-center gap-1.5 rounded-lg border border-[#9CA3AF]/40 dark:border-white/10 px-3 text-xs font-bold text-[#111827] dark:text-[#EDEDED] hover:bg-[#EDEDED] dark:hover:bg-white/10"
+                title="Exportar cartera a CSV"
+              >
+                ⬇ CSV
+              </button>
+            </div>
           </div>
 
-          <div className="rounded-[24px] border border-[#9CA3AF]/30 bg-white overflow-hidden shadow-xs divide-y divide-[#9CA3AF]/20">
-            {data.carteraContratos.map((c) => (
-              <div
-                key={c.codigoContrato}
-                className="p-4 hover:bg-[#EDEDED]/40 transition-colors flex flex-col lg:flex-row lg:items-center justify-between gap-4"
-              >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-black text-[#111827]">
-                      #{c.codigoContrato}
-                    </span>
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${c.estadoPago === 'PAGADO'
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : c.estadoPago === 'PARCIAL'
-                            ? 'bg-amber-100 text-amber-800'
-                            : c.estadoPago === 'VENCIDO'
-                              ? 'bg-rose-100 text-rose-800'
-                              : 'bg-neutral-100 text-[#4B5563]'
-                        }`}
-                    >
-                      {c.estadoPago}
-                    </span>
-                  </div>
-                  <h4 className="text-sm font-bold text-[#111827] mt-0.5">
-                    {c.clienteNombre}{' '}
-                    {c.clienteDocumento && (
-                      <span className="text-xs font-normal text-[#4B5563]">({c.clienteDocumento})</span>
-                    )}
-                  </h4>
-                  <p className="text-xs text-[#4B5563] mt-0.5">
-                    Unidad: <b>{c.vehiculoNombre}</b> · Placa: <span className="font-mono font-bold">{c.vehiculoPlaca}</span> · Rango: {c.fechaInicio} al {c.fechaFin}
-                  </p>
-                </div>
-
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between lg:justify-end gap-3 pt-2 lg:pt-0 border-t lg:border-0 border-[#9CA3AF]/10">
-                  <div className="text-left sm:text-right text-xs">
-                    <p className="text-[#4B5563]">
-                      Total: <span className="font-mono font-bold text-[#111827]">{formatearMonedaCOP(c.totalAlquiler)}</span>
-                    </p>
-                    <p className="text-[#4B5563]">
-                      Abonado: <span className="font-mono font-bold text-emerald-700">{formatearMonedaCOP(c.totalAbonado)}</span>
-                    </p>
-                    <p className="font-bold text-sm text-[#111827]">
-                      Saldo:{' '}
-                      <span className={`font-mono ${c.saldoPendiente > 0 ? 'text-rose-700' : 'text-emerald-700'}`}>
-                        {formatearMonedaCOP(c.saldoPendiente)}
+          <div className="rounded-[24px] border border-[#9CA3AF]/30 dark:border-white/10 bg-white dark:bg-[#1F2937] overflow-hidden shadow-xs divide-y divide-[#9CA3AF]/20 dark:divide-white/10">
+            {contratosFiltrados.length === 0 ? (
+              <div className="p-8 text-center text-xs text-[#4B5563] dark:text-[#9CA3AF]">
+                No hay contratos en este estado de cartera.
+              </div>
+            ) : (
+              contratosFiltrados.map((c) => (
+                <div
+                  key={c.codigoContrato}
+                  className="p-4 hover:bg-[#EDEDED]/40 dark:hover:bg-white/5 transition-colors flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+                >
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-black text-[#111827] dark:text-white">
+                        #{c.codigoContrato}
                       </span>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${c.estadoPago === 'PAGADO'
+                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                            : c.estadoPago === 'PARCIAL'
+                              ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                              : c.estadoPago === 'VENCIDO'
+                                ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
+                                : 'bg-neutral-100 text-[#4B5563] dark:bg-white/10 dark:text-[#9CA3AF]'
+                          }`}
+                      >
+                        {c.estadoPago}
+                      </span>
+                    </div>
+                    <h4 className="text-sm font-bold text-[#111827] dark:text-white mt-0.5">
+                      {c.clienteNombre}{' '}
+                      {c.clienteDocumento && (
+                        <span className="text-xs font-normal text-[#4B5563] dark:text-[#9CA3AF]">({c.clienteDocumento})</span>
+                      )}
+                    </h4>
+                    <p className="text-xs text-[#4B5563] dark:text-[#9CA3AF] mt-0.5">
+                      Unidad: <b>{c.vehiculoNombre}</b> · Placa: <span className="font-mono font-bold text-[#111827] dark:text-white">{c.vehiculoPlaca}</span> · Rango: {c.fechaInicio} al {c.fechaFin}
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    {c.saldoPendiente > 0 && (
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between lg:justify-end gap-3 pt-2 lg:pt-0 border-t lg:border-0 border-[#9CA3AF]/10 dark:border-white/10">
+                    <div className="text-left sm:text-right text-xs">
+                      <p className="text-[#4B5563] dark:text-[#9CA3AF]">
+                        Total: <span className="font-mono font-bold text-[#111827] dark:text-white">{formatearMonedaCOP(c.totalAlquiler)}</span>
+                      </p>
+                      <p className="text-[#4B5563] dark:text-[#9CA3AF]">
+                        Abonado: <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400">{formatearMonedaCOP(c.totalAbonado)}</span>
+                      </p>
+                      <p className="font-bold text-sm text-[#111827] dark:text-white">
+                        Saldo:{' '}
+                        <span className={`font-mono ${c.saldoPendiente > 0 ? 'text-rose-700 dark:text-rose-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
+                          {formatearMonedaCOP(c.saldoPendiente)}
+                        </span>
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {c.saldoPendiente > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setTipoModalMovimiento('INGRESO');
+                            setContratoAbonoId(c.codigoContrato);
+                            setModalMovimientoAbierto(true);
+                          }}
+                          className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg bg-[#111827] dark:bg-[#2D6BFF] px-3 text-xs font-bold text-white hover:bg-[#1F2937] dark:hover:bg-blue-600"
+                        >
+                          Registrar Abono
+                        </button>
+                      )}
                       <button
                         type="button"
-                        onClick={() => {
-                          setTipoModalMovimiento('INGRESO');
-                          setModalMovimientoAbierto(true);
-                        }}
-                        className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg bg-[#111827] px-3 text-xs font-bold text-white hover:bg-[#1F2937]"
+                        onClick={() => abrirComprobanteContrato(c)}
+                        className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg border border-[#9CA3AF]/40 dark:border-white/10 px-3 text-xs font-semibold text-[#111827] dark:text-[#EDEDED] hover:bg-[#EDEDED] dark:hover:bg-white/10"
                       >
-                        Registrar Abono
+                        Comprobante
                       </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => abrirComprobanteContrato(c)}
-                      className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg border border-[#9CA3AF]/40 px-3 text-xs font-semibold text-[#111827] hover:bg-[#EDEDED]"
-                    >
-                      Comprobante
-                    </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       )}
@@ -1343,129 +1388,179 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
       {/* ============================================================== */}
       {activeTab === 'garantias' && (
         <div className="space-y-4">
-          <div className="rounded-[24px] border border-[#9CA3AF]/30 bg-white p-5 shadow-xs space-y-2">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#9CA3AF]/20">
+          <div className="rounded-[24px] border border-[#9CA3AF]/30 dark:border-white/10 bg-white dark:bg-[#1F2937] p-5 shadow-xs space-y-3">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-[#9CA3AF]/20 dark:border-white/10">
               <div>
-                <h3 className="font-display text-sm font-bold text-[#111827]">
-                  Control de Depósitos de Garantía (Fianzas en Custodia)
-                </h3>
-                <p className="text-xs text-[#4B5563]">
-                  El dinero recibido como depósito de garantía es una custodia de seguridad y <b>no</b> se contabiliza como ingreso operativo del negocio.
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-[#2D6BFF]" />
+                  <h3 className="font-display text-sm font-bold text-[#111827] dark:text-white">
+                    Control de Depósitos de Garantía (Fianzas en Custodia)
+                  </h3>
+                </div>
+                <p className="text-xs text-[#4B5563] dark:text-[#9CA3AF] mt-0.5">
+                  El dinero en garantía es una fianza de seguridad en custodia y <b>no</b> forma parte de los ingresos operativos del negocio.
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => descargarCsv(exportarGarantiasCsv(data.depositosGarantia), 'depositos_garantia_flotax.csv')}
-                className="fx-press inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-lg border border-[#9CA3AF]/40 px-3 text-xs font-bold text-[#111827] hover:bg-[#EDEDED]"
-              >
-                ⬇ Exportar Garantías CSV
-              </button>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="inline-flex items-center gap-0.5 rounded-xl bg-[#EDEDED] dark:bg-[#111827] p-1 border border-[#9CA3AF]/20 dark:border-white/10">
+                  <button
+                    type="button"
+                    onClick={() => setFiltroGarantias('TODAS')}
+                    className={`fx-press rounded-lg px-2.5 py-1 text-xs font-semibold cursor-pointer transition-all ${
+                      filtroGarantias === 'TODAS'
+                        ? 'bg-white text-[#111827] shadow-xs dark:bg-[#2D6BFF] dark:text-white'
+                        : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
+                    }`}
+                  >
+                    Todas ({data.depositosGarantia.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFiltroGarantias('CUSTODIA')}
+                    className={`fx-press rounded-lg px-2.5 py-1 text-xs font-semibold cursor-pointer transition-all ${
+                      filtroGarantias === 'CUSTODIA'
+                        ? 'bg-white text-[#111827] shadow-xs dark:bg-[#2D6BFF] dark:text-white'
+                        : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
+                    }`}
+                  >
+                    En Custodia ({data.depositosGarantia.filter((g) => Math.max(0, (g.montoRecibido || 0) - (g.montoDevuelto || 0) - (g.montoRetenido || 0)) > 0).length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFiltroGarantias('RESUELTAS')}
+                    className={`fx-press rounded-lg px-2.5 py-1 text-xs font-semibold cursor-pointer transition-all ${
+                      filtroGarantias === 'RESUELTAS'
+                        ? 'bg-white text-[#111827] shadow-xs dark:bg-[#2D6BFF] dark:text-white'
+                        : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
+                    }`}
+                  >
+                    Cerradas ({data.depositosGarantia.filter((g) => Math.max(0, (g.montoRecibido || 0) - (g.montoDevuelto || 0) - (g.montoRetenido || 0)) === 0).length})
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => descargarCsv(exportarGarantiasCsv(garantiasFiltradas), 'depositos_garantia_flotax.csv')}
+                  className="fx-press inline-flex min-h-[36px] cursor-pointer items-center gap-1.5 rounded-lg border border-[#9CA3AF]/40 dark:border-white/10 px-3 text-xs font-bold text-[#111827] dark:text-[#EDEDED] hover:bg-[#EDEDED] dark:hover:bg-white/10"
+                  title="Exportar garantías a CSV"
+                >
+                  ⬇ CSV
+                </button>
+              </div>
             </div>
-            <div className="pt-2 text-xs text-[#4B5563]">
+
+            <div className="text-xs text-[#4B5563] dark:text-[#9CA3AF]">
               Compromiso total por devolver a clientes:{' '}
-              <b className="text-amber-800 font-mono text-sm">
+              <b className="text-amber-800 dark:text-amber-400 font-mono text-sm">
                 {formatearMonedaCOP(data.indicadores.depositosPorDevolver)}
               </b>
             </div>
           </div>
 
-          <div className="rounded-[24px] border border-[#9CA3AF]/30 bg-white overflow-hidden shadow-xs divide-y divide-[#9CA3AF]/20">
-            {data.depositosGarantia.map((g) => {
-              const saldoComp = Math.max(
-                0,
-                (g.montoRecibido || 0) - (g.montoDevuelto || 0) - (g.montoRetenido || 0)
-              );
+          <div className="rounded-[24px] border border-[#9CA3AF]/30 dark:border-white/10 bg-white dark:bg-[#1F2937] overflow-hidden shadow-xs divide-y divide-[#9CA3AF]/20 dark:divide-white/10">
+            {garantiasFiltradas.length === 0 ? (
+              <div className="p-8 text-center text-xs text-[#4B5563] dark:text-[#9CA3AF]">
+                No hay garantías registradas con este filtro.
+              </div>
+            ) : (
+              garantiasFiltradas.map((g) => {
+                const saldoComp = Math.max(
+                  0,
+                  (g.montoRecibido || 0) - (g.montoDevuelto || 0) - (g.montoRetenido || 0)
+                );
 
-              return (
-                <div
-                  key={g.id}
-                  className="p-4 hover:bg-[#EDEDED]/40 transition-colors flex flex-col lg:flex-row lg:items-center justify-between gap-4"
-                >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-black text-[#111827]">
-                        Contrato #{g.contratoId}
-                      </span>
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-[9px] font-bold border border-transparent ${
-                          String(g.estado).toUpperCase().includes('CUSTODIA')
-                            ? 'bg-neutral-200 text-[#111827] dark:!bg-emerald-500/20 dark:!text-emerald-300 dark:!border-emerald-500/30'
-                            : 'bg-neutral-200 text-[#111827] dark:!bg-white/10 dark:!text-[#EDEDED] dark:!border-white/10'
-                        }`}
-                      >
-                        {g.estado}
-                      </span>
-                    </div>
-                    <h4 className="text-sm font-bold text-[#111827] mt-0.5">
-                      {g.clienteNombre}
-                    </h4>
-                    <p className="text-xs text-[#4B5563] mt-0.5">
-                      Garantía requerida: {formatearMonedaCOP(g.montoEsperado)} · Recibido: {formatearMonedaCOP(g.montoRecibido)}
-                    </p>
-                    {g.observaciones && (
-                      <p className="text-[11px] text-[#4B5563] italic mt-0.5">{g.observaciones}</p>
-                    )}
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between lg:justify-end gap-3 pt-2 lg:pt-0 border-t lg:border-0 border-[#9CA3AF]/10">
-                    <div className="text-left sm:text-right text-xs">
-                      <p className="text-[#4B5563]">
-                        Saldo en Custodia: <span className="font-mono font-bold text-[#111827]">{formatearMonedaCOP(saldoComp)}</span>
-                      </p>
-                      {g.montoDevuelto > 0 && (
-                        <p className="text-emerald-700">Devuelto: {formatearMonedaCOP(g.montoDevuelto)}</p>
-                      )}
-                      {g.montoRetenido > 0 && (
-                        <p className="text-rose-700">Retenido por Daños: {formatearMonedaCOP(g.montoRetenido)}</p>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      {saldoComp === 0 && g.estado === 'PENDIENTE_RECIBIR' && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setGarantiaSeleccionada(g);
-                            setAccionGarantia('RECIBIR');
-                            setModalGarantiaAbierto(true);
-                          }}
-                          className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg bg-[#111827] px-3 text-xs font-bold text-white hover:bg-[#1F2937]"
+                return (
+                  <div
+                    key={g.id}
+                    className="p-4 hover:bg-[#EDEDED]/40 dark:hover:bg-white/5 transition-colors flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-black text-[#111827] dark:text-white">
+                          Contrato #{g.contratoId}
+                        </span>
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[9px] font-bold border border-transparent ${
+                            String(g.estado).toUpperCase().includes('CUSTODIA')
+                              ? 'bg-neutral-200 text-[#111827] dark:!bg-emerald-500/20 dark:!text-emerald-300 dark:!border-emerald-500/30'
+                              : 'bg-neutral-200 text-[#111827] dark:!bg-white/10 dark:!text-[#EDEDED] dark:!border-white/10'
+                          }`}
                         >
-                          Recibir Fianza
-                        </button>
-                      )}
-
-                      {saldoComp > 0 && (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setGarantiaSeleccionada(g);
-                              setAccionGarantia('DEVOLVER');
-                              setModalGarantiaAbierto(true);
-                            }}
-                            className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg bg-emerald-700 px-3 text-xs font-bold text-white hover:bg-emerald-800"
-                          >
-                            Devolver a Cliente
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setGarantiaSeleccionada(g);
-                              setAccionGarantia('RETENER_CARGOS');
-                              setModalGarantiaAbierto(true);
-                            }}
-                            className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg border border-rose-300 px-3 text-xs font-bold text-rose-700 hover:bg-rose-50"
-                          >
-                            Retener Daño
-                          </button>
-                        </>
+                          {g.estado}
+                        </span>
+                      </div>
+                      <h4 className="text-sm font-bold text-[#111827] dark:text-white mt-0.5">
+                        {g.clienteNombre}
+                      </h4>
+                      <p className="text-xs text-[#4B5563] dark:text-[#9CA3AF] mt-0.5">
+                        Garantía requerida: {formatearMonedaCOP(g.montoEsperado)} · Recibido: {formatearMonedaCOP(g.montoRecibido)}
+                      </p>
+                      {g.observaciones && (
+                        <p className="text-[11px] text-[#4B5563] dark:text-[#9CA3AF] italic mt-0.5">{g.observaciones}</p>
                       )}
                     </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between lg:justify-end gap-3 pt-2 lg:pt-0 border-t lg:border-0 border-[#9CA3AF]/10 dark:border-white/10">
+                      <div className="text-left sm:text-right text-xs">
+                        <p className="text-[#4B5563] dark:text-[#9CA3AF]">
+                          Saldo en Custodia: <span className="font-mono font-bold text-[#111827] dark:text-white">{formatearMonedaCOP(saldoComp)}</span>
+                        </p>
+                        {g.montoDevuelto > 0 && (
+                          <p className="text-emerald-700 dark:text-emerald-400">Devuelto: {formatearMonedaCOP(g.montoDevuelto)}</p>
+                        )}
+                        {g.montoRetenido > 0 && (
+                          <p className="text-rose-700 dark:text-rose-400">Retenido por Daños: {formatearMonedaCOP(g.montoRetenido)}</p>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {saldoComp === 0 && g.estado === 'PENDIENTE_RECIBIR' && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setGarantiaSeleccionada(g);
+                              setAccionGarantia('RECIBIR');
+                              setModalGarantiaAbierto(true);
+                            }}
+                            className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg bg-[#111827] dark:bg-[#2D6BFF] px-3 text-xs font-bold text-white hover:bg-[#1F2937] dark:hover:bg-blue-600"
+                          >
+                            Recibir Fianza
+                          </button>
+                        )}
+
+                        {saldoComp > 0 && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setGarantiaSeleccionada(g);
+                                setAccionGarantia('DEVOLVER');
+                                setModalGarantiaAbierto(true);
+                              }}
+                              className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg bg-emerald-700 dark:bg-emerald-600 px-3 text-xs font-bold text-white hover:bg-emerald-800 dark:hover:bg-emerald-700"
+                            >
+                              Devolver a Cliente
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setGarantiaSeleccionada(g);
+                                setAccionGarantia('RETENER_CARGOS');
+                                setModalGarantiaAbierto(true);
+                              }}
+                              className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg border border-rose-300 dark:border-rose-800 px-3 text-xs font-bold text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                            >
+                              Retener Daño
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
       )}
@@ -1475,49 +1570,92 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
       {/* ============================================================== */}
       {activeTab === 'gastos' && (
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-[24px] border border-[#9CA3AF]/30 bg-white p-4 shadow-xs">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 rounded-[24px] border border-[#9CA3AF]/30 dark:border-white/10 bg-white dark:bg-[#1F2937] p-4 sm:p-5 shadow-xs">
             <div>
-              <h3 className="font-display text-sm font-bold text-[#111827]">
-                Gastos Operativos y Control de Proveedores
-              </h3>
-              <p className="text-xs text-[#4B5563]">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-rose-600" />
+                <h3 className="font-display text-sm font-bold text-[#111827] dark:text-white">
+                  Gastos Operativos y Control de Proveedores
+                </h3>
+              </div>
+              <p className="text-xs text-[#4B5563] dark:text-[#9CA3AF] mt-0.5">
                 Total de egresos registrados en el período:{' '}
-                <b className="text-rose-700">{formatearMonedaCOP(data.indicadores.egresosPeriodo)}</b>
+                <b className="text-rose-700 dark:text-rose-400 font-mono">{formatearMonedaCOP(data.indicadores.egresosPeriodo)}</b>
               </p>
             </div>
+
             <button
               type="button"
               onClick={() => {
                 setTipoModalMovimiento('EGRESO');
+                setContratoAbonoId(undefined);
                 setModalMovimientoAbierto(true);
               }}
-              className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-rose-700 px-4 py-2 text-xs font-bold text-white hover:bg-rose-800"
+              className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-rose-700 dark:bg-rose-600 px-4 py-2 text-xs font-bold text-white hover:bg-rose-800 dark:hover:bg-rose-700 cursor-pointer shadow-xs self-start md:self-auto"
             >
               + Registrar Gasto
             </button>
           </div>
 
-          {/* Listado de egresos */}
-          <div className="rounded-[24px] border border-[#9CA3AF]/30 bg-white overflow-hidden shadow-xs divide-y divide-[#9CA3AF]/20">
-            {data.todosMovimientos
-              .filter((m) => m.tipo === 'EGRESO')
-              .map((g) => (
-                <div key={g.id} className="p-4 hover:bg-[#EDEDED]/40 transition-colors flex items-center justify-between gap-3">
+          {/* Filtro por Categoría de Gastos (Progressive Disclosure) */}
+          {estadoPeriodo.graficoGastosCategorias.length > 0 && (
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+              <span className="text-[11px] font-bold text-[#4B5563] dark:text-[#9CA3AF] shrink-0 px-1">
+                Categoría:
+              </span>
+              <button
+                type="button"
+                onClick={() => setFiltroCategoriaGasto('TODAS')}
+                className={`fx-press shrink-0 rounded-lg px-2.5 py-1 text-xs font-semibold cursor-pointer transition-all ${
+                  filtroCategoriaGasto === 'TODAS'
+                    ? 'bg-[#111827] text-white shadow-xs dark:bg-[#2D6BFF]'
+                    : 'bg-[#EDEDED] dark:bg-[#111827] text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
+                }`}
+              >
+                Todas ({data.todosMovimientos.filter((m) => m.tipo === 'EGRESO').length})
+              </button>
+              {estadoPeriodo.graficoGastosCategorias.map((cat) => (
+                <button
+                  key={cat.categoria}
+                  type="button"
+                  onClick={() => setFiltroCategoriaGasto(cat.categoria)}
+                  className={`fx-press shrink-0 rounded-lg px-2.5 py-1 text-xs font-semibold cursor-pointer transition-all ${
+                    filtroCategoriaGasto === cat.categoria
+                      ? 'bg-[#111827] text-white shadow-xs dark:bg-[#2D6BFF]'
+                      : 'bg-[#EDEDED] dark:bg-[#111827] text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
+                  }`}
+                >
+                  {cat.etiqueta} ({cat.porcentaje}%)
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Listado de egresos filtrados */}
+          <div className="rounded-[24px] border border-[#9CA3AF]/30 dark:border-white/10 bg-white dark:bg-[#1F2937] overflow-hidden shadow-xs divide-y divide-[#9CA3AF]/20 dark:divide-white/10">
+            {gastosFiltrados.length === 0 ? (
+              <div className="p-8 text-center text-xs text-[#4B5563] dark:text-[#9CA3AF]">
+                No hay egresos registrados en esta categoría.
+              </div>
+            ) : (
+              gastosFiltrados.map((g) => (
+                <div key={g.id} className="p-4 hover:bg-[#EDEDED]/40 dark:hover:bg-white/5 transition-colors flex items-center justify-between gap-3">
                   <div>
-                    <h4 className="text-xs font-bold text-[#111827]">{g.concepto}</h4>
-                    <p className="text-[11px] text-[#4B5563] mt-0.5">
+                    <h4 className="text-xs font-bold text-[#111827] dark:text-white">{g.concepto}</h4>
+                    <p className="text-[11px] text-[#4B5563] dark:text-[#9CA3AF] mt-0.5">
                       Categoría: {g.categoria} · Proveedor: {g.proveedor || 'No especificado'} · Fecha: {new Date(g.fechaMovimiento).toLocaleDateString('es-CO')}
                       {g.vehiculoId ? ` · Vehículo: ${g.vehiculoId}` : ''}
                     </p>
                   </div>
                   <div className="text-right">
-                    <span className="font-mono text-sm font-black text-rose-700">
+                    <span className="font-mono text-sm font-black text-rose-700 dark:text-rose-400">
                       - {formatearMonedaCOP(g.monto)}
                     </span>
                     <p className="text-[10px] text-[#9CA3AF]">{g.metodoPago}</p>
                   </div>
                 </div>
-              ))}
+              ))
+            )}
           </div>
         </div>
       )}
@@ -1527,28 +1665,28 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
       {/* ============================================================== */}
       {activeTab === 'cuentas' && (
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-[24px] border border-[#9CA3AF]/30 bg-white p-4 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-[24px] border border-[#9CA3AF]/30 dark:border-white/10 bg-white dark:bg-[#1F2937] p-4 shadow-xs">
             <div>
-              <h3 className="font-display text-sm font-bold text-[#111827]">
+              <h3 className="font-display text-sm font-bold text-[#111827] dark:text-white">
                 Catálogo de Cajas y Cuentas Bancarias
               </h3>
-              <p className="text-xs text-[#4B5563]">
+              <p className="text-xs text-[#4B5563] dark:text-[#9CA3AF]">
                 Total de fondos consolidados en cuentas:{' '}
-                <b className="text-[#111827]">{formatearMonedaCOP(data.indicadores.totalEnCuentas)}</b>
+                <b className="text-[#111827] dark:text-white">{formatearMonedaCOP(data.indicadores.totalEnCuentas)}</b>
               </p>
             </div>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setModalTransferenciaAbierto(true)}
-                className="inline-flex min-h-[40px] items-center gap-1.5 rounded-full border border-[#9CA3AF]/40 bg-white px-3.5 py-1.5 text-xs font-bold text-[#111827] hover:bg-[#EDEDED]"
+                className="inline-flex min-h-[40px] items-center gap-1.5 rounded-full border border-[#9CA3AF]/40 dark:border-white/10 bg-white dark:bg-[#111827] px-3.5 py-1.5 text-xs font-bold text-[#111827] dark:text-[#EDEDED] hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer"
               >
                 ↔ Transferencia
               </button>
               <button
                 type="button"
                 onClick={() => setModalNuevaCuentaAbierto(true)}
-                className="inline-flex min-h-[40px] items-center gap-1.5 rounded-full bg-[#111827] px-4 py-1.5 text-xs font-bold text-white hover:bg-[#1F2937]"
+                className="inline-flex min-h-[40px] items-center gap-1.5 rounded-full bg-[#111827] dark:bg-[#2D6BFF] px-4 py-1.5 text-xs font-bold text-white hover:bg-[#1F2937] dark:hover:bg-blue-600 cursor-pointer"
               >
                 + Crear Cuenta
               </button>
@@ -1562,11 +1700,11 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               return (
                 <div
                   key={c.id}
-                  className="rounded-[26px] border border-[#9CA3AF]/30 bg-white p-5 shadow-md flex flex-col justify-between"
+                  className="rounded-[26px] border border-[#9CA3AF]/30 dark:border-white/10 bg-white dark:bg-[#1F2937] p-5 shadow-md flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-center justify-between">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#EDEDED] text-[#111827]">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#EDEDED] dark:bg-white/10 text-[#111827] dark:text-white">
                         {c.tipo === 'CAJA_EFECTIVO' ? (
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
                             <rect width="20" height="12" x="2" y="6" rx="2" />
@@ -1587,29 +1725,29 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                       </div>
 
                       <div className="flex items-center gap-1.5">
-                        <span className="rounded-full bg-[#EDEDED] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#111827]">
+                        <span className="rounded-full bg-[#EDEDED] dark:bg-white/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
                           {c.tipo}
                         </span>
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/50">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400 animate-pulse" />
                           Activa
                         </span>
                       </div>
                     </div>
 
-                    <h4 className="font-display text-base font-bold text-[#111827] mt-3.5">
+                    <h4 className="font-display text-base font-bold text-[#111827] dark:text-white mt-3.5">
                       {c.nombre}
                     </h4>
-                    <p className="text-[11px] text-[#4B5563] mt-0.5">
+                    <p className="text-[11px] text-[#4B5563] dark:text-[#9CA3AF] mt-0.5">
                       Base inicial: {formatearMonedaCOP(c.saldoInicial)}
                     </p>
                   </div>
 
-                  <div className="mt-5 border-t border-[#9CA3AF]/15 pt-3">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
+                  <div className="mt-5 border-t border-[#9CA3AF]/15 dark:border-white/10 pt-3">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
                       Saldo Disponible Calculado
                     </span>
-                    <p className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-[#111827] mt-0.5">
+                    <p className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-[#111827] dark:text-white mt-0.5">
                       {formatearMonedaCOP(saldoCalculado)}
                     </p>
                   </div>
@@ -1625,11 +1763,11 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
       {/* ============================================================== */}
       {activeTab === 'reportes' && (
         <div className="space-y-4">
-          <div className="rounded-[24px] border border-[#9CA3AF]/30 bg-white p-5 shadow-xs space-y-3">
-            <h3 className="font-display text-sm font-bold text-[#111827]">
+          <div className="rounded-[24px] border border-[#9CA3AF]/30 dark:border-white/10 bg-white dark:bg-[#1F2937] p-5 shadow-xs space-y-3">
+            <h3 className="font-display text-sm font-bold text-[#111827] dark:text-white">
               Módulo de Reportes Contables y Auditoría Operativa
             </h3>
-            <p className="text-xs text-[#4B5563]">
+            <p className="text-xs text-[#4B5563] dark:text-[#9CA3AF]">
               Genera reportes instantáneos basados en los registros auditables del sistema. Los resultados representan indicadores financieros operativos de patio.
             </p>
 
@@ -1650,29 +1788,29 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                   type="button"
                   onClick={() => setReporteSeleccionado(rep.id)}
                   aria-pressed={reporteSeleccionado === rep.id}
-                  className={`fx-pressable w-full cursor-pointer text-left rounded-2xl border p-4 ${reporteSeleccionado === rep.id
-                      ? 'border-[#111827] bg-[#EDEDED]/40 shadow-xs'
-                      : 'border-[#9CA3AF]/20 hover:border-[#9CA3AF]/60'
+                  className={`fx-pressable w-full cursor-pointer text-left rounded-2xl border p-4 transition-all ${reporteSeleccionado === rep.id
+                      ? 'border-[#2D6BFF] bg-blue-50/30 dark:bg-blue-950/40 shadow-xs'
+                      : 'border-[#9CA3AF]/20 dark:border-white/10 hover:border-[#9CA3AF]/60 dark:hover:border-white/30'
                     }`}
                 >
-                  <h4 className="text-xs font-bold text-[#111827]">{rep.titulo}</h4>
-                  <p className="text-[11px] text-[#4B5563] mt-1">{rep.desc}</p>
+                  <h4 className="text-xs font-bold text-[#111827] dark:text-white">{rep.titulo}</h4>
+                  <p className="text-[11px] text-[#4B5563] dark:text-[#9CA3AF] mt-1">{rep.desc}</p>
                 </button>
               ))}
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#9CA3AF]/20">
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#9CA3AF]/20 dark:border-white/10">
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="min-h-[40px] rounded-lg border border-[#9CA3AF]/40 px-4 text-xs font-bold text-[#111827] hover:bg-[#EDEDED]"
+                className="min-h-[40px] rounded-lg border border-[#9CA3AF]/40 dark:border-white/10 px-4 text-xs font-bold text-[#111827] dark:text-[#EDEDED] hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer"
               >
                 🖨 Vista Imprimible
               </button>
               <button
                 type="button"
                 onClick={() => descargarCsv(exportarMovimientosCsv(data.todosMovimientos), `reporte_${reporteSeleccionado}_flotax.csv`)}
-                className="min-h-[40px] rounded-lg bg-[#111827] px-4 text-xs font-bold text-white hover:bg-[#1F2937]"
+                className="min-h-[40px] rounded-lg bg-[#111827] dark:bg-[#2D6BFF] px-4 text-xs font-bold text-white hover:bg-[#1F2937] dark:hover:bg-blue-600 cursor-pointer"
               >
                 ⬇ Exportar Reporte a CSV
               </button>
@@ -1685,9 +1823,15 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
       {/* MODALES INTERACTIVOS */}
       {/* ============================================================== */}
       <ModalMovimiento
+        key={`${modalMovimientoAbierto ? 'open' : 'closed'}-${contratoAbonoId ?? 'general'}`}
         isOpen={modalMovimientoAbierto}
-        onClose={() => setModalMovimientoAbierto(false)}
+        onClose={() => {
+          setModalMovimientoAbierto(false);
+          setContratoAbonoId(undefined);
+        }}
         tipoInicial={tipoModalMovimiento}
+        bloquearTipo={Boolean(contratoAbonoId)}
+        contratoInicialId={contratoAbonoId}
         cuentas={data.cuentas}
         contratos={data.carteraContratos}
         onSubmit={handleRegistrarMovimiento}
@@ -1727,16 +1871,16 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
 
       {/* Modal Detalle de Movimiento */}
       {movimientoDetalle && !modalAnularAbierto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="relative w-full max-w-md rounded-[28px] border border-[#9CA3AF]/30 bg-white p-5 sm:p-6 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-[#9CA3AF]/20">
-              <span className="font-mono text-xs font-bold text-[#4B5563]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
+          <div className="relative w-full max-w-md rounded-[28px] border border-[#9CA3AF]/30 dark:border-white/10 bg-white dark:bg-[#1F2937] p-5 sm:p-6 shadow-2xl text-[#111827] dark:text-[#EDEDED]">
+            <div className="flex items-center justify-between pb-3 border-b border-[#9CA3AF]/20 dark:border-white/10">
+              <span className="font-mono text-xs font-bold text-[#4B5563] dark:text-[#9CA3AF]">
                 Movimiento #{movimientoDetalle.id}
               </span>
               <button
                 type="button"
                 onClick={() => setMovimientoDetalle(null)}
-                className="fx-press flex h-8 w-8 items-center justify-center rounded-full bg-[#EDEDED] text-[#4B5563] hover:bg-[#9CA3AF]/30"
+                className="fx-press flex h-8 w-8 items-center justify-center rounded-full bg-[#EDEDED] dark:bg-white/10 text-[#4B5563] dark:text-[#9CA3AF] hover:bg-[#9CA3AF]/30 cursor-pointer"
               >
                 ✕
               </button>
@@ -1744,67 +1888,67 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
 
             <div className="mt-4 space-y-2.5 text-xs">
               <div className="flex justify-between">
-                <span className="text-[#4B5563]">Tipo:</span>
-                <span className="font-bold text-[#111827]">{movimientoDetalle.tipo}</span>
+                <span className="text-[#4B5563] dark:text-[#9CA3AF]">Tipo:</span>
+                <span className="font-bold text-[#111827] dark:text-white">{movimientoDetalle.tipo}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#4B5563]">Categoría:</span>
-                <span className="font-medium text-[#111827]">{movimientoDetalle.categoria}</span>
+                <span className="text-[#4B5563] dark:text-[#9CA3AF]">Categoría:</span>
+                <span className="font-medium text-[#111827] dark:text-white">{movimientoDetalle.categoria}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#4B5563]">Concepto:</span>
-                <span className="font-semibold text-[#111827] text-right max-w-[220px]">{movimientoDetalle.concepto}</span>
+                <span className="text-[#4B5563] dark:text-[#9CA3AF]">Concepto:</span>
+                <span className="font-semibold text-[#111827] dark:text-white text-right max-w-[220px]">{movimientoDetalle.concepto}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#4B5563]">Monto:</span>
-                <span className="font-mono font-black text-sm text-[#111827]">
+                <span className="text-[#4B5563] dark:text-[#9CA3AF]">Monto:</span>
+                <span className="font-mono font-black text-sm text-[#111827] dark:text-white">
                   {formatearMonedaCOP(movimientoDetalle.monto)}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#4B5563]">Método de Pago:</span>
-                <span className="uppercase text-[#111827]">{movimientoDetalle.metodoPago}</span>
+                <span className="text-[#4B5563] dark:text-[#9CA3AF]">Método de Pago:</span>
+                <span className="uppercase text-[#111827] dark:text-white">{movimientoDetalle.metodoPago}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#4B5563]">Fecha:</span>
-                <span className="text-[#111827]">
+                <span className="text-[#4B5563] dark:text-[#9CA3AF]">Fecha:</span>
+                <span className="text-[#111827] dark:text-white">
                   {new Date(movimientoDetalle.fechaMovimiento).toLocaleString('es-CO')}
                 </span>
               </div>
               {movimientoDetalle.referencia && (
                 <div className="flex justify-between">
-                  <span className="text-[#4B5563]">Referencia:</span>
-                  <span className="font-mono text-[#111827]">{movimientoDetalle.referencia}</span>
+                  <span className="text-[#4B5563] dark:text-[#9CA3AF]">Referencia:</span>
+                  <span className="font-mono text-[#111827] dark:text-white">{movimientoDetalle.referencia}</span>
                 </div>
               )}
               {movimientoDetalle.clienteNombre && (
                 <div className="flex justify-between">
-                  <span className="text-[#4B5563]">Cliente:</span>
-                  <span className="text-[#111827]">{movimientoDetalle.clienteNombre}</span>
+                  <span className="text-[#4B5563] dark:text-[#9CA3AF]">Cliente:</span>
+                  <span className="text-[#111827] dark:text-white">{movimientoDetalle.clienteNombre}</span>
                 </div>
               )}
               {movimientoDetalle.proveedor && (
                 <div className="flex justify-between">
-                  <span className="text-[#4B5563]">Proveedor:</span>
-                  <span className="text-[#111827]">{movimientoDetalle.proveedor}</span>
+                  <span className="text-[#4B5563] dark:text-[#9CA3AF]">Proveedor:</span>
+                  <span className="text-[#111827] dark:text-white">{movimientoDetalle.proveedor}</span>
                 </div>
               )}
               <div className="flex justify-between">
-                <span className="text-[#4B5563]">Estado:</span>
-                <span className="font-bold text-[#111827]">{movimientoDetalle.estado}</span>
+                <span className="text-[#4B5563] dark:text-[#9CA3AF]">Estado:</span>
+                <span className="font-bold text-[#111827] dark:text-white">{movimientoDetalle.estado}</span>
               </div>
               {movimientoDetalle.motivoAnulacion && (
-                <div className="rounded-lg bg-rose-50 p-2 text-rose-800">
+                <div className="rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/40 p-2 text-rose-800 dark:text-rose-300">
                   <b>Motivo de anulación:</b> {movimientoDetalle.motivoAnulacion}
                 </div>
               )}
             </div>
 
-            <div className="mt-5 flex items-center justify-end gap-2 pt-3 border-t border-[#9CA3AF]/20">
+            <div className="mt-5 flex items-center justify-end gap-2 pt-3 border-t border-[#9CA3AF]/20 dark:border-white/10">
               <button
                 type="button"
                 onClick={() => setMovimientoDetalle(null)}
-                className="fx-press min-h-[40px] rounded-full border border-[#9CA3AF]/40 px-4 text-xs font-semibold text-[#4B5563]"
+                className="fx-press min-h-[40px] rounded-full border border-[#9CA3AF]/40 dark:border-white/10 px-4 text-xs font-semibold text-[#4B5563] dark:text-[#9CA3AF] hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer"
               >
                 Cerrar
               </button>
@@ -1812,7 +1956,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                 <button
                   type="button"
                   onClick={() => setModalAnularAbierto(true)}
-                  className="fx-press min-h-[40px] rounded-full bg-rose-700 px-4 text-xs font-bold text-white hover:bg-rose-800"
+                  className="fx-press min-h-[40px] rounded-full bg-rose-700 dark:bg-rose-600 px-4 text-xs font-bold text-white hover:bg-rose-800 dark:hover:bg-rose-700 cursor-pointer"
                 >
                   Anular Movimiento
                 </button>
@@ -1824,17 +1968,17 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
 
       {/* Modal Confirmar Anulación */}
       {modalAnularAbierto && movimientoDetalle && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="relative w-full max-w-md rounded-[28px] border border-rose-300 bg-white p-5 sm:p-6 shadow-2xl">
-            <h3 className="font-display text-base font-black text-rose-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
+          <div className="relative w-full max-w-md rounded-[28px] border border-rose-300 dark:border-rose-800 bg-white dark:bg-[#1F2937] p-5 sm:p-6 shadow-2xl text-[#111827] dark:text-[#EDEDED]">
+            <h3 className="font-display text-base font-black text-rose-800 dark:text-rose-300">
               ¿Confirmar Anulación de Movimiento?
             </h3>
-            <p className="mt-2 text-xs text-[#4B5563]">
+            <p className="mt-2 text-xs text-[#4B5563] dark:text-[#9CA3AF]">
               Esta operación es irreversible y quedará registrada en la auditoría inmutable del sistema. Se corregirán automáticamente los saldos contables y de cartera correspondientes.
             </p>
 
             <div className="mt-3">
-              <label className="block text-xs font-bold uppercase tracking-wider text-rose-800 mb-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-rose-800 dark:text-rose-300 mb-1">
                 Motivo Obligatorio de Anulación *
               </label>
               <textarea
@@ -1842,7 +1986,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                 placeholder="Explica la causa por la cual se revierte este movimiento..."
                 value={motivoAnulacion}
                 onChange={(e) => setMotivoAnulacion(e.target.value)}
-                className="w-full rounded-xl border border-rose-300 bg-white px-3 py-2 text-base text-[#111827]"
+                className="w-full rounded-xl border border-rose-300 dark:border-rose-800 bg-white dark:bg-[#111827] px-3 py-2 text-base text-[#111827] dark:text-[#EDEDED]"
                 required
               />
             </div>
@@ -1851,7 +1995,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               <button
                 type="button"
                 onClick={() => setModalAnularAbierto(false)}
-                className="fx-press min-h-[40px] rounded-full border border-[#9CA3AF]/40 px-4 text-xs font-semibold text-[#4B5563]"
+                className="fx-press min-h-[40px] rounded-full border border-[#9CA3AF]/40 dark:border-white/10 px-4 text-xs font-semibold text-[#4B5563] dark:text-[#9CA3AF] hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer"
               >
                 Cancelar
               </button>
@@ -1859,7 +2003,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                 type="button"
                 onClick={handleConfirmarAnulacion}
                 disabled={!motivoAnulacion.trim() || motivoAnulacion.trim().length < 5}
-                className="fx-press min-h-[40px] rounded-full bg-rose-700 px-5 text-xs font-bold text-white hover:bg-rose-800 disabled:opacity-50"
+                className="fx-press min-h-[40px] rounded-full bg-rose-700 dark:bg-rose-600 px-5 text-xs font-bold text-white hover:bg-rose-800 dark:hover:bg-rose-700 disabled:opacity-50 cursor-pointer"
               >
                 Confirmar Anulación
               </button>
@@ -1870,16 +2014,16 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
 
       {/* Modal Crear Nueva Cuenta */}
       {modalNuevaCuentaAbierto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="relative w-full max-w-md rounded-[28px] border border-[#9CA3AF]/30 bg-white p-5 sm:p-6 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-[#9CA3AF]/20">
-              <h3 className="font-display text-base font-black text-[#111827]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
+          <div className="relative w-full max-w-md rounded-[28px] border border-[#9CA3AF]/30 dark:border-white/10 bg-white dark:bg-[#1F2937] p-5 sm:p-6 shadow-2xl text-[#111827] dark:text-[#EDEDED]">
+            <div className="flex items-center justify-between pb-3 border-b border-[#9CA3AF]/20 dark:border-white/10">
+              <h3 className="font-display text-base font-black text-[#111827] dark:text-white">
                 Crear Nueva Cuenta o Caja
               </h3>
               <button
                 type="button"
                 onClick={() => setModalNuevaCuentaAbierto(false)}
-                className="fx-press flex h-8 w-8 items-center justify-center rounded-full bg-[#EDEDED] text-[#4B5563]"
+                className="fx-press flex h-8 w-8 items-center justify-center rounded-full bg-[#EDEDED] dark:bg-white/10 text-[#4B5563] dark:text-[#9CA3AF] hover:bg-[#9CA3AF]/30 cursor-pointer"
               >
                 ✕
               </button>
@@ -1887,7 +2031,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
 
             <form onSubmit={handleCrearCuenta} className="mt-4 space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#4B5563] mb-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF] mb-1">
                   Nombre de la Cuenta *
                 </label>
                 <input
@@ -1895,7 +2039,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                   placeholder="Ej. Davivienda Cuenta Corriente"
                   value={nombreNuevaCuenta}
                   onChange={(e) => setNombreNuevaCuenta(e.target.value)}
-                  className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 bg-white px-3 py-2 text-base text-[#111827]"
+                  className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 dark:border-white/10 bg-white dark:bg-[#111827] px-3 py-2 text-base text-[#111827] dark:text-[#EDEDED]"
                   required
                 />
               </div>
@@ -1916,7 +2060,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               />
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#4B5563] mb-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF] mb-1">
                   Saldo Inicial en COP *
                 </label>
                 <input
@@ -1926,22 +2070,22 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                   placeholder="0"
                   value={saldoInicialNuevaCuenta}
                   onChange={(e) => setSaldoInicialNuevaCuenta(e.target.value)}
-                  className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 bg-white px-3 py-2 text-base text-[#111827]"
+                  className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 dark:border-white/10 bg-white dark:bg-[#111827] px-3 py-2 text-base text-[#111827] dark:text-[#EDEDED]"
                   required
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#9CA3AF]/20">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#9CA3AF]/20 dark:border-white/10">
                 <button
                   type="button"
                   onClick={() => setModalNuevaCuentaAbierto(false)}
-                  className="min-h-[40px] rounded-full border border-[#9CA3AF]/40 px-4 text-xs font-semibold text-[#4B5563]"
+                  className="min-h-[40px] rounded-full border border-[#9CA3AF]/40 dark:border-white/10 px-4 text-xs font-semibold text-[#4B5563] dark:text-[#9CA3AF] hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="min-h-[40px] rounded-full bg-[#111827] px-5 text-xs font-bold text-white hover:bg-[#1F2937]"
+                  className="min-h-[40px] rounded-full bg-[#111827] dark:bg-[#2D6BFF] px-5 text-xs font-bold text-white hover:bg-[#1F2937] dark:hover:bg-blue-600 cursor-pointer"
                 >
                   Crear Cuenta
                 </button>

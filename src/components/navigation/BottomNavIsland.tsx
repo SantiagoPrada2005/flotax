@@ -1,11 +1,28 @@
-import { useState, useEffect, useRef, type ReactNode, type MouseEvent, type PointerEvent } from 'react';
+import {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useCallback,
+  useId,
+  type ReactNode,
+  type MouseEvent,
+  type PointerEvent,
+} from 'react';
 import { navigate } from 'astro:transitions/client';
 import { DICCIONARIOS, obtenerIdiomaActual, type Idioma } from '@/lib/i18n';
+import { resolverVarianteDock, type ModoPortal } from '@/lib/auth/portal-modo';
+import {
+  LIQUID_DOCK_GEOMETRY,
+  buildLiquidNotchPath,
+  computeIconProximity,
+} from './liquid-notch';
 
 export interface BottomNavIslandProps {
   currentPath: string;
   activeTab?: ('home' | 'metrics' | 'search' | 'fleet' | 'wallet' | 'profile') | undefined;
   variant?: ('admin' | 'client') | undefined;
+  modoPortal?: ModoPortal | undefined;
   className?: string | undefined;
 }
 
@@ -17,16 +34,50 @@ interface NavItem {
   icon: (active: boolean) => ReactNode;
 }
 
-const ITEM_STEP = 50; // 44px (w-11) + 6px (gap-1.5)
+const FALLBACK_STEP = 50; // 44px (w-11) + 6px (gap-1.5)
+const FALLBACK_FIRST_CENTER = 28; // 6px padding + 22px half-tab
+const FALLBACK_HEIGHT = 56; // 6px + 44px + 6px
+const SPRING_OMEGA = 14.5;
+const SPRING_ZETA = 0.92;
+
+function prefersReducedMotion(): boolean {
+  if (typeof window === 'undefined' || !window.matchMedia) return false;
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function resolveTabIndexForPath(path: string, list: NavItem[]): number {
+  return list.findIndex((item) => {
+    if (item.href === '/admin') {
+      return path === '/admin' || path === '/admin/';
+    }
+    if (item.href === '/catalogo') {
+      return (
+        path === '/' ||
+        path.startsWith('/c/') ||
+        path.startsWith('/catalogo') ||
+        path.startsWith('/vehiculos')
+      );
+    }
+    return path.startsWith(item.href);
+  });
+}
 
 export default function BottomNavIsland({
   currentPath,
   activeTab,
   variant = 'client',
+  modoPortal,
   className = '',
 }: BottomNavIslandProps) {
   const [livePath, setLivePath] = useState(currentPath);
+  const [liveModoPortal, setLiveModoPortal] = useState<string | undefined>(modoPortal);
   const [idioma, setIdioma] = useState<Idioma>('es');
+
+  const rawUid = useId();
+  const uid = rawUid.replace(/:/g, '');
+  const shadowLightFilterId = `flotax-dock-shadow-light-${uid}`;
+  const shadowDarkFilterId = `flotax-dock-shadow-dark-${uid}`;
+  const innerRimClipId = `flotax-dock-inner-clip-${uid}`;
 
   useEffect(() => {
     setIdioma(obtenerIdiomaActual());
@@ -45,9 +96,12 @@ export default function BottomNavIsland({
   const isInitialPath = livePath === currentPath;
   const effectiveTab = isInitialPath ? activeTab : undefined;
   const isAdmin =
-    livePath.startsWith('/admin') || (isInitialPath && variant === 'admin');
+    resolverVarianteDock(
+      livePath,
+      liveModoPortal,
+      isInitialPath ? variant : undefined
+    ) === 'admin';
 
-  // Compute active states from reactive livePath
   const isAdminHome =
     effectiveTab === 'home' || livePath === '/admin' || livePath === '/admin/';
   const isAdminMetrics =
@@ -258,15 +312,49 @@ export default function BottomNavIsland({
   const initialActiveIndex = Math.max(0, items.findIndex((i) => i.isActive));
 
   const [selectedIndex, setSelectedIndex] = useState(initialActiveIndex);
-  const [dragOffset, setDragOffset] = useState(initialActiveIndex * ITEM_STEP);
   const [isDragging, setIsDragging] = useState(false);
   const [hoverIndex, setHoverIndex] = useState(initialActiveIndex);
+  const [dockDims, setDockDims] = useState<{ width: number; height: number }>(() => ({
+    width: items.length * FALLBACK_STEP + 6,
+    height: FALLBACK_HEIGHT,
+  }));
 
-  // Gesture tracking refs
+  // DOM & layout measurement refs
   const dockRef = useRef<HTMLDivElement>(null);
+  const glassRef = useRef<HTMLDivElement>(null);
+  const circleRef = useRef<HTMLDivElement>(null);
+  const shadowLightPathRef = useRef<SVGPathElement>(null);
+  const shadowDarkPathRef = useRef<SVGPathElement>(null);
+  const borderOuterPathRef = useRef<SVGPathElement>(null);
+  const borderInnerPathRef = useRef<SVGPathElement>(null);
+  const clipPathNodeRef = useRef<SVGPathElement>(null);
+  const tabRefs = useRef<Array<HTMLAnchorElement | null>>([]);
+  const iconRefs = useRef<Array<HTMLSpanElement | null>>([]);
+
+  const dimsRef = useRef<{ width: number; height: number }>({
+    width: items.length * FALLBACK_STEP + 6,
+    height: FALLBACK_HEIGHT,
+  });
+  const tabCentersRef = useRef<number[]>(
+    items.map((_, i) => FALLBACK_FIRST_CENTER + i * FALLBACK_STEP),
+  );
+  const prevItemCountRef = useRef<number>(items.length);
+
+  // Spring & gesture tracking refs (zero-re-render 60/120fps updates)
+  const initialCx = FALLBACK_FIRST_CENTER + initialActiveIndex * FALLBACK_STEP;
+  const currentCxRef = useRef<number>(initialCx);
+  const targetCxRef = useRef<number>(initialCx);
+  const targetIndexRef = useRef<number>(initialActiveIndex);
+  const velocityRef = useRef<number>(0);
+  const tabLiftRef = useRef<number[]>(
+    items.map((_, i) => (i === initialActiveIndex ? 1 : 0)),
+  );
+  const rafIdRef = useRef<number | null>(null);
+  const lastFrameTimeRef = useRef<number | null>(null);
+
+  const isDraggingRef = useRef<boolean>(false);
   const pointerStartX = useRef<number>(0);
-  const initialPillOffset = useRef<number>(initialActiveIndex * ITEM_STEP);
-  const currentOffsetRef = useRef<number>(initialActiveIndex * ITEM_STEP);
+  const initialDragCx = useRef<number>(initialCx);
   const isPointerDown = useRef<boolean>(false);
   const hasMovedSignificantly = useRef<boolean>(false);
   const hoverIndexRef = useRef<number>(initialActiveIndex);
@@ -281,33 +369,260 @@ export default function BottomNavIsland({
     }
   };
 
-  // Sync tab with route updates and popstate
+  const getTabCenter = useCallback((index: number): number => {
+    const measured = tabCentersRef.current[index];
+    if (measured !== undefined) return measured;
+    return FALLBACK_FIRST_CENTER + index * FALLBACK_STEP;
+  }, []);
+
+  const findClosestTabIndex = useCallback((cx: number): number => {
+    const centers = tabCentersRef.current;
+    if (centers.length === 0) return 0;
+    let bestIdx = 0;
+    let bestDist = Infinity;
+    for (let i = 0; i < centers.length; i += 1) {
+      const center = centers[i];
+      if (center === undefined) continue;
+      const dist = Math.abs(cx - center);
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestIdx = i;
+      }
+    }
+    return bestIdx;
+  }, []);
+
+  const applyVisualFrame = useCallback((cx: number) => {
+    const { width, height } = dimsRef.current;
+    const notchPath = buildLiquidNotchPath(width, height, cx);
+    const clipValue = `path('${notchPath}')`;
+
+    if (glassRef.current) {
+      glassRef.current.style.clipPath = clipValue;
+      glassRef.current.style.setProperty('-webkit-clip-path', clipValue);
+    }
+    if (shadowLightPathRef.current) {
+      shadowLightPathRef.current.setAttribute('d', notchPath);
+    }
+    if (shadowDarkPathRef.current) {
+      shadowDarkPathRef.current.setAttribute('d', notchPath);
+    }
+    if (borderOuterPathRef.current) {
+      borderOuterPathRef.current.setAttribute('d', notchPath);
+    }
+    if (borderInnerPathRef.current) {
+      borderInnerPathRef.current.setAttribute('d', notchPath);
+    }
+    if (clipPathNodeRef.current) {
+      clipPathNodeRef.current.setAttribute('d', notchPath);
+    }
+
+    if (circleRef.current) {
+      const r = LIQUID_DOCK_GEOMETRY.circleRadius;
+      const circleX = cx - r;
+      const circleY = LIQUID_DOCK_GEOMETRY.circleCenterY - r;
+      circleRef.current.style.transform = `translate3d(${circleX.toFixed(2)}px, ${circleY.toFixed(2)}px, 0)`;
+    }
+
+    const iconLiftY = LIQUID_DOCK_GEOMETRY.circleCenterY - height / 2;
+    const count = tabCentersRef.current.length;
+    for (let i = 0; i < count; i += 1) {
+      const span = iconRefs.current[i];
+      const tabX = tabCentersRef.current[i];
+      if (!span || tabX === undefined) continue;
+      const overlap = computeIconProximity(cx, tabX);
+      const lift = tabLiftRef.current[i] ?? 0;
+      span.style.transform = `translate3d(0, ${(lift * iconLiftY).toFixed(2)}px, 0)`;
+      span.style.color = overlap > 0.45 ? '#ffffff' : '';
+    }
+  }, []);
+
+  const stopAnimationLoop = useCallback(() => {
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
+    }
+    lastFrameTimeRef.current = null;
+  }, []);
+
+  const stepAnimation = useCallback(
+    (timestamp: number) => {
+      const prevTime = lastFrameTimeRef.current;
+      const rawDt = prevTime === null ? 1 / 60 : (timestamp - prevTime) / 1000;
+      const dt = Math.min(0.05, Math.max(0.001, rawDt));
+      lastFrameTimeRef.current = timestamp;
+
+      const target = targetCxRef.current;
+      let cx = currentCxRef.current;
+      let v = velocityRef.current;
+
+      // Sub-stepping 4x para estabilidad numérica en tasas de refresco variables
+      const subSteps = 4;
+      const h = dt / subSteps;
+      for (let s = 0; s < subSteps; s += 1) {
+        const accel = -SPRING_OMEGA * SPRING_OMEGA * (cx - target) - 2 * SPRING_ZETA * SPRING_OMEGA * v;
+        v += accel * h;
+        cx += v * h;
+      }
+
+      const activeVisualIdx = isDraggingRef.current
+        ? hoverIndexRef.current
+        : targetIndexRef.current;
+
+      const count = tabCentersRef.current.length;
+      let liftsSettled = true;
+      for (let i = 0; i < count; i += 1) {
+        const tabX = tabCentersRef.current[i];
+        if (tabX === undefined) continue;
+        const overlap = computeIconProximity(cx, tabX);
+        const currentLift = tabLiftRef.current[i] ?? 0;
+        const desiredLift = i === activeVisualIdx ? overlap : 0;
+        const nextLift =
+          i === activeVisualIdx
+            ? desiredLift
+            : currentLift + (0 - currentLift) * (1 - Math.exp(-18 * dt));
+        tabLiftRef.current[i] = Math.abs(nextLift - desiredLift) < 0.005 ? desiredLift : nextLift;
+        if (Math.abs((tabLiftRef.current[i] ?? 0) - (i === activeVisualIdx ? 1 : 0)) > 0.005) {
+          liftsSettled = false;
+        }
+      }
+
+      const posSettled = Math.abs(cx - target) < 0.15 && Math.abs(v) < 1.5;
+      if (posSettled && liftsSettled) {
+        currentCxRef.current = target;
+        velocityRef.current = 0;
+        for (let i = 0; i < count; i += 1) {
+          tabLiftRef.current[i] = i === activeVisualIdx ? 1 : 0;
+        }
+        applyVisualFrame(target);
+        stopAnimationLoop();
+        return;
+      }
+
+      currentCxRef.current = cx;
+      velocityRef.current = v;
+      applyVisualFrame(cx);
+      rafIdRef.current = requestAnimationFrame(stepAnimation);
+    },
+    [applyVisualFrame, stopAnimationLoop],
+  );
+
+  const startAnimationLoop = useCallback(() => {
+    if (rafIdRef.current !== null) return;
+    lastFrameTimeRef.current = null;
+    rafIdRef.current = requestAnimationFrame(stepAnimation);
+  }, [stepAnimation]);
+
+  const moveIndicatorToTab = useCallback(
+    (index: number, immediate: boolean = false) => {
+      const nextCx = getTabCenter(index);
+      targetIndexRef.current = index;
+      targetCxRef.current = nextCx;
+
+      if (immediate || prefersReducedMotion()) {
+        stopAnimationLoop();
+        currentCxRef.current = nextCx;
+        velocityRef.current = 0;
+        tabLiftRef.current = tabCentersRef.current.map((_, i) => (i === index ? 1 : 0));
+        applyVisualFrame(nextCx);
+        return;
+      }
+
+      startAnimationLoop();
+    },
+    [applyVisualFrame, getTabCenter, startAnimationLoop, stopAnimationLoop],
+  );
+
+  // Medición dinámica real del ancho de la barra y centro de cada opción
+  const measureDockLayout = useCallback(() => {
+    const dockEl = dockRef.current;
+    if (!dockEl) return;
+
+    const width = dockEl.clientWidth;
+    const height = dockEl.clientHeight;
+    if (width <= 0 || height <= 0) return;
+
+    const centers: number[] = [];
+    for (let i = 0; i < items.length; i += 1) {
+      const tabEl = tabRefs.current[i];
+      if (tabEl) {
+        centers.push(tabEl.offsetLeft + tabEl.offsetWidth / 2);
+      } else {
+        centers.push(FALLBACK_FIRST_CENTER + i * FALLBACK_STEP);
+      }
+    }
+
+    tabCentersRef.current = centers;
+    const prevDims = dimsRef.current;
+    if (prevDims.width !== width || prevDims.height !== height) {
+      dimsRef.current = { width, height };
+      setDockDims({ width, height });
+    }
+
+    const portalChanged = prevItemCountRef.current !== items.length;
+    prevItemCountRef.current = items.length;
+
+    const activeCenter = centers[targetIndexRef.current] ?? FALLBACK_FIRST_CENTER;
+    targetCxRef.current = activeCenter;
+
+    if (portalChanged || rafIdRef.current === null) {
+      currentCxRef.current = activeCenter;
+      velocityRef.current = 0;
+      tabLiftRef.current = centers.map((_, i) => (i === targetIndexRef.current ? 1 : 0));
+      applyVisualFrame(activeCenter);
+    }
+  }, [applyVisualFrame, items.length]);
+
+  const isFormPage =
+    livePath.startsWith('/admin/flota/nuevo') ||
+    (livePath.startsWith('/admin/flota/') && livePath.includes('/editar')) ||
+    livePath.startsWith('/alquilar') ||
+    livePath.includes('/entrega');
+
+  useLayoutEffect(() => {
+    if (isFormPage) return;
+    measureDockLayout();
+
+    const dockEl = dockRef.current;
+    if (!dockEl || typeof ResizeObserver === 'undefined') return;
+
+    const observer = new ResizeObserver(() => {
+      measureDockLayout();
+    });
+    observer.observe(dockEl);
+    return () => observer.disconnect();
+  }, [isFormPage, items.length, idioma, measureDockLayout]);
+
+  useEffect(() => {
+    return () => stopAnimationLoop();
+  }, [stopAnimationLoop]);
+
+  // Sincronización con navegación SPA (ClientRouter) y botón Atrás/Adelante
   useEffect(() => {
     const updateTabFromPath = () => {
       const path = window.location.pathname;
+      const datasetModo = document.documentElement.dataset.portalModo;
       setLivePath(path);
-      const nextIsAdmin = path.startsWith('/admin');
+      setLiveModoPortal(datasetModo);
+
+      const nextIsAdmin =
+        resolverVarianteDock(path, datasetModo, variant) === 'admin';
       const nextItems = nextIsAdmin ? adminItems : clientItems;
-      const idx = nextItems.findIndex((i) => {
-        if (i.href === '/admin') {
-          return path === '/admin' || path === '/admin/';
-        }
-        if (i.href === '/catalogo') {
-          return (
-            path === '/' ||
-            path.startsWith('/c/') ||
-            path.startsWith('/catalogo') ||
-            path.startsWith('/vehiculos')
-          );
-        }
-        return path.startsWith(i.href);
-      });
+      const idx = resolveTabIndexForPath(path, nextItems);
+      const portalSwitched = nextItems.length !== prevItemCountRef.current;
+
       if (idx !== -1) {
-        setSelectedIndex(idx);
-        setDragOffset(idx * ITEM_STEP);
-        currentOffsetRef.current = idx * ITEM_STEP;
-        setHoverIndex(idx);
-        hoverIndexRef.current = idx;
+        if (portalSwitched || idx !== targetIndexRef.current) {
+          setSelectedIndex(idx);
+          setHoverIndex(idx);
+          hoverIndexRef.current = idx;
+          moveIndicatorToTab(idx, portalSwitched);
+        }
+      } else if (portalSwitched || targetIndexRef.current >= nextItems.length) {
+        setSelectedIndex(0);
+        setHoverIndex(0);
+        hoverIndexRef.current = 0;
+        moveIndicatorToTab(0, true);
       }
     };
 
@@ -319,41 +634,52 @@ export default function BottomNavIsland({
       document.removeEventListener('astro:page-load', updateTabFromPath);
       window.removeEventListener('popstate', updateTabFromPath);
     };
-  }, [currentPath]);
+  }, [currentPath, variant, moveIndicatorToTab]);
 
-  // Window-level move and up handlers to ensure 100% uninterrupted tracking
+  // Seguimiento de gestos táctiles/puntero a nivel de ventana
   useEffect(() => {
     const handleWindowPointerMove = (e: globalThis.PointerEvent) => {
       if (!isPointerDown.current) return;
 
       const deltaX = e.clientX - pointerStartX.current;
-      if (!hasMovedSignificantly.current && Math.abs(deltaX) > 3) {
+      if (!hasMovedSignificantly.current && Math.abs(deltaX) > 4) {
         hasMovedSignificantly.current = true;
+        isDraggingRef.current = true;
         setIsDragging(true);
+        stopAnimationLoop();
+        velocityRef.current = 0;
         triggerHaptic(6);
       }
 
       if (hasMovedSignificantly.current) {
-        const maxOffset = (items.length - 1) * ITEM_STEP;
-        let newOffset = initialPillOffset.current + deltaX;
+        const centers = tabCentersRef.current;
+        const minCx = centers[0] ?? FALLBACK_FIRST_CENTER;
+        const maxCx = centers[centers.length - 1] ?? minCx;
+        let nextCx = initialDragCx.current + deltaX;
 
-        // Apple rubber-band resistance
-        if (newOffset < 0) {
-          newOffset = newOffset * 0.25;
-        } else if (newOffset > maxOffset) {
-          newOffset = maxOffset + (newOffset - maxOffset) * 0.25;
+        // Resistencia elástica Apple en extremos
+        if (nextCx < minCx) {
+          nextCx = minCx + (nextCx - minCx) * 0.25;
+        } else if (nextCx > maxCx) {
+          nextCx = maxCx + (nextCx - maxCx) * 0.25;
         }
 
-        currentOffsetRef.current = newOffset;
-        setDragOffset(newOffset);
-
-        // Real-time hover detection for micro haptic ticks
-        const currentHover = Math.max(0, Math.min(items.length - 1, Math.round(newOffset / ITEM_STEP)));
+        currentCxRef.current = nextCx;
+        const currentHover = findClosestTabIndex(nextCx);
         if (currentHover !== hoverIndexRef.current) {
           hoverIndexRef.current = currentHover;
           setHoverIndex(currentHover);
           triggerHaptic(4);
         }
+
+        for (let i = 0; i < centers.length; i += 1) {
+          const tabX = centers[i];
+          if (tabX === undefined) continue;
+          const overlap = computeIconProximity(nextCx, tabX);
+          tabLiftRef.current[i] = i === currentHover ? overlap : 0;
+        }
+
+        applyVisualFrame(nextCx);
       }
     };
 
@@ -362,17 +688,15 @@ export default function BottomNavIsland({
       isPointerDown.current = false;
 
       if (hasMovedSignificantly.current) {
+        isDraggingRef.current = false;
         setIsDragging(false);
-        const maxOffset = (items.length - 1) * ITEM_STEP;
-        const clampedOffset = Math.max(0, Math.min(maxOffset, currentOffsetRef.current));
-        const targetIndex = Math.max(0, Math.min(items.length - 1, Math.round(clampedOffset / ITEM_STEP)));
 
+        const targetIndex = findClosestTabIndex(currentCxRef.current);
         setSelectedIndex(targetIndex);
-        setDragOffset(targetIndex * ITEM_STEP);
-        currentOffsetRef.current = targetIndex * ITEM_STEP;
         setHoverIndex(targetIndex);
         hoverIndexRef.current = targetIndex;
         triggerHaptic(10);
+        moveIndicatorToTab(targetIndex);
 
         const targetItem = items[targetIndex];
         if (targetItem && targetItem.href !== window.location.pathname) {
@@ -380,10 +704,10 @@ export default function BottomNavIsland({
           navigate(targetItem.href);
         }
       } else {
+        isDraggingRef.current = false;
         setIsDragging(false);
-        setDragOffset(selectedIndex * ITEM_STEP);
-        currentOffsetRef.current = selectedIndex * ITEM_STEP;
         setHoverIndex(selectedIndex);
+        hoverIndexRef.current = selectedIndex;
       }
     };
 
@@ -396,64 +720,64 @@ export default function BottomNavIsland({
       window.removeEventListener('pointerup', handleWindowPointerUp);
       window.removeEventListener('pointercancel', handleWindowPointerUp);
     };
-  }, [items, selectedIndex]);
+  }, [
+    applyVisualFrame,
+    findClosestTabIndex,
+    items,
+    moveIndicatorToTab,
+    selectedIndex,
+    stopAnimationLoop,
+  ]);
 
-  // Gestures: Pointer Down on Dock Track
   const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0 && e.pointerType === 'mouse') return;
     pointerStartX.current = e.clientX;
     isPointerDown.current = true;
     hasMovedSignificantly.current = false;
 
-    // Determine if touched another tab to start dragging from there
     if (dockRef.current) {
       const rect = dockRef.current.getBoundingClientRect();
-      const touchX = e.clientX - rect.left - 28;
-      const touchedIndex = Math.max(0, Math.min(items.length - 1, Math.round(touchX / ITEM_STEP)));
-      const distToActive = Math.abs(touchX - selectedIndex * ITEM_STEP);
-
-      // If finger is close to active pill, drag active pill; else start from touched tab
-      if (distToActive < 30) {
-        initialPillOffset.current = selectedIndex * ITEM_STEP;
+      const touchX = e.clientX - rect.left;
+      const distToCurrent = Math.abs(touchX - currentCxRef.current);
+      if (distToCurrent < 30) {
+        initialDragCx.current = currentCxRef.current;
       } else {
-        initialPillOffset.current = touchedIndex * ITEM_STEP;
+        const touchedIdx = findClosestTabIndex(touchX);
+        initialDragCx.current = getTabCenter(touchedIdx);
       }
     } else {
-      initialPillOffset.current = selectedIndex * ITEM_STEP;
+      initialDragCx.current = currentCxRef.current;
     }
-
-    currentOffsetRef.current = initialPillOffset.current;
   };
 
-  // Direct Click on Tab Item (when not dragging)
   const handleTabClick = (e: MouseEvent<HTMLAnchorElement>, index: number, href: string) => {
     e.preventDefault();
     if (hasMovedSignificantly.current) return;
 
-    if (index !== selectedIndex) {
+    if (index !== selectedIndex || targetIndexRef.current !== index) {
       setSelectedIndex(index);
-      setDragOffset(index * ITEM_STEP);
-      currentOffsetRef.current = index * ITEM_STEP;
       setHoverIndex(index);
       hoverIndexRef.current = index;
       triggerHaptic(10);
-      setLivePath(href);
-      navigate(href);
+      moveIndicatorToTab(index);
+      if (href !== window.location.pathname) {
+        setLivePath(href);
+        navigate(href);
+      }
     }
   };
-
-  const activePosition = isDragging ? dragOffset : selectedIndex * ITEM_STEP;
-
-  // Ocultar la barra de navegación flotante inferior en páginas de formularios y wizards
-  const isFormPage =
-    livePath.startsWith('/admin/flota/nuevo') ||
-    (livePath.startsWith('/admin/flota/') && livePath.includes('/editar')) ||
-    livePath.startsWith('/alquilar') ||
-    livePath.includes('/entrega');
 
   if (isFormPage) {
     return null;
   }
+
+  const activeVisualIndex = isDragging ? hoverIndex : selectedIndex;
+  const renderCx = getTabCenter(activeVisualIndex);
+  const initialNotchPath = buildLiquidNotchPath(dockDims.width, dockDims.height, renderCx);
+  const initialCircleX = renderCx - LIQUID_DOCK_GEOMETRY.circleRadius;
+  const initialCircleY =
+    LIQUID_DOCK_GEOMETRY.circleCenterY - LIQUID_DOCK_GEOMETRY.circleRadius;
+  const initialIconLiftY = LIQUID_DOCK_GEOMETRY.circleCenterY - dockDims.height / 2;
 
   return (
     <nav
@@ -461,37 +785,113 @@ export default function BottomNavIsland({
       style={{ viewTransitionName: 'flotax-bottom-nav' }}
       className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-40 md:hidden pointer-events-auto select-none ${className}`}
     >
-      {/* Floating Island Dock Capsule with Free Touch Slider */}
+      {/* Contenedor principal del dock: conserva dimensiones, distribución y touch targets exactos */}
       <div
         ref={dockRef}
         role="tablist"
         aria-orientation="horizontal"
         onPointerDown={handlePointerDown}
         style={{ touchAction: 'none' }}
-        className="ios-dock-capsule relative flex items-center gap-1.5 rounded-full p-1.5 border border-white/60 ring-1 ring-[#111827]/10 select-none cursor-grab active:cursor-grabbing"
+        className="relative flex items-center gap-1.5 rounded-full p-1.5 border border-transparent select-none cursor-grab active:cursor-grabbing"
       >
-        {/* Sliding Fluid Indicator Capsule with Non-Linear Spring Physics */}
-        <div
+        {/* Capa 1: Sombra exterior que sigue fielmente la muesca cóncava sin bloquear backdrop-filter */}
+        <svg
           aria-hidden="true"
-          className="pointer-events-none absolute left-1.5 top-1.5 h-11 w-11 rounded-full bg-[#111827] dark:bg-white/20 shadow-[0_6px_18px_-2px_rgba(17,24,39,0.38)] ring-1 ring-white/20 will-change-transform"
-          style={{
-            transform: `translate3d(${activePosition}px, 0, 0) ${isDragging ? 'scale(0.96) scaleX(1.12)' : 'scale(1) scaleX(1)'
-              }`,
-            transition: isDragging
-              ? 'none'
-              : 'transform 400ms var(--ease-spring-ios), box-shadow 300ms ease',
-          }}
+          viewBox={`0 0 ${dockDims.width} ${dockDims.height}`}
+          className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
         >
-        </div>
+          <defs>
+            <filter id={shadowLightFilterId} x="-35%" y="-50%" width="170%" height="240%">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="11" result="blur" />
+              <feOffset in="blur" dx="0" dy="10" result="offsetBlur" />
+              <feFlood floodColor="#111827" floodOpacity="0.22" result="flood" />
+              <feComposite in="flood" in2="offsetBlur" operator="in" result="shadow" />
+              <feComposite in="shadow" in2="SourceAlpha" operator="out" />
+            </filter>
+            <filter id={shadowDarkFilterId} x="-35%" y="-50%" width="170%" height="240%">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="12" result="blur" />
+              <feOffset in="blur" dx="0" dy="10" result="offsetBlur" />
+              <feFlood floodColor="#000000" floodOpacity="0.58" result="flood" />
+              <feComposite in="flood" in2="offsetBlur" operator="in" result="shadow" />
+              <feComposite in="shadow" in2="SourceAlpha" operator="out" />
+            </filter>
+          </defs>
+          <path
+            ref={shadowLightPathRef}
+            d={initialNotchPath}
+            fill="#111827"
+            filter={`url(#${shadowLightFilterId})`}
+            className="dark:hidden"
+          />
+          <path
+            ref={shadowDarkPathRef}
+            d={initialNotchPath}
+            fill="#000000"
+            filter={`url(#${shadowDarkFilterId})`}
+            className="hidden dark:block"
+          />
+        </svg>
 
+        {/* Capa 2: Superficie translúcida recortada dinámicamente con la muesca cóncava real */}
+        <div
+          ref={glassRef}
+          aria-hidden="true"
+          className="flotax-liquid-dock-glass pointer-events-none absolute inset-0"
+          style={{
+            clipPath: `path('${initialNotchPath}')`,
+            WebkitClipPath: `path('${initialNotchPath}')`,
+          }}
+        />
+
+        {/* Capa 3: Borde continuo y reflejo especular adaptados al trazado de la muesca */}
+        <svg
+          aria-hidden="true"
+          viewBox={`0 0 ${dockDims.width} ${dockDims.height}`}
+          className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
+        >
+          <defs>
+            <clipPath id={innerRimClipId}>
+              <path ref={clipPathNodeRef} d={initialNotchPath} />
+            </clipPath>
+          </defs>
+          <path
+            ref={borderInnerPathRef}
+            d={initialNotchPath}
+            fill="none"
+            strokeWidth={2}
+            clipPath={`url(#${innerRimClipId})`}
+            className="stroke-white/75 dark:stroke-white/10"
+          />
+          <path
+            ref={borderOuterPathRef}
+            d={initialNotchPath}
+            fill="none"
+            strokeWidth={1}
+            className="stroke-[#111827]/12 dark:stroke-white/12"
+          />
+        </svg>
+
+        {/* Capa 4: Indicador circular activo perfectamente redondo sincronizado con la muesca */}
+        <div
+          ref={circleRef}
+          aria-hidden="true"
+          className="pointer-events-none absolute left-0 top-0 z-10 h-10 w-10 rounded-full bg-[#111827] dark:bg-[#4B5563] shadow-[0_6px_18px_-2px_rgba(17,24,39,0.38)] dark:shadow-[0_6px_18px_-2px_rgba(0,0,0,0.48)] ring-1 ring-white/20 will-change-transform"
+          style={{
+            transform: `translate3d(${initialCircleX.toFixed(2)}px, ${initialCircleY.toFixed(2)}px, 0)`,
+          }}
+        />
+
+        {/* Capa 5: Opciones de navegación e iconos */}
         {items.map((item, index) => {
           const isSelected = index === selectedIndex;
-          const isHovered = isDragging && index === hoverIndex;
-          const isCurrentVisual = isHovered || isSelected;
+          const isCurrentVisual = index === activeVisualIndex;
 
           return (
             <a
               key={item.key}
+              ref={(el) => {
+                tabRefs.current[index] = el;
+              }}
               href={item.href}
               role="tab"
               aria-label={item.label}
@@ -501,12 +901,26 @@ export default function BottomNavIsland({
               data-astro-prefetch="tap"
               onClick={(e) => handleTabClick(e, index, item.href)}
               style={{ touchAction: 'none', WebkitUserSelect: 'none', userSelect: 'none' }}
-              className={`fx-pressable relative z-10 flex h-11 w-11 items-center justify-center rounded-full transition-colors duration-200 ${isCurrentVisual
-                ? 'text-white'
-                : 'text-[#4B5563] dark:text-[#E5E7EB] hover:text-[#111827] dark:hover:text-white hover:bg-[#EDEDED]/60 dark:hover:bg-white/10'
-                }`}
+              className={`fx-pressable relative z-20 flex h-11 w-11 items-center justify-center rounded-full transition-colors duration-200 ${
+                isCurrentVisual
+                  ? 'text-[#4B5563] dark:text-[#E5E7EB]'
+                  : 'text-[#4B5563] dark:text-[#E5E7EB] hover:text-[#111827] dark:hover:text-white hover:bg-[#EDEDED]/60 dark:hover:bg-white/10'
+              }`}
             >
-              {item.icon(isCurrentVisual)}
+              <span
+                ref={(el) => {
+                  iconRefs.current[index] = el;
+                }}
+                className="flotax-liquid-dock-icon pointer-events-none flex items-center justify-center"
+                style={{
+                  transform: isCurrentVisual
+                    ? `translate3d(0, ${initialIconLiftY.toFixed(2)}px, 0)`
+                    : 'translate3d(0, 0, 0)',
+                  color: isCurrentVisual ? '#ffffff' : undefined,
+                }}
+              >
+                {item.icon(isCurrentVisual)}
+              </span>
             </a>
           );
         })}

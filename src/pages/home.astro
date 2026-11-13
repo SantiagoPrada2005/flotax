@@ -1,20 +1,12 @@
 ---
 const usuario = Astro.locals.usuario;
-const modoPortal = Astro.cookies.get('movix_portal_modo')?.value;
 
 if (!usuario) {
   return Astro.redirect('/catalogo');
 }
 
-// Redirección inteligente por rol y modo de portal persistido:
-// Personal de patio a /admin (salvo que haya conmutado a modo CLIENTE), clientes a /catalogo
-const esPersonal =
-  usuario.esSuperAdmin ||
-  (usuario.localActivo && usuario.localActivo.rol !== 'USUARIO');
-
-if (esPersonal && modoPortal !== 'CLIENTE') {
-  return Astro.redirect('/admin');
-}
-
-return Astro.redirect('/catalogo');
+// Redirección inteligente por modo de portal persistido e hidratado en middleware
+return Astro.locals.modoPortal === 'ADMIN'
+  ? Astro.redirect('/admin')
+  : Astro.redirect('/catalogo');
 ---

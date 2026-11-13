@@ -673,6 +673,63 @@ Gobierno de acceso estricto que dictamina la visibilidad de pantallas y la capac
 - **`R` Acceso limitado:** Acciones operativas acotadas (ej. asesor y encargado de flota registran novedades pero no aprueban cargos económicos; administrador gestiona equipo y tarifas pero no crea administradores ni altera el plan).
 - **`—` Sin acceso:** La opción se oculta en la barra de navegación y la ruta devuelve denegación (`403 Forbidden`).
 
+### 13.1 Fronteras RBAC del Ciclo de Alquiler
+
+| Acción de Ciclo | Permiso Requerido | SUPER_ADMIN | DUENO | ADMIN | ASESOR | ENCARGADO_FLOTA |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| Confirmar / Rechazar solicitud | `reservas:confirmar_rechazar` | ✓ | ✓ | ✓ | ✓ | — |
+| Crear contrato y entregar unidad | `contratos:crear` | ✓ | ✓ | ✓ | ✓ | — |
+| Prórroga con tarifa estándar | `contratos:crear` | ✓ | ✓ | ✓ | ✓ | — |
+| Pausar alquiler (`+N` días $0) | `contratos:pausar` | ✓ | ✓ | ✓ | — | — |
+| Prórroga con ajuste (`MISMO_PRECIO` / `PRECIO_PACTADO`) | `contratos:modificar_tarifa` | ✓ | ✓ | ✓ | — | — |
+| Sobrecosto o descuento al devolver | `novedades:cargos_aprobar` / `contratos:modificar_tarifa` | ✓ | ✓ | ✓ | — | — |
+| Reembolso en caja / fianza | `caja:gastos_registrar` | ✓ | ✓ | ✓ | — | — |
+| Anular movimiento de caja | `caja:gastos_registrar` | ✓ | ✓ | ✓ | — | — |
+| Cancelar reserva confirmada / Anular contrato | `contratos:anular` | ✓ | ✓ | ✓ | — | — |
+| Reabrir alquiler cancelado | `contratos:anular` + `reservas:confirmar_rechazar` | ✓ | ✓ | ✓ | — | — |
+
+> **Regla de oro de Asesor de Mostrador:** El rol `ASESOR` está restringido operativamente a flujos estándar (confirmar, inspeccionar, entregar, prorrogar a tarifa de lista, registrar abonos y cerrar sin descuentos, sobrecostos discrecionales ni reembolsos de caja). Cualquier alteración financiera, pausa, sobrecosto o anulación requiere la intervención expresa de un `ADMIN` o `DUENO`.
+
+### 13.2 Flujo Operativo: Evaluación del Cliente vs Cierre Administrativo
+
+Para garantizar la seguridad de caja y el control pericial de la flota, el flujo de entrega/devolución se desacopla estrictamente entre la autoverificación del cliente y el cierre administrativo en patio:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor C as Cliente (/reservas/[codigo]/entrega)
+    participant W as VehiculoEntregaWizard
+    participant D1 as Cloudflare D1
+    actor A as Administrador / Encargado Patio (/admin/reservas/[codigo])
+    participant S as devolverYCerrarAlquilerD1
+    participant R2 as Cloudflare R2
+    participant Caja as Caja y Finanzas
+
+    Note over C,W: Etapa 1: Check-in / Evaluacion Cliente
+    C->>W: Completa evaluacion de servicio (1-5 estrellas) y checklist previo de retorno
+    W->>D1: Guarda acta en evaluaciones_entrega_cliente
+    W->>D1: Notifica al local del arribo de la unidad
+    Note over D1: reservas.estado y vehiculos.estado PERMANECEN INTACTOS (EN_CURSO / PAUSADA)<br/>Garantia no se libera automaticamente.
+    W-->>C: Confirmacion: Envio recibido, el patio validara retorno y fianza
+
+    Note over A,Caja: Etapa 2: Cierre Administrativo y Peritaje Real en Patio
+    A->>S: Inspeccion pericial R2 de recepcion (fotos/videos del retorno)
+    S->>R2: Almacena evidencia y acta RECEPCION en inspecciones_periciales
+    A->>S: Define clausula del local, odometro, nivel combustible/bateria
+    alt Con Sobrecosto o Descuento (Devolucion Anticipada)
+        A->>S: sobrecostoLocal / descuentoAjusteLocal (requiere ADMIN/DUENO)
+    end
+    alt Requiere Mantenimiento
+        S->>D1: Inserta orden en mantenimientos_vehiculo (EN_TALLER)<br/>Vehiculo queda en MANTENIMIENTO
+    else Retorno en Buenas Condiciones
+        S->>D1: Libera dias sobrantes si fue anticipada<br/>Vehiculo queda DISPONIBLE
+    end
+    S->>Caja: Liquidacion final Waybill, cobro de saldo o egreso REEMBOLSO_ALQUILER
+    S->>D1: Resuelve fianza (devolver, retener cargos o en revision)
+    S->>D1: reservas.estado = COMPLETADA, contratos_alquiler.estadoContrato = CERRADO_*
+    S->>D1: Inserta evento DEVOLUCION_ANTICIPADA / SOBRECOSTO_CLAUSULA en eventos_alquiler
+```
+
 ---
 
 ## 14. Métricas del Dashboard desde la Revisión

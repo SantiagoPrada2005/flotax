@@ -3,7 +3,7 @@ import LayoutAdmin from "@/layouts/LayoutAdmin.astro";
 import { resolveClientTimeContext } from "@/lib/time/client-time";
 import BentoHeroCard from "@/components/dashboard/BentoHeroCard.astro";
 import BentoMetricsGrid from "@/components/dashboard/BentoMetricsGrid.astro";
-import BentoOperationsCard from "@/components/dashboard/BentoOperationsCard.astro";
+import AlquilerEnProcesoCard from "@/components/dashboard/AlquilerEnProcesoCard";
 import LocalCatalogShareCard from "@/components/flota/LocalCatalogShareCard";
 import {
   listarVehiculos,
@@ -11,6 +11,11 @@ import {
   LOCAL_CANONICO_DEFECTO,
   asegurarConfiguracionBaseLocal,
 } from "@/lib/flota";
+import {
+  calcularMetricasFlotaAdmin,
+  obtenerResumenCajaTurnoD1,
+} from "@/lib/dashboard/resumen-admin";
+import { listarAlquileresEnProcesoD1 } from "@/lib/dashboard/alquileres-proceso";
 import { env } from "cloudflare:workers";
 import { getDb } from "@/lib/db";
 
@@ -38,76 +43,67 @@ if (db && localContexto.id) {
   await asegurarConfiguracionBaseLocal(db, localContexto.id);
 }
 
-const vehiculosPatio = await listarVehiculos(db, { localId: localContexto.id });
+const [vehiculosDb, resumenCaja, alquileresEnProceso] = await Promise.all([
+  listarVehiculos(db, {
+    localId: localContexto.id,
+    hoyISO: timeContext.dateString,
+  }),
+  obtenerResumenCajaTurnoD1(
+    db,
+    localContexto.id,
+    timeContext.dateString,
+    timeContext.timezone
+  ),
+  listarAlquileresEnProcesoD1(db, localContexto.id),
+]);
 
-const totalUnits = vehiculosPatio.length;
-const disponiblesCount = vehiculosPatio.filter(
-  (v) => v.estado === "DISPONIBLE",
-).length;
-const activasCount = vehiculosPatio.filter(
-  (v) => v.estado === "RESERVADO",
-).length;
-const occupancyPercentage =
-  totalUnits > 0 ? Math.round((activasCount / totalUnits) * 100) : 0;
-
-const carsCount = vehiculosPatio.filter(
-  (v) =>
-    v.categoria === "SEDAN" ||
-    v.categoria === "SUV" ||
-    v.categoria === "UTILITARIO",
-).length;
-const motorcyclesCount = vehiculosPatio.filter(
-  (v) => v.categoria === "MOTO",
-).length;
-const scootersCount = vehiculosPatio.filter(
-  (v) => v.categoria === "PATINETA",
-).length;
-
-const totalValorDia = vehiculosPatio.reduce((acc, v) => acc + v.precioDia, 0);
-const revenueFormatted = new Intl.NumberFormat("es-CO", {
-  style: "currency",
-  currency: "COP",
-  maximumFractionDigits: 0,
-}).format(totalValorDia);
+const metricasFlota = calcularMetricasFlotaAdmin(vehiculosDb);
 ---
 
 <LayoutAdmin title="FlotaX — Panel General" activeTab="home">
-  <div class="mx-auto w-full max-w-md sm:max-w-xl px-4 py-3 space-y-4">
+  <div class="mx-auto w-full max-w-md sm:max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
     <h1 class="sr-only">Panel General — {localContexto.nombre}</h1>
 
-    <!-- Bento Grid Section 1: Hero Progress Card -->
-    <BentoHeroCard
-      occupancyPercentage={occupancyPercentage}
-      dateLabel={timeContext.dateString}
-      activeUnits={activasCount}
-      totalUnits={totalUnits}
-      yardName={localContexto.nombre}
-    />
+    <!-- Dashboard Bento Grid Proporcional: En computadores Catálogo al lado de Disponibles; en celulares idéntico al flujo original -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 lg:gap-6 items-start">
+      <!-- 1. Ocupación de Flota (Fila 1, Col 1 en computadores) -->
+      <div class="order-1 md:col-start-1 md:row-start-1 h-full">
+        <BentoHeroCard
+          occupancyPercentage={metricasFlota.occupancyPercentage}
+          dateLabel={timeContext.dateString}
+          activeUnits={metricasFlota.activasCount}
+          totalUnits={metricasFlota.totalUnits}
+          yardName={localContexto.nombre}
+        />
+      </div>
 
-    <!-- Bento Grid Section 2: Split 2-Column Metrics with Sparkline -->
-    <BentoMetricsGrid
-      availableCount={disponiblesCount}
-      availableLabel="Disponibles"
-      availableTrend={`${disponiblesCount} en patio`}
-      revenueAmount={revenueFormatted}
-      revenueTrend="Capacidad/día"
-    />
+      <!-- 2 & 3. Caja Turno (Fila 1, Col 2) + Disponibles (Fila 2, Col 1) -->
+      <BentoMetricsGrid
+        availableCount={metricasFlota.disponiblesCount}
+        availableLabel="Disponibles"
+        availableTrend={`${metricasFlota.disponiblesCount} en patio`}
+        revenueAmount={resumenCaja.revenueFormatted}
+        revenueTrend={resumenCaja.totalValorDia > 0 ? "Ingresos hoy" : "Sin ingresos hoy"}
+        shiftStatus={resumenCaja.shiftStatus}
+      />
 
-    <!-- Bento Grid Section 3: Operations & Category Breakdown Card -->
-    <BentoOperationsCard
-      inspectionsCompleted={totalUnits}
-      carsCount={carsCount}
-      motorcyclesCount={motorcyclesCount}
-      scootersCount={scootersCount}
-      inspectionRate="100%"
-    />
+      <!-- 4. Catálogo Digital del Local (En computadores Fila 2, Col 2 al lado de Disponibles; en celulares orden 5 al final) -->
+      <div class="order-5 md:col-start-2 md:row-start-2 h-full">
+        <LocalCatalogShareCard
+          client:load
+          local={localContexto}
+          unidadesCount={metricasFlota.totalUnits}
+          compact={true}
+        />
+      </div>
 
-    <!-- Opción Principal: Enlace del Catálogo del Local con Progressive Disclosure -->
-    <LocalCatalogShareCard
-      client:load
-      local={localContexto}
-      unidadesCount={vehiculosPatio.length}
-      compact={true}
-    />
+      <!-- 5. Alquileres en Proceso (En computadores Fila 3 ancho completo; en celulares orden 4 antes del catálogo) -->
+      <div class="order-4 md:col-start-1 md:col-span-2 md:row-start-3">
+        <AlquilerEnProcesoCard
+          client:load
+          initialAlquileres={alquileresEnProceso}
+        />
+      </div>
+    </div>
   </div>
 </LayoutAdmin>

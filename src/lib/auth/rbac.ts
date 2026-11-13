@@ -162,6 +162,7 @@ export const MATRIZ_ROLES_PERMISOS: Readonly<Record<RolSistema, readonly Permiso
     PERMISOS.CONTRATOS_CREAR,
     PERMISOS.CONTRATOS_MODIFICAR_TARIFA,
     PERMISOS.CONTRATOS_FINALIZAR,
+    PERMISOS.CONTRATOS_PAUSAR,
     PERMISOS.CONTRATOS_ANULAR,
     // Entregas, Recepciones y Novedades R2
     PERMISOS.INSPECCIONES_LEER,
@@ -224,6 +225,8 @@ export const MATRIZ_ROLES_PERMISOS: Readonly<Record<RolSistema, readonly Permiso
     PERMISOS.CONTRATOS_CREAR,
     PERMISOS.CONTRATOS_MODIFICAR_TARIFA,
     PERMISOS.CONTRATOS_FINALIZAR,
+    PERMISOS.CONTRATOS_PAUSAR,
+    PERMISOS.CONTRATOS_ANULAR,
     PERMISOS.INSPECCIONES_LEER,
     PERMISOS.INSPECCIONES_REGISTRAR,
     PERMISOS.INSPECCIONES_MULTIMEDIA_SUBIR,
@@ -315,6 +318,12 @@ function normalizarSujeto(
     return { rol: sujetoORol };
   }
   return sujetoORol;
+}
+
+export function obtenerPermisosBasePorRol(
+  rol: RolSistema
+): readonly Permiso[] {
+  return MATRIZ_ROLES_PERMISOS[rol] ?? [];
 }
 
 /**

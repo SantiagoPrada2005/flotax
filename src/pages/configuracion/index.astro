@@ -1,12 +1,16 @@
 ---
 import LayoutApp from '@/layouts/LayoutApp.astro';
 import ConfiguracionIsland from '@/components/configuracion/ConfiguracionIsland';
+
+const modoOperador = Astro.locals.modoPortal === 'ADMIN';
 ---
 
 <LayoutApp
   title="FlotaX — Configuración"
   description="Personaliza tu experiencia, apariencia de temas claro y oscuro, idioma y formatos regionales en FlotaX."
-  navVariant="client"
+  navVariant={modoOperador ? 'admin' : 'client'}
+  showBack={true}
+  backHref={modoOperador ? '/admin' : '/catalogo'}
   noindex={true}
 >
   <div class="w-full pb-20">

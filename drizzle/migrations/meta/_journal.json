@@ -57,6 +57,13 @@
       "when": 1793832899838,
       "tag": "0007_fair_kylun",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1794520530796,
+      "tag": "0008_giant_next_avengers",
+      "breakpoints": true
     }
   ]
 }
