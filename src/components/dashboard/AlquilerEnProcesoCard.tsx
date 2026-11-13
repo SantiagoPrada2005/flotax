@@ -204,7 +204,14 @@ export function obtenerPasosProcesoContrato(
       { id: 'kyc', titulo: '1. Verificación C.C. y Licencia', detalle: 'Validado', estado: 'COMPLETADO' },
       { id: 'abono', titulo: '2. Abono y Depósito de Garantía', detalle: 'Confirmado', estado: 'COMPLETADO' },
       { id: 'peritaje', titulo: '3. Inspección Pericial Fotográfica', detalle: 'Acta R2 lista', estado: 'COMPLETADO' },
-      { id: 'firma', titulo: '4. Firma de Contrato y Entrega', detalle: 'Llaves entregadas', estado: 'COMPLETADO' },
+      {
+        id: 'firma',
+        titulo: '4. Devolución y Cierre',
+        detalle: item.completadoEn
+          ? `Cerrado: ${new Date(item.completadoEn).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' })}`
+          : item.etapaActualResumen ?? 'Contrato cerrado',
+        estado: 'COMPLETADO',
+      },
     ];
   }
 
@@ -213,7 +220,13 @@ export function obtenerPasosProcesoContrato(
       { id: 'kyc', titulo: '1. Verificación C.C. y Licencia', detalle: 'Validado', estado: 'COMPLETADO' },
       { id: 'abono', titulo: '2. Abono y Depósito de Garantía', detalle: 'Confirmado', estado: 'COMPLETADO' },
       { id: 'peritaje', titulo: '3. Inspección Pericial Fotográfica', detalle: 'Completado', estado: 'COMPLETADO' },
-      { id: 'firma', titulo: '4. Firma de Contrato y Entrega', detalle: 'Más de 12h sin respuesta final', estado: 'PAUSADO' },
+      {
+        id: 'firma',
+        titulo: '4. Estado del alquiler',
+        detalle:
+          item.etapaActualResumen ?? 'Alquiler pausado por acuerdo mutuo ($0 sobrecosto)',
+        estado: 'PAUSADO',
+      },
     ];
   }
 
@@ -422,11 +435,21 @@ export default function AlquilerEnProcesoCard({
                         <span className="font-mono text-[11px] font-bold text-[#EDEDED]">
                           {item.codigoContrato ?? `Contrato #${item.placa}`}
                         </span>
-                        {item.etapaActualResumen && (
+                        {item.estado === 'PAUSADO' ? (
+                          <span className="text-[11px] font-medium text-red-300">
+                            {item.etapaActualResumen ?? 'Alquiler pausado por acuerdo'}
+                          </span>
+                        ) : item.estado === 'COMPLETADO' ? (
+                          <span className="text-[11px] font-medium text-emerald-300">
+                            {item.completadoEn
+                              ? `Cerrado el ${new Date(item.completadoEn).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' })}`
+                              : item.etapaActualResumen ?? 'Contrato completado'}
+                          </span>
+                        ) : item.etapaActualResumen ? (
                           <span className="text-[11px] font-medium text-[#9CA3AF]">
                             {item.etapaActualResumen}
                           </span>
-                        )}
+                        ) : null}
                       </div>
 
                       <ol className="space-y-1.5">

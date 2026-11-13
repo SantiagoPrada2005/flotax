@@ -3,7 +3,6 @@ import { actions } from 'astro:actions';
 import { navigate } from 'astro:transitions/client';
 import {
   ENCABEZADOS_SEMANA_EDITORIAL,
-  FLOTA_CANONICA,
   calcularDiasInclusivos,
   construirCalendarioSuizoReservas,
   formatearFechaCorta,
@@ -22,6 +21,7 @@ export interface MisReservasHubProps {
   abrirNuevaInicial?: boolean | undefined;
   initialReservas?: ReservaClienteItem[] | undefined;
   vehiculosDisponibles?: { id: string; marca: string; modelo: string; anio: number; placa: string; precioDia: number; imagenUrl: string }[] | undefined;
+  cuentasFinancieras?: Array<{ id: string; nombre: string; tipo: string }> | undefined;
 }
 
 type FiltroEstadoAdmin =
@@ -29,7 +29,10 @@ type FiltroEstadoAdmin =
   | 'PENDIENTE'
   | 'CONFIRMADA'
   | 'EN_CURSO'
-  | 'CERRADAS';
+  | 'PAUSADA'
+  | 'COMPLETADA'
+  | 'CANCELADA'
+  | 'RECHAZADA';
 
 const formatCop = (val: number): string =>
   new Intl.NumberFormat('es-CO', {
@@ -54,12 +57,10 @@ export default function MisReservasHub({
   abrirNuevaInicial = false,
   initialReservas,
   vehiculosDisponibles,
+  cuentasFinancieras,
 }: MisReservasHubProps) {
   const esAdmin = modo === 'admin';
-  const catalogoVehiculos =
-    vehiculosDisponibles && vehiculosDisponibles.length > 0
-      ? vehiculosDisponibles
-      : FLOTA_CANONICA;
+  const catalogoVehiculos = vehiculosDisponibles ?? [];
 
   const [reservas, setReservas] = useState<ReservaClienteItem[]>(
     () => initialReservas ?? []
@@ -76,13 +77,14 @@ export default function MisReservasHub({
 
   // Estado del formulario rápido de mostrador (1 paso)
   const [formVehiculoId, setFormVehiculoId] = useState<string>(
-    catalogoVehiculos[0]?.id ?? 'veh-mercedes-eqb'
+    catalogoVehiculos[0]?.id ?? ''
   );
   const [formFechaInicio, setFormFechaInicio] = useState<string>(hoyISO);
   const [formFechaFin, setFormFechaFin] = useState<string>(() =>
     sumarDiasISO(hoyISO, 2)
   );
   const [formNombre, setFormNombre] = useState<string>('');
+  const [formCorreo, setFormCorreo] = useState<string>('');
   const [formTipoDoc, setFormTipoDoc] = useState<'CC' | 'CE' | 'PASAPORTE'>('CC');
   const [formNumDoc, setFormNumDoc] = useState<string>('');
   const [formLicencia, setFormLicencia] = useState<'B1' | 'B2' | 'A2' | 'C1'>('B1');
@@ -93,6 +95,31 @@ export default function MisReservasHub({
     'CONFIRMADA' | 'PENDIENTE'
   >('CONFIRMADA');
   const [formPorcentajeAbono, setFormPorcentajeAbono] = useState<30 | 100>(100);
+  const [cuentaPagoId, setCuentaPagoId] = useState<string>(
+    cuentasFinancieras?.[0]?.id ?? ''
+  );
+  const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState<
+    'efectivo' | 'transferencia' | 'tarjeta'
+  >('efectivo');
+
+  // Búsqueda de clientes del local
+  const [clienteSeleccionadoId, setClienteSeleccionadoId] = useState<string | null>(null);
+  const [busquedaCliente, setBusquedaCliente] = useState<string>('');
+  const [clientesEncontrados, setClientesEncontrados] = useState<
+    Array<{
+      id: string;
+      nombre: string;
+      correo: string;
+      telefono: string | null;
+      tipoDocumento: string | null;
+      numeroDocumento: string | null;
+      licenciaCategoria: string | null;
+      estadoKyc: string;
+    }>
+  >([]);
+  const [buscandoClientes, setBuscandoClientes] = useState(false);
+  const [errorModalNueva, setErrorModalNueva] = useState<string | null>(null);
+  const [submittingModalNueva, setSubmittingModalNueva] = useState(false);
 
   const [anioHoy = 2026, mesHoyUno = 10] = hoyISO.split('-').map(Number);
   const [mesCursor, setMesCursor] = useState<{
@@ -123,19 +150,28 @@ export default function MisReservasHub({
     let pendientes = 0;
     let confirmadas = 0;
     let enCurso = 0;
-    let cerradas = 0;
+    let pausadas = 0;
+    let completadas = 0;
+    let canceladas = 0;
+    let rechazadas = 0;
     for (const r of reservas) {
       if (r.estado === 'PENDIENTE') pendientes++;
       else if (r.estado === 'CONFIRMADA') confirmadas++;
       else if (r.estado === 'EN_CURSO') enCurso++;
-      else cerradas++;
+      else if (r.estado === 'PAUSADA') pausadas++;
+      else if (r.estado === 'COMPLETADA') completadas++;
+      else if (r.estado === 'CANCELADA') canceladas++;
+      else if (r.estado === 'RECHAZADA') rechazadas++;
     }
     return {
       todas: reservas.length,
       pendientes,
       confirmadas,
       enCurso,
-      cerradas,
+      pausadas,
+      completadas,
+      canceladas,
+      rechazadas,
     };
   }, [reservas]);
 
@@ -178,11 +214,7 @@ export default function MisReservasHub({
   const alquileresMostrados = useMemo(() => {
     return reservas.filter((r) => {
       if (esAdmin && filtroEstado !== 'TODAS') {
-        if (filtroEstado === 'CERRADAS') {
-          if (r.estado !== 'COMPLETADA' && r.estado !== 'RECHAZADA') {
-            return false;
-          }
-        } else if (r.estado !== filtroEstado) {
+        if (r.estado !== filtroEstado) {
           return false;
         }
       }
@@ -262,19 +294,14 @@ export default function MisReservasHub({
 
   const aprobarSolicitudRapida = async (item: ReservaClienteItem) => {
     try {
-      const res = await actions.reservas.cambiarEstado({
+      const res = await actions.reservas.confirmarReserva({
         codigo: item.codigo,
-        vehiculoId: item.vehiculo.id,
-        vehiculoNombre: `${item.vehiculo.marca} ${item.vehiculo.modelo}`,
-        rangoFechas: formatearRangoReservaHumano(
-          item.fechaInicio,
-          item.fechaFin
-        ),
-        nuevoEstado: 'CONFIRMADA',
+        autorizarSinDocumentos: true,
+        notaAutorizacion: 'Aprobación rápida desde agenda de patio',
       });
 
-      if (res.error) {
-        mostrarAviso(`Error: ${res.error.message}`);
+      if (res.error || !res.data?.ok) {
+        mostrarAviso(`Error: ${res.error?.message ?? 'No fue posible confirmar'}`);
         return;
       }
 
@@ -294,11 +321,102 @@ export default function MisReservasHub({
     }
   };
 
+  const ejecutarBusquedaCliente = async (query: string) => {
+    setBusquedaCliente(query);
+    if (query.trim().length < 2) {
+      setClientesEncontrados([]);
+      return;
+    }
+    setBuscandoClientes(true);
+    try {
+      const res = await actions.reservas.buscarClientesLocal({ query: query.trim() });
+      if (res.data?.ok && res.data.clientes) {
+        setClientesEncontrados(res.data.clientes);
+      }
+    } catch {
+      // Tolerante
+    } finally {
+      setBuscandoClientes(false);
+    }
+  };
+
+  const seleccionarCliente = (cliente: {
+    id: string;
+    nombre: string;
+    correo: string;
+    telefono: string | null;
+    tipoDocumento: string | null;
+    numeroDocumento: string | null;
+    licenciaCategoria: string | null;
+  }) => {
+    setClienteSeleccionadoId(cliente.id);
+    setFormNombre(cliente.nombre);
+    setFormCorreo(cliente.correo);
+    if (cliente.telefono) setFormTelefono(cliente.telefono);
+    if (
+      cliente.tipoDocumento === 'CC' ||
+      cliente.tipoDocumento === 'CE' ||
+      cliente.tipoDocumento === 'PASAPORTE'
+    ) {
+      setFormTipoDoc(cliente.tipoDocumento);
+    }
+    if (cliente.numeroDocumento) setFormNumDoc(cliente.numeroDocumento);
+    if (
+      cliente.licenciaCategoria === 'B1' ||
+      cliente.licenciaCategoria === 'B2' ||
+      cliente.licenciaCategoria === 'A2' ||
+      cliente.licenciaCategoria === 'C1'
+    ) {
+      setFormLicencia(cliente.licenciaCategoria);
+    }
+    setClientesEncontrados([]);
+  };
+
+  const limpiarClienteSeleccionado = () => {
+    setClienteSeleccionadoId(null);
+    setBusquedaCliente('');
+  };
+
   const manejarCrearReservaMostrador = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setErrorModalNueva(null);
+
+    if (catalogoVehiculos.length === 0) {
+      setErrorModalNueva('No hay vehículos disponibles en la flota de este patio.');
+      return;
+    }
+
+    if (!formNombre.trim()) {
+      setErrorModalNueva('El nombre del conductor es obligatorio.');
+      return;
+    }
+
+    if (!formTelefono.trim()) {
+      setErrorModalNueva('El teléfono de contacto es obligatorio.');
+      return;
+    }
+
+    setSubmittingModalNueva(true);
+
     try {
       const subtotalTarifa = cotizacionRapidaPatio.dias * cotizacionRapidaPatio.vehiculo.precioDia;
       const coberturaPericial = Math.round(subtotalTarifa * 0.08);
+      const totalCotizado = cotizacionRapidaPatio.total;
+      const montoAbono =
+        formPorcentajeAbono === 100
+          ? totalCotizado
+          : Math.round(totalCotizado * 0.3);
+
+      const pagoConfirmado =
+        formEstadoInicial === 'CONFIRMADA' && montoAbono > 0
+          ? {
+              monto: montoAbono,
+              metodoPago: metodoPagoSeleccionado,
+              cuentaId: cuentaPagoId || undefined,
+              referencia: `Mostrador patio ${hoyISO}`,
+            }
+          : undefined;
+
       const res = await actions.reservas.crearReserva({
         vehiculoId: formVehiculoId,
         fechaInicio: formFechaInicio,
@@ -307,26 +425,26 @@ export default function MisReservasHub({
         precioDiaCotizado: cotizacionRapidaPatio.vehiculo.precioDia,
         subtotalTarifaCotizado: subtotalTarifa,
         coberturaPericialCotizada: coberturaPericial,
-        totalCotizado: cotizacionRapidaPatio.total,
+        totalCotizado,
         modalidadEntrega: formModalidad,
-        sedeNombre: 'Patio Norte Medellín',
+        sedeNombre: 'Patio Principal',
         modalidadPagoInicial: formPorcentajeAbono === 100 ? 'TOTAL_100' : 'ABONO_30',
         metodoAbonoInicial: 'CAJA_PATIO',
-        montoAbonoReportado:
-          formPorcentajeAbono === 100
-            ? cotizacionRapidaPatio.total
-            : Math.round(cotizacionRapidaPatio.total * 0.3),
-        contactoNombre: formNombre.trim() || 'Cliente Presencial Patio',
-        contactoTipoDocumento: formTipoDoc,
-        contactoNumeroDocumento: formNumDoc.trim() || '1037482910',
-        contactoCategoriaLicencia: formLicencia,
-        contactoTelefono: formTelefono.trim() || '+57 300 512 9080',
-        contactoCorreo: 'mostrador@flotax.co',
+        montoAbonoReportado: montoAbono,
+        contactoNombre: formNombre.trim(),
+        contactoTipoDocumento: formNumDoc.trim() ? formTipoDoc : undefined,
+        contactoNumeroDocumento: formNumDoc.trim() || undefined,
+        contactoCategoriaLicencia: formLicencia || undefined,
+        contactoTelefono: formTelefono.trim(),
+        contactoCorreo: formCorreo.trim() || undefined,
+        clienteId: clienteSeleccionadoId ?? undefined,
+        estadoInicial: formEstadoInicial,
+        pagoConfirmadoInmediato: pagoConfirmado,
         ley1581Aceptada: true,
       });
 
       if (res.error || !res.data) {
-        mostrarAviso(`Error al radicar: ${res.error?.message ?? 'Sin respuesta'}`);
+        setErrorModalNueva(res.error?.message ?? 'No fue posible radicar la reserva en el servidor.');
         return;
       }
 
@@ -338,14 +456,26 @@ export default function MisReservasHub({
       setFiltroFinISO(null);
       setSheetNuevaAbierto(false);
       setFormNombre('');
+      setFormCorreo('');
       setFormNumDoc('');
       setFormTelefono('');
+      setClienteSeleccionadoId(null);
+      setBusquedaCliente('');
+      setErrorModalNueva(null);
 
       const [y = 2026, m = 10] = nuevaReserva.fechaInicio.split('-').map(Number);
       setMesCursor({ anio: y, mesIndexCero: m - 1 });
-      mostrarAviso(`Reserva #${nuevaReserva.codigo} radicada en D1`);
-    } catch {
-      mostrarAviso('Error al radicar la reserva');
+      mostrarAviso(
+        `Reserva #${nuevaReserva.codigo} radicada en D1 (${nuevaReserva.estado})`
+      );
+    } catch (err) {
+      setErrorModalNueva(
+        err instanceof Error
+          ? err.message
+          : 'Ocurrió un error inesperado al radicar la reserva.'
+      );
+    } finally {
+      setSubmittingModalNueva(false);
     }
   };
 
@@ -631,19 +761,34 @@ export default function MisReservasHub({
                   count: conteosPorEstado.pendientes,
                 },
                 {
-                  id: 'EN_CURSO',
-                  label: 'En curso',
-                  count: conteosPorEstado.enCurso,
-                },
-                {
                   id: 'CONFIRMADA',
                   label: 'Confirmadas',
                   count: conteosPorEstado.confirmadas,
                 },
                 {
-                  id: 'CERRADAS',
-                  label: 'Cerradas',
-                  count: conteosPorEstado.cerradas,
+                  id: 'EN_CURSO',
+                  label: 'En curso',
+                  count: conteosPorEstado.enCurso,
+                },
+                {
+                  id: 'PAUSADA',
+                  label: 'En pausa',
+                  count: conteosPorEstado.pausadas,
+                },
+                {
+                  id: 'COMPLETADA',
+                  label: 'Completadas',
+                  count: conteosPorEstado.completadas,
+                },
+                {
+                  id: 'CANCELADA',
+                  label: 'Canceladas',
+                  count: conteosPorEstado.canceladas,
+                },
+                {
+                  id: 'RECHAZADA',
+                  label: 'Rechazadas',
+                  count: conteosPorEstado.rechazadas,
                 },
               ] as const
             ).map((tab) => {
@@ -910,23 +1055,54 @@ export default function MisReservasHub({
             </div>
 
             <form onSubmit={manejarCrearReservaMostrador} className="space-y-3.5">
+              {/* Error inline accesible */}
+              {errorModalNueva && (
+                <div
+                  role="alert"
+                  className="rounded-[16px] bg-[#111827] text-white p-3 text-xs flex items-center justify-between gap-2"
+                >
+                  <span>{errorModalNueva}</span>
+                  <button
+                    type="button"
+                    onClick={() => setErrorModalNueva(null)}
+                    className="text-[#9CA3AF] hover:text-white font-bold px-1 cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
               {/* Selección de Vehículo (Regla 16px: text-base) */}
               <div>
                 <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
                   Unidad de flota
                 </label>
-                <select
-                  value={formVehiculoId}
-                  onChange={(e) => setFormVehiculoId(e.target.value)}
-                  className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3.5 py-2.5 text-base font-semibold text-[#111827] outline-none focus:ring-2 focus:ring-[#111827]"
-                >
-                  {catalogoVehiculos.map((veh) => (
-                    <option key={veh.id} value={veh.id}>
-                      {veh.marca} {veh.modelo} ({veh.placa}) ·{' '}
-                      {formatCop(veh.precioDia)}/día
-                    </option>
-                  ))}
-                </select>
+                {catalogoVehiculos.length === 0 ? (
+                  <div className="rounded-[16px] bg-[#EDEDED] border border-[#9CA3AF]/40 p-4 text-center space-y-2">
+                    <p className="text-xs font-bold text-[#111827]">
+                      No hay unidades disponibles en este patio
+                    </p>
+                    <a
+                      href="/admin/flota"
+                      className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-[#111827] px-4 py-2 text-xs font-bold text-white hover:bg-[#1F2937]"
+                    >
+                      Ir a gestión de flota
+                    </a>
+                  </div>
+                ) : (
+                  <select
+                    value={formVehiculoId}
+                    onChange={(e) => setFormVehiculoId(e.target.value)}
+                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3.5 py-2.5 text-base font-semibold text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                  >
+                    {catalogoVehiculos.map((veh) => (
+                      <option key={veh.id} value={veh.id}>
+                        {veh.marca} {veh.modelo} ({veh.placa}) ·{' '}
+                        {formatCop(veh.precioDia)}/día
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               {/* Rango de Fechas */}
@@ -940,7 +1116,7 @@ export default function MisReservasHub({
                     value={formFechaInicio}
                     onChange={(e) => setFormFechaInicio(e.target.value)}
                     required
-                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3 py-2 text-base font-medium text-[#111827] outline-none focus:ring-2 focus:ring-[#111827]"
+                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3 py-2 text-base font-medium text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
                   />
                 </div>
                 <div>
@@ -953,15 +1129,95 @@ export default function MisReservasHub({
                     min={formFechaInicio}
                     onChange={(e) => setFormFechaFin(e.target.value)}
                     required
-                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3 py-2 text-base font-medium text-[#111827] outline-none focus:ring-2 focus:ring-[#111827]"
+                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3 py-2 text-base font-medium text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
                   />
                 </div>
               </div>
 
-              {/* Datos del Conductor */}
+              {/* Buscador de Clientes del Local / KYC */}
+              <div className="rounded-[18px] bg-[#EDEDED]/80 p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-[#111827]">
+                    Buscador de clientes (Local)
+                  </span>
+                  {clienteSeleccionadoId && (
+                    <button
+                      type="button"
+                      onClick={limpiarClienteSeleccionado}
+                      className="text-[10px] font-semibold text-[#4B5563] hover:text-[#111827] underline cursor-pointer"
+                    >
+                      Modo presencial / Walk-in
+                    </button>
+                  )}
+                </div>
+
+                {!clienteSeleccionadoId ? (
+                  <div className="space-y-1.5">
+                    <input
+                      type="text"
+                      placeholder="Buscar por nombre, correo o documento..."
+                      value={busquedaCliente}
+                      onChange={(e) => ejecutarBusquedaCliente(e.target.value)}
+                      className="w-full rounded-[12px] bg-white border border-[#9CA3AF]/40 px-3 py-2 text-base text-[#111827] placeholder:text-[#9CA3AF] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                    />
+                    {buscandoClientes && (
+                      <p className="text-[11px] text-[#4B5563]">Buscando clientes...</p>
+                    )}
+                    {clientesEncontrados.length > 0 && (
+                      <ul className="rounded-[12px] bg-white border border-[#9CA3AF]/40 divide-y divide-[#9CA3AF]/20 max-h-36 overflow-y-auto">
+                        {clientesEncontrados.map((c) => (
+                          <li key={c.id}>
+                            <button
+                              type="button"
+                              onClick={() => seleccionarCliente(c)}
+                              className="w-full p-2.5 text-left hover:bg-[#EDEDED] flex items-center justify-between text-xs cursor-pointer"
+                            >
+                              <div className="min-w-0">
+                                <p className="font-bold text-[#111827] truncate">{c.nombre}</p>
+                                <p className="text-[10px] text-[#4B5563] truncate">
+                                  {c.numeroDocumento ? `Doc: ${c.numeroDocumento} · ` : ''}{c.correo}
+                                </p>
+                              </div>
+                              <span
+                                className={`shrink-0 ml-2 rounded-full px-2 py-0.5 text-[9px] font-bold ${
+                                  c.estadoKyc === 'APROBADO'
+                                    ? 'bg-emerald-100 text-emerald-800'
+                                    : c.estadoKyc === 'PENDIENTE'
+                                      ? 'bg-amber-100 text-amber-800'
+                                      : 'bg-[#EDEDED] text-[#4B5563]'
+                                }`}
+                              >
+                                {c.estadoKyc === 'APROBADO'
+                                  ? 'KYC OK'
+                                  : c.estadoKyc === 'PENDIENTE'
+                                    ? 'En revisión'
+                                    : 'Sin docs'}
+                              </span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between rounded-[12px] bg-white border border-[#9CA3AF]/30 p-2.5 text-xs">
+                    <div>
+                      <p className="font-bold text-[#111827]">{formNombre}</p>
+                      <p className="text-[11px] text-[#4B5563]">
+                        {formNumDoc ? `${formTipoDoc} ${formNumDoc} · ` : ''}{formCorreo}
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-bold">
+                      Cliente vinculado
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Datos del Conductor (Modo Walk-in: solo nombre y teléfono obligatorios) */}
               <div>
                 <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
-                  Nombre completo del conductor
+                  Nombre completo del conductor <span className="text-[#111827]">*</span>
                 </label>
                 <input
                   type="text"
@@ -969,14 +1225,43 @@ export default function MisReservasHub({
                   value={formNombre}
                   onChange={(e) => setFormNombre(e.target.value)}
                   required
-                  className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3.5 py-2.5 text-base text-[#111827] placeholder:text-[#9CA3AF] outline-none focus:ring-2 focus:ring-[#111827]"
+                  className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3.5 py-2.5 text-base text-[#111827] placeholder:text-[#9CA3AF] focus-visible:ring-2 focus-visible:ring-[#111827]"
                 />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div>
+                  <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
+                    Teléfono móvil <span className="text-[#111827]">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    placeholder="+57 300 000 0000"
+                    value={formTelefono}
+                    onChange={(e) => setFormTelefono(e.target.value)}
+                    required
+                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3 py-2.5 text-base text-[#111827] placeholder:text-[#9CA3AF] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
+                    Correo electrónico (opcional)
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="cliente@ejemplo.com"
+                    value={formCorreo}
+                    onChange={(e) => setFormCorreo(e.target.value)}
+                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3 py-2.5 text-base text-[#111827] placeholder:text-[#9CA3AF] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-[90px_1fr_84px] gap-2">
                 <div>
                   <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
-                    Tipo
+                    Tipo doc.
                   </label>
                   <select
                     value={formTipoDoc}
@@ -986,7 +1271,7 @@ export default function MisReservasHub({
                         setFormTipoDoc(v);
                       }
                     }}
-                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-2.5 py-2.5 text-base font-semibold text-[#111827] outline-none"
+                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-2.5 py-2.5 text-base font-semibold text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
                   >
                     <option value="CC">CC</option>
                     <option value="CE">CE</option>
@@ -996,21 +1281,20 @@ export default function MisReservasHub({
 
                 <div>
                   <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
-                    Documento
+                    Documento (opcional)
                   </label>
                   <input
                     type="text"
                     placeholder="1.037.654.321"
                     value={formNumDoc}
                     onChange={(e) => setFormNumDoc(e.target.value)}
-                    required
-                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3 py-2.5 text-base text-[#111827] placeholder:text-[#9CA3AF] outline-none"
+                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3 py-2.5 text-base text-[#111827] placeholder:text-[#9CA3AF] focus-visible:ring-2 focus-visible:ring-[#111827]"
                   />
                 </div>
 
                 <div>
                   <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
-                    Licencia
+                    Licencia (opc.)
                   </label>
                   <select
                     value={formLicencia}
@@ -1025,7 +1309,7 @@ export default function MisReservasHub({
                         setFormLicencia(v);
                       }
                     }}
-                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-2.5 py-2.5 text-base font-semibold text-[#111827] outline-none"
+                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-2.5 py-2.5 text-base font-semibold text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
                   >
                     <option value="B1">B1</option>
                     <option value="B2">B2</option>
@@ -1035,40 +1319,24 @@ export default function MisReservasHub({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2.5">
-                <div>
-                  <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
-                    Teléfono móvil
-                  </label>
-                  <input
-                    type="tel"
-                    placeholder="+57 300 000 0000"
-                    value={formTelefono}
-                    onChange={(e) => setFormTelefono(e.target.value)}
-                    required
-                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3 py-2.5 text-base text-[#111827] placeholder:text-[#9CA3AF] outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
-                    Modalidad
-                  </label>
-                  <select
-                    value={formModalidad}
-                    onChange={(e) =>
-                      setFormModalidad(
-                        e.target.value === 'DOMICILIO_MEDELLIN'
-                          ? 'DOMICILIO_MEDELLIN'
-                          : 'PATIO_PRINCIPAL'
-                      )
-                    }
-                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-2.5 py-2.5 text-base font-semibold text-[#111827] outline-none"
-                  >
-                    <option value="PATIO_PRINCIPAL">En Patio</option>
-                    <option value="DOMICILIO_MEDELLIN">Domicilio</option>
-                  </select>
-                </div>
+              <div>
+                <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
+                  Modalidad de entrega
+                </label>
+                <select
+                  value={formModalidad}
+                  onChange={(e) =>
+                    setFormModalidad(
+                      e.target.value === 'DOMICILIO_MEDELLIN'
+                        ? 'DOMICILIO_MEDELLIN'
+                        : 'PATIO_PRINCIPAL'
+                    )
+                  }
+                  className="w-full rounded-[14px] bg-[#EDEDED]/75 px-2.5 py-2.5 text-base font-semibold text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                >
+                  <option value="PATIO_PRINCIPAL">En Patio</option>
+                  <option value="DOMICILIO_MEDELLIN">Domicilio</option>
+                </select>
               </div>
 
               {/* Estado inicial y Abono */}
@@ -1080,14 +1348,14 @@ export default function MisReservasHub({
                       prev === 'CONFIRMADA' ? 'PENDIENTE' : 'CONFIRMADA'
                     )
                   }
-                  className="fx-press min-h-[44px] rounded-[16px] bg-[#EDEDED]/80 px-3 py-2 text-left cursor-pointer"
+                  className="min-h-[44px] rounded-[16px] bg-[#EDEDED]/80 px-3 py-2 text-left cursor-pointer border border-[#9CA3AF]/30"
                 >
                   <span className="block text-[10px] font-medium text-[#4B5563]">
                     Estado inicial
                   </span>
                   <span className="font-display text-xs font-extrabold text-[#111827]">
                     {formEstadoInicial === 'CONFIRMADA'
-                      ? 'Confirmada directa'
+                      ? '✓ Confirmada directa'
                       : 'Pendiente revisión'}
                   </span>
                 </button>
@@ -1097,10 +1365,10 @@ export default function MisReservasHub({
                   onClick={() =>
                     setFormPorcentajeAbono((prev) => (prev === 100 ? 30 : 100))
                   }
-                  className="fx-press min-h-[44px] rounded-[16px] bg-[#EDEDED]/80 px-3 py-2 text-left cursor-pointer"
+                  className="min-h-[44px] rounded-[16px] bg-[#EDEDED]/80 px-3 py-2 text-left cursor-pointer border border-[#9CA3AF]/30"
                 >
                   <span className="block text-[10px] font-medium text-[#4B5563]">
-                    Recaudo en caja
+                    Recaudo en mostrador
                   </span>
                   <span className="font-display text-xs font-extrabold text-[#111827]">
                     {formPorcentajeAbono === 100
@@ -1109,6 +1377,46 @@ export default function MisReservasHub({
                   </span>
                 </button>
               </div>
+
+              {/* Cuenta financiera para recaudo inmediato */}
+              {formEstadoInicial === 'CONFIRMADA' && cuentasFinancieras && cuentasFinancieras.length > 0 && (
+                <div className="rounded-[16px] bg-[#EDEDED]/80 p-3 space-y-2 border border-[#9CA3AF]/30">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-[#111827]">
+                      Asentar recaudo en caja
+                    </span>
+                    <span className="text-[10px] text-[#4B5563]">
+                      Cuenta operativa
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <select
+                      value={cuentaPagoId}
+                      onChange={(e) => setCuentaPagoId(e.target.value)}
+                      className="w-full rounded-[12px] bg-white border border-[#9CA3AF]/40 px-2.5 py-2 text-base text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                    >
+                      {cuentasFinancieras.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.nombre} ({c.tipo})
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      value={metodoPagoSeleccionado}
+                      onChange={(e) =>
+                        setMetodoPagoSeleccionado(
+                          e.target.value as 'efectivo' | 'transferencia' | 'tarjeta'
+                        )
+                      }
+                      className="w-full rounded-[12px] bg-white border border-[#9CA3AF]/40 px-2.5 py-2 text-base text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                    >
+                      <option value="efectivo">Efectivo</option>
+                      <option value="transferencia">Transferencia / PSE</option>
+                      <option value="tarjeta">Tarjeta Datáfono</option>
+                    </select>
+                  </div>
+                </div>
+              )}
 
               {/* Resumen de liquidación y Submit */}
               <div className="flex items-center justify-between rounded-[18px] bg-[#EDEDED] px-4 py-3">
@@ -1122,9 +1430,10 @@ export default function MisReservasHub({
                 </div>
                 <button
                   type="submit"
-                  className="fx-press min-h-[44px] rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] cursor-pointer"
+                  disabled={submittingModalNueva || catalogoVehiculos.length === 0}
+                  className="min-h-[44px] rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                 >
-                  Radicar reserva
+                  {submittingModalNueva ? 'Radicando...' : 'Radicar reserva'}
                 </button>
               </div>
             </form>
