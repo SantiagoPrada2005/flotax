@@ -5,7 +5,6 @@ import {
   formatearRangoReservaHumano,
   obtenerPuntosInspeccionPorVehiculo,
   obtenerRubrosWaybillReserva,
-  type EstadoGarantiaReserva,
   type EstadoPuntoR2,
   type EstadoReservaCliente,
   type PuntoInspeccionR2,
@@ -181,7 +180,7 @@ export default function AlquilerDetalleView({
     carga: number
   ) => {
     try {
-      await actions.reservas.guardarInspeccionR2({
+      const res = await actions.reservas.guardarInspeccionR2({
         reservaId: reserva.codigo,
         tipoActo:
           reserva.estado === 'EN_CURSO' || reserva.estado === 'COMPLETADA'
@@ -198,8 +197,14 @@ export default function AlquilerDetalleView({
           coordY: p.coordY,
         })),
       });
-    } catch {
-      // Sincronizado en React
+      if (res?.error) {
+        setErrorOperacion(res.error.message ?? 'No se pudo guardar la inspección en D1');
+        mostrarAviso('Error al guardar inspección en D1');
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error de conexión al persistir inspección';
+      setErrorOperacion(msg);
+      mostrarAviso(msg);
     }
   };
 
@@ -323,20 +328,6 @@ export default function AlquilerDetalleView({
     }
   };
 
-  const cambiarEstadoGarantia = (nuevoEstadoGarantia: EstadoGarantiaReserva) => {
-    guardarCambioReserva({
-      ...reserva,
-      estadoGarantia: nuevoEstadoGarantia,
-    });
-    setRubroActivoId('deposito-garantia');
-    const etiqueta =
-      nuevoEstadoGarantia === 'LIBERADA'
-        ? 'liberada a favor del cliente'
-        : nuevoEstadoGarantia === 'RETENIDA_NOVEDAD'
-          ? 'retenida por novedad en peritaje'
-          : 'en custodia activa';
-    mostrarAviso(`Garantía R2 ${etiqueta}`);
-  };
 
   // --- Acciones Operativas Ciclo de Vida (Máquina de Estados D1) ---
   const confirmarReservaOperativa = async () => {
@@ -764,12 +755,12 @@ export default function AlquilerDetalleView({
                       type="text"
                       value={borradorDictamen}
                       onChange={(e) => setBorradorDictamen(e.target.value)}
-                      className="flex-1 rounded-[12px] bg-[#EDEDED] px-3 py-1.5 text-base text-[#111827] outline-none"
+                      className="flex-1 min-h-[44px] rounded-[12px] bg-[#EDEDED] px-3 py-1.5 text-base text-[#111827] outline-none"
                     />
                     <button
                       type="button"
                       onClick={guardarDictamenEditado}
-                      className="min-h-[38px] rounded-full bg-[#111827] px-3.5 py-1.5 text-xs font-bold text-white cursor-pointer"
+                      className="min-h-[44px] rounded-full bg-[#111827] px-4 py-2 text-xs font-bold text-white cursor-pointer"
                     >
                       Guardar
                     </button>
@@ -785,7 +776,7 @@ export default function AlquilerDetalleView({
                 type="button"
                 onClick={ciclarVista}
                 aria-label="Ver liquidación Waybill"
-                className="ios-press-bounce flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#EDEDED]/75 text-[#111827] hover:bg-[#EDEDED] cursor-pointer"
+                className="flex h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full bg-[#EDEDED]/75 text-[#111827] hover:bg-[#EDEDED] cursor-pointer"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -876,7 +867,7 @@ export default function AlquilerDetalleView({
                           type="button"
                           onClick={() => ajustarTelemetriaPatio(-50, 0)}
                           aria-label="Restar 50 km"
-                          className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs font-bold text-[#111827] cursor-pointer"
+                          className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-white text-xs font-bold text-[#111827] cursor-pointer"
                         >
                           -
                         </button>
@@ -884,7 +875,7 @@ export default function AlquilerDetalleView({
                           type="button"
                           onClick={() => ajustarTelemetriaPatio(50, 0)}
                           aria-label="Sumar 50 km"
-                          className="flex h-8 w-8 items-center justify-center rounded-full bg-[#111827] text-xs font-bold text-white cursor-pointer"
+                          className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-[#111827] text-xs font-bold text-white cursor-pointer"
                         >
                           +
                         </button>
@@ -905,7 +896,7 @@ export default function AlquilerDetalleView({
                           type="button"
                           onClick={() => ajustarTelemetriaPatio(0, -10)}
                           aria-label="Restar 10% de carga"
-                          className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs font-bold text-[#111827] cursor-pointer"
+                          className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-white text-xs font-bold text-[#111827] cursor-pointer"
                         >
                           -
                         </button>
@@ -913,7 +904,7 @@ export default function AlquilerDetalleView({
                           type="button"
                           onClick={() => ajustarTelemetriaPatio(0, 10)}
                           aria-label="Sumar 10% de carga"
-                          className="flex h-8 w-8 items-center justify-center rounded-full bg-[#111827] text-xs font-bold text-white cursor-pointer"
+                          className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-[#111827] text-xs font-bold text-white cursor-pointer"
                         >
                           +
                         </button>
@@ -995,7 +986,7 @@ export default function AlquilerDetalleView({
                 type="button"
                 onClick={ciclarVista}
                 aria-label="Ver expediente y especificaciones"
-                className="ios-press-bounce flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#EDEDED]/75 text-[#111827] hover:bg-[#EDEDED] cursor-pointer"
+                className="flex h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full bg-[#EDEDED]/75 text-[#111827] hover:bg-[#EDEDED] cursor-pointer"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -1137,7 +1128,7 @@ export default function AlquilerDetalleView({
                             key={m.id}
                             type="button"
                             onClick={() => setMetodoCobroSaldo(m.id)}
-                            className={`rounded-full px-2.5 py-1 text-[10px] font-bold cursor-pointer ${
+                            className={`min-h-[44px] rounded-full px-3 py-1.5 text-xs font-bold cursor-pointer ${
                               metodoCobroSaldo === m.id
                                 ? 'bg-[#111827] text-white'
                                 : 'bg-white text-[#4B5563]'
@@ -1152,7 +1143,7 @@ export default function AlquilerDetalleView({
                         <select
                           value={cuentaCobroId}
                           onChange={(e) => setCuentaCobroId(e.target.value)}
-                          className="rounded-[8px] border border-[#9CA3AF]/40 bg-white px-2 py-1 text-[10px] font-medium text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                          className="min-h-[44px] rounded-[10px] border border-[#9CA3AF]/40 bg-white px-3 py-2 text-base font-medium text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
                           aria-label="Cuenta receptora del abono"
                         >
                           {cuentasFinancieras.map((c) => (
@@ -1168,7 +1159,7 @@ export default function AlquilerDetalleView({
                       type="button"
                       disabled={operacionCargando}
                       onClick={asentarCobroSaldoPatio}
-                      className="ios-press-bounce min-h-[38px] rounded-full bg-[#111827] px-3.5 py-1.5 text-[11px] font-bold text-white hover:bg-[#1F2937] disabled:opacity-50 cursor-pointer"
+                      className="min-h-[44px] rounded-full bg-[#111827] px-4 py-2 text-xs font-bold text-white hover:bg-[#1F2937] disabled:opacity-50 cursor-pointer"
                     >
                       {operacionCargando
                         ? 'Asentando...'
@@ -1185,31 +1176,37 @@ export default function AlquilerDetalleView({
                 )}
 
                 {/* Control de Depósito de Garantía */}
-                <div className="flex items-center justify-between gap-2 rounded-[18px] bg-[#EDEDED]/65 px-3 py-2">
+                <div className="flex flex-wrap items-center justify-between gap-2 rounded-[18px] bg-[#EDEDED]/65 px-3.5 py-2.5">
                   <span className="text-[11px] font-semibold text-[#4B5563]">
                     Garantía ({formatCop(vehiculo.depositoGarantia)}):
                   </span>
-                  <div className="flex items-center gap-1">
-                    {(
-                      [
-                        { id: 'CUSTODIA_ACTIVA', label: 'En custodia' },
-                        { id: 'LIBERADA', label: 'Liberar' },
-                        { id: 'RETENIDA_NOVEDAD', label: 'Retener' },
-                      ] as const
-                    ).map((g) => (
-                      <button
-                        key={g.id}
-                        type="button"
-                        onClick={() => cambiarEstadoGarantia(g.id)}
-                        className={`rounded-full px-2.5 py-1 text-[10px] font-bold cursor-pointer ${
-                          reserva.estadoGarantia === g.id
-                            ? 'bg-[#111827] text-white'
-                            : 'bg-white text-[#4B5563]'
-                        }`}
-                      >
-                        {g.label}
-                      </button>
-                    ))}
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-bold ${
+                        reserva.estadoGarantia === 'CUSTODIA_ACTIVA'
+                          ? 'bg-[#111827] text-white'
+                          : reserva.estadoGarantia === 'LIBERADA'
+                            ? 'bg-[#EDEDED] text-[#111827] border border-[#9CA3AF]/60'
+                            : 'bg-[#1F2937] text-white border border-[#4B5563]'
+                      }`}
+                    >
+                      {reserva.estadoGarantia === 'CUSTODIA_ACTIVA'
+                        ? 'En custodia activa'
+                        : reserva.estadoGarantia === 'LIBERADA'
+                          ? 'Liberada al cliente'
+                          : 'Retenida por novedad'}
+                    </span>
+
+                    {capacidades?.puedeGestionarGarantias &&
+                      (reserva.estado === 'EN_CURSO' || reserva.estado === 'PAUSADA') && (
+                        <button
+                          type="button"
+                          onClick={() => setModalDevolverAbierto(true)}
+                          className="min-h-[44px] rounded-full bg-[#111827] px-3.5 py-1.5 text-xs font-bold text-white hover:bg-[#1F2937] cursor-pointer inline-flex items-center"
+                        >
+                          Devolución / Liquidar
+                        </button>
+                      )}
                   </div>
                 </div>
               </div>
@@ -1232,7 +1229,7 @@ export default function AlquilerDetalleView({
                 type="button"
                 onClick={ciclarVista}
                 aria-label="Volver a inspección"
-                className="ios-press-bounce flex h-9 w-9 items-center justify-center rounded-full bg-[#EDEDED]/75 text-[#111827] cursor-pointer"
+                className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-[#EDEDED]/75 text-[#111827] cursor-pointer"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -1391,7 +1388,8 @@ export default function AlquilerDetalleView({
                   <button
                     type="button"
                     onClick={() => setErrorOperacion(null)}
-                    className="text-[11px] text-[#9CA3AF] hover:text-white cursor-pointer"
+                    aria-label="Cerrar aviso de error"
+                    className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-[11px] text-[#9CA3AF] hover:text-white cursor-pointer"
                   >
                     ✕
                   </button>

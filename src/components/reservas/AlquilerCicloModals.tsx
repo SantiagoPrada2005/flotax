@@ -82,7 +82,8 @@ export function ModalPausar({ isOpen, onClose, reserva, onExito }: ModalPausarPr
           <button
             type="button"
             onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EDEDED] text-[#111827] font-bold hover:bg-[#9CA3AF]/30 cursor-pointer"
+            aria-label="Cerrar modal"
+            className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-[#EDEDED] text-[#111827] font-bold hover:bg-[#9CA3AF]/30 cursor-pointer"
           >
             ✕
           </button>
@@ -271,7 +272,8 @@ export function ModalProrrogar({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EDEDED] text-[#111827] font-bold hover:bg-[#9CA3AF]/30 cursor-pointer"
+            aria-label="Cerrar modal"
+            className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-[#EDEDED] text-[#111827] font-bold hover:bg-[#9CA3AF]/30 cursor-pointer"
           >
             ✕
           </button>
@@ -650,7 +652,8 @@ export function ModalDevolverCerrar({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EDEDED] text-[#111827] font-bold hover:bg-[#9CA3AF]/30 cursor-pointer"
+            aria-label="Cerrar modal"
+            className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-[#EDEDED] text-[#111827] font-bold hover:bg-[#9CA3AF]/30 cursor-pointer"
           >
             ✕
           </button>
@@ -742,7 +745,7 @@ export function ModalDevolverCerrar({
                       placeholder="Motivo del sobrecosto..."
                       value={motivoSobrecosto}
                       onChange={(e) => setMotivoSobrecosto(e.target.value)}
-                      className="w-full min-h-[40px] rounded-[10px] bg-white border border-[#9CA3AF]/40 px-2.5 py-1.5 text-base text-[#111827] mt-1.5"
+                      className="w-full min-h-[44px] rounded-[10px] bg-white border border-[#9CA3AF]/40 px-2.5 py-1.5 text-base text-[#111827] mt-1.5"
                     />
                   )}
                 </div>
@@ -765,7 +768,7 @@ export function ModalDevolverCerrar({
                       placeholder="Motivo del descuento..."
                       value={motivoDescuento}
                       onChange={(e) => setMotivoDescuento(e.target.value)}
-                      className="w-full min-h-[40px] rounded-[10px] bg-white border border-[#9CA3AF]/40 px-2.5 py-1.5 text-base text-[#111827] mt-1.5"
+                      className="w-full min-h-[44px] rounded-[10px] bg-white border border-[#9CA3AF]/40 px-2.5 py-1.5 text-base text-[#111827] mt-1.5"
                     />
                   )}
                 </div>
@@ -819,7 +822,7 @@ export function ModalDevolverCerrar({
                     <select
                       value={cuentaCobroId}
                       onChange={(e) => setCuentaCobroId(e.target.value)}
-                      className="w-full min-h-[40px] rounded-[10px] bg-[#1F2937] border border-[#4B5563] px-2.5 py-1 text-base text-white"
+                      className="w-full min-h-[44px] rounded-[10px] bg-[#1F2937] border border-[#4B5563] px-2.5 py-1 text-base text-white"
                     >
                       {cuentasFinancieras?.map((c) => (
                         <option key={c.id} value={c.id}>
@@ -835,7 +838,7 @@ export function ModalDevolverCerrar({
                           e.target.value as 'efectivo' | 'transferencia' | 'tarjeta'
                         )
                       }
-                      className="w-full min-h-[40px] rounded-[10px] bg-[#1F2937] border border-[#4B5563] px-2.5 py-1 text-base text-white"
+                      className="w-full min-h-[44px] rounded-[10px] bg-[#1F2937] border border-[#4B5563] px-2.5 py-1 text-base text-white"
                     >
                       <option value="efectivo">Efectivo</option>
                       <option value="transferencia">Transferencia / PSE</option>
@@ -850,7 +853,7 @@ export function ModalDevolverCerrar({
               <div className="space-y-2 pt-1 border-t border-[#4B5563]/40">
                 <div className="flex items-center justify-between">
                   <span>Excedente a favor del cliente:</span>
-                  <span className="font-bold text-emerald-300 text-sm">
+                  <span className="font-bold text-[#EDEDED] text-sm">
                     {formatCop(Math.abs(saldoDiferencia))}
                   </span>
                 </div>
@@ -894,7 +897,7 @@ export function ModalDevolverCerrar({
                         id="cuenta-reembolso-select"
                         value={cuentaReembolsoId}
                         onChange={(e) => setCuentaReembolsoId(e.target.value)}
-                        className="w-full min-h-[38px] rounded-[10px] bg-[#1F2937] border border-[#4B5563] px-2.5 py-1 text-xs text-white"
+                        className="w-full min-h-[44px] rounded-[10px] bg-[#1F2937] border border-[#4B5563] px-2.5 py-1 text-base text-white"
                       >
                         {cuentasFinancieras.map((c) => (
                           <option key={c.id} value={c.id}>
@@ -954,7 +957,7 @@ export function ModalDevolverCerrar({
                     id="cuenta-garantia-select"
                     value={cuentaGarantiaId}
                     onChange={(e) => setCuentaGarantiaId(e.target.value)}
-                    className="w-full min-h-[40px] rounded-[10px] bg-white border border-[#9CA3AF]/40 px-2.5 py-1 text-base text-[#111827]"
+                    className="w-full min-h-[44px] rounded-[10px] bg-white border border-[#9CA3AF]/40 px-2.5 py-1 text-base text-[#111827]"
                   >
                     {cuentasFinancieras.map((c) => (
                       <option key={c.id} value={c.id}>
@@ -1214,7 +1217,8 @@ export function ModalCancelarAnular({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EDEDED] text-[#111827] font-bold hover:bg-[#9CA3AF]/30 cursor-pointer"
+            aria-label="Cerrar modal"
+            className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-[#EDEDED] text-[#111827] font-bold hover:bg-[#9CA3AF]/30 cursor-pointer"
           >
             ✕
           </button>
@@ -1294,7 +1298,7 @@ export function ModalCancelarAnular({
                   <select
                     value={cuentaReembolsoId}
                     onChange={(e) => setCuentaReembolsoId(e.target.value)}
-                    className="w-full min-h-[40px] rounded-[10px] bg-white border border-[#9CA3AF]/40 px-2.5 py-1 text-base text-[#111827]"
+                    className="w-full min-h-[44px] rounded-[10px] bg-white border border-[#9CA3AF]/40 px-2.5 py-1 text-base text-[#111827]"
                   >
                     {cuentasFinancieras?.map((c) => (
                       <option key={c.id} value={c.id}>

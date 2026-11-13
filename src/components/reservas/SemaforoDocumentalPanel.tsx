@@ -226,7 +226,7 @@ export default function SemaforoDocumentalPanel({
         {!tieneDocsVehiculoVencidos && docsVehiculoSinCarga.length === 0 && (
           <div className="rounded-[12px] bg-white p-2 text-xs text-[#111827] font-medium border border-[#9CA3AF]/30 flex items-center justify-between">
             <span>SOAT y Tecnicomecánica</span>
-            <span className="font-bold text-emerald-700">Vigentes</span>
+            <span className="font-bold text-[#111827]">Vigentes</span>
           </div>
         )}
       </div>
@@ -244,7 +244,8 @@ export default function SemaforoDocumentalPanel({
             <button
               type="button"
               onClick={() => setMostrarFormularioRapido(false)}
-              className="text-xs text-[#4B5563] hover:text-[#111827] font-bold cursor-pointer"
+              aria-label="Cerrar formulario rápido"
+              className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-[#4B5563] hover:text-[#111827] font-bold cursor-pointer"
             >
               ✕
             </button>
@@ -266,7 +267,7 @@ export default function SemaforoDocumentalPanel({
                     e.target.value as 'CC' | 'CE' | 'PASAPORTE' | 'NIT'
                   )
                 }
-                className="w-full rounded-[12px] bg-white border border-[#9CA3AF]/40 px-3 py-2 text-base text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                className="w-full min-h-[44px] rounded-[12px] bg-white border border-[#9CA3AF]/40 px-3 py-2 text-base text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
               >
                 <option value="CC">CC - Cédula</option>
                 <option value="CE">CE - Extranjería</option>
@@ -289,7 +290,7 @@ export default function SemaforoDocumentalPanel({
                 value={numeroDocumento}
                 onChange={(e) => setNumeroDocumento(e.target.value)}
                 placeholder="1037645890"
-                className="w-full rounded-[12px] bg-white border border-[#9CA3AF]/40 px-3 py-2 text-base text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                className="w-full min-h-[44px] rounded-[12px] bg-white border border-[#9CA3AF]/40 px-3 py-2 text-base text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
               />
             </div>
           </div>
@@ -308,7 +309,7 @@ export default function SemaforoDocumentalPanel({
                 value={licenciaNumero}
                 onChange={(e) => setLicenciaNumero(e.target.value)}
                 placeholder="Opcional si coincide con documento"
-                className="w-full rounded-[12px] bg-white border border-[#9CA3AF]/40 px-3 py-2 text-base text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                className="w-full min-h-[44px] rounded-[12px] bg-white border border-[#9CA3AF]/40 px-3 py-2 text-base text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
               />
             </div>
 
@@ -323,7 +324,7 @@ export default function SemaforoDocumentalPanel({
                 id="semaforo-lic-cat"
                 value={licenciaCategoria}
                 onChange={(e) => setLicenciaCategoria(e.target.value)}
-                className="w-full rounded-[12px] bg-white border border-[#9CA3AF]/40 px-3 py-2 text-base text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                className="w-full min-h-[44px] rounded-[12px] bg-white border border-[#9CA3AF]/40 px-3 py-2 text-base text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
               >
                 <option value="B1">B1 (Automóvil / Camioneta)</option>
                 <option value="B2">B2 / C1 (Servicio Público)</option>
@@ -363,7 +364,7 @@ export default function SemaforoDocumentalPanel({
       )}
 
       {mensajeExito && (
-        <div className="rounded-[14px] bg-emerald-100 border border-emerald-300 p-3 text-xs font-semibold text-emerald-900">
+        <div className="rounded-[14px] bg-[#EDEDED] border border-[#9CA3AF]/60 p-3 text-xs font-semibold text-[#111827]">
           {mensajeExito}
         </div>
       )}

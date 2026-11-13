@@ -1065,7 +1065,8 @@ export default function MisReservasHub({
                   <button
                     type="button"
                     onClick={() => setErrorModalNueva(null)}
-                    className="text-[#9CA3AF] hover:text-white font-bold px-1 cursor-pointer"
+                    aria-label="Cerrar aviso de error"
+                    className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-[#9CA3AF] hover:text-white font-bold cursor-pointer"
                   >
                     ✕
                   </button>
@@ -1181,9 +1182,9 @@ export default function MisReservasHub({
                               <span
                                 className={`shrink-0 ml-2 rounded-full px-2 py-0.5 text-[9px] font-bold ${
                                   c.estadoKyc === 'APROBADO'
-                                    ? 'bg-emerald-100 text-emerald-800'
+                                    ? 'bg-[#111827] text-white'
                                     : c.estadoKyc === 'PENDIENTE'
-                                      ? 'bg-amber-100 text-amber-800'
+                                      ? 'bg-[#EDEDED] text-[#4B5563] border border-[#9CA3AF]/60'
                                       : 'bg-[#EDEDED] text-[#4B5563]'
                                 }`}
                               >
@@ -1207,7 +1208,7 @@ export default function MisReservasHub({
                         {formNumDoc ? `${formTipoDoc} ${formNumDoc} · ` : ''}{formCorreo}
                       </p>
                     </div>
-                    <span className="rounded-full bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-bold">
+                    <span className="rounded-full bg-[#111827] text-white px-2 py-0.5 text-[10px] font-bold">
                       Cliente vinculado
                     </span>
                   </div>

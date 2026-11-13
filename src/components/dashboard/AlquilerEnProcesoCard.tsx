@@ -151,18 +151,18 @@ const ESTILOS_ESTADO: Record<
 > = {
   PAUSADO: {
     label: 'Pausado',
-    badgeClass: 'bg-red-500/15 border-red-400/35 text-red-300',
-    dotClass: 'bg-red-400',
+    badgeClass: 'bg-[#111827] border-[#4B5563] text-[#EDEDED]',
+    dotClass: 'bg-[#9CA3AF]',
   },
   EN_PROCESO: {
     label: 'En proceso',
-    badgeClass: 'bg-amber-500/15 border-amber-400/35 text-amber-300',
-    dotClass: 'bg-amber-400',
+    badgeClass: 'bg-[#1F2937] border-[#4B5563]/50 text-[#EDEDED]',
+    dotClass: 'bg-[#EDEDED]',
   },
   COMPLETADO: {
     label: 'Completado',
-    badgeClass: 'bg-emerald-500/15 border-emerald-400/35 text-emerald-300',
-    dotClass: 'bg-emerald-400',
+    badgeClass: 'bg-[#EDEDED] border-[#9CA3AF]/60 text-[#111827]',
+    dotClass: 'bg-[#111827]',
   },
 };
 
@@ -171,18 +171,18 @@ const ESTILOS_PASO: Record<
   { readonly circleClass: string; readonly textClass: string; readonly badgeText: string }
 > = {
   COMPLETADO: {
-    circleClass: 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300',
+    circleClass: 'bg-[#EDEDED] border-[#9CA3AF]/60 text-[#111827]',
     textClass: 'text-[#EDEDED]',
     badgeText: 'Listo',
   },
   EN_PROCESO: {
-    circleClass: 'bg-amber-500/20 border-amber-400/40 text-amber-300',
-    textClass: 'text-amber-300',
+    circleClass: 'bg-[#1F2937] border-[#4B5563] text-[#EDEDED]',
+    textClass: 'text-[#EDEDED]',
     badgeText: 'Actual',
   },
   PAUSADO: {
-    circleClass: 'bg-red-500/20 border-red-400/40 text-red-300',
-    textClass: 'text-red-300',
+    circleClass: 'bg-[#111827] border-[#4B5563] text-[#9CA3AF]',
+    textClass: 'text-[#9CA3AF]',
     badgeText: 'Detenido',
   },
   PENDIENTE: {
@@ -334,7 +334,7 @@ export default function AlquilerEnProcesoCard({
             Alquiler en proceso
           </h2>
           <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#1F2937] border border-[#4B5563]/40 px-2.5 py-0.5 text-[11px] font-bold text-[#EDEDED]">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[#EDEDED]" />
             <span>{alquileresVisibles.length}</span>
           </span>
         </div>
@@ -436,11 +436,11 @@ export default function AlquilerEnProcesoCard({
                           {item.codigoContrato ?? `Contrato #${item.placa}`}
                         </span>
                         {item.estado === 'PAUSADO' ? (
-                          <span className="text-[11px] font-medium text-red-300">
+                          <span className="text-[11px] font-medium text-[#9CA3AF]">
                             {item.etapaActualResumen ?? 'Alquiler pausado por acuerdo'}
                           </span>
                         ) : item.estado === 'COMPLETADO' ? (
-                          <span className="text-[11px] font-medium text-emerald-300">
+                          <span className="text-[11px] font-medium text-[#EDEDED]">
                             {item.completadoEn
                               ? `Cerrado el ${new Date(item.completadoEn).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' })}`
                               : item.etapaActualResumen ?? 'Contrato completado'}
