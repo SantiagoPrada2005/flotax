@@ -34,12 +34,19 @@ const CONCURRENCIA_PUSH = 10;
 
 export class CanalPush implements CanalNotificacion {
   readonly nombre = 'PUSH' as const;
+  private readonly db: AppDb;
+  private readonly claves: ClavesVapid | null;
+  private readonly logger?: ILogger | undefined;
 
   constructor(
-    private readonly db: AppDb,
-    private readonly claves: ClavesVapid | null,
-    private readonly logger?: ILogger | undefined
-  ) {}
+    db: AppDb,
+    claves: ClavesVapid | null,
+    logger?: ILogger | undefined
+  ) {
+    this.db = db;
+    this.claves = claves;
+    this.logger = logger;
+  }
 
   async enviar(entregas: readonly EntregaNotificacion[]): Promise<void> {
     const { claves } = this;
@@ -95,13 +102,22 @@ export class CanalPush implements CanalNotificacion {
 
 export class CanalEmail implements CanalNotificacion {
   readonly nombre = 'EMAIL' as const;
+  private readonly db: AppDb;
+  private readonly email: EmailService;
+  private readonly baseUrl: string;
+  private readonly logger?: ILogger | undefined;
 
   constructor(
-    private readonly db: AppDb,
-    private readonly email: EmailService,
-    private readonly baseUrl: string,
-    private readonly logger?: ILogger | undefined
-  ) {}
+    db: AppDb,
+    email: EmailService,
+    baseUrl: string,
+    logger?: ILogger | undefined
+  ) {
+    this.db = db;
+    this.email = email;
+    this.baseUrl = baseUrl;
+    this.logger = logger;
+  }
 
   async enviar(entregas: readonly EntregaNotificacion[]): Promise<void> {
     const aEnviar = filtrarPorCanal(entregas, 'EMAIL');

@@ -2,8 +2,11 @@ import type { ILogSink, LogEntry } from '../types';
 
 export class ConsoleLogSink implements ILogSink {
   readonly name = 'console';
+  private readonly isProduction: boolean;
 
-  constructor(private readonly isProduction: boolean = false) {}
+  constructor(isProduction: boolean = false) {
+    this.isProduction = isProduction;
+  }
 
   write(entry: LogEntry): void {
     if (this.isProduction) {

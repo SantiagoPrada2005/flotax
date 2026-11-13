@@ -58,7 +58,10 @@ if (db && usuario.localActivo.id) {
     .all();
 }
 
-const capacidades = calcularCapacidadesOperacionAlquiler(usuario.localActivo);
+const capacidades = calcularCapacidadesOperacionAlquiler({
+  ...usuario.localActivo,
+  esSuperAdmin: usuario.esSuperAdmin,
+});
 ---
 
 <LayoutAdmin

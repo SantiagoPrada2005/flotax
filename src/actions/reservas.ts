@@ -40,7 +40,7 @@ import {
 } from '@/db/schema';
 import { and, eq, like, or, sql } from 'drizzle-orm';
 import { crearServicioNotificaciones } from '@/lib/notificaciones';
-import { requireLocalAuth, PERMISOS } from '@/lib/auth';
+import { requireLocalAuth, PERMISOS, tienePermiso } from '@/lib/auth';
 
 function manejarErrorCiclo(error: unknown): never {
   if (error instanceof ActionError) {
@@ -883,6 +883,7 @@ export const registrarCobroWaybillAction = defineAction({
   handler: async (input, context) => {
     marcarRevisionNavegacion(context.cookies);
     const usuario = requireLocalAuth(context, PERMISOS.CAJA_ABONOS_REGISTRAR);
+    const localId = usuario.localActivo.id;
 
     if (!env.DB) {
       throw new ActionError({
@@ -898,6 +899,8 @@ export const registrarCobroWaybillAction = defineAction({
         codigo: input.codigo,
         monto: input.monto,
         metodoPago: input.metodoPago,
+        cuentaId: input.cuentaId,
+        localId,
         usuarioId: usuario.id,
       });
 
@@ -1141,6 +1144,63 @@ export const cambiarEstadoReservaAction = defineAction({
     const usuario = requireLocalAuth(context);
     const localId = usuario.localActivo.id;
 
+    const sujeto = {
+      rol: usuario.localActivo.rol,
+      esSuperAdmin: usuario.esSuperAdmin,
+      permisosConcedidos: usuario.localActivo.permisosConcedidos,
+      permisosRevocados: usuario.localActivo.permisosRevocados,
+    };
+
+    if (input.nuevoEstado === 'CONFIRMADA' || input.nuevoEstado === 'RECHAZADA') {
+      if (!tienePermiso(sujeto, PERMISOS.RESERVAS_CONFIRMAR_RECHAZAR)) {
+        throw new ActionError({
+          code: 'FORBIDDEN',
+          message: `No posee privilegios para ${input.nuevoEstado === 'CONFIRMADA' ? 'confirmar' : 'rechazar'} reservas (${PERMISOS.RESERVAS_CONFIRMAR_RECHAZAR}).`,
+        });
+      }
+    } else if (input.nuevoEstado === 'EN_CURSO') {
+      if (
+        !tienePermiso(sujeto, PERMISOS.CONTRATOS_CREAR) &&
+        !tienePermiso(sujeto, PERMISOS.CONTRATOS_PAUSAR)
+      ) {
+        throw new ActionError({
+          code: 'FORBIDDEN',
+          message: `No posee privilegios para iniciar o reanudar contratos (${PERMISOS.CONTRATOS_CREAR}).`,
+        });
+      }
+    } else if (input.nuevoEstado === 'PAUSADA') {
+      if (!tienePermiso(sujeto, PERMISOS.CONTRATOS_PAUSAR)) {
+        throw new ActionError({
+          code: 'FORBIDDEN',
+          message: `No posee privilegios para pausar contratos (${PERMISOS.CONTRATOS_PAUSAR}).`,
+        });
+      }
+    } else if (input.nuevoEstado === 'COMPLETADA') {
+      if (!tienePermiso(sujeto, PERMISOS.CONTRATOS_FINALIZAR)) {
+        throw new ActionError({
+          code: 'FORBIDDEN',
+          message: `No posee privilegios para devolver y cerrar alquileres (${PERMISOS.CONTRATOS_FINALIZAR}).`,
+        });
+      }
+    } else if (input.nuevoEstado === 'CANCELADA') {
+      if (
+        !tienePermiso(sujeto, PERMISOS.CONTRATOS_ANULAR) &&
+        !tienePermiso(sujeto, PERMISOS.RESERVAS_CONFIRMAR_RECHAZAR)
+      ) {
+        throw new ActionError({
+          code: 'FORBIDDEN',
+          message: `No posee privilegios para cancelar reservas (${PERMISOS.RESERVAS_CONFIRMAR_RECHAZAR} o ${PERMISOS.CONTRATOS_ANULAR}).`,
+        });
+      }
+    } else if (input.nuevoEstado === 'PENDIENTE') {
+      if (!tienePermiso(sujeto, PERMISOS.CONTRATOS_ANULAR)) {
+        throw new ActionError({
+          code: 'FORBIDDEN',
+          message: `No posee privilegios para reabrir reservas (${PERMISOS.CONTRATOS_ANULAR}).`,
+        });
+      }
+    }
+
     if (!env.DB) {
       throw new ActionError({
         code: 'INTERNAL_SERVER_ERROR',
@@ -1212,6 +1272,15 @@ export const cambiarEstadoReservaAction = defineAction({
           usuarioId: usuario.id,
           medidorUsoRetorno: 0,
           requiereMantenimiento: input.requiereMantenimiento,
+          actor,
+        });
+      } else if (input.nuevoEstado === 'PENDIENTE') {
+        await reabrirReservaD1(db, {
+          codigo: input.codigo,
+          localId,
+          motivoReapertura:
+            input.motivoRechazo ?? 'Reapertura operativa desde cabina',
+          usuarioId: usuario.id,
           actor,
         });
       }

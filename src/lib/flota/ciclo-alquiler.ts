@@ -36,28 +36,11 @@ import { resolverCuentaPorMetodoPago } from '@/lib/caja/calculos';
 import { eq, and, or, isNull, sql } from 'drizzle-orm';
 import type { RolUsuario, RolSistema } from '@/lib/auth/rbac';
 
-export type ErrorCicloAlquilerCode =
-  | 'BAD_REQUEST'
-  | 'CONFLICT'
-  | 'FORBIDDEN'
-  | 'NOT_FOUND'
-  | 'INTERNAL_SERVER_ERROR';
-
-export class ErrorCicloAlquiler extends Error {
-  readonly code: ErrorCicloAlquilerCode;
-  readonly detalle?: Record<string, unknown> | undefined;
-
-  constructor(
-    code: ErrorCicloAlquilerCode,
-    mensaje: string,
-    detalle?: Record<string, unknown>
-  ) {
-    super(mensaje);
-    this.name = 'ErrorCicloAlquiler';
-    this.code = code;
-    this.detalle = detalle;
-  }
-}
+import {
+  ErrorCicloAlquiler,
+  type ErrorCicloAlquilerCode,
+} from './errores';
+export { ErrorCicloAlquiler, type ErrorCicloAlquilerCode };
 
 export interface AdvertenciaDocumentalCiclo {
   cliente: {

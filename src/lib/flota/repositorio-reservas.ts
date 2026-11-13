@@ -36,6 +36,7 @@ import { resolverEstadoActualVehiculo } from '@/lib/mantenimientos/repositorio';
 import { resolverCuentaPorMetodoPago } from '@/lib/caja/calculos';
 import { reconciliarSaldosContratoYReservaD1 } from '@/lib/caja/repositorio';
 import { eq, desc, and, or } from 'drizzle-orm';
+import { ErrorCicloAlquiler } from './errores';
 
 export interface FiltrosListarReservas {
   localId?: string | undefined;
@@ -88,6 +89,8 @@ export interface RegistroCobroWaybillInput {
   monto: number;
   metodoPago: 'efectivo' | 'transferencia' | 'tarjeta';
   usuarioId: string;
+  localId?: string | undefined;
+  cuentaId?: string | undefined;
 }
 
 function mapEstadoReserva(estadoDb: EstadoReserva): EstadoReservaCliente {
@@ -561,7 +564,19 @@ export async function registrarCobroWaybillD1(
       .limit(1);
 
     const reserva = resRows[0];
-    if (!reserva) return false;
+    if (!reserva) {
+      throw new ErrorCicloAlquiler(
+        'NOT_FOUND',
+        `Reserva #${normalizado} no encontrada para registrar cobro.`
+      );
+    }
+
+    if (input.localId && reserva.localId !== input.localId) {
+      throw new ErrorCicloAlquiler(
+        'FORBIDDEN',
+        `La reserva #${normalizado} no pertenece al local activo (${input.localId}).`
+      );
+    }
 
     // Buscar cuenta de recaudo del local con aseguramiento preventivo
     let ctas = await db
@@ -579,9 +594,22 @@ export async function registrarCobroWaybillD1(
         .limit(10);
     }
 
-    const cta = resolverCuentaPorMetodoPago(ctas, input.metodoPago);
+    const cta = resolverCuentaPorMetodoPago(ctas, input.metodoPago, input.cuentaId);
+
+    if (input.cuentaId && (!cta || cta.id !== input.cuentaId)) {
+      throw new ErrorCicloAlquiler(
+        'BAD_REQUEST',
+        `La cuenta financiera seleccionada (${input.cuentaId}) no existe o no está activa para este local.`
+      );
+    }
+
     const cuentaId = cta?.id ?? ctas[0]?.id;
-    if (!cuentaId) return false;
+    if (!cuentaId) {
+      throw new ErrorCicloAlquiler(
+        'CONFLICT',
+        `No se encontró una cuenta financiera activa disponible en el local #${reserva.localId}.`
+      );
+    }
 
     const ahora = new Date();
     const movId = `mov-waybill-${normalizado.toLowerCase()}-${crypto.randomUUID().slice(0, 6)}`;
@@ -636,6 +664,9 @@ export async function registrarCobroWaybillD1(
 
     return true;
   } catch (error) {
+    if (error instanceof ErrorCicloAlquiler) {
+      throw error;
+    }
     logFalloD1('reservas.cobroWaybill', error, { codigo: normalizado, monto: input.monto });
     return false;
   }

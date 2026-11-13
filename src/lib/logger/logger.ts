@@ -8,10 +8,16 @@ import type {
 import { cleanLogContext, serializeError } from './serializer';
 
 export class Logger implements ILogger {
+  private readonly sinks: ILogSink[];
+  private readonly context: LogContext;
+
   constructor(
-    private readonly sinks: ILogSink[],
-    private readonly context: LogContext = {}
-  ) {}
+    sinks: ILogSink[],
+    context: LogContext = {}
+  ) {
+    this.sinks = sinks;
+    this.context = context;
+  }
 
   withContext(extraContext: LogContext): ILogger {
     return new Logger(this.sinks, {

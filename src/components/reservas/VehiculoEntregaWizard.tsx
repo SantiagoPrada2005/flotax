@@ -83,6 +83,7 @@ export default function VehiculoEntregaWizard({
   reservaInicial,
   hoyISO: _hoyISO,
   retornoHref,
+  tokenAccesoPublico,
 }: VehiculoEntregaWizardProps) {
   const [reserva, setReserva] = useState<ReservaClienteItem>(reservaInicial);
   const destinoVolver = retornoHref ?? `/reservas/${reserva.codigo}`;
@@ -267,6 +268,8 @@ export default function VehiculoEntregaWizard({
         cabinaSinObjetos: checklist.cabinaSinObjetos,
         telemetriaVerificada: checklist.telemetriaVerificada,
         llavesEntregadas: checklist.llavesEntregadas,
+        combustibleNivel: checklist.combustibleNivel,
+        tokenAccesoPublico: tokenAccesoPublico ?? undefined,
       });
   }, [
     sintesisCompletada,
@@ -275,6 +278,7 @@ export default function VehiculoEntregaWizard({
     comentario,
     checklist,
     reserva,
+    tokenAccesoPublico,
   ]);
 
   const toggleItemChecklist = (

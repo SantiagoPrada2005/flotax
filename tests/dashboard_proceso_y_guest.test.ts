@@ -11,6 +11,11 @@ import {
 import {
   calcularCapacidadesOperacionAlquiler,
 } from '@/lib/auth/capacidades-alquiler';
+import { registrarCobroWaybillD1 } from '@/lib/flota/repositorio-reservas';
+import { ErrorCicloAlquiler } from '@/lib/flota/errores';
+import { cambiarEstadoReservaAction } from '@/actions/reservas';
+import type { AppDb } from '@/lib/db';
+import type { ContextWithLocals } from '@/lib/auth/guard';
 
 function crearReservaMock(overrides: Partial<MapearReservaAAlquilerEnProcesoParams['reserva']> = {}): MapearReservaAAlquilerEnProcesoParams['reserva'] {
   return {
@@ -294,5 +299,293 @@ describe('calcularCapacidadesOperacionAlquiler', () => {
     assert.equal(caps.puedePausar, false);
     assert.equal(caps.puedeEntregar, false);
     assert.equal(caps.puedeConfirmarRechazar, false);
+  });
+
+  test('SuperAdmin con cualquier rol de membresía (ej. ASESOR) recibe capacidades operativas completas', () => {
+    const caps = calcularCapacidadesOperacionAlquiler({
+      rol: 'ASESOR',
+      esSuperAdmin: true,
+    });
+    assert.equal(caps.puedeConfirmarRechazar, true);
+    assert.equal(caps.puedeEntregar, true);
+    assert.equal(caps.puedeGuardarInspeccionR2, true);
+    assert.equal(caps.puedePausar, true);
+    assert.equal(caps.puedeProrrogarEstandar, true);
+    assert.equal(caps.puedeAjustarTarifasYCargos, true);
+    assert.equal(caps.puedeReembolsarYAnularCaja, true);
+    assert.equal(caps.puedeAnularContrato, true);
+    assert.equal(caps.puedeGestionarGarantias, true);
+    assert.equal(caps.puedeGestionarTaller, true);
+  });
+});
+
+describe('registrarCobroWaybillD1 - Tenant Isolation & Cuenta Id', () => {
+  function crearMockDbCobroWaybill(opciones: {
+    reserva?: Record<string, unknown> | null;
+    cuentas?: Array<Record<string, unknown>>;
+  } = {}) {
+    const reserva =
+      opciones.reserva !== undefined
+        ? opciones.reserva
+        : {
+            id: 'res-wb-1',
+            codigo: 'FLX-WB100',
+            localId: 'local-patio-1',
+            clienteId: 'usr-cli-1',
+            contactoNombre: 'Pedro Pascal',
+            vehiculoId: 'veh-1',
+          };
+
+    const cuentas =
+      opciones.cuentas ?? [
+        {
+          id: 'cta-efectivo-1',
+          localId: 'local-patio-1',
+          nombre: 'Caja Mostrador',
+          tipo: 'CAJA_EFECTIVO',
+          activo: true,
+        },
+        {
+          id: 'cta-banco-1',
+          localId: 'local-patio-1',
+          nombre: 'Cuenta Corriente',
+          tipo: 'BANCO',
+          activo: true,
+        },
+      ];
+
+    const insertados: Array<{ tabla: unknown; values: unknown }> = [];
+
+    const mockDb = {
+      select: () => ({
+        from: (tabla: unknown) => {
+          const obtenerFilas = () => {
+            if (tabla && typeof tabla === 'object' && 'codigo' in tabla) {
+              return reserva ? [reserva] : [];
+            }
+            if (tabla && typeof tabla === 'object' && 'tipo' in tabla) {
+              return cuentas;
+            }
+            return [];
+          };
+
+          const crearThenable = () => {
+            const filas = obtenerFilas();
+            const p = Promise.resolve(filas);
+            return Object.assign(p, {
+              limit: async () => filas,
+              all: async () => filas,
+              where: () => crearThenable(),
+            });
+          };
+
+          return {
+            where: () => crearThenable(),
+            limit: async () => obtenerFilas(),
+            all: async () => obtenerFilas(),
+          };
+        },
+      }),
+      insert: (tabla: unknown) => ({
+        values: async (valores: unknown) => {
+          insertados.push({ tabla, values: valores });
+          return { success: true };
+        },
+      }),
+      update: () => ({
+        set: () => ({
+          where: async () => ({ success: true }),
+        }),
+      }),
+    } as unknown as AppDb;
+
+    return { mockDb, insertados };
+  }
+
+  test('rechaza con FORBIDDEN si localId no coincide con la reserva (tenant isolation)', async () => {
+    const { mockDb } = crearMockDbCobroWaybill();
+
+    await assert.rejects(
+      async () => {
+        await registrarCobroWaybillD1(mockDb, {
+          codigo: 'FLX-WB100',
+          monto: 100_000,
+          metodoPago: 'efectivo',
+          usuarioId: 'usr-operador-1',
+          localId: 'local-otro-patio',
+        });
+      },
+      (err: unknown) => {
+        assert.ok(err instanceof ErrorCicloAlquiler);
+        assert.equal((err as ErrorCicloAlquiler).code, 'FORBIDDEN');
+        assert.match((err as ErrorCicloAlquiler).message, /no pertenece al local/i);
+        return true;
+      }
+    );
+  });
+
+  test('rechaza con BAD_REQUEST si cuentaId especificada no pertenece al local activo', async () => {
+    const { mockDb } = crearMockDbCobroWaybill();
+
+    await assert.rejects(
+      async () => {
+        await registrarCobroWaybillD1(mockDb, {
+          codigo: 'FLX-WB100',
+          monto: 100_000,
+          metodoPago: 'efectivo',
+          usuarioId: 'usr-operador-1',
+          localId: 'local-patio-1',
+          cuentaId: 'cta-ajena-no-activa',
+        });
+      },
+      (err: unknown) => {
+        assert.ok(err instanceof ErrorCicloAlquiler);
+        assert.equal((err as ErrorCicloAlquiler).code, 'BAD_REQUEST');
+        assert.match((err as ErrorCicloAlquiler).message, /cuenta financiera/i);
+        return true;
+      }
+    );
+  });
+
+  test('asienta el cobro correctamente usando la cuentaId solicitada si pertenece al local', async () => {
+    const { mockDb, insertados } = crearMockDbCobroWaybill();
+
+    const ok = await registrarCobroWaybillD1(mockDb, {
+      codigo: 'FLX-WB100',
+      monto: 150_000,
+      metodoPago: 'transferencia',
+      usuarioId: 'usr-operador-1',
+      localId: 'local-patio-1',
+      cuentaId: 'cta-banco-1',
+    });
+
+    assert.equal(ok, true);
+    const mov = insertados.find(
+      (i) => (i.values as Record<string, unknown>).tipo === 'INGRESO'
+    );
+    assert.ok(mov, 'Debe haber insertado movimiento de ingreso');
+    const valoresMov = mov.values as Record<string, unknown>;
+    assert.equal(valoresMov.cuentaId, 'cta-banco-1');
+    assert.equal(valoresMov.monto, 150_000);
+    assert.equal(valoresMov.localId, 'local-patio-1');
+  });
+});
+
+describe('cambiarEstadoReservaAction - Enforzamiento RBAC', () => {
+  const contextoAsesor = {
+    locals: {
+      usuario: {
+        id: 'usr-asesor-1',
+        nombre: 'Asesor Mostrador',
+        email: 'asesor@flotax.co',
+        rol: 'ASESOR',
+        activo: true,
+        esSuperAdmin: false,
+        localActivo: {
+          id: 'local-patio-1',
+          nombre: 'Patio Norte',
+          rol: 'ASESOR' as const,
+          permisosConcedidos: [],
+          permisosRevocados: [],
+        },
+      },
+    },
+    cookies: {
+      set: () => {},
+      get: () => undefined,
+    },
+  };
+
+  test('rechaza con FORBIDDEN a ASESOR intentando pausar (falta CONTRATOS_PAUSAR)', async () => {
+    await assert.rejects(
+      async () => {
+        await (cambiarEstadoReservaAction as any).handler(
+          {
+            codigo: 'FLX-123456',
+            vehiculoId: 'veh-1',
+            vehiculoNombre: 'Renault Sandero',
+            rangoFechas: '15/11 - 18/11',
+            nuevoEstado: 'PAUSADA',
+          },
+          contextoAsesor
+        );
+      },
+      (err: unknown) => {
+        const actionErr = err as { code?: string; message?: string };
+        assert.equal(actionErr.code, 'FORBIDDEN');
+        assert.match(actionErr.message ?? '', /pausar contratos/i);
+        return true;
+      }
+    );
+  });
+
+  test('rechaza con FORBIDDEN a ASESOR intentando reabrir a PENDIENTE (falta CONTRATOS_ANULAR)', async () => {
+    await assert.rejects(
+      async () => {
+        await (cambiarEstadoReservaAction as any).handler(
+          {
+            codigo: 'FLX-123456',
+            vehiculoId: 'veh-1',
+            vehiculoNombre: 'Renault Sandero',
+            rangoFechas: '15/11 - 18/11',
+            nuevoEstado: 'PENDIENTE',
+          },
+          contextoAsesor
+        );
+      },
+      (err: unknown) => {
+        const actionErr = err as { code?: string; message?: string };
+        assert.equal(actionErr.code, 'FORBIDDEN');
+        assert.match(actionErr.message ?? '', /reabrir reservas/i);
+        return true;
+      }
+    );
+  });
+
+  test('rechaza con FORBIDDEN a CONTADOR intentando completar/cerrar (falta CONTRATOS_FINALIZAR)', async () => {
+    const contextoContador = {
+      locals: {
+        usuario: {
+          id: 'usr-contador-1',
+          nombre: 'Contador General',
+          email: 'contador@flotax.co',
+          rol: 'CONTADOR',
+          activo: true,
+          esSuperAdmin: false,
+          localActivo: {
+            id: 'local-patio-1',
+            nombre: 'Patio Norte',
+            rol: 'CONTADOR' as const,
+            permisosConcedidos: [],
+            permisosRevocados: [],
+          },
+        },
+      },
+      cookies: {
+        set: () => {},
+        get: () => undefined,
+      },
+    };
+
+    await assert.rejects(
+      async () => {
+        await (cambiarEstadoReservaAction as any).handler(
+          {
+            codigo: 'FLX-123456',
+            vehiculoId: 'veh-1',
+            vehiculoNombre: 'Renault Sandero',
+            rangoFechas: '15/11 - 18/11',
+            nuevoEstado: 'COMPLETADA',
+          },
+          contextoContador
+        );
+      },
+      (err: unknown) => {
+        const actionErr = err as { code?: string; message?: string };
+        assert.equal(actionErr.code, 'FORBIDDEN');
+        assert.match(actionErr.message ?? '', /cerrar alquileres/i);
+        return true;
+      }
+    );
   });
 });
