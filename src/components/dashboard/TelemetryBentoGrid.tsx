@@ -197,22 +197,15 @@ function DailyMovementsCurveChart({
       />
 
       {/* Cabecera de la gráfica */}
-      <div className="relative z-10 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <span
-              className="h-2.5 w-2.5 rounded-full bg-[#1D4ED8] ring-4 ring-[#1D4ED8]/30"
-              aria-hidden="true"
-            />
-            <h2 className="font-display text-lg sm:text-xl font-bold tracking-tight text-white">
-              Curva de movimientos diarios
-            </h2>
-          </div>
-          <p className="mt-1 text-sm text-[#9CA3AF]">
-            {isInteractive
-              ? 'Desliza o toca cualquier fecha para inspeccionar ingresos, egresos y neto'
-              : 'Pulso visual comparativo de ingresos frente a egresos operativos'}
-          </p>
+      <div className="relative z-10 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <span
+            className="h-2.5 w-2.5 rounded-full bg-[#1D4ED8] ring-4 ring-[#1D4ED8]/30"
+            aria-hidden="true"
+          />
+          <h2 className="font-display text-lg sm:text-xl font-bold tracking-tight text-white">
+            Curva de movimientos diarios
+          </h2>
         </div>
 
         {isInteractive && (
@@ -764,7 +757,7 @@ export default function TelemetryBentoGrid({
               : 'Desplegar movimientos de hoy'
           }
         >
-          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3.5 min-w-0">
+          <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#111827] dark:bg-white text-white dark:text-[#111827] shadow-2xs">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -780,22 +773,13 @@ export default function TelemetryBentoGrid({
                 <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
               </svg>
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="font-display text-base sm:text-lg font-bold text-[#111827] dark:text-[#EDEDED]">
-                  Movimientos de hoy
-                </h2>
-                <span className="rounded-full bg-[#EDEDED] dark:bg-white/10 px-2.5 py-0.5 font-mono text-xs font-bold text-[#1F2937] dark:text-[#EDEDED] border border-[#9CA3AF]/30 dark:border-white/10">
-                  {dailyMovements.items.length}
-                </span>
-              </div>
-              <p className="text-xs text-[#4B5563] dark:text-[#9CA3AF]">
-                Balance hoy:{' '}
-                <strong className="font-mono text-[#111827] dark:text-white tabular-nums">
-                  {dailyMovements.netDailyBalanceFormatted}
-                </strong>
-                {' '}• {dailyMovements.incomeCount} entradas / {dailyMovements.expenseCount} salidas
-              </p>
+            <div className="flex items-center gap-2 min-w-0">
+              <h2 className="font-display text-base sm:text-lg font-bold text-[#111827] dark:text-[#EDEDED] truncate">
+                Movimientos de hoy
+              </h2>
+              <span className="shrink-0 rounded-full bg-[#EDEDED] dark:bg-white/10 px-2.5 py-0.5 font-mono text-xs font-bold text-[#1F2937] dark:text-[#EDEDED] border border-[#9CA3AF]/30 dark:border-white/10">
+                {dailyMovements.items.length}
+              </span>
             </div>
           </div>
 
@@ -816,6 +800,18 @@ export default function TelemetryBentoGrid({
 
         {isRecentExpanded && (
           <div className="pt-3 border-t border-[#9CA3AF]/25 dark:border-white/10 space-y-3 transition-all">
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-[#EDEDED]/55 dark:bg-white/5 px-3.5 py-2.5 border border-[#9CA3AF]/25 dark:border-white/10 text-xs sm:text-sm text-[#4B5563] dark:text-[#9CA3AF]">
+              <span>
+                Balance hoy:{' '}
+                <strong className="font-mono font-bold text-[#111827] dark:text-white tabular-nums">
+                  {dailyMovements.netDailyBalanceFormatted}
+                </strong>
+              </span>
+              <span className="font-medium tabular-nums">
+                {dailyMovements.incomeCount} entradas / {dailyMovements.expenseCount} salidas
+              </span>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
               {dailyMovements.items.map((mov) => {
                 const isIncome = mov.kind === 'INGRESO';

@@ -526,28 +526,12 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
         </div>
       )}
 
-      {/* Cabecera Principal con Progressive Disclosure (Sin Sobrecarga Visual) */}
-      <header className="flex flex-col gap-3.5 lg:flex-row lg:items-center lg:justify-between border-b border-[#9CA3AF]/20 dark:border-white/10 pb-4">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <span
-              className={`h-2 w-2 rounded-full ${
-                data.sesionCajaActiva
-                  ? 'bg-emerald-500 animate-pulse'
-                  : 'bg-[#9CA3AF]'
-              }`}
-            />
-            <p className="text-xs font-semibold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF] truncate">
-              Patio Central · {data.sesionCajaActiva ? 'Turno Activo' : 'Turno Cerrado'}
-            </p>
-          </div>
-          <h1 className="font-display text-2xl font-black tracking-tight text-[#111827] dark:text-white sm:text-3xl">
-            Finanzas y Pagos
-          </h1>
-        </div>
+      {/* Barra Principal de Acciones Financieras (Sin Sobrecarga Visual en Cabecera) */}
+      <header className="flex items-center justify-between border-b border-[#9CA3AF]/20 dark:border-white/10 pb-4">
+        <h1 className="sr-only">Finanzas y Pagos</h1>
 
         {/* Barra de Acciones Financieras en Fila Única Horizontal con Scroll Silencioso */}
-        <div className="w-full lg:w-auto overflow-x-auto no-scrollbar scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden touch-pan-x py-1 -my-1">
+        <div className="w-full overflow-x-auto no-scrollbar scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden touch-pan-x py-1 -my-1">
           <div className="flex flex-row flex-nowrap items-center gap-2 min-w-max">
             <button
               type="button"

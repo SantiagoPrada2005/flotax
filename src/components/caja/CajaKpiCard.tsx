@@ -129,8 +129,8 @@ export function CajaBentoHeroCard({
   saldoEfectivo: _saldoEfectivo = 0,
   saldoBancos: _saldoBancos = 0,
   depositosRetenidos = 0,
-  yardName = 'Patio Central',
-  dateLabel = 'Tesorería en Tiempo Real',
+  yardName: _yardName = 'Patio Central',
+  dateLabel: _dateLabel = 'Tesorería en Tiempo Real',
   puntosHistoricos: _puntosHistoricos = [],
   onClick,
 }: CajaBentoHeroCardProps) {
@@ -145,15 +145,11 @@ export function CajaBentoHeroCard({
     >
       <div className="relative z-10 flex flex-col space-y-3 sm:space-y-4">
         {/* Pill de Tag Canónico con Azul FlotaX */}
-        <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center">
           <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/90 backdrop-blur-md border border-white/10">
             <span className="h-1.5 w-1.5 rounded-full bg-[#2D6BFF]" />
             <span>Tesorería & Saldo Disponible Real</span>
           </div>
-
-          <span className="text-xs font-medium text-[#9CA3AF]">
-            {dateLabel} • {yardName}
-          </span>
         </div>
 
         {/* Monto Destacado en Space Grotesk */}
@@ -166,10 +162,10 @@ export function CajaBentoHeroCard({
               COP
             </span>
           </div>
-          <p className="mt-1.5 text-xs sm:text-sm font-medium text-[#9CA3AF]">
+          <p className="mt-2 text-sm sm:text-base font-medium leading-relaxed text-[#EDEDED]/85">
             Fondos líquidos operativos libres de reservas
             {depositosRetenidos > 0 && (
-              <span className="block sm:inline sm:ml-1 text-[#EDEDED]/90">
+              <span className="block sm:inline sm:ml-1.5 font-bold text-white tabular-nums">
                 • {formatearMonedaCOP(depositosRetenidos)} en custodia
               </span>
             )}
