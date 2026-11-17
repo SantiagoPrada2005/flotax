@@ -146,6 +146,12 @@ export default function MisReservasHub({
     }
   }, [initialReservas]);
 
+  useEffect(() => {
+    if (!formVehiculoId && catalogoVehiculos[0]) {
+      setFormVehiculoId(catalogoVehiculos[0].id);
+    }
+  }, [catalogoVehiculos, formVehiculoId]);
+
   const conteosPorEstado = useMemo(() => {
     let pendientes = 0;
     let confirmadas = 0;
@@ -230,13 +236,16 @@ export default function MisReservasHub({
 
   const cotizacionRapidaPatio = useMemo(() => {
     const veh =
-      catalogoVehiculos.find((v) => v.id === formVehiculoId) ?? catalogoVehiculos[0]!;
+      catalogoVehiculos.find((v) => v.id === formVehiculoId) ??
+      catalogoVehiculos[0] ??
+      null;
     const inicio =
       formFechaInicio <= formFechaFin ? formFechaInicio : formFechaFin;
     const fin =
       formFechaFin >= formFechaInicio ? formFechaFin : formFechaInicio;
     const dias = calcularDiasInclusivos(inicio, fin);
-    const subtotal = dias * veh.precioDia;
+    const precioDia = veh?.precioDia ?? 0;
+    const subtotal = dias * precioDia;
     const total = subtotal + Math.round(subtotal * 0.08);
     return { vehiculo: veh, dias, total };
   }, [catalogoVehiculos, formVehiculoId, formFechaInicio, formFechaFin]);
@@ -381,7 +390,8 @@ export default function MisReservasHub({
     e.preventDefault();
     setErrorModalNueva(null);
 
-    if (catalogoVehiculos.length === 0) {
+    const vehiculoCotizado = cotizacionRapidaPatio.vehiculo;
+    if (catalogoVehiculos.length === 0 || !vehiculoCotizado) {
       setErrorModalNueva('No hay vehículos disponibles en la flota de este patio.');
       return;
     }
@@ -399,7 +409,7 @@ export default function MisReservasHub({
     setSubmittingModalNueva(true);
 
     try {
-      const subtotalTarifa = cotizacionRapidaPatio.dias * cotizacionRapidaPatio.vehiculo.precioDia;
+      const subtotalTarifa = cotizacionRapidaPatio.dias * vehiculoCotizado.precioDia;
       const coberturaPericial = Math.round(subtotalTarifa * 0.08);
       const totalCotizado = cotizacionRapidaPatio.total;
       const montoAbono =
@@ -418,11 +428,11 @@ export default function MisReservasHub({
           : undefined;
 
       const res = await actions.reservas.crearReserva({
-        vehiculoId: formVehiculoId,
+        vehiculoId: formVehiculoId || vehiculoCotizado.id,
         fechaInicio: formFechaInicio,
         fechaFin: formFechaFin,
         diasAlquiler: cotizacionRapidaPatio.dias,
-        precioDiaCotizado: cotizacionRapidaPatio.vehiculo.precioDia,
+        precioDiaCotizado: vehiculoCotizado.precioDia,
         subtotalTarifaCotizado: subtotalTarifa,
         coberturaPericialCotizada: coberturaPericial,
         totalCotizado,
