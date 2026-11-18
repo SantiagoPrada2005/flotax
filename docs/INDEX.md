@@ -27,6 +27,7 @@
 | [`database-er.html`](./database-er.html) | Module / Utility | - | - |
 | [`database-er.mmd`](./database-er.mmd) | Module / Utility | - | - |
 | [`database.md`](./database.md) | Documento Técnico | Modelo relacional, tablas, tipos y diagramas ER de la base de datos | Drizzle ORM |
+| [`evaluacion_fotografia_catalogo_transparencia.md`](./evaluacion_fotografia_catalogo_transparencia.md) | Evaluación Técnica | Análisis de viabilidad para imágenes con transparencia (PNG/WebP), eliminación automática de fondo (Alternativa A) y guía fotográfica para operadores (Alternativa B) | Cloudflare R2, Cloudflare Images, `image-compression.ts` |
 | [`mobile-inputs-and-ergonomics.md`](./mobile-inputs-and-ergonomics.md) | Lineamientos UX | Guía ergonómica para diseño táctil e interfaces móviles | - |
 | [`pwa-capabilities.md`](./pwa-capabilities.md) | Estudio Técnico / Auditoría PWA | Catálogo de capacidades PWA, auditoría del estado actual, brechas y hoja de ruta por fases | Web App Manifest, Service Worker, Web Push, Astro 7, Cloudflare Workers |
 | [`user-flows.md`](./user-flows.md) | Documento Técnico & UX | User flows canónicos de FlotaX (Onboarding, Operación de reservas, Menú de personal, Roles y Matriz RBAC) | Mermaid |

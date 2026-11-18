@@ -388,7 +388,7 @@ export default function LocalCatalogShowcase({
               >
                 <div className="min-w-0 flex-1 space-y-1">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF]">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#D1D5DB]">
                       {v.categoriaEtiqueta} · {v.anio}
                     </span>
                     {v.estado === 'RESERVADO' && (
@@ -522,7 +522,7 @@ export default function LocalCatalogShowcase({
                     />
                     <div className="relative z-10">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF]">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#D1D5DB]">
                           {bentoContrasteDer.categoriaEtiqueta}
                         </span>
                         {bentoContrasteDer.estado === 'RESERVADO' && (
@@ -567,7 +567,7 @@ export default function LocalCatalogShowcase({
                 >
                   <div className="flex flex-col justify-between space-y-2.5 min-w-0 flex-1">
                     <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF]">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#D1D5DB]">
                         {bentoHorizontalAncho.categoriaEtiqueta} · {bentoHorizontalAncho.anio}
                       </span>
                       <h3 className="font-display text-base sm:text-xl font-black tracking-tight text-[#111827] dark:text-[#EDEDED] leading-snug truncate mt-0.5">
