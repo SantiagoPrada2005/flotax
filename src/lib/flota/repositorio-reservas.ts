@@ -191,12 +191,33 @@ export function mapRowToReservaItem(
       (vehiculoRow?.specsBento as ReturnType<typeof obtenerSpecsBentoPorVehiculo>) ||
       obtenerSpecsBentoPorVehiculo(vehiculo.id),
     conductor: {
-      nombreCompleto: reservaRow.contactoNombre,
-      tipoDocumento: (reservaRow.contactoTipoDocumento as 'CC' | 'CE' | 'PASAPORTE' | 'NIT' | null) ?? null,
-      numeroDocumento: reservaRow.contactoNumeroDocumento ?? null,
-      categoriaLicencia: (reservaRow.contactoCategoriaLicencia as 'B1' | 'B2' | 'A2' | 'C1' | null) ?? null,
-      telefono: reservaRow.contactoTelefono,
-      correo: reservaRow.contactoCorreo ?? null,
+      nombreCompleto: contratoRow?.arrendatarioNombre ?? reservaRow.contactoNombre,
+      tipoDocumento:
+        ((reservaRow.contactoTipoDocumento ??
+          contratoRow?.arrendatarioTipoDocumento) as
+          | 'CC'
+          | 'CE'
+          | 'PASAPORTE'
+          | 'NIT'
+          | null) ?? null,
+      numeroDocumento:
+        reservaRow.contactoNumeroDocumento ??
+        contratoRow?.arrendatarioNumeroDocumento ??
+        null,
+      categoriaLicencia:
+        ((reservaRow.contactoCategoriaLicencia ??
+          contratoRow?.arrendatarioLicenciaCategoria) as
+          | 'A1'
+          | 'A2'
+          | 'B1'
+          | 'B2'
+          | 'C1'
+          | null) ?? null,
+      licenciaNumero: contratoRow?.arrendatarioLicenciaNumero ?? null,
+      ciudadExpedicion: contratoRow?.arrendatarioCiudadExpedicion ?? null,
+      domicilio: contratoRow?.arrendatarioDomicilio ?? null,
+      telefono: contratoRow?.arrendatarioTelefono ?? reservaRow.contactoTelefono,
+      correo: reservaRow.contactoCorreo ?? contratoRow?.arrendatarioCorreo ?? null,
       ley1581Aceptada: Boolean(reservaRow.ley1581Aceptada),
     },
     estadoGarantia: resolverEstadoGarantia(reservaRow.estado, garantiaRow),

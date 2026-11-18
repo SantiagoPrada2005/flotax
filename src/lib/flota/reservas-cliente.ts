@@ -6,6 +6,7 @@ import {
 } from './disponibilidad';
 import { FLOTA_CANONICA, obtenerVehiculoPorId } from './mock-vehiculos';
 import type { VehiculoItem } from './types';
+import type { RespuestaItemChecklistInspeccion } from '@/db/schema/inspecciones';
 
 export const STORAGE_KEY_RESERVAS_FLOTAX = 'flotax_reservas_cliente';
 
@@ -32,7 +33,11 @@ export interface DatosConductorReserva {
   nombreCompleto: string;
   tipoDocumento?: 'CC' | 'CE' | 'PASAPORTE' | 'NIT' | null | undefined;
   numeroDocumento?: string | null | undefined;
-  categoriaLicencia?: 'B1' | 'B2' | 'A2' | 'C1' | string | null | undefined;
+  categoriaLicencia?: 'B1' | 'B2' | 'A2' | 'C1' | 'A1' | string | null | undefined;
+  licenciaNumero?: string | null | undefined;
+  licenciaVencimiento?: string | null | undefined;
+  ciudadExpedicion?: string | null | undefined;
+  domicilio?: string | null | undefined;
   telefono: string;
   correo?: string | null | undefined;
   ley1581Aceptada: boolean;
@@ -1183,6 +1188,95 @@ export function formatearRangoReservaHumano(
   fechaFin: string
 ): string {
   return `${formatearFechaCorta(fechaInicio)} – ${formatearFechaCorta(fechaFin)}`;
+}
+
+export function obtenerPlantillaChecklistEntrega(
+  categoria?: string | null
+): RespuestaItemChecklistInspeccion[] {
+  const cat = (categoria ?? 'SUV').toUpperCase();
+
+  if (cat === 'MOTO') {
+    return [
+      {
+        codigo: 'doc-soat-rtm',
+        nombre: 'SOAT y Técnico-Mecánica vigentes entregados',
+        estado: 'BIEN',
+      },
+      {
+        codigo: 'cascos-chaleco',
+        nombre: 'Casco(s) certificados DOT/ECE y chaleco',
+        estado: 'BIEN',
+      },
+      {
+        codigo: 'llantas-frenos-moto',
+        nombre: 'Llantas, frenos delantero/trasero y cadena',
+        estado: 'BIEN',
+      },
+      {
+        codigo: 'luces-tablero-moto',
+        nombre: 'Luces, direccionales, espejos y testigos',
+        estado: 'BIEN',
+      },
+      {
+        codigo: 'llaves-entrega-moto',
+        nombre: 'Llave / Tarjeta y copia entregadas al conductor',
+        estado: 'BIEN',
+      },
+    ];
+  }
+
+  if (cat === 'PATINETA') {
+    return [
+      {
+        codigo: 'bateria-cargador',
+        nombre: 'Batería verificada y cargador entregado',
+        estado: 'BIEN',
+      },
+      {
+        codigo: 'frenos-ruedas-patineta',
+        nombre: 'Frenos, ruedas y manillar sin holguras',
+        estado: 'BIEN',
+      },
+      {
+        codigo: 'luces-casco-patineta',
+        nombre: 'Luces frontales/traseras, timbre y casco',
+        estado: 'BIEN',
+      },
+      {
+        codigo: 'candado-nfc',
+        nombre: 'Candado de seguridad y tarjeta NFC',
+        estado: 'BIEN',
+      },
+    ];
+  }
+
+  return [
+    {
+      codigo: 'doc-soat-rtm',
+      nombre: 'SOAT y Revisión Técnico-Mecánica vigentes',
+      estado: 'BIEN',
+    },
+    {
+      codigo: 'kit-carretera',
+      nombre: 'Kit de carretera, gato, cruceta y llanta de repuesto',
+      estado: 'BIEN',
+    },
+    {
+      codigo: 'llantas-frenos',
+      nombre: 'Llantas, frenos, vidrios y espejos sin novedades',
+      estado: 'BIEN',
+    },
+    {
+      codigo: 'interior-limpieza',
+      nombre: 'Aseo interior/exterior, aire y testigos de tablero',
+      estado: 'BIEN',
+    },
+    {
+      codigo: 'llaves-tarjeta',
+      nombre: 'Llave / Tarjeta de acceso entregada al arrendatario',
+      estado: 'BIEN',
+    },
+  ];
 }
 
 /**

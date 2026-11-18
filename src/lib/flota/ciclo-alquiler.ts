@@ -21,6 +21,7 @@ import {
   type GravedadNovedadInspeccion,
   type EstadoGeneralInspeccion,
   type TipoActoInspeccion,
+  type RespuestaItemChecklistInspeccion,
 } from '@/db/schema';
 import {
   obtenerReservaPorCodigoD1,
@@ -140,6 +141,19 @@ export interface GuardarInspeccionR2Params {
   }> | undefined;
 }
 
+export interface ConductorVerificadoEntrega {
+  nombreCompleto: string;
+  telefono: string;
+  correo?: string | null | undefined;
+  tipoDocumento?: 'CC' | 'CE' | 'PASAPORTE' | 'NIT' | null | undefined;
+  numeroDocumento?: string | null | undefined;
+  ciudadExpedicion?: string | null | undefined;
+  licenciaNumero?: string | null | undefined;
+  licenciaCategoria?: CategoriaLicenciaConduccion | null | undefined;
+  licenciaVencimiento?: string | null | undefined;
+  domicilio?: string | null | undefined;
+}
+
 export interface EntregarVehiculoParams {
   reservaId?: string | undefined;
   codigo?: string | undefined;
@@ -147,8 +161,35 @@ export interface EntregarVehiculoParams {
   usuarioId: string;
   medidorUsoEntrega: number;
   nivelEnergiaEntregaPct?: number | undefined;
+  conductorVerificado?: ConductorVerificadoEntrega | undefined;
+  estadoGeneralEntrega?: EstadoGeneralInspeccion | undefined;
+  observacionesEntrega?: string | undefined;
+  respuestasChecklist?: RespuestaItemChecklistInspeccion[] | undefined;
+  puntosR2?: Array<{
+    id?: string | undefined;
+    zona: string;
+    etiqueta: string;
+    dictamen: string;
+    estado: EstadoPuntoInspeccionR2;
+    gravedad?: GravedadNovedadInspeccion | undefined;
+    coordX?: string | undefined;
+    coordY?: string | undefined;
+    costoEstimado?: number | undefined;
+    generaCargoCliente?: boolean | undefined;
+  }> | undefined;
+  consentimientosContrato?: {
+    ley1581Aceptada?: boolean | undefined;
+    trasladoFotomultasAceptado?: boolean | undefined;
+    pagareBlancoFirmado?: boolean | undefined;
+  } | undefined;
   firmaArrendadorR2Key?: string | undefined;
   firmaArrendatarioR2Key?: string | undefined;
+  cobrarSaldoAhora?: {
+    monto: number;
+    metodoPago: MetodoPagoFinanciero;
+    cuentaId?: string | undefined;
+    referencia?: string | undefined;
+  } | undefined;
   recibirGarantiaAhora?: {
     monto: number;
     metodoPago: MetodoPagoFinanciero;
@@ -160,9 +201,16 @@ export interface EntregarVehiculoParams {
 }
 
 export interface DocsClienteRapidoParams {
-  usuarioId: string;
+  usuarioId?: string | null | undefined;
+  codigo?: string | undefined;
+  reservaId?: string | undefined;
+  nombreCompleto?: string | undefined;
+  telefono?: string | undefined;
+  correo?: string | undefined;
   tipoDocumento: 'CC' | 'CE' | 'PASAPORTE' | 'NIT';
   numeroDocumento: string;
+  ciudadExpedicion?: string | undefined;
+  domicilio?: string | undefined;
   licenciaNumero?: string | undefined;
   licenciaCategoria?: string | undefined;
   licenciaVencimiento?: string | undefined;
@@ -1004,8 +1052,9 @@ export async function guardarInspeccionR2D1(
 
 /**
  * 5. entregarVehiculoConContratoD1 (CONFIRMADA -> EN_CURSO)
- * Pasa reserva a EN_CURSO, actualiza o crea contrato VIGENTE con hora real de entrega,
- * registra acta pericial de ENTREGA y opcionalmente asienta fianza en custodia.
+ * Comprueba y persiste los datos verificados del cliente en reserva/contrato/KYC,
+ * sella el acta pericial ENTREGA con checklist y puntos R2, asienta cobro de saldo y fianza
+ * si aplica, y pasa la reserva a EN_CURSO con contrato VIGENTE.
  */
 export async function entregarVehiculoConContratoD1(
   db: AppDb,
@@ -1066,6 +1115,88 @@ export async function entregarVehiculoConContratoD1(
     .limit(1);
   const contrato = ctrRows[0];
 
+  // Resolver datos efectivos del conductor comprobados en patio
+  const cv = params.conductorVerificado;
+  const nombreEfectivo = (cv?.nombreCompleto?.trim() || reserva.contactoNombre).trim();
+  const telefonoEfectivo = (cv?.telefono?.trim() || reserva.contactoTelefono).trim();
+  const correoEfectivo =
+    cv && cv.correo !== undefined
+      ? cv.correo?.trim() || null
+      : reserva.contactoCorreo ?? null;
+  const tipoDocEfectivo =
+    cv && cv.tipoDocumento !== undefined
+      ? cv.tipoDocumento ?? null
+      : reserva.contactoTipoDocumento ?? contrato?.arrendatarioTipoDocumento ?? null;
+  const numDocEfectivo =
+    cv && cv.numeroDocumento !== undefined
+      ? cv.numeroDocumento?.trim() || null
+      : reserva.contactoNumeroDocumento ?? contrato?.arrendatarioNumeroDocumento ?? null;
+  const catLicenciaEfectiva =
+    cv && cv.licenciaCategoria !== undefined
+      ? cv.licenciaCategoria ?? null
+      : reserva.contactoCategoriaLicencia ?? contrato?.arrendatarioLicenciaCategoria ?? null;
+  const licenciaNumEfectiva =
+    cv && cv.licenciaNumero !== undefined
+      ? cv.licenciaNumero?.trim() || numDocEfectivo || null
+      : contrato?.arrendatarioLicenciaNumero ?? null;
+  const ciudadExpEfectiva =
+    cv && cv.ciudadExpedicion !== undefined
+      ? cv.ciudadExpedicion?.trim() || null
+      : contrato?.arrendatarioCiudadExpedicion ?? null;
+  const domicilioEfectivo =
+    cv && cv.domicilio !== undefined
+      ? cv.domicilio?.trim() || null
+      : contrato?.arrendatarioDomicilio ?? null;
+
+  // Validar documentos del conductor cuando se diligencia el formulario de entrega
+  if (cv) {
+    const kycRows = reserva.clienteId
+      ? await db
+          .select({ estado: verificacionesIdentidad.estado })
+          .from(verificacionesIdentidad)
+          .where(eq(verificacionesIdentidad.usuarioId, reserva.clienteId))
+          .limit(1)
+      : [];
+    const kycEstadoActual = kycRows[0]?.estado ?? null;
+    const estadoDocVeh = await obtenerEstadoDocumentalVehiculoD1(
+      db,
+      reserva.vehiculoId,
+      vehiculo.categoria,
+      reserva.fechaInicio
+    );
+    const kycEfectivo =
+      tipoDocEfectivo && numDocEfectivo
+        ? 'APROBADO'
+        : kycEstadoActual;
+    const advertencias = construirAdvertenciasDocumentales(
+      {
+        contactoTipoDocumento: tipoDocEfectivo,
+        contactoNumeroDocumento: numDocEfectivo,
+        contactoCategoriaLicencia: catLicenciaEfectiva,
+      },
+      estadoDocVeh.vencidos,
+      estadoDocVeh.faltantesSinCarga,
+      vehiculo.categoria,
+      kycEfectivo
+    );
+
+    const yaAutorizadaSinDocs =
+      params.autorizarSinDocumentos === true ||
+      Boolean(reserva.autorizadoSinDocumentosPorId);
+
+    const hayFaltaCliente =
+      advertencias.cliente.faltaDocumentoIdentidad ||
+      advertencias.cliente.faltaLicencia ||
+      advertencias.cliente.licenciaIncompatible;
+
+    if (hayFaltaCliente && !yaAutorizadaSinDocs) {
+      throw new ErrorCicloAlquiler(
+        'BAD_REQUEST',
+        `${advertencias.cliente.detalles.join('. ')}. Verifica los datos del cliente o autoriza bajo responsabilidad del local.`
+      );
+    }
+  }
+
   const ahora = new Date();
   const contratoId =
     contrato?.id ?? `ctr-${reserva.codigo.toLowerCase()}-${crypto.randomUUID().slice(0, 6)}`;
@@ -1073,6 +1204,52 @@ export async function entregarVehiculoConContratoD1(
     contrato?.numeroContrato ?? `CTR-${reserva.codigo.replace('FLX-', '')}`;
 
   const ops: unknown[] = [];
+
+  // Consultar cuentas financieras una sola vez si hay cobro de saldo o fianza en el acto
+  const necesitaCuentas =
+    Boolean(params.cobrarSaldoAhora && params.cobrarSaldoAhora.monto > 0) ||
+    Boolean(params.recibirGarantiaAhora && params.recibirGarantiaAhora.monto > 0);
+  const ctasLocal = necesitaCuentas
+    ? await db
+        .select()
+        .from(cuentasFinancieras)
+        .where(
+          and(
+            eq(cuentasFinancieras.localId, reserva.localId),
+            eq(cuentasFinancieras.activo, true)
+          )
+        )
+        .limit(10)
+    : [];
+
+  const cobroAdicional =
+    params.cobrarSaldoAhora && params.cobrarSaldoAhora.monto > 0
+      ? Math.round(params.cobrarSaldoAhora.monto)
+      : 0;
+
+  const totalLiquidadoBase = contrato?.totalLiquidado ?? reserva.totalCotizado;
+  const totalPagadoBase = contrato?.totalPagado ?? (reserva.montoAbonoReportado ?? 0);
+  const totalPagadoFinal = totalPagadoBase + cobroAdicional;
+  const saldoPendienteFinal = Math.max(0, totalLiquidadoBase - totalPagadoFinal);
+  const estadoPagoFinal =
+    totalPagadoFinal >= totalLiquidadoBase
+      ? 'PAGADO'
+      : totalPagadoFinal > 0
+        ? 'PARCIAL'
+        : 'PENDIENTE';
+
+  const ley1581Final =
+    params.consentimientosContrato?.ley1581Aceptada ??
+    contrato?.ley1581Aceptada ??
+    reserva.ley1581Aceptada;
+  const trasladoFotomultasFinal =
+    params.consentimientosContrato?.trasladoFotomultasAceptado ??
+    contrato?.trasladoFotomultasAceptado ??
+    true;
+  const pagareBlancoFinal =
+    params.consentimientosContrato?.pagareBlancoFirmado ??
+    contrato?.pagareBlancoFirmado ??
+    false;
 
   if (!contrato) {
     ops.push(
@@ -1083,12 +1260,21 @@ export async function entregarVehiculoConContratoD1(
         localId: reserva.localId,
         vehiculoId: reserva.vehiculoId,
         clienteId: reserva.clienteId,
-        arrendatarioNombre: reserva.contactoNombre,
-        arrendatarioTelefono: reserva.contactoTelefono,
-        arrendatarioCorreo: reserva.contactoCorreo ?? null,
-        arrendatarioTipoDocumento: reserva.contactoTipoDocumento ?? null,
-        arrendatarioNumeroDocumento: reserva.contactoNumeroDocumento ?? null,
-        arrendatarioLicenciaCategoria: reserva.contactoCategoriaLicencia ?? null,
+        arrendatarioNombre: nombreEfectivo,
+        arrendatarioTelefono: telefonoEfectivo,
+        arrendatarioCorreo: correoEfectivo,
+        arrendatarioTipoDocumento: tipoDocEfectivo,
+        arrendatarioNumeroDocumento: numDocEfectivo,
+        arrendatarioCiudadExpedicion: ciudadExpEfectiva,
+        arrendatarioLicenciaNumero: licenciaNumEfectiva,
+        arrendatarioLicenciaCategoria: catLicenciaEfectiva,
+        arrendatarioDomicilio: domicilioEfectivo,
+        autorizadoSinDocumentosPorId: params.autorizarSinDocumentos
+          ? params.usuarioId
+          : reserva.autorizadoSinDocumentosPorId ?? null,
+        ley1581Aceptada: ley1581Final,
+        trasladoFotomultasAceptado: trasladoFotomultasFinal,
+        pagareBlancoFirmado: pagareBlancoFinal,
         fechaHoraEntregaReal: ahora,
         fechaHoraDevolucionPactada: new Date(`${reserva.fechaFin}T20:00:00Z`),
         medidorUsoEntrega: params.medidorUsoEntrega,
@@ -1096,15 +1282,10 @@ export async function entregarVehiculoConContratoD1(
         canonDiarioPactado: reserva.precioDiaCotizado,
         subtotalCanon: reserva.subtotalTarifaCotizado,
         coberturaPericial: reserva.coberturaPericialCotizada,
-        totalLiquidado: reserva.totalCotizado,
-        totalPagado: reserva.montoAbonoReportado ?? 0,
-        saldoPendiente: Math.max(0, reserva.totalCotizado - (reserva.montoAbonoReportado ?? 0)),
-        estadoPago:
-          (reserva.montoAbonoReportado ?? 0) >= reserva.totalCotizado
-            ? 'PAGADO'
-            : (reserva.montoAbonoReportado ?? 0) > 0
-              ? 'PARCIAL'
-              : 'PENDIENTE',
+        totalLiquidado: totalLiquidadoBase,
+        totalPagado: totalPagadoFinal,
+        saldoPendiente: saldoPendienteFinal,
+        estadoPago: estadoPagoFinal,
         estadoContrato: 'VIGENTE',
         firmaArrendadorR2Key: params.firmaArrendadorR2Key ?? null,
         firmaArrendatarioR2Key: params.firmaArrendatarioR2Key ?? null,
@@ -1118,9 +1299,27 @@ export async function entregarVehiculoConContratoD1(
         .update(contratosAlquiler)
         .set({
           estadoContrato: 'VIGENTE',
+          arrendatarioNombre: nombreEfectivo,
+          arrendatarioTelefono: telefonoEfectivo,
+          arrendatarioCorreo: correoEfectivo,
+          arrendatarioTipoDocumento: tipoDocEfectivo,
+          arrendatarioNumeroDocumento: numDocEfectivo,
+          arrendatarioCiudadExpedicion: ciudadExpEfectiva,
+          arrendatarioLicenciaNumero: licenciaNumEfectiva,
+          arrendatarioLicenciaCategoria: catLicenciaEfectiva,
+          arrendatarioDomicilio: domicilioEfectivo,
+          autorizadoSinDocumentosPorId: params.autorizarSinDocumentos
+            ? params.usuarioId
+            : contrato.autorizadoSinDocumentosPorId,
+          ley1581Aceptada: ley1581Final,
+          trasladoFotomultasAceptado: trasladoFotomultasFinal,
+          pagareBlancoFirmado: pagareBlancoFinal,
           fechaHoraEntregaReal: ahora,
           medidorUsoEntrega: params.medidorUsoEntrega,
           nivelEnergiaEntregaPct: params.nivelEnergiaEntregaPct ?? 100,
+          totalPagado: totalPagadoFinal,
+          saldoPendiente: saldoPendienteFinal,
+          estadoPago: estadoPagoFinal,
           firmaArrendadorR2Key: params.firmaArrendadorR2Key ?? contrato.firmaArrendadorR2Key,
           firmaArrendatarioR2Key: params.firmaArrendatarioR2Key ?? contrato.firmaArrendatarioR2Key,
           actualizadoEn: ahora,
@@ -1142,34 +1341,92 @@ export async function entregarVehiculoConContratoD1(
       inspectorId: params.usuarioId,
       medidorUso: params.medidorUsoEntrega,
       nivelEnergiaPct: params.nivelEnergiaEntregaPct ?? 100,
-      estadoGeneral: 'IMPECABLE',
-      respuestasChecklist: [],
+      estadoGeneral: params.estadoGeneralEntrega ?? 'IMPECABLE',
+      observaciones: params.observacionesEntrega ?? null,
+      respuestasChecklist: params.respuestasChecklist ?? [],
+      firmaClienteR2Key: params.firmaArrendatarioR2Key ?? null,
+      firmaResponsableR2Key: params.firmaArrendadorR2Key ?? null,
       iniciadaEn: ahora,
       finalizadaEn: ahora,
       creadoEn: ahora,
     })
   );
 
+  // Puntos R2 verificados durante el acto de entrega
+  if (params.puntosR2 && params.puntosR2.length > 0) {
+    for (const p of params.puntosR2) {
+      const pId = p.id ?? `pto-${crypto.randomUUID().slice(0, 8)}`;
+      ops.push(
+        db
+          .insert(puntosInspeccionR2)
+          .values({
+            id: pId,
+            localId: reserva.localId,
+            reservaId: reserva.id,
+            inspeccionId: inspId,
+            vehiculoId: reserva.vehiculoId,
+            zona: p.zona,
+            etiqueta: p.etiqueta,
+            dictamen: p.dictamen,
+            estado: p.estado,
+            gravedad: p.gravedad ?? null,
+            coordX: p.coordX ?? '50%',
+            coordY: p.coordY ?? '50%',
+            costoEstimado: p.costoEstimado ?? 0,
+            generaCargoCliente: p.generaCargoCliente ?? false,
+            creadoEn: ahora,
+            actualizadoEn: ahora,
+          })
+          .onConflictDoNothing()
+      );
+    }
+  }
+
+  // Cobro de saldo pendiente en el acto de entrega
+  if (params.cobrarSaldoAhora && cobroAdicional > 0) {
+    const { metodoPago, referencia } = params.cobrarSaldoAhora;
+    const cta = resolverCuentaPorMetodoPago(
+      ctasLocal,
+      metodoPago,
+      params.cobrarSaldoAhora.cuentaId
+    );
+    const cuentaId = cta?.id ?? ctasLocal[0]?.id;
+
+    if (cuentaId) {
+      ops.push(
+        db.insert(movimientosCaja).values({
+          id: `mov-ent-${reserva.codigo.toLowerCase()}-${crypto.randomUUID().slice(0, 6)}`,
+          localId: reserva.localId,
+          tipo: 'INGRESO',
+          categoria: 'PAGO_ALQUILER',
+          concepto: `Cobro de saldo en entrega #${reserva.codigo}`,
+          monto: cobroAdicional,
+          metodoPago,
+          cuentaId,
+          contratoId: numeroContrato,
+          clienteId: reserva.clienteId,
+          clienteNombre: nombreEfectivo,
+          vehiculoId: reserva.vehiculoId,
+          referencia: referencia ?? `ENT-${reserva.codigo}`,
+          estado: 'CONFIRMADO',
+          creadoPorId: params.usuarioId,
+          fechaMovimiento: ahora,
+          creadoEn: ahora,
+          actualizadoEn: ahora,
+        })
+      );
+    }
+  }
+
   // Depósito de garantía recibido
   if (params.recibirGarantiaAhora && params.recibirGarantiaAhora.monto > 0) {
     const { monto, metodoPago, referencia } = params.recibirGarantiaAhora;
-    let ctas = await db
-      .select()
-      .from(cuentasFinancieras)
-      .where(
-        and(
-          eq(cuentasFinancieras.localId, reserva.localId),
-          eq(cuentasFinancieras.activo, true)
-        )
-      )
-      .limit(10);
-
     const cta = resolverCuentaPorMetodoPago(
-      ctas,
+      ctasLocal,
       metodoPago,
       params.recibirGarantiaAhora.cuentaId
     );
-    const cuentaId = cta?.id ?? ctas[0]?.id;
+    const cuentaId = cta?.id ?? ctasLocal[0]?.id;
 
     ops.push(
       db
@@ -1181,6 +1438,8 @@ export async function entregarVehiculoConContratoD1(
           metodoPago,
           referenciaRecepcion: referencia ?? null,
           cuentaId: cuentaId ?? null,
+          clienteNombre: nombreEfectivo,
+          actualizadoEn: ahora,
         })
         .where(
           or(
@@ -1204,7 +1463,7 @@ export async function entregarVehiculoConContratoD1(
           cuentaId,
           contratoId: numeroContrato,
           clienteId: reserva.clienteId,
-          clienteNombre: reserva.contactoNombre,
+          clienteNombre: nombreEfectivo,
           vehiculoId: reserva.vehiculoId,
           referencia: referencia ?? `GAR-${reserva.codigo}`,
           estado: 'CONFIRMADO',
@@ -1217,12 +1476,47 @@ export async function entregarVehiculoConContratoD1(
     }
   }
 
-  // Actualizar reserva a EN_CURSO
+  // Evento de auditoría si se autoriza entrega sin documentos completos
+  if (params.autorizarSinDocumentos) {
+    ops.push(
+      db.insert(eventosAlquiler).values({
+        id: `evt-ent-${reserva.codigo.toLowerCase()}-${crypto.randomUUID().slice(0, 6)}`,
+        localId: reserva.localId,
+        reservaId: reserva.id,
+        contratoId,
+        vehiculoId: reserva.vehiculoId,
+        tipoEvento: 'AUTORIZACION_SIN_DOCS',
+        diasDelta: 0,
+        montoDelta: 0,
+        clausulaOTexto:
+          params.notaAutorizacion ?? 'Entrega autorizada bajo responsabilidad del local',
+        actorId: params.usuarioId,
+        activo: true,
+        creadoEn: ahora,
+      })
+    );
+  }
+
+  // Actualizar reserva a EN_CURSO con los datos verificados del cliente
   ops.push(
     db
       .update(reservas)
       .set({
         estado: 'EN_CURSO',
+        contactoNombre: nombreEfectivo,
+        contactoTelefono: telefonoEfectivo,
+        contactoCorreo: correoEfectivo,
+        contactoTipoDocumento: tipoDocEfectivo,
+        contactoNumeroDocumento: numDocEfectivo,
+        contactoCategoriaLicencia: catLicenciaEfectiva,
+        ley1581Aceptada: ley1581Final,
+        montoAbonoReportado: (reserva.montoAbonoReportado ?? 0) + cobroAdicional,
+        autorizadoSinDocumentosPorId: params.autorizarSinDocumentos
+          ? params.usuarioId
+          : reserva.autorizadoSinDocumentosPorId,
+        notaAutorizacionDocumentos: params.autorizarSinDocumentos
+          ? params.notaAutorizacion ?? reserva.notaAutorizacionDocumentos
+          : reserva.notaAutorizacionDocumentos,
         actualizadoEn: ahora,
       })
       .where(eq(reservas.id, reserva.id))
@@ -1240,6 +1534,21 @@ export async function entregarVehiculoConContratoD1(
   );
 
   await ejecutarBatchOSecuencial(db, ops);
+
+  // Si la reserva tiene usuario vinculado y se comprobaron datos nuevos en patio, sincronizar KYC
+  if (reserva.clienteId && cv && tipoDocEfectivo && numDocEfectivo) {
+    await registrarOActualizarDocumentosClienteRapidoD1(db, {
+      usuarioId: reserva.clienteId,
+      tipoDocumento: tipoDocEfectivo,
+      numeroDocumento: numDocEfectivo,
+      licenciaNumero: licenciaNumEfectiva ?? undefined,
+      licenciaCategoria: catLicenciaEfectiva ?? undefined,
+      licenciaVencimiento: cv.licenciaVencimiento ?? undefined,
+      aprobarInmediato: !params.autorizarSinDocumentos,
+      operadorId: params.usuarioId,
+    });
+  }
+
   await resolverEstadoActualVehiculo(db, reserva.vehiculoId);
 
   const reservaActualizada = await obtenerReservaPorCodigoD1(db, reserva.codigo);
@@ -1258,57 +1567,137 @@ export async function entregarVehiculoConContratoD1(
 
 /**
  * 6. registrarOActualizarDocumentosClienteRapidoD1
- * Inserta o actualiza el registro KYC del cliente en verificaciones_identidad.
+ * Inserta o actualiza los datos documentales del conductor en reserva, contrato y verificaciones_identidad.
+ * Soporta tanto cuentas registradas (usuarioId) como reservas presenciales o de invitados sin cuenta.
  */
 export async function registrarOActualizarDocumentosClienteRapidoD1(
   db: AppDb,
   params: DocsClienteRapidoParams
 ): Promise<{ ok: true }> {
   const ahora = new Date();
+  let usuarioIdDestino = params.usuarioId ?? null;
+  let reservaVinculada: typeof reservas.$inferSelect | undefined;
 
-  const existe = await db
-    .select()
-    .from(verificacionesIdentidad)
-    .where(eq(verificacionesIdentidad.usuarioId, params.usuarioId))
-    .limit(1);
+  if (params.reservaId || params.codigo) {
+    const condReserva = params.reservaId
+      ? eq(reservas.id, params.reservaId)
+      : eq(reservas.codigo, params.codigo!.trim().toUpperCase());
+    const resRows = await db.select().from(reservas).where(condReserva).limit(1);
+    const rawRes = resRows[0];
+    reservaVinculada =
+      rawRes && typeof rawRes === 'object' && 'reserva' in rawRes
+        ? (rawRes as { reserva: typeof reservas.$inferSelect }).reserva
+        : (rawRes as typeof reservas.$inferSelect | undefined);
 
-  if (existe.length > 0) {
+    if (!usuarioIdDestino && reservaVinculada?.clienteId) {
+      usuarioIdDestino = reservaVinculada.clienteId;
+    }
+  }
+
+  const licCatValida = (
+    params.licenciaCategoria === 'A1' ||
+    params.licenciaCategoria === 'A2' ||
+    params.licenciaCategoria === 'B1' ||
+    params.licenciaCategoria === 'B2' ||
+    params.licenciaCategoria === 'C1'
+      ? params.licenciaCategoria
+      : undefined
+  ) satisfies CategoriaLicenciaConduccion | undefined;
+
+  if (reservaVinculada) {
     await db
-      .update(verificacionesIdentidad)
+      .update(reservas)
       .set({
-        tipoDocumento: params.tipoDocumento,
-        numeroDocumento: params.numeroDocumento,
-        licenciaNumero: params.licenciaNumero ?? existe[0]!.licenciaNumero,
-        licenciaCategoria: params.licenciaCategoria ?? existe[0]!.licenciaCategoria,
-        licenciaVencimiento: params.licenciaVencimiento ?? existe[0]!.licenciaVencimiento,
-        documentoFrenteKey: params.documentoFrenteKey ?? existe[0]!.documentoFrenteKey,
-        documentoDorsoKey: params.documentoDorsoKey ?? existe[0]!.documentoDorsoKey,
-        licenciaFrenteKey: params.licenciaFrenteKey ?? existe[0]!.licenciaFrenteKey,
-        licenciaDorsoKey: params.licenciaDorsoKey ?? existe[0]!.licenciaDorsoKey,
-        estado: params.aprobarInmediato ? 'APROBADO' : existe[0]!.estado,
-        verificadoEn: params.aprobarInmediato ? ahora : existe[0]!.verificadoEn,
+        contactoTipoDocumento: params.tipoDocumento,
+        contactoNumeroDocumento: params.numeroDocumento,
+        ...(licCatValida ? { contactoCategoriaLicencia: licCatValida } : {}),
+        ...(params.nombreCompleto?.trim()
+          ? { contactoNombre: params.nombreCompleto.trim() }
+          : {}),
+        ...(params.telefono?.trim()
+          ? { contactoTelefono: params.telefono.trim() }
+          : {}),
+        ...(params.correo !== undefined
+          ? { contactoCorreo: params.correo.trim() || null }
+          : {}),
         actualizadoEn: ahora,
       })
-      .where(eq(verificacionesIdentidad.usuarioId, params.usuarioId));
-  } else {
-    const id = `kyc-${crypto.randomUUID().slice(0, 8)}`;
-    await db.insert(verificacionesIdentidad).values({
-      id,
-      usuarioId: params.usuarioId,
-      tipoDocumento: params.tipoDocumento,
-      numeroDocumento: params.numeroDocumento,
-      licenciaNumero: params.licenciaNumero ?? null,
-      licenciaCategoria: params.licenciaCategoria ?? null,
-      licenciaVencimiento: params.licenciaVencimiento ?? null,
-      documentoFrenteKey: params.documentoFrenteKey ?? null,
-      documentoDorsoKey: params.documentoDorsoKey ?? null,
-      licenciaFrenteKey: params.licenciaFrenteKey ?? null,
-      licenciaDorsoKey: params.licenciaDorsoKey ?? null,
-      estado: params.aprobarInmediato ? 'APROBADO' : 'PENDIENTE',
-      verificadoEn: params.aprobarInmediato ? ahora : null,
-      creadoEn: ahora,
-      actualizadoEn: ahora,
-    });
+      .where(eq(reservas.id, reservaVinculada.id));
+
+    await db
+      .update(contratosAlquiler)
+      .set({
+        arrendatarioTipoDocumento: params.tipoDocumento,
+        arrendatarioNumeroDocumento: params.numeroDocumento,
+        ...(params.licenciaNumero !== undefined
+          ? { arrendatarioLicenciaNumero: params.licenciaNumero.trim() || null }
+          : {}),
+        ...(licCatValida ? { arrendatarioLicenciaCategoria: licCatValida } : {}),
+        ...(params.ciudadExpedicion !== undefined
+          ? { arrendatarioCiudadExpedicion: params.ciudadExpedicion.trim() || null }
+          : {}),
+        ...(params.domicilio !== undefined
+          ? { arrendatarioDomicilio: params.domicilio.trim() || null }
+          : {}),
+        ...(params.nombreCompleto?.trim()
+          ? { arrendatarioNombre: params.nombreCompleto.trim() }
+          : {}),
+        ...(params.telefono?.trim()
+          ? { arrendatarioTelefono: params.telefono.trim() }
+          : {}),
+        ...(params.correo !== undefined
+          ? { arrendatarioCorreo: params.correo.trim() || null }
+          : {}),
+        actualizadoEn: ahora,
+      })
+      .where(eq(contratosAlquiler.reservaId, reservaVinculada.id));
+  }
+
+  if (usuarioIdDestino) {
+    const existe = await db
+      .select()
+      .from(verificacionesIdentidad)
+      .where(eq(verificacionesIdentidad.usuarioId, usuarioIdDestino))
+      .limit(1);
+
+    if (existe.length > 0) {
+      await db
+        .update(verificacionesIdentidad)
+        .set({
+          tipoDocumento: params.tipoDocumento,
+          numeroDocumento: params.numeroDocumento,
+          licenciaNumero: params.licenciaNumero ?? existe[0]!.licenciaNumero,
+          licenciaCategoria: params.licenciaCategoria ?? existe[0]!.licenciaCategoria,
+          licenciaVencimiento: params.licenciaVencimiento ?? existe[0]!.licenciaVencimiento,
+          documentoFrenteKey: params.documentoFrenteKey ?? existe[0]!.documentoFrenteKey,
+          documentoDorsoKey: params.documentoDorsoKey ?? existe[0]!.documentoDorsoKey,
+          licenciaFrenteKey: params.licenciaFrenteKey ?? existe[0]!.licenciaFrenteKey,
+          licenciaDorsoKey: params.licenciaDorsoKey ?? existe[0]!.licenciaDorsoKey,
+          estado: params.aprobarInmediato ? 'APROBADO' : existe[0]!.estado,
+          verificadoEn: params.aprobarInmediato ? ahora : existe[0]!.verificadoEn,
+          actualizadoEn: ahora,
+        })
+        .where(eq(verificacionesIdentidad.usuarioId, usuarioIdDestino));
+    } else {
+      const id = `kyc-${crypto.randomUUID().slice(0, 8)}`;
+      await db.insert(verificacionesIdentidad).values({
+        id,
+        usuarioId: usuarioIdDestino,
+        tipoDocumento: params.tipoDocumento,
+        numeroDocumento: params.numeroDocumento,
+        licenciaNumero: params.licenciaNumero ?? null,
+        licenciaCategoria: params.licenciaCategoria ?? null,
+        licenciaVencimiento: params.licenciaVencimiento ?? null,
+        documentoFrenteKey: params.documentoFrenteKey ?? null,
+        documentoDorsoKey: params.documentoDorsoKey ?? null,
+        licenciaFrenteKey: params.licenciaFrenteKey ?? null,
+        licenciaDorsoKey: params.licenciaDorsoKey ?? null,
+        estado: params.aprobarInmediato ? 'APROBADO' : 'PENDIENTE',
+        verificadoEn: params.aprobarInmediato ? ahora : null,
+        creadoEn: ahora,
+        actualizadoEn: ahora,
+      });
+    }
   }
 
   return { ok: true };

@@ -369,8 +369,68 @@ export const entregarVehiculoAction = defineAction({
       .int()
       .min(0, { error: 'Medidor de entrega no válido' }),
     nivelEnergiaEntregaPct: z.number().int().min(0).max(100).optional(),
+    conductorVerificado: z
+      .object({
+        nombreCompleto: z.string().min(1, { error: 'Nombre completo requerido' }),
+        telefono: z.string().min(1, { error: 'Teléfono requerido' }),
+        correo: z.email({ error: 'Correo electrónico no válido' }).optional(),
+        tipoDocumento: z.enum(tiposDocumentoIdentidad).optional(),
+        numeroDocumento: z.string().optional(),
+        ciudadExpedicion: z.string().optional(),
+        licenciaNumero: z.string().optional(),
+        licenciaCategoria: z.enum(categoriasLicenciaConduccion).optional(),
+        licenciaVencimiento: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/, { error: 'Fecha de vencimiento no válida' })
+          .optional(),
+        domicilio: z.string().optional(),
+      })
+      .optional(),
+    estadoGeneralEntrega: z.enum(estadosGeneralesInspeccion).optional(),
+    observacionesEntrega: z.string().optional(),
+    respuestasChecklist: z
+      .array(
+        z.object({
+          codigo: z.string().min(1),
+          nombre: z.string().min(1),
+          estado: z.enum(['BIEN', 'CON_NOVEDAD', 'NO_APLICA']),
+          observacion: z.string().optional(),
+        })
+      )
+      .optional(),
+    puntosR2: z
+      .array(
+        z.object({
+          id: z.string().optional(),
+          zona: z.string().min(1),
+          etiqueta: z.string().min(1),
+          dictamen: z.string().min(1),
+          estado: z.enum(estadosPuntoInspeccionR2),
+          gravedad: z.enum(gravedadesNovedadInspeccion).optional(),
+          coordX: z.string().optional(),
+          coordY: z.string().optional(),
+          costoEstimado: z.number().optional(),
+          generaCargoCliente: z.boolean().optional(),
+        })
+      )
+      .optional(),
+    consentimientosContrato: z
+      .object({
+        ley1581Aceptada: z.boolean().optional(),
+        trasladoFotomultasAceptado: z.boolean().optional(),
+        pagareBlancoFirmado: z.boolean().optional(),
+      })
+      .optional(),
     firmaArrendadorR2Key: z.string().optional(),
     firmaArrendatarioR2Key: z.string().optional(),
+    cobrarSaldoAhora: z
+      .object({
+        monto: z.number().positive({ error: 'Monto a cobrar debe ser mayor a 0' }),
+        metodoPago: z.enum(metodosPagoFinanciero),
+        cuentaId: z.string().optional(),
+        referencia: z.string().optional(),
+      })
+      .optional(),
     recibirGarantiaAhora: z
       .object({
         monto: z.number().min(0),
@@ -403,8 +463,15 @@ export const entregarVehiculoAction = defineAction({
         usuarioId: usuario.id,
         medidorUsoEntrega: input.medidorUsoEntrega,
         nivelEnergiaEntregaPct: input.nivelEnergiaEntregaPct,
+        conductorVerificado: input.conductorVerificado,
+        estadoGeneralEntrega: input.estadoGeneralEntrega,
+        observacionesEntrega: input.observacionesEntrega,
+        respuestasChecklist: input.respuestasChecklist,
+        puntosR2: input.puntosR2,
+        consentimientosContrato: input.consentimientosContrato,
         firmaArrendadorR2Key: input.firmaArrendadorR2Key,
         firmaArrendatarioR2Key: input.firmaArrendatarioR2Key,
+        cobrarSaldoAhora: input.cobrarSaldoAhora,
         recibirGarantiaAhora: input.recibirGarantiaAhora,
         autorizarSinDocumentos: input.autorizarSinDocumentos,
         notaAutorizacion: input.notaAutorizacion,
@@ -992,11 +1059,18 @@ export const registrarEntregaEvaluacionAction = defineAction({
 });
 
 /**
- * 15. Registrar o actualizar documentación KYC rápida de un cliente presencial en mostrador.
+ * 15. Registrar o actualizar documentación KYC rápida de un cliente presencial o invitado en mostrador.
  */
 export const registrarOActualizarDocumentosRapidoAction = defineAction({
   input: z.object({
-    usuarioId: z.string().min(1, { error: 'ID de usuario requerido' }),
+    usuarioId: z.string().optional(),
+    codigo: z.string().optional(),
+    reservaId: z.string().optional(),
+    nombreCompleto: z.string().optional(),
+    telefono: z.string().optional(),
+    correo: z.email({ error: 'Correo no válido' }).optional(),
+    ciudadExpedicion: z.string().optional(),
+    domicilio: z.string().optional(),
     tipoDocumento: z.enum(['CC', 'CE', 'PASAPORTE', 'NIT']),
     numeroDocumento: z.string().min(4, { error: 'Número de documento requerido' }),
     licenciaNumero: z.string().optional(),
@@ -1015,6 +1089,13 @@ export const registrarOActualizarDocumentosRapidoAction = defineAction({
     marcarRevisionNavegacion(context.cookies);
     const usuario = requireLocalAuth(context, PERMISOS.CLIENTES_ACTUALIZAR);
 
+    if (!input.usuarioId && !input.codigo && !input.reservaId) {
+      throw new ActionError({
+        code: 'BAD_REQUEST',
+        message: 'Debe indicar la reserva o el identificador del cliente.',
+      });
+    }
+
     if (!env.DB) {
       throw new ActionError({
         code: 'INTERNAL_SERVER_ERROR',
@@ -1027,6 +1108,13 @@ export const registrarOActualizarDocumentosRapidoAction = defineAction({
     try {
       await registrarOActualizarDocumentosClienteRapidoD1(db, {
         usuarioId: input.usuarioId,
+        codigo: input.codigo,
+        reservaId: input.reservaId,
+        nombreCompleto: input.nombreCompleto,
+        telefono: input.telefono,
+        correo: input.correo,
+        ciudadExpedicion: input.ciudadExpedicion,
+        domicilio: input.domicilio,
         tipoDocumento: input.tipoDocumento,
         numeroDocumento: input.numeroDocumento,
         licenciaNumero: input.licenciaNumero,

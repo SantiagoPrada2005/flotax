@@ -8,7 +8,12 @@ export interface SemaforoDocumentalPanelProps {
   estadoDocVehiculo?: EstadoDocumentalVehiculo | undefined;
   autorizarSinDocumentos: boolean;
   onToggleAutorizarSinDocs: (val: boolean) => void;
-  onDocumentosActualizados?: () => void;
+  onDocumentosActualizados?: (datosActualizados?: {
+    tipoDocumento: 'CC' | 'CE' | 'PASAPORTE' | 'NIT';
+    numeroDocumento: string;
+    categoriaLicencia: string;
+    licenciaNumero?: string | undefined;
+  }) => void;
   puedeModificar?: boolean | undefined;
 }
 
@@ -61,13 +66,6 @@ export default function SemaforoDocumentalPanel({
     setMensajeError(null);
     setMensajeExito(null);
 
-    if (!reserva.clienteId) {
-      setMensajeError(
-        'Esta reserva fue radicada en modo invitado/presencial sin cuenta vinculada. Puedes autorizar la operación marcando el check de responsabilidad del local.'
-      );
-      return;
-    }
-
     if (!numeroDocumento.trim()) {
       setMensajeError('El número de documento es obligatorio.');
       return;
@@ -76,7 +74,8 @@ export default function SemaforoDocumentalPanel({
     setGuardando(true);
     try {
       const res = await actions.reservas.registrarOActualizarDocumentosRapido({
-        usuarioId: reserva.clienteId,
+        usuarioId: reserva.clienteId ?? undefined,
+        codigo: reserva.codigo,
         tipoDocumento,
         numeroDocumento: numeroDocumento.trim(),
         licenciaNumero: licenciaNumero.trim() || undefined,
@@ -92,7 +91,12 @@ export default function SemaforoDocumentalPanel({
       setMensajeExito('Documentos del cliente registrados y verificados en D1.');
       setMostrarFormularioRapido(false);
       if (onDocumentosActualizados) {
-        onDocumentosActualizados();
+        onDocumentosActualizados({
+          tipoDocumento,
+          numeroDocumento: numeroDocumento.trim(),
+          categoriaLicencia: licenciaCategoria,
+          licenciaNumero: licenciaNumero.trim() || undefined,
+        });
       }
     } catch (err) {
       setMensajeError(
@@ -179,7 +183,7 @@ export default function SemaforoDocumentalPanel({
           </div>
         </div>
 
-        {puedeModificar && reserva.clienteId && (
+        {puedeModificar && (
           <div className="pt-1">
             <button
               type="button"
@@ -188,7 +192,7 @@ export default function SemaforoDocumentalPanel({
             >
               {mostrarFormularioRapido
                 ? 'Ocultar formulario'
-                : 'Registrar / Aprobar datos rápidos de cliente'}
+                : 'Registrar / Comprobar datos del cliente'}
             </button>
           </div>
         )}

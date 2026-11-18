@@ -374,45 +374,6 @@ export default function AlquilerDetalleView({
     }
   };
 
-  const entregarVehiculoOperativo = async () => {
-    if (operacionCargando) return;
-    setOperacionCargando(true);
-    setErrorOperacion(null);
-    try {
-      const res = await actions.reservas.entregarVehiculo({
-        codigo: reserva.codigo,
-        medidorUsoEntrega: reserva.kilometrajeEntrega,
-        nivelEnergiaEntregaPct: reserva.nivelCargaPorcentaje,
-        autorizarSinDocumentos,
-        notaAutorizacion: autorizarSinDocumentos
-          ? 'Entrega autorizada bajo responsabilidad del local'
-          : undefined,
-      });
-
-      if (res.error) {
-        setErrorOperacion(res.error.message);
-        mostrarAviso(res.error.message);
-      } else if (res.data?.reserva) {
-        guardarCambioReserva({
-          ...reserva,
-          estado: 'EN_CURSO',
-          kilometrajeEntrega:
-            res.data.reserva.kilometrajeEntrega ?? reserva.kilometrajeEntrega,
-        });
-        mostrarAviso(
-          `Vehículo entregado · Contrato vigente · Unidad ${vehiculo.placa} en ruta`
-        );
-      }
-    } catch (err: unknown) {
-      const msg =
-        err instanceof Error ? err.message : 'Error al entregar el vehículo';
-      setErrorOperacion(msg);
-      mostrarAviso(msg);
-    } finally {
-      setOperacionCargando(false);
-    }
-  };
-
   const reanudarAlquilerOperativo = async () => {
     if (operacionCargando) return;
     setOperacionCargando(true);
@@ -1372,7 +1333,19 @@ export default function AlquilerDetalleView({
               reserva={reserva}
               autorizarSinDocumentos={autorizarSinDocumentos}
               onToggleAutorizarSinDocs={setAutorizarSinDocumentos}
-              onDocumentosActualizados={() => {
+              onDocumentosActualizados={(datos) => {
+                if (datos) {
+                  guardarCambioReserva({
+                    ...reserva,
+                    conductor: {
+                      ...reserva.conductor,
+                      tipoDocumento: datos.tipoDocumento,
+                      numeroDocumento: datos.numeroDocumento,
+                      categoriaLicencia: datos.categoriaLicencia,
+                      licenciaNumero: datos.licenciaNumero ?? reserva.conductor.licenciaNumero,
+                    },
+                  });
+                }
                 mostrarAviso('Expediente documental del cliente actualizado');
               }}
             />
@@ -1428,19 +1401,19 @@ export default function AlquilerDetalleView({
               </div>
             )}
 
-            {/* Etapa 2: CONFIRMADA -> Entrega del vehículo (Contrato VIGENTE) o Cancelar */}
+            {/* Etapa 2: CONFIRMADA -> Formulario Typeform de Entrega del Vehículo */}
             {reserva.estado === 'CONFIRMADA' && (
               <div className="flex flex-wrap items-center gap-2">
                 {capacidades?.puedeEntregar && (
                   <button
                     type="button"
                     disabled={operacionCargando}
-                    onClick={entregarVehiculoOperativo}
-                    className="min-h-[44px] flex-1 rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] disabled:opacity-50 cursor-pointer"
+                    onClick={() =>
+                      navigate(`/admin/reservas/${reserva.codigo}/entrega`)
+                    }
+                    className="ios-press-bounce min-h-[48px] flex-1 rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] disabled:opacity-50 cursor-pointer"
                   >
-                    {operacionCargando
-                      ? 'Entregando...'
-                      : 'Confirmar entrega y salida R2 (Vigente)'}
+                    Iniciar entrega del vehículo (Formulario) →
                   </button>
                 )}
                 {capacidades?.puedeConfirmarRechazar && (
@@ -1451,7 +1424,7 @@ export default function AlquilerDetalleView({
                       setTipoModalCancelar('CANCELAR');
                       setModalCancelarAbierto(true);
                     }}
-                    className="min-h-[44px] rounded-full bg-[#EDEDED] px-4 py-2.5 text-xs font-bold text-[#111827] hover:bg-[#9CA3AF]/40 disabled:opacity-50 cursor-pointer"
+                    className="min-h-[48px] rounded-full bg-[#EDEDED] px-4 py-2.5 text-xs font-bold text-[#111827] hover:bg-[#9CA3AF]/40 disabled:opacity-50 cursor-pointer"
                   >
                     Cancelar reserva
                   </button>
@@ -1625,70 +1598,70 @@ export default function AlquilerDetalleView({
           )}
 
         {/* ===================================================================
-            BARRA DE ENTREGA Y EVALUACIÓN INTERACTIVA (100DVH WIZARD)
+            EVALUACIÓN DEL CLIENTE (EN MODO ADMIN SOLO MUESTRA RESUMEN SI EXISTE;
+            EN MODO CLIENTE SOLO HABILITA RETORNO SI ESTÁ EN_CURSO)
             =================================================================== */}
-        <div className="border-t border-[#EDEDED] pt-3.5 space-y-2.5">
-          {reserva.evaluacionEntrega ? (
-            <div className="flex items-center justify-between gap-3 rounded-[20px] bg-[#EDEDED]/85 px-3.5 py-2.5">
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="rounded-full bg-[#111827] px-2 py-0.5 font-mono text-[10px] font-bold text-white">
-                    {reserva.evaluacionEntrega.puntajeNumerico}.0 ★
-                  </span>
-                  <span className="font-display text-xs font-bold text-[#111827] truncate">
-                    Entrega y evaluación registradas
-                  </span>
+        {(reserva.evaluacionEntrega || !esAdmin) && (
+          <div className="border-t border-[#EDEDED] pt-3.5 space-y-2.5">
+            {reserva.evaluacionEntrega ? (
+              <div className="flex items-center justify-between gap-3 rounded-[20px] bg-[#EDEDED]/85 px-3.5 py-2.5">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="rounded-full bg-[#111827] px-2 py-0.5 font-mono text-[10px] font-bold text-white">
+                      {reserva.evaluacionEntrega.puntajeNumerico}.0 ★
+                    </span>
+                    <span className="font-display text-xs font-bold text-[#111827] truncate">
+                      Evaluación del cliente registrada
+                    </span>
+                  </div>
+                  <p className="mt-0.5 text-[11px] font-medium text-[#4B5563] truncate">
+                    {reserva.evaluacionEntrega.aspectosDestacados.join(' · ') ||
+                      'Paz y salvo digital R2 activo'}
+                  </p>
                 </div>
-                <p className="mt-0.5 text-[11px] font-medium text-[#4B5563] truncate">
-                  {reserva.evaluacionEntrega.aspectosDestacados.join(' · ') ||
-                    'Paz y salvo digital R2 activo'}
-                </p>
-              </div>
 
-              <button
-                type="button"
-                onClick={() =>
-                  navigate(
-                    esAdmin
-                      ? `/reservas/${reserva.codigo}/entrega?retorno=/admin/reservas/${reserva.codigo}`
-                      : `/reservas/${reserva.codigo}/entrega${
+                {!esAdmin && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigate(
+                        `/reservas/${reserva.codigo}/entrega${
                           tokenAccesoPublico
                             ? `?token=${encodeURIComponent(tokenAccesoPublico)}`
                             : ''
                         }`
-                  )
-                }
-                className="ios-press-bounce shrink-0 min-h-[44px] rounded-full bg-white px-4 py-2 text-xs font-bold text-[#111827] cursor-pointer"
-              >
-                Ver resumen
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() =>
-                navigate(
-                  esAdmin
-                    ? `/reservas/${reserva.codigo}/entrega?retorno=/admin/reservas/${reserva.codigo}`
-                    : `/reservas/${reserva.codigo}/entrega${
+                      )
+                    }
+                    className="ios-press-bounce shrink-0 min-h-[44px] rounded-full bg-white px-4 py-2 text-xs font-bold text-[#111827] cursor-pointer"
+                  >
+                    Ver resumen
+                  </button>
+                )}
+              </div>
+            ) : (
+              !esAdmin &&
+              reserva.estado === 'EN_CURSO' && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate(
+                      `/reservas/${reserva.codigo}/entrega${
                         tokenAccesoPublico
                           ? `?token=${encodeURIComponent(tokenAccesoPublico)}`
                           : ''
                       }`
-                )
-              }
-              className="ios-press-bounce flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#1F2937] cursor-pointer"
-            >
-              <span>⛶</span>
-              <span>
-                {esAdmin
-                  ? 'Realizar entrega pericial y evaluación R2'
-                  : 'Entregar vehículo y calificar servicio'}
-              </span>
-              <span>→</span>
-            </button>
-          )}
-        </div>
+                    )
+                  }
+                  className="ios-press-bounce flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#1F2937] cursor-pointer"
+                >
+                  <span>⛶</span>
+                  <span>Entregar vehículo y calificar servicio</span>
+                  <span>→</span>
+                </button>
+              )
+            )}
+          </div>
+        )}
           </section>
         </div>
       </div>
