@@ -334,6 +334,7 @@ export default function EntregaVehiculoWizardIsland({
             observacion: item.observacion,
           })),
           puntosR2: data.puntosR2.map((p) => ({
+            id: p.id,
             zona: p.zona,
             etiqueta: p.etiqueta,
             dictamen: p.dictamen,

@@ -40,7 +40,12 @@ import {
 } from '@/db/schema';
 import { and, eq, like, or, sql } from 'drizzle-orm';
 import { crearServicioNotificaciones } from '@/lib/notificaciones';
-import { requireLocalAuth, PERMISOS, tienePermiso } from '@/lib/auth';
+import {
+  requireLocalAuth,
+  PERMISOS,
+  tienePermiso,
+  resolverContextoOrigenReserva,
+} from '@/lib/auth';
 
 function manejarErrorCiclo(error: unknown): never {
   if (error instanceof ActionError) {
@@ -104,6 +109,7 @@ export const crearReservaAction = defineAction({
     contactoCorreo: z.email({ error: 'Correo electrónico de contacto no válido' }).optional(),
     ley1581Aceptada: z.boolean().optional(),
     clienteId: z.string().optional(),
+    origen: z.enum(['CLIENTE_WEB', 'MOSTRADOR_ADMIN']).optional(),
     estadoInicial: z.enum(['PENDIENTE', 'CONFIRMADA']).optional(),
     pagoConfirmadoInmediato: z
       .object({
@@ -132,21 +138,31 @@ export const crearReservaAction = defineAction({
       context.locals.localCaptacion?.id ||
       'local-patio-norte';
 
+    const contextoOrigen = resolverContextoOrigenReserva(
+      usuario,
+      input.origen,
+      input.clienteId
+    );
+    if (!contextoOrigen.permitido) {
+      throw new ActionError({
+        code: 'FORBIDDEN',
+        message: 'Solo el personal autorizado del local puede crear reservas de mostrador.',
+      });
+    }
+
     try {
       const res = await crearReservaConValidaciones(
         db,
         {
           ...input,
           localId,
-          clienteId:
-            input.clienteId ??
-            (usuario?.localActivo ? null : usuario?.id ?? null),
+          clienteId: contextoOrigen.clienteId,
         },
         {
           usuarioId: usuario?.id ?? null,
           rol: usuario?.localActivo?.rol ?? (usuario ? 'USUARIO' : undefined),
           localId,
-          origen: usuario?.localActivo ? 'MOSTRADOR_ADMIN' : 'CLIENTE_WEB',
+          origen: contextoOrigen.origen,
         }
       );
 

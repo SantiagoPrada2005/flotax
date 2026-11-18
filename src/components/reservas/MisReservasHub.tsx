@@ -448,6 +448,7 @@ export default function MisReservasHub({
         contactoTelefono: formTelefono.trim(),
         contactoCorreo: formCorreo.trim() || undefined,
         clienteId: clienteSeleccionadoId ?? undefined,
+        origen: 'MOSTRADOR_ADMIN',
         estadoInicial: formEstadoInicial,
         pagoConfirmadoInmediato: pagoConfirmado,
         ley1581Aceptada: true,
