@@ -103,43 +103,28 @@ export default function VehicleStudioShowcase({
       {/* =====================================================================
           1. ESCENARIO STUDIO 360° CON PEDESTAL ELÍPTICO Y MINIATURAS (PANTALLAS 3 Y 4)
          ===================================================================== */}
-      <section className="rounded-[32px] bg-white border border-[#9CA3AF]/30 p-4 sm:p-6 shadow-[0_16px_38px_-10px_rgba(17,24,39,0.08)] space-y-5 relative overflow-hidden">
-        {/* Escenario Principal */}
-        <div className="relative flex flex-col items-center justify-center pt-3 pb-2 min-h-[230px] sm:min-h-[260px]">
-          {/* Silueta Secundaria Desenfocada Flotante (Detalle artístico de Pantallas 3 y 4) */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute left-1 top-2 w-20 h-20 rounded-2xl bg-[#EDEDED]/60 p-2 flex items-center justify-center blur-[1px] opacity-75"
-          >
-            <img
-              src={vehiculo.imagenUrl}
-              alt=""
-              className="w-full h-full object-contain -scale-x-100 opacity-70"
-            />
-          </div>
+      <section className="rounded-[32px] bg-white dark:bg-[#1F2937] border border-[#9CA3AF]/30 dark:border-white/12 shadow-[0_16px_38px_-10px_rgba(17,24,39,0.08)] relative overflow-hidden">
+        {/* Escenario Principal: Fotografía 16:9 de borde a borde, sin marco ni relleno */}
+        <div className="relative w-full aspect-video rounded-t-[31px] overflow-hidden">
+          <img
+            src={vehiculo.imagenUrl}
+            alt={`${vehiculo.marca} ${vehiculo.modelo} - ${currentAngle.label}`}
+            className={`h-full w-full object-cover object-center block transition-transform duration-300 ease-out select-none ${currentAngle.imageClass}`}
+          />
 
           {/* Etiqueta de Vista Activa */}
-          <span className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-[#EDEDED] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
+          <span className="absolute left-3.5 top-3.5 inline-flex items-center gap-1.5 rounded-full bg-[#111827]/75 backdrop-blur-md border border-white/20 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
             <span>{currentAngle.badge}</span>
             <span>•</span>
-            <span className="font-mono tabular-nums text-[#111827]">
+            <span className="font-mono tabular-nums">
               ★ {vehiculo.rating}
             </span>
           </span>
 
-          {/* Imagen Principal del Vehículo con Transición Elástica */}
-          <div className="w-full px-6 flex items-center justify-center overflow-hidden">
-            <img
-              src={vehiculo.imagenUrl}
-              alt={`${vehiculo.marca} ${vehiculo.modelo} - ${currentAngle.label}`}
-              className={`w-full max-h-48 sm:max-h-56 object-contain mx-auto transition-all duration-500 ease-out select-none ${currentAngle.imageClass}`}
-            />
-          </div>
-
-          {/* Indicadores Verticales de Paginación a la Derecha (Pantallas 3 y 4) */}
+          {/* Indicadores Verticales de Paginación a la Derecha */}
           <div
             aria-label="Indicador de perspectiva"
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2"
+            className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2"
           >
             {STUDIO_ANGLES.map((ang, idx) => {
               const active = idx === angleIndex;
@@ -152,134 +137,115 @@ export default function VehicleStudioShowcase({
                     setAngleIndex(idx);
                   }}
                   aria-label={`Ver perspectiva ${ang.label}`}
-                  className={`transition-all cursor-pointer flex items-center justify-center ${active
-                    ? 'h-5 w-5 rounded-full border border-[#111827] bg-white shadow-2xs'
-                    : 'h-2.5 w-2.5 rounded-full bg-[#9CA3AF]/50 hover:bg-[#4B5563]'
-                    }`}
+                  className={`transition-colors cursor-pointer flex items-center justify-center ${
+                    active
+                      ? 'h-5 w-5 rounded-full border border-white bg-[#111827]/85 shadow-2xs'
+                      : 'h-2.5 w-2.5 rounded-full bg-white/55 hover:bg-white'
+                  }`}
                 >
                   {active && (
-                    <span className="h-2 w-2 rounded-full bg-[#111827]" />
+                    <span className="h-2 w-2 rounded-full bg-white" />
                   )}
                 </button>
               );
             })}
           </div>
 
-          {/* Pedestal Elíptico Curvo 360° con Botón '< >' Central (Pantalla 3) */}
-          <div className="relative w-full max-w-[290px] sm:max-w-[330px] mt-1 flex flex-col items-center">
+          {/* Botón '< >' para rotar perspectiva */}
+          <button
+            type="button"
+            onClick={rotarAngulo}
+            aria-label="Rotar perspectiva del vehículo"
+            className="fx-press absolute right-3.5 bottom-3.5 flex h-9 w-9 items-center justify-center rounded-full bg-[#111827]/80 text-white border border-white/25 backdrop-blur-md shadow-md hover:bg-[#111827] cursor-pointer"
+          >
             <svg
-              viewBox="0 0 320 42"
-              fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              className="w-full h-10 text-[#111827]"
-              aria-hidden="true"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-4 w-4"
             >
-              <ellipse
-                cx="160"
-                cy="16"
-                rx="145"
-                ry="13"
-                stroke="#9CA3AF"
-                strokeWidth="1.2"
-                strokeDasharray="3 3"
-                opacity="0.55"
-              />
-              <path
-                d="M 18 16 A 145 14 0 0 0 302 16"
-                stroke="#111827"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
+              <path d="m9 18-6-6 6-6" />
+              <path d="m15 6 6 6-6 6" />
             </svg>
-
-            <button
-              type="button"
-              onClick={rotarAngulo}
-              aria-label="Rotar perspectiva del vehículo"
-              className="ios-press-bounce -mt-6 flex h-9 w-9 items-center justify-center rounded-full bg-[#1F2937] text-[#EDEDED] border-2 border-white shadow-md hover:bg-[#111827] cursor-pointer"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-4 w-4"
-              >
-                <path d="m9 18-6-6 6-6" />
-                <path d="m15 6 6 6-6 6" />
-              </svg>
-            </button>
-          </div>
+          </button>
         </div>
 
-        {/* Tira de 4 Miniaturas Squircle (Pantalla 3: Activa en #1F2937) */}
-        <div className="grid grid-cols-4 gap-2.5">
-          {STUDIO_ANGLES.map((ang, idx) => {
-            const isSelected = idx === angleIndex;
-            return (
-              <button
-                key={ang.id}
-                type="button"
-                onClick={() => {
-                  triggerHaptic(8);
-                  setAngleIndex(idx);
-                }}
-                className={`ios-press-bounce rounded-[18px] p-2.5 flex flex-col items-center justify-center gap-1.5 transition cursor-pointer border ${isSelected
-                  ? 'bg-[#1F2937] text-[#EDEDED] border-[#111827] shadow-md scale-[1.02]'
-                  : 'bg-[#EDEDED]/55 text-[#111827] border-[#9CA3AF]/25 hover:bg-[#EDEDED]'
+        <div className="p-4 sm:p-6 space-y-5">
+          {/* Tira de 4 Miniaturas Squircle */}
+          <div className="grid grid-cols-4 gap-2.5">
+            {STUDIO_ANGLES.map((ang, idx) => {
+              const isSelected = idx === angleIndex;
+              return (
+                <button
+                  key={ang.id}
+                  type="button"
+                  onClick={() => {
+                    triggerHaptic(8);
+                    setAngleIndex(idx);
+                  }}
+                  className={`fx-press rounded-[18px] overflow-hidden pb-2 flex flex-col items-center justify-center gap-1.5 transition-colors cursor-pointer border ${
+                    isSelected
+                      ? 'bg-[#1F2937] text-[#EDEDED] border-[#111827] shadow-md dark:bg-[#EDEDED] dark:text-[#111827] dark:border-[#EDEDED]'
+                      : 'bg-[#EDEDED]/55 text-[#111827] border-[#9CA3AF]/25 hover:bg-[#EDEDED] dark:bg-[#111827] dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/10'
                   }`}
-              >
-                <img
-                  src={vehiculo.imagenUrl}
-                  alt={ang.label}
-                  className={`h-10 w-full object-contain transition-transform ${ang.imageClass}`}
-                />
-                <span
-                  className={`text-[10px] font-bold truncate max-w-full ${isSelected ? 'text-[#EDEDED]' : 'text-[#4B5563]'
-                    }`}
                 >
-                  {ang.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+                  <div className="w-full aspect-video overflow-hidden">
+                    <img
+                      src={vehiculo.imagenUrl}
+                      alt={ang.label}
+                      className={`h-full w-full object-cover object-center block transition-transform ${ang.imageClass}`}
+                    />
+                  </div>
+                  <span
+                    className={`px-1 text-[10px] font-bold truncate max-w-full ${
+                      isSelected
+                        ? 'text-[#EDEDED] dark:text-[#111827]'
+                        : 'text-[#4B5563] dark:text-[#D1D5DB]'
+                    }`}
+                  >
+                    {ang.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         {/* ===================================================================
             2. INFORMACIÓN PRINCIPAL: FICHA TÉCNICA Y REQUISITOS (EN UN SOLO LUGAR)
            =================================================================== */}
         <div className="space-y-3.5 pt-1">
           {/* Ficha Técnica */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between border-b border-[#EDEDED] pb-1.5">
-              <span className="text-xs sm:text-sm font-bold text-[#111827]">
+            <div className="flex items-center justify-between border-b border-[#EDEDED] dark:border-white/10 pb-1.5">
+              <span className="text-xs sm:text-sm font-bold text-[#111827] dark:text-[#EDEDED]">
                 Ficha Técnica
               </span>
-              <span className="text-[11px] font-semibold text-[#4B5563]">
+              <span className="text-[11px] font-semibold text-[#4B5563] dark:text-[#D1D5DB]">
                 {vehiculo.categoriaEtiqueta} • {vehiculo.anio}
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="rounded-2xl bg-[#EDEDED]/60 p-2.5 sm:p-3 flex items-center justify-between">
-                <span className="text-[#4B5563]">Transmisión</span>
-                <span className="font-bold text-[#111827]">{vehiculo.transmision}</span>
+            <div className="grid grid-cols-2 rounded-2xl overflow-hidden bg-[#EDEDED]/60 dark:bg-[#111827] border border-[#9CA3AF]/25 dark:border-white/10 text-xs">
+              <div className="p-2.5 sm:p-3 flex items-center justify-between gap-2 border-r border-b border-[#9CA3AF]/25 dark:border-white/10">
+                <span className="text-[#4B5563] dark:text-[#D1D5DB]">Transmisión</span>
+                <span className="font-bold text-[#111827] dark:text-[#EDEDED] truncate">{vehiculo.transmision}</span>
               </div>
-              <div className="rounded-2xl bg-[#EDEDED]/60 p-2.5 sm:p-3 flex items-center justify-between">
-                <span className="text-[#4B5563]">Propulsión</span>
-                <span className="font-bold text-[#111827]">{vehiculo.combustible}</span>
+              <div className="p-2.5 sm:p-3 flex items-center justify-between gap-2 border-b border-[#9CA3AF]/25 dark:border-white/10">
+                <span className="text-[#4B5563] dark:text-[#D1D5DB]">Propulsión</span>
+                <span className="font-bold text-[#111827] dark:text-[#EDEDED] truncate">{vehiculo.combustible}</span>
               </div>
-              <div className="rounded-2xl bg-[#EDEDED]/60 p-2.5 sm:p-3 flex items-center justify-between">
-                <span className="text-[#4B5563]">Capacidad</span>
-                <span className="font-mono tabular-nums font-bold text-[#111827]">
+              <div className="p-2.5 sm:p-3 flex items-center justify-between gap-2 border-r border-[#9CA3AF]/25 dark:border-white/10">
+                <span className="text-[#4B5563] dark:text-[#D1D5DB]">Capacidad</span>
+                <span className="font-mono tabular-nums font-bold text-[#111827] dark:text-[#EDEDED] truncate">
                   {vehiculo.capacidadPasajeros} pasajeros
                 </span>
               </div>
-              <div className="rounded-2xl bg-[#EDEDED]/60 p-2.5 sm:p-3 flex items-center justify-between">
-                <span className="text-[#4B5563]">Depósito</span>
-                <span className="font-mono tabular-nums font-bold text-[#111827]">
+              <div className="p-2.5 sm:p-3 flex items-center justify-between gap-2">
+                <span className="text-[#4B5563] dark:text-[#D1D5DB]">Depósito</span>
+                <span className="font-mono tabular-nums font-bold text-[#111827] dark:text-[#EDEDED] truncate">
                   {formatCop(vehiculo.depositoGarantia)}
                 </span>
               </div>
@@ -287,25 +253,42 @@ export default function VehicleStudioShowcase({
           </div>
 
           {/* Requisitos de Alquiler */}
-          <div className="rounded-2xl bg-[#EDEDED]/60 p-3 sm:p-3.5 space-y-2 text-xs text-[#4B5563]">
-            <span className="text-xs font-bold text-[#111827] block">
-              Requisitos para Alquilar
-            </span>
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-[#111827]">
-                ✓ Documento de identidad y licencia vigente
+          <div className="space-y-2">
+            <div className="flex items-center justify-between border-b border-[#EDEDED] dark:border-white/10 pb-1.5">
+              <span className="text-xs sm:text-sm font-bold text-[#111827] dark:text-[#EDEDED]">
+                Requisitos para Alquilar
               </span>
-              <span className="font-mono text-[10px] text-[#4B5563] shrink-0">KYC en línea</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-[#111827]">
-                ✓ Depósito reembolsable en garantía ({local.nombre})
-              </span>
-              <span className="font-mono tabular-nums font-bold text-[#111827] shrink-0">
-                {formatCop(vehiculo.depositoGarantia)}
+              <span className="font-mono text-[10px] font-semibold text-[#4B5563] dark:text-[#D1D5DB]">
+                Verificación en patio
               </span>
             </div>
-            <p className="text-[11px] text-[#4B5563] pt-0.5">
+
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="rounded-2xl bg-[#EDEDED]/60 dark:bg-[#111827] dark:border dark:border-white/10 p-2.5 sm:p-3 flex flex-col justify-between gap-1.5">
+                <span className="font-mono text-[10px] font-semibold text-[#4B5563] dark:text-[#D1D5DB]">
+                  ✓ KYC en línea
+                </span>
+                <span className="font-semibold text-[#111827] dark:text-[#EDEDED] leading-snug">
+                  Documento de identidad y licencia vigente
+                </span>
+              </div>
+
+              <div className="rounded-2xl bg-[#EDEDED]/60 dark:bg-[#111827] dark:border dark:border-white/10 p-2.5 sm:p-3 flex flex-col justify-between gap-1.5">
+                <span className="text-[10px] font-semibold text-[#4B5563] dark:text-[#D1D5DB] truncate">
+                  ✓ Garantía ({local.nombre})
+                </span>
+                <div>
+                  <span className="font-mono tabular-nums font-bold text-sm text-[#111827] dark:text-[#EDEDED] block">
+                    {formatCop(vehiculo.depositoGarantia)}
+                  </span>
+                  <span className="text-[10px] text-[#4B5563] dark:text-[#D1D5DB]">
+                    Depósito reembolsable
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-[#4B5563] dark:text-[#D1D5DB]">
               Entrega con acta fotográfica pericial verificada en patio.
             </p>
           </div>
@@ -318,11 +301,12 @@ export default function VehicleStudioShowcase({
           <a
             href={`/alquilar/${vehiculo.id}`}
             onClick={() => triggerHaptic(8)}
-            className="ios-press-bounce min-h-[48px] inline-flex items-center justify-center rounded-full bg-white border border-[#9CA3AF]/60 px-4 py-3 text-xs sm:text-sm font-extrabold text-[#111827] hover:bg-[#EDEDED]/60 transition"
+            className="fx-press min-h-[48px] inline-flex items-center justify-center rounded-full bg-white border border-[#9CA3AF]/60 px-4 py-3 text-xs sm:text-sm font-extrabold text-[#111827] hover:bg-[#EDEDED]/60 transition-colors dark:bg-[#111827] dark:border-white/20 dark:text-[#EDEDED] dark:hover:bg-white/10"
           >
             Elegir fechas
           </a>
 
+        </div>
         </div>
       </section>
 

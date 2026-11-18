@@ -8,7 +8,9 @@
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
 | [`EditorialAvailabilityCalendar.tsx`](./EditorialAvailabilityCalendar.tsx) | Isla React 19: Calendario Editorial | `EditorialAvailabilityCalendar`, `EditorialAvailabilityCalendarProps` | `@/lib/flota` |
-| [`RentalWizardFlow.tsx`](./RentalWizardFlow.tsx) | Isla React 19: Orquestador Multi-Paso | `RentalWizardFlow`, `RentalWizardFlowProps` | `./EditorialAvailabilityCalendar`, `@/lib/flota` |
+| [`RentalVehicleHero.tsx`](./RentalVehicleHero.tsx) | Componente React 19: Presentación Protagonista del Vehículo | `RentalVehicleHero`, `RentalVehicleHeroProps` | `@/lib/flota` |
+| [`RentalWizardFlow.tsx`](./RentalWizardFlow.tsx) | Isla React 19: Orquestador Multi-Paso | `RentalWizardFlow`, `RentalWizardFlowProps` | `./EditorialAvailabilityCalendar`, `./RentalVehicleHero`, `./SlideToConfirmControl`, `@/lib/flota` |
+| [`SlideToConfirmControl.tsx`](./SlideToConfirmControl.tsx) | Control Interactivo: Deslizamiento Horizontal para Confirmar | `SlideToConfirmControl`, `SlideToConfirmControlProps`, `SlideConfirmStatus` | `react` |
 
 ## Invariants & Directory Rules
 
