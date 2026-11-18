@@ -25,6 +25,7 @@ import {
   movimientosCaja,
   verificacionesIdentidad,
   documentosVehiculo,
+  clientesLocal,
 } from '../src/db/schema/index.ts';
 
 function buscarEnChunks(chunk: unknown, buscar: string): boolean {
@@ -339,9 +340,15 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
   });
 
   it('3. vincularReservasHuerfanasPorCorreoD1: vincula reservas, contratos y garantías con clienteId null hacia el userId normalizando mayúsculas y espacios', async () => {
-    let updateReservasVals: Record<string, unknown> | null = null;
-    let updateContratosVals: Record<string, unknown> | null = null;
-    let updateGarantiasVals: Record<string, unknown> | null = null;
+    const capturas: {
+      reservas: Record<string, unknown> | null;
+      contratos: Record<string, unknown> | null;
+      garantias: Record<string, unknown> | null;
+    } = {
+      reservas: null,
+      contratos: null,
+      garantias: null,
+    };
 
     const mockReservasHuerfanas = [
       {
@@ -368,9 +375,9 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
       }),
       update: (table: unknown) => ({
         set: (vals: Record<string, unknown>) => {
-          if (table === reservas) updateReservasVals = vals;
-          if (table === contratosAlquiler) updateContratosVals = vals;
-          if (table === depositosGarantia) updateGarantiasVals = vals;
+          if (table === reservas) capturas.reservas = vals;
+          if (table === contratosAlquiler) capturas.contratos = vals;
+          if (table === depositosGarantia) capturas.garantias = vals;
           return {
             where: async () => [],
           };
@@ -392,10 +399,10 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
     );
 
     assert.equal(totalVinculadas, 2, 'Debe vincular las 2 reservas coincidentes');
-    assert.equal(updateReservasVals?.['clienteId'], 'usr-nuevo-registrado');
-    assert.equal(updateGarantiasVals?.['clienteId'], 'usr-nuevo-registrado');
+    assert.equal(capturas.reservas?.['clienteId'], 'usr-nuevo-registrado');
+    assert.equal(capturas.garantias?.['clienteId'], 'usr-nuevo-registrado');
     assert.ok(
-      updateGarantiasVals?.['actualizadoEn'] instanceof Date,
+      capturas.garantias?.['actualizadoEn'] instanceof Date,
       'depositosGarantia debe incluir actualizadoEn con la fecha de vinculación'
     );
   });
@@ -893,7 +900,9 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
     let reservaUpdate: Record<string, unknown> | null = null;
     let contratoUpdate: Record<string, unknown> | null = null;
     let inspInsertada: Record<string, unknown> | null = null;
+    let depositoInsertado: Record<string, unknown> | null = null;
     const puntosInsertados: Record<string, unknown>[] = [];
+    const puntosActualizados: Record<string, unknown>[] = [];
     const movimientosInsertados: Record<string, unknown>[] = [];
 
     const motoData = {
@@ -987,6 +996,7 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
           if (table === inspeccionesPericiales) inspInsertada = vals;
           if (table === puntosInspeccionR2) puntosInsertados.push(vals);
           if (table === movimientosCaja) movimientosInsertados.push(vals);
+          if (table === depositosGarantia) depositoInsertado = vals;
           return {
             onConflictDoNothing: async () => [vals],
             then: (resolve: (v: unknown) => unknown) => resolve([vals]),
@@ -997,6 +1007,7 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
         set: (vals: Record<string, unknown>) => {
           if (table === reservas) reservaUpdate = vals;
           if (table === contratosAlquiler) contratoUpdate = vals;
+          if (table === puntosInspeccionR2) puntosActualizados.push(vals);
           return {
             where: async () => [],
           };
@@ -1063,6 +1074,15 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
           coordX: '50%',
           coordY: '40%',
         },
+        {
+          id: 'pto-existente-1',
+          zona: 'Tren Delantero',
+          etiqueta: 'Verificado OK en entrega',
+          dictamen: 'Actualizado en salida',
+          estado: 'VERIFICADO',
+          coordX: '34%',
+          coordY: '66%',
+        },
       ],
       consentimientosContrato: {
         ley1581Aceptada: true,
@@ -1096,7 +1116,9 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
       1,
       'Debe persistir el checklist de entrega en el acta pericial'
     );
-    assert.equal(puntosInsertados.length, 1, 'Debe persistir los puntos R2 de salida');
+    assert.equal(puntosInsertados.length, 1, 'Debe insertar los puntos R2 nuevos de salida');
+    assert.equal(puntosActualizados.length, 1, 'Debe actualizar puntos R2 preexistentes');
+    assert.equal(depositoInsertado?.['estado'], 'RECIBIDO_CUSTODIA', 'Debe crear el depósito en custodia si no existía fila previa');
     assert.equal(movimientosInsertados.length, 2, 'Debe registrar saldo y depósito de garantía en caja');
   });
 
@@ -1142,5 +1164,119 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
     assert.equal(reservaAct?.['contactoCategoriaLicencia'], 'B1');
     assert.equal(contratoAct?.['arrendatarioNumeroDocumento'], '99887766');
     assert.equal(contratoAct?.['arrendatarioLicenciaNumero'], 'LIC-99887766');
+  });
+
+  it('10. crearReservaConValidaciones (web con usuarioId): vincula clienteId en reserva y registra relación en clientesLocal', async () => {
+    const vehiculoValido = {
+      id: vehiculoId,
+      localId,
+      marca: 'Mazda',
+      modelo: 'CX-30',
+      placa: 'FLX-123',
+      precioDia: 180_000,
+      depositoGarantia: 600_000,
+      estado: 'DISPONIBLE',
+      activo: true,
+      categoria: 'SUV',
+      kilometraje: 15_000,
+    };
+
+    let reservaInsertada: Record<string, unknown> | null = null;
+    let clienteLocalInsertado: Record<string, unknown> | null = null;
+
+    const mockDb = {
+      session: new MockD1Session(),
+      batch: crearMockBatch(),
+      select: () => ({
+        from: (table: unknown) => {
+          if (table === vehiculos) return crearMockQuery([vehiculoValido]);
+          if (table === politicasLocal) return crearMockQuery([{ id: 'pol-1', localId, abonoMinimoPct: 30, coberturaPericialPct: 8 }]);
+          if (table === reservas) {
+            return crearMockQuery(
+              reservaInsertada ? [reservaInsertada] : [],
+              reservaInsertada ? [{ reserva: reservaInsertada, vehiculo: vehiculoValido }] : []
+            );
+          }
+          return crearMockQuery([]);
+        },
+      }),
+      insert: (table: unknown) => ({
+        values: (vals: Record<string, unknown>) => {
+          if (table === reservas) reservaInsertada = vals;
+          if (table === clientesLocal) clienteLocalInsertado = vals;
+          return { onConflictDoNothing: async () => [] };
+        },
+      }),
+      update: () => ({
+        set: () => ({ where: async () => [] }),
+      }),
+    } as unknown as AppDb;
+
+    const res = await crearReservaConValidaciones(
+      mockDb,
+      {
+        vehiculoId,
+        localId,
+        fechaInicio: '2026-12-01',
+        fechaFin: '2026-12-03',
+        contactoNombre: 'Cliente Verificado',
+        contactoTelefono: '3001234567',
+        contactoCorreo: 'cliente@flotax.co',
+      },
+      {
+        usuarioId: 'usr-cliente-42',
+        rol: 'USUARIO',
+        localId,
+        origen: 'CLIENTE_WEB',
+      }
+    );
+
+    assert.equal(res.reserva.clienteId, 'usr-cliente-42');
+    assert.equal(reservaInsertada?.['clienteId'], 'usr-cliente-42');
+    assert.equal(clienteLocalInsertado?.['usuarioId'], 'usr-cliente-42');
+    assert.equal(clienteLocalInsertado?.['localId'], localId);
+  });
+
+  it('11. vincularReservasHuerfanasPorCorreoD1 con incluirCreadasPorUsuario vincula reservas huérfanas previas del cliente', async () => {
+    let reservaActualizada: Record<string, unknown> | null = null;
+    let clienteLocalInsertado: Record<string, unknown> | null = null;
+
+    const mockDb = {
+      session: new MockD1Session(),
+      batch: crearMockBatch(),
+      select: () => ({
+        from: (table: unknown) => {
+          if (table === reservas) {
+            return crearMockQuery([
+              { id: 'res-huerfana-9', codigo: 'FLX-900111', localId },
+            ]);
+          }
+          return crearMockQuery([]);
+        },
+      }),
+      update: (table: unknown) => ({
+        set: (vals: Record<string, unknown>) => {
+          if (table === reservas) reservaActualizada = vals;
+          return { where: async () => [] };
+        },
+      }),
+      insert: (table: unknown) => ({
+        values: (vals: Record<string, unknown>) => {
+          if (table === clientesLocal) clienteLocalInsertado = vals;
+          return { onConflictDoNothing: async () => [] };
+        },
+      }),
+    } as unknown as AppDb;
+
+    const vinculadas = await vincularReservasHuerfanasPorCorreoD1(
+      mockDb,
+      'usr-cliente-42',
+      'cliente@flotax.co',
+      { incluirCreadasPorUsuario: true }
+    );
+
+    assert.equal(vinculadas, 1);
+    assert.equal(reservaActualizada?.['clienteId'], 'usr-cliente-42');
+    assert.equal(clienteLocalInsertado?.['usuarioId'], 'usr-cliente-42');
   });
 });

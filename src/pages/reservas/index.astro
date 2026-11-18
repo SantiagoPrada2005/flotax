@@ -6,10 +6,18 @@ import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
 import { listarReservasD1 } from '@/lib/flota/repositorio-reservas';
 import { listarVehiculos } from '@/lib/flota/repositorio';
+import { vincularReservasHuerfanasPorCorreoD1 } from '@/lib/flota/ciclo-alquiler';
+import { esUsuarioPersonal } from '@/lib/auth/portal-modo';
 
 const { dateString: hoyISO } = resolveClientTimeContext(Astro.request);
 const usuario = Astro.locals.usuario;
 const db = env.DB ? getDb(env.DB) : undefined;
+
+if (db && usuario?.id && usuario?.correo) {
+  await vincularReservasHuerfanasPorCorreoD1(db, usuario.id, usuario.correo, {
+    incluirCreadasPorUsuario: !esUsuarioPersonal(usuario),
+  });
+}
 
 const initialReservas = await listarReservasD1(db, {
   clienteId: usuario?.id,

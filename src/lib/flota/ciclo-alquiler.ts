@@ -12,6 +12,7 @@ import {
   movimientosCaja,
   verificacionesIdentidad,
   clientesLocal,
+  user,
   type ModalidadEntregaReservaSchema,
   type ModalidadPagoInicial,
   type MetodoAbonoInicial,
@@ -456,6 +457,17 @@ export async function crearReservaConValidaciones(
     tokenAccesoPublico = null;
     estadoInicial = input.estadoInicial === 'CONFIRMADA' ? 'CONFIRMADA' : 'PENDIENTE';
     clienteId = input.clienteId ?? null;
+    if (!clienteId && input.contactoCorreo) {
+      const emailNorm = input.contactoCorreo.trim().toLowerCase();
+      if (emailNorm) {
+        const userMatches = await db
+          .select({ id: user.id })
+          .from(user)
+          .where(sql`LOWER(TRIM(${user.email})) = ${emailNorm}`)
+          .limit(1);
+        clienteId = userMatches[0]?.id ?? null;
+      }
+    }
   }
 
   // 6. Evaluar advertencias documentales
@@ -531,6 +543,24 @@ export async function crearReservaConValidaciones(
       actualizadoEn: ahora,
     })
   );
+
+  // Registrar relación cliente-local en D1 cuando la reserva tiene clienteId
+  if (clienteId) {
+    ops.push(
+      db
+        .insert(clientesLocal)
+        .values({
+          id: `cl-${localId}-${clienteId}`,
+          usuarioId: clienteId,
+          localId,
+          esLocalOrigen: false,
+          esPreferido: false,
+          ultimaVisitaEn: ahora,
+          creadoEn: ahora,
+        })
+        .onConflictDoNothing()
+    );
+  }
 
   // Si entra como CONFIRMADA directa, crear contrato BORRADOR y depósito PENDIENTE_RECIBIR
   if (estadoInicial === 'CONFIRMADA') {
@@ -670,10 +700,21 @@ export async function crearReservaConValidaciones(
 export async function vincularReservasHuerfanasPorCorreoD1(
   db: AppDb,
   userId: string,
-  correo: string
+  correo: string,
+  opciones?: { incluirCreadasPorUsuario?: boolean }
 ): Promise<number> {
   const emailNorm = correo?.trim().toLowerCase();
-  if (!emailNorm || !userId) return 0;
+  if ((!emailNorm && !opciones?.incluirCreadasPorUsuario) || !userId) return 0;
+
+  const filtroCoincidencia =
+    emailNorm && opciones?.incluirCreadasPorUsuario
+      ? or(
+          sql`LOWER(TRIM(${reservas.contactoCorreo})) = ${emailNorm}`,
+          eq(reservas.creadoPorId, userId)
+        )
+      : emailNorm
+        ? sql`LOWER(TRIM(${reservas.contactoCorreo})) = ${emailNorm}`
+        : eq(reservas.creadoPorId, userId);
 
   const rows = await db
     .select({
@@ -682,12 +723,7 @@ export async function vincularReservasHuerfanasPorCorreoD1(
       localId: reservas.localId,
     })
     .from(reservas)
-    .where(
-      and(
-        isNull(reservas.clienteId),
-        sql`LOWER(TRIM(${reservas.contactoCorreo})) = ${emailNorm}`
-      )
-    );
+    .where(and(isNull(reservas.clienteId), filtroCoincidencia));
 
   if (rows.length === 0) return 0;
 
@@ -1355,30 +1391,51 @@ export async function entregarVehiculoConContratoD1(
   // Puntos R2 verificados durante el acto de entrega
   if (params.puntosR2 && params.puntosR2.length > 0) {
     for (const p of params.puntosR2) {
-      const pId = p.id ?? `pto-${crypto.randomUUID().slice(0, 8)}`;
-      ops.push(
-        db
-          .insert(puntosInspeccionR2)
-          .values({
-            id: pId,
-            localId: reserva.localId,
-            reservaId: reserva.id,
-            inspeccionId: inspId,
-            vehiculoId: reserva.vehiculoId,
-            zona: p.zona,
-            etiqueta: p.etiqueta,
-            dictamen: p.dictamen,
-            estado: p.estado,
-            gravedad: p.gravedad ?? null,
-            coordX: p.coordX ?? '50%',
-            coordY: p.coordY ?? '50%',
-            costoEstimado: p.costoEstimado ?? 0,
-            generaCargoCliente: p.generaCargoCliente ?? false,
-            creadoEn: ahora,
-            actualizadoEn: ahora,
-          })
-          .onConflictDoNothing()
-      );
+      if (p.id && !p.id.startsWith('r2-')) {
+        ops.push(
+          db
+            .update(puntosInspeccionR2)
+            .set({
+              inspeccionId: inspId,
+              zona: p.zona,
+              etiqueta: p.etiqueta,
+              dictamen: p.dictamen,
+              estado: p.estado,
+              gravedad: p.gravedad ?? null,
+              coordX: p.coordX ?? '50%',
+              coordY: p.coordY ?? '50%',
+              costoEstimado: p.costoEstimado ?? 0,
+              generaCargoCliente: p.generaCargoCliente ?? false,
+              actualizadoEn: ahora,
+            })
+            .where(eq(puntosInspeccionR2.id, p.id))
+        );
+      } else {
+        const pId = `pto-${crypto.randomUUID().slice(0, 8)}`;
+        ops.push(
+          db
+            .insert(puntosInspeccionR2)
+            .values({
+              id: pId,
+              localId: reserva.localId,
+              reservaId: reserva.id,
+              inspeccionId: inspId,
+              vehiculoId: reserva.vehiculoId,
+              zona: p.zona,
+              etiqueta: p.etiqueta,
+              dictamen: p.dictamen,
+              estado: p.estado,
+              gravedad: p.gravedad ?? null,
+              coordX: p.coordX ?? '50%',
+              coordY: p.coordY ?? '50%',
+              costoEstimado: p.costoEstimado ?? 0,
+              generaCargoCliente: p.generaCargoCliente ?? false,
+              creadoEn: ahora,
+              actualizadoEn: ahora,
+            })
+            .onConflictDoNothing()
+        );
+      }
     }
   }
 
@@ -1428,26 +1485,67 @@ export async function entregarVehiculoConContratoD1(
     );
     const cuentaId = cta?.id ?? ctasLocal[0]?.id;
 
-    ops.push(
-      db
-        .update(depositosGarantia)
-        .set({
-          estado: 'RECIBIDO_CUSTODIA',
-          montoRecibido: monto,
-          saldoComprometido: monto,
-          metodoPago,
-          referenciaRecepcion: referencia ?? null,
-          cuentaId: cuentaId ?? null,
-          clienteNombre: nombreEfectivo,
-          actualizadoEn: ahora,
-        })
-        .where(
-          or(
-            eq(depositosGarantia.contratoId, numeroContrato),
-            eq(depositosGarantia.contratoId, reserva.codigo)
-          )
+    // Garantizar fila previa en depositos_garantia si la reserva no pasó por confirmación estándar
+    const depExistente = await db
+      .select({ id: depositosGarantia.id })
+      .from(depositosGarantia)
+      .where(
+        or(
+          eq(depositosGarantia.contratoId, numeroContrato),
+          eq(depositosGarantia.contratoId, reserva.codigo)
         )
-    );
+      )
+      .limit(1);
+
+    if (depExistente.length === 0) {
+      ops.push(
+        db
+          .insert(depositosGarantia)
+          .values({
+            id: `dep-${reserva.codigo.toLowerCase()}-${crypto.randomUUID().slice(0, 6)}`,
+            localId: reserva.localId,
+            contratoId: numeroContrato,
+            clienteId: reserva.clienteId,
+            clienteNombre: nombreEfectivo,
+            vehiculoId: reserva.vehiculoId,
+            montoEsperado: vehiculo.depositoGarantia ?? monto,
+            montoRecibido: monto,
+            montoRetenido: 0,
+            montoDevuelto: 0,
+            saldoComprometido: monto,
+            estado: 'RECIBIDO_CUSTODIA',
+            metodoPago,
+            referenciaRecepcion: referencia ?? null,
+            cuentaId: cuentaId ?? null,
+            fechaRecepcion: ahora,
+            creadoEn: ahora,
+            actualizadoEn: ahora,
+          })
+          .onConflictDoNothing()
+      );
+    } else {
+      ops.push(
+        db
+          .update(depositosGarantia)
+          .set({
+            estado: 'RECIBIDO_CUSTODIA',
+            montoRecibido: monto,
+            saldoComprometido: monto,
+            metodoPago,
+            referenciaRecepcion: referencia ?? null,
+            cuentaId: cuentaId ?? null,
+            clienteNombre: nombreEfectivo,
+            fechaRecepcion: ahora,
+            actualizadoEn: ahora,
+          })
+          .where(
+            or(
+              eq(depositosGarantia.contratoId, numeroContrato),
+              eq(depositosGarantia.contratoId, reserva.codigo)
+            )
+          )
+      );
+    }
 
     if (cuentaId) {
       const movId = `mov-fianza-${reserva.codigo.toLowerCase()}-${crypto.randomUUID().slice(0, 6)}`;
