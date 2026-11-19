@@ -3,8 +3,6 @@ import { actions } from 'astro:actions';
 import { navigate } from 'astro:transitions/client';
 import {
   Briefcase,
-  Camera,
-  Check,
   ChevronRight,
   MapPin,
   ShieldCheck,
@@ -12,6 +10,10 @@ import {
 } from 'lucide-react';
 import { LocationSelectionFlow } from './LocationSelectionFlow';
 import { TwoEnvironmentsTutorial } from './TwoEnvironmentsTutorial';
+import {
+  CameraPermissionStep,
+  type CameraPermissionState,
+} from './CameraPermissionStep';
 import { formatearUbicacionOperativa } from '@/lib/geo/colombia';
 
 export interface OperatorOnboardingWizardProps {
@@ -28,7 +30,7 @@ export default function OperatorOnboardingWizard({
   modoInicial = 'induccion',
 }: OperatorOnboardingWizardProps) {
   const [pasoActual, setPasoActual] = useState<1 | 2 | 3>(1);
-  const [cameraState, setCameraState] = useState<'idle' | 'checking' | 'granted' | 'denied'>('idle');
+  const [cameraState, setCameraState] = useState<CameraPermissionState>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -57,10 +59,20 @@ export default function OperatorOnboardingWizard({
         stream.getTracks().forEach((track) => track.stop());
         setCameraState('granted');
       } else {
-        setCameraState('denied');
+        setCameraState('unavailable');
       }
     } catch (err) {
-      setCameraState('denied');
+      if (
+        err instanceof DOMException &&
+        (err.name === 'NotFoundError' ||
+          err.name === 'DevicesNotFoundError' ||
+          err.name === 'NotReadableError' ||
+          err.name === 'OverconstrainedError')
+      ) {
+        setCameraState('unavailable');
+      } else {
+        setCameraState('denied');
+      }
     }
   };
 
@@ -276,7 +288,7 @@ export default function OperatorOnboardingWizard({
                   </div>
                   <ul className="list-disc space-y-1.5 pl-5">
                     <li>Gestión de solicitudes de alquiler y verificación de conductores.</li>
-                    <li>Actas de entrega y devolución con peritaje fotográfico en Cloudflare R2.</li>
+                    <li>Registros fotográficos de entrega y devolución para documentar cada vehículo.</li>
                     <li>Monitoreo del estado físico y kilometraje de la flota de vehículos.</li>
                   </ul>
                 </div>
@@ -307,100 +319,17 @@ export default function OperatorOnboardingWizard({
           />
         )}
 
-        {/* PASO 3: Permisos de Cámara para Peritaje R2 */}
+        {/* PASO 3: Permisos de Cámara */}
         {pasoActual === 3 && (
-          <div className="space-y-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#111827] text-[#EDEDED] dark:border dark:border-white/15 dark:bg-[#1F2937]">
-              <Camera className="h-6 w-6 stroke-[1.75]" aria-hidden="true" />
-            </div>
-
-            <div className="space-y-2">
-              <span className="inline-flex items-center gap-1 rounded-full border border-[var(--fx-border-subtle)] bg-[var(--fx-bg-surface-subtle)] px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--fx-text-secondary)] dark:bg-white/6">
-                Herramienta Crítica
-              </span>
-              <h2 className="font-display text-2xl font-bold tracking-tight text-[var(--fx-text-primary)] sm:text-3xl">
-                Cámara para Peritajes Fotográficos
-              </h2>
-              <p className="text-sm leading-relaxed text-[var(--fx-text-secondary)]">
-                Toda entrega y devolución requiere evidencia visual obligatoria en Cloudflare R2 para proteger tu negocio y respaldar depósitos en garantía.
-              </p>
-            </div>
-
-            {/* Estado de Cámara */}
-            <div className="space-y-3 rounded-2xl border border-[var(--fx-border-subtle)] bg-[var(--fx-bg-surface-subtle)] p-4 dark:bg-[#1F2937]/50">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[var(--fx-text-primary)]">Acceso a la cámara</span>
-                {cameraState === 'granted' && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300">
-                    <Check className="h-3.5 w-3.5" aria-hidden="true" />
-                    <span>Autorizado</span>
-                  </span>
-                )}
-                {cameraState === 'denied' && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-800 dark:bg-amber-500/20 dark:text-amber-300">
-                    Pendiente
-                  </span>
-                )}
-                {cameraState === 'idle' && (
-                  <span className="text-xs text-[var(--fx-text-secondary)]">Sin verificar</span>
-                )}
-              </div>
-
-              {cameraState !== 'granted' ? (
-                <button
-                  type="button"
-                  onClick={handleProbarCamara}
-                  disabled={cameraState === 'checking'}
-                  className="fx-press fx-btn-outline flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl py-3 text-xs font-bold shadow-2xs"
-                >
-                  {cameraState === 'checking' ? (
-                    'Solicitando permiso...'
-                  ) : (
-                    <>
-                      <Camera className="h-4 w-4" aria-hidden="true" />
-                      <span>Autorizar cámara ahora</span>
-                    </>
-                  )}
-                </button>
-              ) : (
-                <p className="text-xs text-emerald-700 dark:text-emerald-300">
-                  Tu dispositivo está listo para realizar inspecciones de 360° en patio.
-                </p>
-              )}
-            </div>
-
-            {errorMsg && (
-              <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-medium text-red-700 dark:border-red-500/30 dark:bg-red-950/50 dark:text-red-300">
-                {errorMsg}
-              </div>
-            )}
-
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setPasoActual(2)}
-                disabled={isPending}
-                className="fx-press fx-btn-outline flex min-h-[52px] w-1/3 items-center justify-center rounded-2xl py-4 text-base font-semibold disabled:opacity-40"
-              >
-                Atrás
-              </button>
-              <button
-                type="button"
-                onClick={handleFinalizar}
-                disabled={isPending}
-                className="fx-press fx-btn-primary flex min-h-[52px] flex-1 items-center justify-center gap-2 rounded-2xl py-4 text-base font-bold shadow-sm disabled:opacity-40"
-              >
-                {isPending ? (
-                  <span>Configurando tu patio...</span>
-                ) : (
-                  <>
-                    <span>{esModoCrear ? 'Crear Patio y Comenzar' : 'Entrar a Cabina de Patio'}</span>
-                    <ChevronRight className="h-4 w-4" aria-hidden="true" />
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
+          <CameraPermissionStep
+            cameraState={cameraState}
+            isPending={isPending}
+            esModoCrear={esModoCrear}
+            errorMsg={errorMsg}
+            onRequestCamera={handleProbarCamara}
+            onBack={() => setPasoActual(2)}
+            onFinish={handleFinalizar}
+          />
         )}
       </div>
     </div>

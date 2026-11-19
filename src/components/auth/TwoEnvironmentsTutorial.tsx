@@ -198,7 +198,7 @@ export function TwoEnvironmentsTutorial({
             {/* Cuenta anclada persistente */}
             <div className="flex items-center justify-between px-1">
               <div className="flex items-center gap-2">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#111827] text-[#EDEDED] dark:bg-[#EDEDED] dark:text-[#111827]">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#111827] text-[#EDEDED] dark:border dark:border-white/15 dark:bg-[#1F2937]">
                   <User className="h-3.5 w-3.5" aria-hidden="true" />
                 </span>
                 <span className="text-xs font-semibold text-[var(--fx-text-primary)]">
@@ -211,11 +211,11 @@ export function TwoEnvironmentsTutorial({
             </div>
 
             {/* Vista UI que transiciona suavemente entre Personal y Negocio */}
-            <div className="overflow-hidden rounded-2xl bg-[#F3F4F6] p-4 transition-colors duration-300 dark:bg-[#1F2937]/75">
+            <div className="overflow-hidden rounded-2xl border border-[var(--fx-border-subtle)] bg-[var(--fx-bg-surface-subtle)] p-4 transition-colors duration-300">
               {slide1Env === 'personal' ? (
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#111827] text-[#EDEDED] dark:bg-[#EDEDED] dark:text-[#111827]">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#111827] text-[#EDEDED] dark:border dark:border-white/15 dark:bg-[#1F2937]">
                       <Car className="h-5 w-5" aria-hidden="true" />
                     </span>
                     <div>
@@ -234,7 +234,7 @@ export function TwoEnvironmentsTutorial({
               ) : (
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#111827] text-[#EDEDED] dark:bg-[#EDEDED] dark:text-[#111827]">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#111827] text-[#EDEDED] dark:border dark:border-white/15 dark:bg-[#1F2937]">
                       <Building2 className="h-5 w-5" aria-hidden="true" />
                     </span>
                     <div>
@@ -246,7 +246,7 @@ export function TwoEnvironmentsTutorial({
                       </p>
                     </div>
                   </div>
-                  <span className="rounded-full bg-[#111827] px-2.5 py-1 text-[10px] font-bold text-[#EDEDED] dark:bg-[#EDEDED] dark:text-[#111827]">
+                  <span className="rounded-full bg-[#111827] px-2.5 py-1 text-[10px] font-bold text-[#EDEDED] dark:border dark:border-white/15 dark:bg-[#1F2937]">
                     Operando
                   </span>
                 </div>
@@ -257,10 +257,10 @@ export function TwoEnvironmentsTutorial({
 
         {/* SLIDE 2: Tu espacio personal (demo de catálogo y reserva) */}
         {activeSlide === 1 && (
-          <div className="w-full max-w-sm space-y-3 rounded-2xl bg-[#F3F4F6] p-4 dark:bg-[#1F2937]/75">
+          <div className="w-full max-w-sm space-y-3 rounded-2xl border border-[var(--fx-border-subtle)] bg-[var(--fx-bg-surface-subtle)] p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#111827] text-[#EDEDED] dark:bg-[#EDEDED] dark:text-[#111827]">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#111827] text-[#EDEDED] dark:border dark:border-white/15 dark:bg-[#1F2937]">
                   <Car className="h-4 w-4" aria-hidden="true" />
                 </span>
                 <div>
@@ -275,7 +275,7 @@ export function TwoEnvironmentsTutorial({
               <span
                 className={`rounded-full px-2.5 py-1 text-[11px] font-bold transition-colors duration-300 ${
                   slide2Booked
-                    ? 'bg-[#111827] text-[#EDEDED] dark:bg-[#EDEDED] dark:text-[#111827]'
+                    ? 'bg-[#111827] text-[#EDEDED] dark:border dark:border-white/15 dark:bg-[#1F2937]'
                     : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
                 }`}
               >
@@ -283,7 +283,7 @@ export function TwoEnvironmentsTutorial({
               </span>
             </div>
 
-            <div className="flex items-center justify-between rounded-xl bg-[var(--fx-bg-surface)] px-3.5 py-2.5 dark:bg-[#111827]/70">
+            <div className="flex items-center justify-between rounded-xl border border-[var(--fx-border-subtle)] bg-[var(--fx-bg-surface)] px-3.5 py-2.5">
               <span className="flex items-center gap-2 text-xs font-medium text-[var(--fx-text-secondary)]">
                 <Calendar className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>22 – 25 Nov · 3 días</span>
@@ -304,14 +304,14 @@ export function TwoEnvironmentsTutorial({
 
         {/* SLIDE 3: Administra tu negocio (demo de inspección con cámara y estado) */}
         {activeSlide === 2 && (
-          <div className="w-full max-w-sm space-y-3 rounded-2xl bg-[#F3F4F6] p-4 dark:bg-[#1F2937]/75">
+          <div className="w-full max-w-sm space-y-3 rounded-2xl border border-[var(--fx-border-subtle)] bg-[var(--fx-bg-surface-subtle)] p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[var(--fx-text-muted)]">
-                  Entrega en patio
+                  Inspección en patio
                 </p>
                 <p className="font-display text-sm font-bold text-[var(--fx-text-primary)]">
-                  Acta #FX-204 · Placa KLM-482
+                  Vehículo · Placa KLM-482
                 </p>
               </div>
               <span
@@ -326,14 +326,14 @@ export function TwoEnvironmentsTutorial({
             </div>
 
             {/* Demostración de captura fotográfica en inspección */}
-            <div className="flex items-center gap-2.5 rounded-xl bg-[var(--fx-bg-surface)] p-3 dark:bg-[#111827]/70">
+            <div className="flex items-center gap-2.5 rounded-xl border border-[var(--fx-border-subtle)] bg-[var(--fx-bg-surface)] p-3">
               <button
                 type="button"
                 onClick={() => setSlide3Captured((prev) => !prev)}
                 aria-label="Simular captura fotográfica de inspección"
                 className={`fx-press flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors duration-200 ${
                   slide3Captured
-                    ? 'bg-[#111827] text-[#EDEDED] dark:bg-[#EDEDED] dark:text-[#111827]'
+                    ? 'bg-[#111827] text-[#EDEDED] dark:border dark:border-white/20 dark:bg-[#1F2937]'
                     : 'bg-[#EDEDED] text-[#111827] dark:bg-white/10 dark:text-[#EDEDED]'
                 }`}
               >
@@ -362,7 +362,7 @@ export function TwoEnvironmentsTutorial({
             <div
               role="group"
               aria-label="Cambiar entorno de demostración"
-              className="grid grid-cols-2 gap-1.5 rounded-2xl bg-[#F3F4F6] p-1.5 dark:bg-[#1F2937]/80"
+              className="grid grid-cols-2 gap-1.5 rounded-2xl border border-[var(--fx-border-subtle)] bg-[var(--fx-bg-surface-subtle)] p-1.5"
             >
               <button
                 type="button"
@@ -370,7 +370,7 @@ export function TwoEnvironmentsTutorial({
                 onClick={() => setSlide4Env('personal')}
                 className={`fx-press flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs font-bold transition-colors duration-150 ${
                   slide4Env === 'personal'
-                    ? 'bg-[#111827] text-[#EDEDED] shadow-2xs dark:bg-[#EDEDED] dark:text-[#111827]'
+                    ? 'bg-[#111827] text-[#EDEDED] shadow-2xs dark:border dark:border-white/15 dark:bg-[#1F2937]'
                     : 'text-[var(--fx-text-secondary)] hover:text-[var(--fx-text-primary)]'
                 }`}
               >
@@ -384,7 +384,7 @@ export function TwoEnvironmentsTutorial({
                 onClick={() => setSlide4Env('negocio')}
                 className={`fx-press flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs font-bold transition-colors duration-150 ${
                   slide4Env === 'negocio'
-                    ? 'bg-[#111827] text-[#EDEDED] shadow-2xs dark:bg-[#EDEDED] dark:text-[#111827]'
+                    ? 'bg-[#111827] text-[#EDEDED] shadow-2xs dark:border dark:border-white/15 dark:bg-[#1F2937]'
                     : 'text-[var(--fx-text-secondary)] hover:text-[var(--fx-text-primary)]'
                 }`}
               >
@@ -393,7 +393,7 @@ export function TwoEnvironmentsTutorial({
               </button>
             </div>
 
-            <div className="flex items-center justify-between rounded-2xl bg-[#F3F4F6] px-4 py-3.5 transition-colors duration-200 dark:bg-[#1F2937]/75">
+            <div className="flex items-center justify-between rounded-2xl border border-[var(--fx-border-subtle)] bg-[var(--fx-bg-surface-subtle)] px-4 py-3.5 transition-colors duration-200">
               <div>
                 <p className="font-display text-sm font-bold text-[var(--fx-text-primary)]">
                   {slide4Env === 'personal' ? 'Portal de Cliente' : 'Cabina de Patio'}

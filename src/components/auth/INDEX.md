@@ -18,7 +18,8 @@
 | [`LoginFlow.tsx`](./LoginFlow.tsx) | Isla React 19: Flujo OTP y Acceso | Componente `<LoginFlow />` | [`AuthVectorBackground.tsx`](./AuthVectorBackground.tsx), Better Auth client |
 | [`LoginForm.astro`](./LoginForm.astro) | Orquestador SSR Formulario de Acceso | Componente `<LoginForm />` | [`LoginFlow.tsx`](./LoginFlow.tsx) |
 | [`LocationSelectionFlow.tsx`](./LocationSelectionFlow.tsx) | Isla React 19: Selección Progresiva de Ubicación | `LocationSelectionFlow`, `default`, `LocationSelectionFlowProps`, `LocationStep` | `lucide-react`, `@/components/ui/LocationOptionSelectorModal`, `@/lib/geo/colombia` |
-| [`OperatorOnboardingWizard.tsx`](./OperatorOnboardingWizard.tsx) | Isla React 19: Inducción de Patio en 3 Pasos | Componente `<OperatorOnboardingWizard ... />` | `astro:actions`, `astro:transitions/client`, [`LocationSelectionFlow.tsx`](./LocationSelectionFlow.tsx), [`TwoEnvironmentsTutorial.tsx`](./TwoEnvironmentsTutorial.tsx) |
+| [`OperatorOnboardingWizard.tsx`](./OperatorOnboardingWizard.tsx) | Isla React 19: Inducción de Patio en 3 Pasos | Componente `<OperatorOnboardingWizard ... />` | `astro:actions`, `astro:transitions/client`, [`LocationSelectionFlow.tsx`](./LocationSelectionFlow.tsx), [`TwoEnvironmentsTutorial.tsx`](./TwoEnvironmentsTutorial.tsx), [`CameraPermissionStep.tsx`](./CameraPermissionStep.tsx) |
+| [`CameraPermissionStep.tsx`](./CameraPermissionStep.tsx) | Isla React 19: Permiso de Cámara y Demostración | `CameraPermissionStep`, `default`, `CameraPermissionStepProps`, `CameraPermissionState` | `lucide-react` |
 | [`TwoEnvironmentsTutorial.tsx`](./TwoEnvironmentsTutorial.tsx) | Isla React 19: Tutorial Interactivo 4 Slides | `TwoEnvironmentsTutorial`, `default`, `TwoEnvironmentsTutorialProps` | `lucide-react` |
 
 ## Invariants & Directory Rules
