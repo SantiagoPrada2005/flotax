@@ -1,6 +1,18 @@
 import { useState, useTransition, type SyntheticEvent } from 'react';
 import { actions } from 'astro:actions';
 import { navigate } from 'astro:transitions/client';
+import {
+  Briefcase,
+  Camera,
+  Check,
+  ChevronRight,
+  MapPin,
+  ShieldCheck,
+  Users,
+} from 'lucide-react';
+import { LocationSelectionFlow } from './LocationSelectionFlow';
+import { TwoEnvironmentsTutorial } from './TwoEnvironmentsTutorial';
+import { formatearUbicacionOperativa } from '@/lib/geo/colombia';
 
 export interface OperatorOnboardingWizardProps {
   nombreOperador: string;
@@ -22,12 +34,18 @@ export default function OperatorOnboardingWizard({
 
   // Estados para creación de nuevo patio
   const [nombrePatio, setNombrePatio] = useState('');
+  const [departamentoPatio, setDepartamentoPatio] = useState('');
   const [ciudadPatio, setCiudadPatio] = useState('');
   const [telefonoPatio, setTelefonoPatio] = useState('');
+  const [mostrandoFlujoUbicacion, setMostrandoFlujoUbicacion] = useState(false);
 
   const esModoCrear = modoInicial === 'crear';
   const nombreLocal = esModoCrear ? (nombrePatio.trim() || 'Mi Patio de Alquiler') : initialNombreLocal;
   const rolOperador = esModoCrear ? 'DUEÑO' : initialRolOperador;
+  const ubicacionFormateada =
+    departamentoPatio && ciudadPatio
+      ? formatearUbicacionOperativa(ciudadPatio, departamentoPatio)
+      : '';
 
   const handleProbarCamara = async () => {
     setCameraState('checking');
@@ -53,8 +71,8 @@ export default function OperatorOnboardingWizard({
         setErrorMsg('El nombre de tu negocio o patio debe tener al menos 3 caracteres.');
         return;
       }
-      if (ciudadPatio.trim().length < 2) {
-        setErrorMsg('Por favor ingresa la ciudad donde operará tu flota.');
+      if (!departamentoPatio.trim() || !ciudadPatio.trim()) {
+        setErrorMsg('Por favor selecciona el departamento y la ciudad donde operará tu flota.');
         return;
       }
     }
@@ -69,7 +87,7 @@ export default function OperatorOnboardingWizard({
         if (esModoCrear) {
           const result = await actions.portal.crearPatioOperativo({
             nombre: nombrePatio.trim(),
-            ciudad: ciudadPatio.trim(),
+            ciudad: formatearUbicacionOperativa(ciudadPatio, departamentoPatio),
             telefono: telefonoPatio.trim() || undefined,
           });
 
@@ -101,58 +119,74 @@ export default function OperatorOnboardingWizard({
 
   return (
     <div className="mx-auto w-full max-w-lg px-4 py-6 sm:py-10">
-      {/* Indicador de Pasos Móvil */}
-      <div className="mb-6 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5">
-          {[1, 2, 3].map((step) => (
-            <div
-              key={step}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                step === pasoActual
-                  ? 'w-8 bg-[#111827]'
-                  : step < pasoActual
-                  ? 'w-4 bg-[#4B5563]'
-                  : 'w-4 bg-[#EDEDED]'
-              }`}
-            />
-          ))}
+      {/* Indicador de Pasos Móvil (oculto en el tutorial interactivo para evitar doble indicador) */}
+      {pasoActual !== 2 && (
+        <div className="mb-6 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5">
+            {[1, 2, 3].map((step) => (
+              <div
+                key={step}
+                className={`h-1.5 rounded-full transition-colors duration-200 ${
+                  step === pasoActual
+                    ? 'w-8 bg-[#111827] dark:bg-[#EDEDED]'
+                    : step < pasoActual
+                    ? 'w-4 bg-[#4B5563] dark:bg-[#9CA3AF]'
+                    : 'w-4 bg-[#D1D5DB] dark:bg-white/15'
+                }`}
+              />
+            ))}
+          </div>
+          <span className="font-mono text-xs font-semibold uppercase tracking-wide text-[var(--fx-text-secondary)]">
+            Paso {pasoActual} de 3
+          </span>
         </div>
-        <span className="font-mono text-xs font-semibold uppercase text-[#4B5563]">
-          Paso {pasoActual} de 3
-        </span>
-      </div>
+      )}
 
       {/* Contenedor Principal */}
-      <div className="rounded-[28px] bg-white p-6 sm:p-8 border border-[#9CA3AF]/30 shadow-lg">
+      <div className="rounded-[28px] border border-[var(--fx-border-card)] bg-[var(--fx-bg-surface)] p-6 shadow-lg sm:p-8 dark:border-white/10 dark:bg-[#111827]/90 dark:backdrop-blur-xl dark:shadow-2xl">
         {/* PASO 1: Creación de Patio o Bienvenida de Equipo */}
-        {pasoActual === 1 && (
+        {pasoActual === 1 && esModoCrear && mostrandoFlujoUbicacion ? (
+          <LocationSelectionFlow
+            initialDepartamento={departamentoPatio}
+            initialCiudad={ciudadPatio}
+            onComplete={(depto, city) => {
+              setDepartamentoPatio(depto);
+              setCiudadPatio(city);
+              setErrorMsg(null);
+              setMostrandoFlujoUbicacion(false);
+            }}
+            onCancel={(depto, city) => {
+              if (depto) setDepartamentoPatio(depto);
+              if (city || depto !== departamentoPatio) setCiudadPatio(city);
+              setMostrandoFlujoUbicacion(false);
+            }}
+          />
+        ) : null}
+
+        {pasoActual === 1 && !(esModoCrear && mostrandoFlujoUbicacion) && (
           <form onSubmit={handlePaso1Siguiente} className="space-y-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#111827] text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#111827] text-[#EDEDED] dark:border dark:border-white/15 dark:bg-[#1F2937]">
+              <Users className="h-6 w-6 stroke-[1.75]" aria-hidden="true" />
             </div>
 
             {esModoCrear ? (
               <div className="space-y-4">
-                <div className="space-y-1">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#111827]/5 px-3 py-1 text-xs font-bold text-[#111827]">
-                    ⭐ Rol: DUEÑO DEL PATIO
+                <div className="space-y-1.5">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--fx-border-subtle)] bg-[var(--fx-bg-surface-subtle)] px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--fx-text-primary)] dark:bg-white/6">
+                    <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span>Rol: Dueño del patio</span>
                   </span>
-                  <h1 className="font-display text-2xl font-black text-[#111827] sm:text-3xl">
+                  <h1 className="font-display text-2xl font-bold tracking-tight text-[var(--fx-text-primary)] sm:text-3xl">
                     Alquila tus vehículos
                   </h1>
-                  <p className="text-sm text-[#4B5563]">
+                  <p className="text-sm leading-relaxed text-[var(--fx-text-secondary)]">
                     Configura tu sede o negocio de alquiler. Podrás publicar vehículos, fijar tarifas y gestionar clientes.
                   </p>
                 </div>
 
-                <div className="space-y-3 pt-2">
+                <div className="space-y-3.5 pt-2">
                   <div>
-                    <label htmlFor="nombrePatio" className="block text-xs font-bold uppercase tracking-wider text-[#4B5563] mb-1">
+                    <label htmlFor="nombrePatio" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-[var(--fx-text-secondary)]">
                       Nombre de tu patio o negocio *
                     </label>
                     <input
@@ -162,27 +196,50 @@ export default function OperatorOnboardingWizard({
                       placeholder="Ej. Rentas del Valle, Flota Express..."
                       value={nombrePatio}
                       onChange={(e) => setNombrePatio(e.target.value)}
-                      className="w-full rounded-2xl border border-[#9CA3AF]/40 px-4 py-3.5 text-base text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#111827] focus:outline-hidden"
+                      className="w-full rounded-2xl border border-[var(--fx-border-subtle)] bg-[var(--fx-bg-surface-input)] px-4 py-3.5 text-base text-[var(--fx-text-primary)] placeholder:text-[var(--fx-text-muted)] transition-colors duration-120 focus:border-[var(--fx-border-focus)] dark:bg-[#1F2937]/70"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="ciudadPatio" className="block text-xs font-bold uppercase tracking-wider text-[#4B5563] mb-1">
-                      Ciudad de operación *
-                    </label>
-                    <input
-                      id="ciudadPatio"
-                      type="text"
-                      required
-                      placeholder="Ej. Medellín, Bogotá, Cali..."
-                      value={ciudadPatio}
-                      onChange={(e) => setCiudadPatio(e.target.value)}
-                      className="w-full rounded-2xl border border-[#9CA3AF]/40 px-4 py-3.5 text-base text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#111827] focus:outline-hidden"
-                    />
+                    <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-[var(--fx-text-secondary)]">
+                      Ubicación de operación *
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setErrorMsg(null);
+                        setMostrandoFlujoUbicacion(true);
+                      }}
+                      className="fx-press flex min-h-[54px] w-full items-center justify-between gap-3 rounded-2xl border border-[var(--fx-border-subtle)] bg-[var(--fx-bg-surface-input)] px-4 py-3.5 text-left transition-colors duration-120 hover:border-[var(--fx-border-focus)] dark:bg-[#1F2937]/70"
+                    >
+                      <span className="flex min-w-0 items-center gap-2.5">
+                        <MapPin
+                          className={`h-4 w-4 shrink-0 ${
+                            ubicacionFormateada
+                              ? 'text-[var(--fx-text-primary)]'
+                              : 'text-[var(--fx-text-muted)]'
+                          }`}
+                          aria-hidden="true"
+                        />
+                        <span
+                          className={`truncate text-base ${
+                            ubicacionFormateada
+                              ? 'font-semibold text-[var(--fx-text-primary)]'
+                              : 'text-[var(--fx-text-muted)]'
+                          }`}
+                        >
+                          {ubicacionFormateada || 'Seleccionar departamento y ciudad'}
+                        </span>
+                      </span>
+                      <ChevronRight
+                        className="h-5 w-5 shrink-0 text-[var(--fx-text-muted)]"
+                        aria-hidden="true"
+                      />
+                    </button>
                   </div>
 
                   <div>
-                    <label htmlFor="telefonoPatio" className="block text-xs font-bold uppercase tracking-wider text-[#4B5563] mb-1">
+                    <label htmlFor="telefonoPatio" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-[var(--fx-text-secondary)]">
                       Teléfono de contacto de la sede (opcional)
                     </label>
                     <input
@@ -191,7 +248,7 @@ export default function OperatorOnboardingWizard({
                       placeholder="Ej. +57 300 123 4567"
                       value={telefonoPatio}
                       onChange={(e) => setTelefonoPatio(e.target.value)}
-                      className="w-full rounded-2xl border border-[#9CA3AF]/40 px-4 py-3.5 text-base text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#111827] focus:outline-hidden"
+                      className="w-full rounded-2xl border border-[var(--fx-border-subtle)] bg-[var(--fx-bg-surface-input)] px-4 py-3.5 text-base text-[var(--fx-text-primary)] placeholder:text-[var(--fx-text-muted)] transition-colors duration-120 focus:border-[var(--fx-border-focus)] dark:bg-[#1F2937]/70"
                     />
                   </div>
                 </div>
@@ -199,24 +256,25 @@ export default function OperatorOnboardingWizard({
             ) : (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#111827]/5 px-3 py-1 text-xs font-bold text-[#111827]">
-                    📍 {nombreLocal}
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--fx-border-subtle)] bg-[var(--fx-bg-surface-subtle)] px-3 py-1 text-xs font-semibold text-[var(--fx-text-primary)] dark:bg-white/6">
+                    <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span>{nombreLocal}</span>
                   </span>
-                  <h1 className="font-display text-2xl font-black text-[#111827] sm:text-3xl">
+                  <h1 className="font-display text-2xl font-bold tracking-tight text-[var(--fx-text-primary)] sm:text-3xl">
                     ¡Bienvenido al equipo, {nombreOperador}!
                   </h1>
-                  <p className="text-sm text-[#4B5563] leading-relaxed">
+                  <p className="text-sm leading-relaxed text-[var(--fx-text-secondary)]">
                     Has sido asignado a esta sede con el rol de{' '}
-                    <strong className="text-[#111827] font-semibold">{rolOperador}</strong>.
+                    <strong className="font-semibold text-[var(--fx-text-primary)]">{rolOperador}</strong>.
                   </p>
                 </div>
 
-                <div className="rounded-2xl bg-[#F9FAFB] p-4 border border-[#9CA3AF]/20 space-y-2 text-xs text-[#4B5563]">
-                  <div className="flex items-center gap-2 font-medium text-[#111827]">
-                    <span>🛠️</span>
+                <div className="space-y-2 rounded-2xl border border-[var(--fx-border-subtle)] bg-[var(--fx-bg-surface-subtle)] p-4 text-xs text-[var(--fx-text-secondary)] dark:bg-[#1F2937]/50">
+                  <div className="flex items-center gap-2 font-semibold text-[var(--fx-text-primary)]">
+                    <Briefcase className="h-4 w-4" aria-hidden="true" />
                     <span>Tus responsabilidades principales:</span>
                   </div>
-                  <ul className="list-disc pl-5 space-y-1.5">
+                  <ul className="list-disc space-y-1.5 pl-5">
                     <li>Gestión de solicitudes de alquiler y verificación de conductores.</li>
                     <li>Actas de entrega y devolución con peritaje fotográfico en Cloudflare R2.</li>
                     <li>Monitoreo del estado físico y kilometraje de la flota de vehículos.</li>
@@ -226,130 +284,65 @@ export default function OperatorOnboardingWizard({
             )}
 
             {errorMsg && (
-              <div className="rounded-xl bg-red-50 p-2.5 text-xs font-medium text-red-700 border border-red-200">
+              <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-medium text-red-700 dark:border-red-500/30 dark:bg-red-950/50 dark:text-red-300">
                 {errorMsg}
               </div>
             )}
 
             <button
               type="submit"
-              className="ios-press-bounce flex w-full items-center justify-center gap-2 rounded-2xl bg-[#111827] py-4 text-base font-bold text-white shadow-md hover:bg-[#1F2937]"
+              className="fx-press fx-btn-primary flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl py-4 text-base font-bold shadow-sm"
             >
               <span>Continuar</span>
-              <span>→</span>
+              <ChevronRight className="h-4 w-4" aria-hidden="true" />
             </button>
           </form>
         )}
 
-        {/* PASO 2: Modelo Mental de 2 Entornos */}
+        {/* PASO 2: Tutorial Interactivo "Dos entornos, una sola cuenta" */}
         {pasoActual === 2 && (
-          <div className="space-y-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#111827] text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
-                <rect width="20" height="14" x="2" y="3" rx="2" />
-                <line x1="8" x2="16" y1="21" y2="21" />
-                <line x1="12" x2="12" y1="17" y2="21" />
-              </svg>
-            </div>
-
-            <div className="space-y-2">
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800">
-                Paradigma FlotaX
-              </span>
-              <h2 className="font-display text-2xl font-black text-[#111827] sm:text-3xl">
-                Dos entornos, una sola cuenta
-              </h2>
-              <p className="text-sm text-[#4B5563] leading-relaxed">
-                Podrás alternar en cualquier momento entre alquilar vehículos para tu uso personal y gestionar tu negocio de patio.
-              </p>
-            </div>
-
-            {/* Comparativa Visual */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 text-xs">
-              <div className="rounded-2xl border border-[#9CA3AF]/30 p-4 space-y-2 bg-[#F9FAFB]">
-                <div className="font-bold text-[#111827] flex items-center gap-1.5">
-                  <span>🚗</span>
-                  <span>Modo Personal</span>
-                </div>
-                <p className="text-[#4B5563]">
-                  Para cuando tú quieras alquilar un auto o moto para tus viajes personales.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border-2 border-[#111827] p-4 space-y-2 bg-white shadow-xs">
-                <div className="font-bold text-[#111827] flex items-center gap-1.5">
-                  <span>🛠️</span>
-                  <span>Modo Operador / Dueño</span>
-                </div>
-                <p className="text-[#4B5563]">
-                  Tu cabina de patio: control de reservas, actas periciales, cobros y flota de clientes.
-                </p>
-              </div>
-            </div>
-
-            <div className="rounded-2xl bg-[#EDEDED]/50 p-3.5 text-xs text-[#4B5563] flex items-center gap-2.5">
-              <span className="text-base">💡</span>
-              <span>Alterna entre ambos entornos cuando quieras desde <strong>Mi Perfil</strong>.</span>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setPasoActual(1)}
-                className="ios-press-bounce flex w-1/3 items-center justify-center rounded-2xl border border-[#9CA3AF]/40 py-4 text-base font-semibold text-[#4B5563] hover:bg-neutral-50"
-              >
-                Atrás
-              </button>
-              <button
-                type="button"
-                onClick={() => setPasoActual(3)}
-                className="ios-press-bounce flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#111827] py-4 text-base font-bold text-white shadow-md hover:bg-[#1F2937]"
-              >
-                <span>Continuar</span>
-                <span>→</span>
-              </button>
-            </div>
-          </div>
+          <TwoEnvironmentsTutorial
+            onBackToStep1={() => setPasoActual(1)}
+            onComplete={() => setPasoActual(3)}
+          />
         )}
 
         {/* PASO 3: Permisos de Cámara para Peritaje R2 */}
         {pasoActual === 3 && (
           <div className="space-y-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#111827] text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
-                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
-                <circle cx="12" cy="13" r="3" />
-              </svg>
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#111827] text-[#EDEDED] dark:border dark:border-white/15 dark:bg-[#1F2937]">
+              <Camera className="h-6 w-6 stroke-[1.75]" aria-hidden="true" />
             </div>
 
             <div className="space-y-2">
-              <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-800">
+              <span className="inline-flex items-center gap-1 rounded-full border border-[var(--fx-border-subtle)] bg-[var(--fx-bg-surface-subtle)] px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--fx-text-secondary)] dark:bg-white/6">
                 Herramienta Crítica
               </span>
-              <h2 className="font-display text-2xl font-black text-[#111827] sm:text-3xl">
+              <h2 className="font-display text-2xl font-bold tracking-tight text-[var(--fx-text-primary)] sm:text-3xl">
                 Cámara para Peritajes Fotográficos
               </h2>
-              <p className="text-sm text-[#4B5563] leading-relaxed">
+              <p className="text-sm leading-relaxed text-[var(--fx-text-secondary)]">
                 Toda entrega y devolución requiere evidencia visual obligatoria en Cloudflare R2 para proteger tu negocio y respaldar depósitos en garantía.
               </p>
             </div>
 
             {/* Estado de Cámara */}
-            <div className="rounded-2xl border border-[#9CA3AF]/30 p-4 space-y-3 bg-[#F9FAFB]">
+            <div className="space-y-3 rounded-2xl border border-[var(--fx-border-subtle)] bg-[var(--fx-bg-surface-subtle)] p-4 dark:bg-[#1F2937]/50">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#111827]">Acceso a la cámara</span>
+                <span className="text-xs font-bold text-[var(--fx-text-primary)]">Acceso a la cámara</span>
                 {cameraState === 'granted' && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-800">
-                    ✓ Autorizado
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300">
+                    <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span>Autorizado</span>
                   </span>
                 )}
                 {cameraState === 'denied' && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-800">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-800 dark:bg-amber-500/20 dark:text-amber-300">
                     Pendiente
                   </span>
                 )}
                 {cameraState === 'idle' && (
-                  <span className="text-xs text-[#4B5563]">Sin verificar</span>
+                  <span className="text-xs text-[var(--fx-text-secondary)]">Sin verificar</span>
                 )}
               </div>
 
@@ -358,26 +351,26 @@ export default function OperatorOnboardingWizard({
                   type="button"
                   onClick={handleProbarCamara}
                   disabled={cameraState === 'checking'}
-                  className="ios-press-bounce flex w-full items-center justify-center gap-2 rounded-xl bg-white border border-[#9CA3AF]/40 py-3 text-xs font-bold text-[#111827] shadow-xs hover:bg-[#EDEDED]/50"
+                  className="fx-press fx-btn-outline flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl py-3 text-xs font-bold shadow-2xs"
                 >
                   {cameraState === 'checking' ? (
                     'Solicitando permiso...'
                   ) : (
                     <>
-                      <span>📸</span>
+                      <Camera className="h-4 w-4" aria-hidden="true" />
                       <span>Autorizar cámara ahora</span>
                     </>
                   )}
                 </button>
               ) : (
-                <p className="text-xs text-emerald-700">
-                  ¡Excelente! Tu dispositivo está listo para realizar inspecciones de 360° en patio.
+                <p className="text-xs text-emerald-700 dark:text-emerald-300">
+                  Tu dispositivo está listo para realizar inspecciones de 360° en patio.
                 </p>
               )}
             </div>
 
             {errorMsg && (
-              <div className="rounded-xl bg-red-50 p-3 text-xs font-medium text-red-700 border border-red-200">
+              <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-medium text-red-700 dark:border-red-500/30 dark:bg-red-950/50 dark:text-red-300">
                 {errorMsg}
               </div>
             )}
@@ -387,7 +380,7 @@ export default function OperatorOnboardingWizard({
                 type="button"
                 onClick={() => setPasoActual(2)}
                 disabled={isPending}
-                className="ios-press-bounce flex w-1/3 items-center justify-center rounded-2xl border border-[#9CA3AF]/40 py-4 text-base font-semibold text-[#4B5563] hover:bg-neutral-50 disabled:opacity-50"
+                className="fx-press fx-btn-outline flex min-h-[52px] w-1/3 items-center justify-center rounded-2xl py-4 text-base font-semibold disabled:opacity-40"
               >
                 Atrás
               </button>
@@ -395,14 +388,14 @@ export default function OperatorOnboardingWizard({
                 type="button"
                 onClick={handleFinalizar}
                 disabled={isPending}
-                className="ios-press-bounce flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#111827] py-4 text-base font-bold text-white shadow-md hover:bg-[#1F2937] disabled:opacity-50"
+                className="fx-press fx-btn-primary flex min-h-[52px] flex-1 items-center justify-center gap-2 rounded-2xl py-4 text-base font-bold shadow-sm disabled:opacity-40"
               >
                 {isPending ? (
                   <span>Configurando tu patio...</span>
                 ) : (
                   <>
                     <span>{esModoCrear ? 'Crear Patio y Comenzar' : 'Entrar a Cabina de Patio'}</span>
-                    <span>→</span>
+                    <ChevronRight className="h-4 w-4" aria-hidden="true" />
                   </>
                 )}
               </button>
