@@ -25,8 +25,8 @@ export interface VehiculoWizardData {
   estado: EstadoVehiculo;
   precioDia: number | '';
   depositoGarantia: number | '';
-  transmision: TransmisionVehiculo;
-  combustible: CombustibleVehiculo;
+  transmision: TransmisionVehiculo | '';
+  combustible: CombustibleVehiculo | '';
   capacidadPasajeros: number;
   autonomiaKm: number | '';
   kilometraje: number | '';

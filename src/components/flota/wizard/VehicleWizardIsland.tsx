@@ -108,13 +108,13 @@ const VALORES_INICIALES_DEFAULT: VehiculoWizardData = {
   anio: 2024,
   placa: '',
   estado: 'DISPONIBLE',
-  precioDia: 180000,
-  depositoGarantia: 500000,
-  transmision: 'Automática',
-  combustible: 'Gasolina',
+  precioDia: '',
+  depositoGarantia: '',
+  transmision: '',
+  combustible: '',
   capacidadPasajeros: 5,
   autonomiaKm: '',
-  kilometraje: 0,
+  kilometraje: '',
   imagenUrl: '',
   destacado: false,
   descripcion: '',
@@ -252,15 +252,20 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
         nuevosErrores.anio = 'Indique un año válido entre 1990 y 2035.';
       }
     } else if (paso === 3) {
-      if (!data.marca.trim()) {
-        nuevosErrores.marca = 'Indique la marca o fabricante.';
-      }
-      if (!data.modelo.trim()) {
-        nuevosErrores.modelo = 'Indique el modelo o versión comercial.';
+      if (!data.marca.trim() || !data.modelo.trim()) {
+        nuevosErrores.marca = 'Indica la marca y el modelo (ej. Toyota Corolla).';
       }
     } else if (paso === 4) {
+      if (data.categoria !== 'PATINETA') {
+        if (!data.transmision) {
+          nuevosErrores.transmision = 'Selecciona el tipo de caja.';
+        }
+        if (!data.combustible) {
+          nuevosErrores.combustible = 'Selecciona el combustible o motor.';
+        }
+      }
       if (data.kilometraje === '' || Number(data.kilometraje) < 0) {
-        nuevosErrores.kilometraje = 'Indique el kilometraje de patio.';
+        nuevosErrores.kilometraje = 'Indique los kilómetros acumulados.';
       }
     } else if (paso === 5) {
       if (data.precioDia === '' || Number(data.precioDia) <= 0) {
@@ -361,6 +366,11 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
       setErrorMsgGeneral('Verifique la marca y modelo.');
       return;
     }
+    if (!validarPasoActual(4)) {
+      setPasoActual(4);
+      setErrorMsgGeneral('Complete las características mecánicas y kilómetros acumulados.');
+      return;
+    }
     if (!validarPasoActual(5)) {
       setPasoActual(5);
       setErrorMsgGeneral('Verifique las tarifas de alquiler.');
@@ -390,8 +400,14 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
           estado: data.estado,
           precioDia: Number(data.precioDia),
           depositoGarantia: Number(data.depositoGarantia),
-          transmision: data.categoria === 'PATINETA' ? 'Eléctrica' : data.transmision,
-          combustible: data.categoria === 'PATINETA' ? 'Eléctrico' : data.combustible,
+          transmision:
+            data.categoria === 'PATINETA'
+              ? 'Eléctrica'
+              : data.transmision || 'Automática',
+          combustible:
+            data.categoria === 'PATINETA'
+              ? 'Eléctrico'
+              : data.combustible || 'Gasolina',
           capacidadPasajeros: data.categoria === 'PATINETA' ? 1 : Number(data.capacidadPasajeros || 1),
           autonomiaKm: data.autonomiaKm !== '' ? Number(data.autonomiaKm) : undefined,
           kilometraje: Number(data.kilometraje || 0),
