@@ -178,7 +178,7 @@ export default function LandingFleetShowcaseIsland({
                   key={v.id}
                   className="relative bg-white dark:bg-[#1F2937] dark:border dark:border-white/10 rounded-[42px] overflow-hidden transition-colors flex flex-col justify-between"
                 >
-                  {/* Visual Central: Fotografía 16:9 integrada de borde a borde */}
+                  {/* Visual Central: Fotografía 16:9 de borde a borde */}
                   <div className="relative w-full aspect-video rounded-t-[42px] overflow-hidden">
                     <img
                       src={v.imagenUrl}

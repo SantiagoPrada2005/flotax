@@ -200,8 +200,7 @@ export async function listarVehiculos(
         return item;
       }
 
-      // Si no tiene bloqueos en la ventana, está disponible
-      item.estado = 'DISPONIBLE';
+      // Si no tiene bloqueos en la ventana, preservamos el estado guardado en D1 (DISPONIBLE, RESERVADO, MANTENIMIENTO, etc.)
       return item;
     });
 
@@ -243,7 +242,7 @@ export async function obtenerVehiculoAsync(
       return undefined;
     }
 
-    if (item.estado !== 'FUERA_SERVICIO') {
+    if (item.estado === 'DISPONIBLE') {
       const hoy = hoyISO ?? toClientISODate(new Date());
       const dictamen = await verificarDisponibilidadVehiculo(db, item.id, hoy, hoy, hoy);
       item.estado = dictamen.estadoSugerido;

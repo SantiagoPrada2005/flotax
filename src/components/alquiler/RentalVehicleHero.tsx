@@ -31,11 +31,11 @@ export default function RentalVehicleHero({
   if (compact) {
     return (
       <div className="flex items-center gap-3.5 rounded-[24px] bg-white border border-[#9CA3AF]/45 p-3 shadow-xs dark:bg-[#1F2937] dark:border-white/12">
-        <div className="relative w-24 sm:w-28 aspect-video shrink-0 overflow-hidden rounded-[14px]">
+        <div className="relative w-24 sm:w-28 aspect-video shrink-0 overflow-hidden rounded-[14px] bg-[#111827] flex items-center justify-center p-1.5">
           <img
             src={vehiculo.imagenUrl}
             alt={`${vehiculo.marca} ${vehiculo.modelo}`}
-            className="h-full w-full object-cover object-center block"
+            className="h-full w-full object-contain object-center block"
             loading="eager"
           />
         </div>
@@ -69,7 +69,7 @@ export default function RentalVehicleHero({
       aria-label="Presentación del vehículo"
       className="overflow-hidden rounded-[28px] bg-white border border-[#9CA3AF]/45 shadow-xs dark:bg-[#1F2937] dark:border-white/12"
     >
-      {/* Fotografía protagonista 16:9 de borde a borde, sin caja interior */}
+      {/* Fotografía protagonista 16:9 de borde a borde */}
       <div className="relative w-full aspect-video rounded-t-[27px] overflow-hidden">
         <img
           src={fotoActual}

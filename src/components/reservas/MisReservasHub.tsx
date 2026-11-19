@@ -918,11 +918,11 @@ export default function MisReservasHub({
                 >
                   <div className="flex items-center gap-4 min-w-0">
                     {/* Silueta vehicular con transparencia y brillo fiel */}
-                    <div className="relative h-20 w-28 sm:h-22 sm:w-32 shrink-0 flex items-center justify-center">
+                    <div className="relative w-28 sm:w-32 aspect-video shrink-0 rounded-[14px] bg-[#111827] flex items-center justify-center p-1.5 overflow-hidden">
                       <img
                         src={item.vehiculo.imagenUrl}
                         alt={`${item.vehiculo.marca} ${item.vehiculo.modelo}`}
-                        className="h-full w-full object-contain mix-blend-multiply dark:mix-blend-normal"
+                        className="h-full w-full object-contain object-center block"
                         loading="lazy"
                       />
                     </div>

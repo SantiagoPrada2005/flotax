@@ -73,7 +73,6 @@ export default function LocalCatalogShareCard({
   compact = false,
 }: LocalCatalogShareCardProps) {
   const [local, setLocal] = useState<LocalPublicoContexto>(initialLocal);
-  const [opcionesAbiertas, setOpcionesAbiertas] = useState(false);
   const [copiado, setCopiado] = useState(false);
   const [modalAbierto, setModalAbierto] = useState<'qr' | 'editar' | null>(null);
   const [slugInput, setSlugInput] = useState(initialLocal.slug);
@@ -212,7 +211,7 @@ export default function LocalCatalogShareCard({
           compact ? 'p-3.5' : 'p-3.5 sm:p-4'
         } shadow-[0_10px_26px_-10px_rgba(17,24,39,0.08)]`}
       >
-        {/* NIVEL 1 (Progressive Disclosure): Fila Principal Compacta de Acción Rápida */}
+        {/* Fila Principal de Información y Acción Rápida */}
         <div className="flex items-center justify-between gap-2.5">
           <div className="flex min-w-0 items-center gap-3">
             <div
@@ -273,47 +272,11 @@ export default function LocalCatalogShareCard({
               </svg>
               <span>Compartir</span>
             </button>
-
-            <button
-              type="button"
-              aria-expanded={opcionesAbiertas}
-              aria-label={
-                opcionesAbiertas
-                  ? 'Ocultar herramientas del catálogo'
-                  : 'Mostrar herramientas del catálogo'
-              }
-              onClick={() => {
-                triggerHaptic(6);
-                setOpcionesAbiertas((prev) => !prev);
-              }}
-              className={`fx-press flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border ${
-                opcionesAbiertas
-                  ? 'border-[#111827] bg-[#1F2937] text-[#EDEDED] dark:border-white/30 dark:bg-white/20 dark:text-white'
-                  : 'border-[#9CA3AF]/40 bg-[#EDEDED]/75 text-[#111827] hover:bg-[#EDEDED] dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20'
-              }`}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className={`h-4 w-4 transition-transform duration-150 ${
-                  opcionesAbiertas ? 'rotate-180' : ''
-                }`}
-                aria-hidden="true"
-              >
-                <path d="m6 9 6 6 6-6" />
-              </svg>
-            </button>
           </div>
         </div>
 
-        {/* NIVEL 2 (Progressive Disclosure): Bandeja de Acciones Secundarias Bajo Demanda */}
-        {opcionesAbiertas && (
-          <div className="mt-3 border-t border-[#EDEDED] dark:border-white/10 pt-3 space-y-2.5">
+        {/* Bandeja de Acciones Secundarias Siempre Visible */}
+        <div className="mt-3 border-t border-[#EDEDED] dark:border-white/10 pt-3 space-y-2.5">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <button
                 type="button"
@@ -423,7 +386,6 @@ export default function LocalCatalogShareCard({
               </a>
             </div>
           </div>
-        )}
       </section>
 
       {/* =====================================================================
