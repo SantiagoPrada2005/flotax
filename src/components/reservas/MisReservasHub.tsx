@@ -1035,13 +1035,13 @@ export default function MisReservasHub({
           aria-label="Nueva reserva en patio"
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#111827]/45 backdrop-blur-xs p-0 sm:p-4 animate-fade-in"
         >
-          <div className="[--fx-border-focus:#111827] w-full max-w-[430px] rounded-t-[32px] sm:rounded-[32px] bg-white p-5 shadow-2xl max-h-[90dvh] overflow-y-auto space-y-4">
+          <div className="[--fx-border-focus:#111827] dark:[--fx-border-focus:#EDEDED] w-full max-w-[430px] rounded-t-[32px] sm:rounded-[32px] bg-white dark:bg-[#1F2937] dark:border dark:border-white/15 p-5 shadow-2xl max-h-[90dvh] overflow-y-auto space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
                   Mostrador de Patio · 1 Paso
                 </span>
-                <h2 className="font-display text-lg font-extrabold text-[#111827]">
+                <h2 className="font-display text-lg font-extrabold text-[#111827] dark:text-[#EDEDED]">
                   Nueva Reserva Operativa
                 </h2>
               </div>
@@ -1049,7 +1049,7 @@ export default function MisReservasHub({
                 type="button"
                 onClick={() => setSheetNuevaAbierto(false)}
                 aria-label="Cerrar ventana"
-                className="fx-press flex h-11 w-11 items-center justify-center rounded-full bg-[#EDEDED] text-[#111827] cursor-pointer"
+                className="fx-press flex h-11 w-11 items-center justify-center rounded-full bg-[#EDEDED] dark:bg-white/10 text-[#111827] dark:text-[#EDEDED] cursor-pointer"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -1090,7 +1090,7 @@ export default function MisReservasHub({
                   Unidad de flota
                 </label>
                 {catalogoVehiculos.length === 0 ? (
-                  <div className="rounded-[16px] bg-[#EDEDED] border border-[#9CA3AF]/40 p-4 text-center space-y-2">
+                  <div className="rounded-[16px] bg-[#EDEDED] dark:bg-white/5 border border-[#9CA3AF]/40 dark:border-white/15 p-4 text-center space-y-2">
                     <p className="text-xs font-bold text-[#111827]">
                       No hay unidades disponibles en este patio
                     </p>
@@ -1105,7 +1105,7 @@ export default function MisReservasHub({
                   <select
                     value={formVehiculoId}
                     onChange={(e) => setFormVehiculoId(e.target.value)}
-                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3.5 py-2.5 text-base font-semibold text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                    className="w-full rounded-[14px] bg-[#EDEDED]/75 dark:bg-[#111827] dark:border dark:border-white/15 px-3.5 py-2.5 text-base font-semibold text-[#111827] dark:text-[#EDEDED] focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-[#EDEDED]"
                   >
                     {catalogoVehiculos.map((veh) => (
                       <option key={veh.id} value={veh.id}>
@@ -1128,7 +1128,7 @@ export default function MisReservasHub({
                     value={formFechaInicio}
                     onChange={(e) => setFormFechaInicio(e.target.value)}
                     required
-                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3 py-2 text-base font-medium text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                    className="w-full rounded-[14px] bg-[#EDEDED]/75 dark:bg-[#111827] dark:border dark:border-white/15 px-3 py-2 text-base font-medium text-[#111827] dark:text-[#EDEDED] focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-[#EDEDED]"
                   />
                 </div>
                 <div>
@@ -1141,13 +1141,13 @@ export default function MisReservasHub({
                     min={formFechaInicio}
                     onChange={(e) => setFormFechaFin(e.target.value)}
                     required
-                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3 py-2 text-base font-medium text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                    className="w-full rounded-[14px] bg-[#EDEDED]/75 dark:bg-[#111827] dark:border dark:border-white/15 px-3 py-2 text-base font-medium text-[#111827] dark:text-[#EDEDED] focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-[#EDEDED]"
                   />
                 </div>
               </div>
 
               {/* Buscador de Clientes del Local / KYC */}
-              <div className="rounded-[18px] bg-[#EDEDED]/80 p-3 space-y-2">
+              <div className="rounded-[18px] bg-[#EDEDED]/80 dark:bg-white/5 dark:border dark:border-white/15 p-3 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-bold text-[#111827]">
                     Buscador de clientes (Local)
@@ -1170,33 +1170,33 @@ export default function MisReservasHub({
                       placeholder="Buscar por nombre, correo o documento..."
                       value={busquedaCliente}
                       onChange={(e) => ejecutarBusquedaCliente(e.target.value)}
-                      className="w-full rounded-[12px] bg-white border border-[#9CA3AF]/40 px-3 py-2 text-base text-[#111827] placeholder:text-[#9CA3AF] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                      className="w-full rounded-[12px] bg-white dark:bg-[#111827] border border-[#9CA3AF]/40 dark:border-white/15 px-3 py-2 text-base text-[#111827] dark:text-[#EDEDED] placeholder:text-[#9CA3AF] focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-[#EDEDED]"
                     />
                     {buscandoClientes && (
-                      <p className="text-[11px] text-[#4B5563]">Buscando clientes...</p>
+                      <p className="text-[11px] text-[#4B5563] dark:text-[#9CA3AF]">Buscando clientes...</p>
                     )}
                     {clientesEncontrados.length > 0 && (
-                      <ul className="rounded-[12px] bg-white border border-[#9CA3AF]/40 divide-y divide-[#9CA3AF]/20 max-h-36 overflow-y-auto">
+                      <ul className="rounded-[12px] bg-white dark:bg-[#111827] border border-[#9CA3AF]/40 dark:border-white/15 divide-y divide-[#9CA3AF]/20 dark:divide-white/10 max-h-36 overflow-y-auto">
                         {clientesEncontrados.map((c) => (
                           <li key={c.id}>
                             <button
                               type="button"
                               onClick={() => seleccionarCliente(c)}
-                              className="w-full p-2.5 text-left hover:bg-[#EDEDED] flex items-center justify-between text-xs cursor-pointer"
+                              className="w-full p-2.5 text-left hover:bg-[#EDEDED] dark:hover:bg-white/10 flex items-center justify-between text-xs cursor-pointer"
                             >
                               <div className="min-w-0">
-                                <p className="font-bold text-[#111827] truncate">{c.nombre}</p>
-                                <p className="text-[10px] text-[#4B5563] truncate">
+                                <p className="font-bold text-[#111827] dark:text-[#EDEDED] truncate">{c.nombre}</p>
+                                <p className="text-[10px] text-[#4B5563] dark:text-[#9CA3AF] truncate">
                                   {c.numeroDocumento ? `Doc: ${c.numeroDocumento} · ` : ''}{c.correo}
                                 </p>
                               </div>
                               <span
                                 className={`shrink-0 ml-2 rounded-full px-2 py-0.5 text-[9px] font-bold ${
                                   c.estadoKyc === 'APROBADO'
-                                    ? 'bg-[#111827] text-white'
+                                    ? 'bg-[#111827] dark:bg-[#EDEDED] text-white dark:text-[#111827]'
                                     : c.estadoKyc === 'PENDIENTE'
-                                      ? 'bg-[#EDEDED] text-[#4B5563] border border-[#9CA3AF]/60'
-                                      : 'bg-[#EDEDED] text-[#4B5563]'
+                                      ? 'bg-[#EDEDED] dark:bg-white/10 text-[#4B5563] dark:text-[#9CA3AF] border border-[#9CA3AF]/60 dark:border-white/15'
+                                      : 'bg-[#EDEDED] dark:bg-white/10 text-[#4B5563] dark:text-[#9CA3AF]'
                                 }`}
                               >
                                 {c.estadoKyc === 'APROBADO'
@@ -1212,14 +1212,14 @@ export default function MisReservasHub({
                     )}
                   </div>
                 ) : (
-                  <div className="flex items-center justify-between rounded-[12px] bg-white border border-[#9CA3AF]/30 p-2.5 text-xs">
+                  <div className="flex items-center justify-between rounded-[12px] bg-white dark:bg-[#111827] border border-[#9CA3AF]/30 dark:border-white/15 p-2.5 text-xs">
                     <div>
-                      <p className="font-bold text-[#111827]">{formNombre}</p>
-                      <p className="text-[11px] text-[#4B5563]">
+                      <p className="font-bold text-[#111827] dark:text-[#EDEDED]">{formNombre}</p>
+                      <p className="text-[11px] text-[#4B5563] dark:text-[#9CA3AF]">
                         {formNumDoc ? `${formTipoDoc} ${formNumDoc} · ` : ''}{formCorreo}
                       </p>
                     </div>
-                    <span className="rounded-full bg-[#111827] text-white px-2 py-0.5 text-[10px] font-bold">
+                    <span className="rounded-full bg-[#111827] dark:bg-[#EDEDED] text-white dark:text-[#111827] px-2 py-0.5 text-[10px] font-bold">
                       Cliente vinculado
                     </span>
                   </div>
@@ -1237,7 +1237,7 @@ export default function MisReservasHub({
                   value={formNombre}
                   onChange={(e) => setFormNombre(e.target.value)}
                   required
-                  className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3.5 py-2.5 text-base text-[#111827] placeholder:text-[#9CA3AF] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                  className="w-full rounded-[14px] bg-[#EDEDED]/75 dark:bg-[#111827] dark:border dark:border-white/15 px-3.5 py-2.5 text-base text-[#111827] dark:text-[#EDEDED] placeholder:text-[#9CA3AF] focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-[#EDEDED]"
                 />
               </div>
 
@@ -1252,7 +1252,7 @@ export default function MisReservasHub({
                     value={formTelefono}
                     onChange={(e) => setFormTelefono(e.target.value)}
                     required
-                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3 py-2.5 text-base text-[#111827] placeholder:text-[#9CA3AF] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                    className="w-full rounded-[14px] bg-[#EDEDED]/75 dark:bg-[#111827] dark:border dark:border-white/15 px-3 py-2.5 text-base text-[#111827] dark:text-[#EDEDED] placeholder:text-[#9CA3AF] focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-[#EDEDED]"
                   />
                 </div>
 
@@ -1265,7 +1265,7 @@ export default function MisReservasHub({
                     placeholder="cliente@ejemplo.com"
                     value={formCorreo}
                     onChange={(e) => setFormCorreo(e.target.value)}
-                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3 py-2.5 text-base text-[#111827] placeholder:text-[#9CA3AF] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                    className="w-full rounded-[14px] bg-[#EDEDED]/75 dark:bg-[#111827] dark:border dark:border-white/15 px-3 py-2.5 text-base text-[#111827] dark:text-[#EDEDED] placeholder:text-[#9CA3AF] focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-[#EDEDED]"
                   />
                 </div>
               </div>
@@ -1283,7 +1283,7 @@ export default function MisReservasHub({
                         setFormTipoDoc(v);
                       }
                     }}
-                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-2.5 py-2.5 text-base font-semibold text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                    className="w-full rounded-[14px] bg-[#EDEDED]/75 dark:bg-[#111827] dark:border dark:border-white/15 px-2.5 py-2.5 text-base font-semibold text-[#111827] dark:text-[#EDEDED] focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-[#EDEDED]"
                   >
                     <option value="CC">CC</option>
                     <option value="CE">CE</option>
@@ -1300,7 +1300,7 @@ export default function MisReservasHub({
                     placeholder="1.037.654.321"
                     value={formNumDoc}
                     onChange={(e) => setFormNumDoc(e.target.value)}
-                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3 py-2.5 text-base text-[#111827] placeholder:text-[#9CA3AF] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                    className="w-full rounded-[14px] bg-[#EDEDED]/75 dark:bg-[#111827] dark:border dark:border-white/15 px-3 py-2.5 text-base text-[#111827] dark:text-[#EDEDED] placeholder:text-[#9CA3AF] focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-[#EDEDED]"
                   />
                 </div>
 
@@ -1321,7 +1321,7 @@ export default function MisReservasHub({
                         setFormLicencia(v);
                       }
                     }}
-                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-2.5 py-2.5 text-base font-semibold text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                    className="w-full rounded-[14px] bg-[#EDEDED]/75 dark:bg-[#111827] dark:border dark:border-white/15 px-2.5 py-2.5 text-base font-semibold text-[#111827] dark:text-[#EDEDED] focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-[#EDEDED]"
                   >
                     <option value="B1">B1</option>
                     <option value="B2">B2</option>
@@ -1344,7 +1344,7 @@ export default function MisReservasHub({
                         : 'PATIO_PRINCIPAL'
                     )
                   }
-                  className="w-full rounded-[14px] bg-[#EDEDED]/75 px-2.5 py-2.5 text-base font-semibold text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                  className="w-full rounded-[14px] bg-[#EDEDED]/75 dark:bg-[#111827] dark:border dark:border-white/15 px-2.5 py-2.5 text-base font-semibold text-[#111827] dark:text-[#EDEDED] focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-[#EDEDED]"
                 >
                   <option value="PATIO_PRINCIPAL">En Patio</option>
                   <option value="DOMICILIO_MEDELLIN">Domicilio</option>
@@ -1360,7 +1360,7 @@ export default function MisReservasHub({
                       prev === 'CONFIRMADA' ? 'PENDIENTE' : 'CONFIRMADA'
                     )
                   }
-                  className="min-h-[44px] rounded-[16px] bg-[#EDEDED]/80 px-3 py-2 text-left cursor-pointer border border-[#9CA3AF]/30"
+                  className="min-h-[44px] rounded-[16px] bg-[#EDEDED]/80 dark:bg-white/5 px-3 py-2 text-left cursor-pointer border border-[#9CA3AF]/30 dark:border-white/15"
                 >
                   <span className="block text-[10px] font-medium text-[#4B5563]">
                     Estado inicial
@@ -1377,7 +1377,7 @@ export default function MisReservasHub({
                   onClick={() =>
                     setFormPorcentajeAbono((prev) => (prev === 100 ? 30 : 100))
                   }
-                  className="min-h-[44px] rounded-[16px] bg-[#EDEDED]/80 px-3 py-2 text-left cursor-pointer border border-[#9CA3AF]/30"
+                  className="min-h-[44px] rounded-[16px] bg-[#EDEDED]/80 dark:bg-white/5 px-3 py-2 text-left cursor-pointer border border-[#9CA3AF]/30 dark:border-white/15"
                 >
                   <span className="block text-[10px] font-medium text-[#4B5563]">
                     Recaudo en mostrador
@@ -1392,12 +1392,12 @@ export default function MisReservasHub({
 
               {/* Cuenta financiera para recaudo inmediato */}
               {formEstadoInicial === 'CONFIRMADA' && cuentasFinancieras && cuentasFinancieras.length > 0 && (
-                <div className="rounded-[16px] bg-[#EDEDED]/80 p-3 space-y-2 border border-[#9CA3AF]/30">
+                <div className="rounded-[16px] bg-[#EDEDED]/80 dark:bg-white/5 p-3 space-y-2 border border-[#9CA3AF]/30 dark:border-white/15">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-[#111827]">
+                    <span className="text-[11px] font-bold text-[#111827] dark:text-[#EDEDED]">
                       Asentar recaudo en caja
                     </span>
-                    <span className="text-[10px] text-[#4B5563]">
+                    <span className="text-[10px] text-[#4B5563] dark:text-[#9CA3AF]">
                       Cuenta operativa
                     </span>
                   </div>
@@ -1405,7 +1405,7 @@ export default function MisReservasHub({
                     <select
                       value={cuentaPagoId}
                       onChange={(e) => setCuentaPagoId(e.target.value)}
-                      className="w-full rounded-[12px] bg-white border border-[#9CA3AF]/40 px-2.5 py-2 text-base text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                      className="w-full rounded-[12px] bg-white dark:bg-[#111827] border border-[#9CA3AF]/40 dark:border-white/15 px-2.5 py-2 text-base text-[#111827] dark:text-[#EDEDED] focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-[#EDEDED]"
                     >
                       {cuentasFinancieras.map((c) => (
                         <option key={c.id} value={c.id}>
@@ -1420,7 +1420,7 @@ export default function MisReservasHub({
                           e.target.value as 'efectivo' | 'transferencia' | 'tarjeta'
                         )
                       }
-                      className="w-full rounded-[12px] bg-white border border-[#9CA3AF]/40 px-2.5 py-2 text-base text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                      className="w-full rounded-[12px] bg-white dark:bg-[#111827] border border-[#9CA3AF]/40 dark:border-white/15 px-2.5 py-2 text-base text-[#111827] dark:text-[#EDEDED] focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-[#EDEDED]"
                     >
                       <option value="efectivo">Efectivo</option>
                       <option value="transferencia">Transferencia / PSE</option>
@@ -1431,19 +1431,19 @@ export default function MisReservasHub({
               )}
 
               {/* Resumen de liquidación y Submit */}
-              <div className="flex items-center justify-between rounded-[18px] bg-[#EDEDED] px-4 py-3">
+              <div className="flex items-center justify-between rounded-[18px] bg-[#EDEDED] dark:bg-white/5 dark:border dark:border-white/15 px-4 py-3">
                 <div>
-                  <span className="block text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
+                  <span className="block text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
                     Total ({cotizacionRapidaPatio.dias} días · Incluye R2)
                   </span>
-                  <span className="font-display text-base font-black text-[#111827] tabular-nums">
+                  <span className="font-display text-base font-black text-[#111827] dark:text-[#EDEDED] tabular-nums">
                     {formatCop(cotizacionRapidaPatio.total)}
                   </span>
                 </div>
                 <button
                   type="submit"
                   disabled={submittingModalNueva || catalogoVehiculos.length === 0}
-                  className="min-h-[44px] rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                  className="min-h-[44px] rounded-full bg-[#111827] dark:bg-[#EDEDED] px-5 py-2.5 text-xs font-bold text-white dark:text-[#111827] hover:bg-[#1F2937] dark:hover:bg-white disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                 >
                   {submittingModalNueva ? 'Radicando...' : 'Radicar reserva'}
                 </button>

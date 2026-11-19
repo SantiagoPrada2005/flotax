@@ -1044,24 +1044,51 @@ html.dark .bg-white:not([class*="dark:bg-"]):not([data-preserve-theme]):not([dat
   background-color: var(--fx-bg-surface);
 }
 
-html.dark .bg-\[\#EDEDED\]:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *) {
+html.dark .bg-\[\#EDEDED\]:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-\[\#EDEDED\]\/30:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-\[\#EDEDED\]\/40:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-\[\#EDEDED\]\/50:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-\[\#EDEDED\]\/55:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-\[\#EDEDED\]\/60:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-\[\#EDEDED\]\/70:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-\[\#EDEDED\]\/75:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-\[\#EDEDED\]\/80:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-\[\#EDEDED\]\/85:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-\[\#EDEDED\]\/90:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-\[\#EDEDED\]\/95:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *) {
   background-color: rgba(255, 255, 255, 0.08);
 }
 
-html.dark .bg-white\/90:not([class*="dark:bg-"]),
-html.dark .bg-white\/95:not([class*="dark:bg-"]),
-html.dark .bg-white\/96:not([class*="dark:bg-"]),
-html.dark .bg-white\/85:not([class*="dark:bg-"]),
-html.dark .bg-white\/80:not([class*="dark:bg-"]),
-html.dark .bg-white\/75:not([class*="dark:bg-"]),
-html.dark .bg-white\/70:not([class*="dark:bg-"]) {
+html.dark .bg-\[\#F9FAFB\]:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-\[\#F3F4F6\]:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-\[\#F5F5F5\]:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-\[\#FAFAFA\]:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-\[\#E5E7EB\]:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *) {
+  background-color: var(--fx-bg-surface-subtle);
+}
+
+html.dark .bg-white\/90:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-white\/95:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-white\/96:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-white\/85:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-white\/80:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-white\/75:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-white\/70:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-white\/60:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-white\/50:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-white\/40:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *) {
   background-color: rgba(31, 41, 55, 0.94);
 }
 
-html.dark .bg-gray-100:not([class*="dark:bg-"]),
-html.dark .bg-gray-50:not([class*="dark:bg-"]),
+html.dark .bg-gray-200:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-gray-100:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-gray-50:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
 html.dark .bg-neutral-200:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
-html.dark .bg-neutral-100:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *) {
+html.dark .bg-neutral-100:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-neutral-50:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-slate-200:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-slate-100:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-slate-50:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *) {
   background-color: rgba(255, 255, 255, 0.08);
 }
 

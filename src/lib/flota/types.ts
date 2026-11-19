@@ -35,6 +35,16 @@ type ColumnasVehiculoItem = Pick<
   | 'descripcion'
 >;
 
+export type CategoriaGaleriaVehiculo = 'EXTERIOR' | 'INTERIOR' | 'ESTADO';
+
+export interface VehiculoGaleriaFoto {
+  id: string;
+  url: string;
+  categoria: CategoriaGaleriaVehiculo;
+  esPrincipal: boolean;
+  orden: number;
+}
+
 /**
  * Modelo de vista de una unidad de flota.
  *
@@ -59,6 +69,7 @@ export type VehiculoItem = ColumnasVehiculoItem & {
   valorComercial?: number | null | undefined;
   unidadMedidaUso?: UnidadMedidaUso | undefined;
   specsBento?: EspecificacionesBentoVehiculoSchema | null | undefined;
+  galeria?: VehiculoGaleriaFoto[] | undefined;
 };
 
 export interface FiltrosBusquedaVehiculo {

@@ -1,11 +1,55 @@
-import type { VehiculoItem, EstadoVehiculo } from './types';
+import type {
+  CategoriaGaleriaVehiculo,
+  EstadoVehiculo,
+  VehiculoGaleriaFoto,
+  VehiculoItem,
+} from './types';
 import type { AppDb } from '@/lib/db';
 import { logFalloD1 } from '@/lib/db/diagnostics';
 import { vehiculos, type VehiculoSelect } from '@/db/schema/vehiculos';
-import { reservas, mantenimientosVehiculo } from '@/db/schema';
-import { eq, ne, desc, and, inArray, gte, lte } from 'drizzle-orm';
+import {
+  multimediaVehiculo,
+  reservas,
+  mantenimientosVehiculo,
+  type ZonaEvidenciaVehiculo,
+} from '@/db/schema';
+import { eq, ne, desc, asc, and, inArray, gte, lte } from 'drizzle-orm';
 import { toClientISODate } from '@/lib/time/client-time';
 import { verificarDisponibilidadVehiculo } from './disponibilidad';
+import { resolverUrlMultimediaR2 } from '@/lib/media/r2-vehiculo-keys';
+
+function zonaACategoriaGaleria(zona: ZonaEvidenciaVehiculo): CategoriaGaleriaVehiculo {
+  if (
+    zona === 'INTERIOR_CABINA' ||
+    zona === 'INTERIOR_ASIENTOS' ||
+    zona === 'BAUL_EQUIPAJE'
+  ) {
+    return 'INTERIOR';
+  }
+  if (
+    zona === 'LLANTAS_RINES' ||
+    zona === 'MOTOR_CAPO' ||
+    zona === 'DETALLE_NOVEDAD_DANO' ||
+    zona === 'KIT_CARRETERA_ACCESORIOS' ||
+    zona === 'PANTALLA_TABLERO_ODOMETRO' ||
+    zona === 'NIVEL_COMBUSTIBLE_BATERIA'
+  ) {
+    return 'ESTADO';
+  }
+  return 'EXTERIOR';
+}
+
+function categoriaAZonaEvidencia(cat: CategoriaGaleriaVehiculo): ZonaEvidenciaVehiculo {
+  switch (cat) {
+    case 'INTERIOR':
+      return 'INTERIOR_CABINA';
+    case 'ESTADO':
+      return 'LLANTAS_RINES';
+    case 'EXTERIOR':
+    default:
+      return 'EXTERIOR_FRONTAL';
+  }
+}
 
 /**
  * Mapea una fila relacional de Cloudflare D1 (Drizzle) a la estructura de dominio `VehiculoItem`.
@@ -205,6 +249,38 @@ export async function obtenerVehiculoAsync(
       item.estado = dictamen.estadoSugerido;
     }
 
+    // Cargar únicamente las fotografías públicas de catálogo (CATALOGO_ESTUDIO)
+    try {
+      const mediaRows = await db
+        .select()
+        .from(multimediaVehiculo)
+        .where(
+          and(
+            eq(multimediaVehiculo.vehiculoId, item.id),
+            eq(multimediaVehiculo.etapaOperativa, 'CATALOGO_ESTUDIO'),
+            eq(multimediaVehiculo.tipoMedio, 'IMAGEN')
+          )
+        )
+        .orderBy(
+          desc(multimediaVehiculo.esPortadaCatalogo),
+          asc(multimediaVehiculo.ordenVisual)
+        );
+
+      if (mediaRows.length > 0) {
+        item.galeria = mediaRows.map(
+          (m): VehiculoGaleriaFoto => ({
+            id: m.id,
+            url: resolverUrlMultimediaR2(m.r2Key),
+            categoria: zonaACategoriaGaleria(m.zonaEvidencia),
+            esPrincipal: m.esPortadaCatalogo,
+            orden: m.ordenVisual,
+          })
+        );
+      }
+    } catch {
+      // No bloquear la ficha si la tabla multimedia aún no tiene registros
+    }
+
     return item;
   } catch (error) {
     logFalloD1('vehiculos.obtener', error, { vehiculoId: id });
@@ -300,6 +376,53 @@ export async function guardarVehiculo(
           actualizadoEn: ahora,
         },
       });
+
+    // Sincronizar galería pública de catálogo sin afectar actas ni mantenimientos
+    if (Array.isArray(itemConLocal.galeria) && itemConLocal.galeria.length > 0) {
+      await db
+        .delete(multimediaVehiculo)
+        .where(
+          and(
+            eq(multimediaVehiculo.vehiculoId, itemConLocal.id),
+            eq(multimediaVehiculo.etapaOperativa, 'CATALOGO_ESTUDIO')
+          )
+        );
+
+      const vistas = new Set<string>();
+      const filasGaleria = itemConLocal.galeria
+        .filter((foto) => {
+          const clave = foto.url.startsWith('/api/multimedia/')
+            ? foto.url.slice('/api/multimedia/'.length)
+            : foto.url;
+          if (!clave || vistas.has(clave)) return false;
+          vistas.add(clave);
+          return true;
+        })
+        .map((foto, idx) => {
+          const r2Key = foto.url.startsWith('/api/multimedia/')
+            ? foto.url.slice('/api/multimedia/'.length)
+            : foto.url;
+          return {
+            id: foto.id || crypto.randomUUID(),
+            localId: itemConLocal.localId!,
+            vehiculoId: itemConLocal.id,
+            tipoMedio: 'IMAGEN' as const,
+            etapaOperativa: 'CATALOGO_ESTUDIO' as const,
+            zonaEvidencia: categoriaAZonaEvidencia(foto.categoria),
+            esPortadaCatalogo: foto.esPrincipal,
+            ordenVisual: idx,
+            r2Key,
+            mimeType: 'image/jpeg',
+            tamanoBytes: 0,
+            capturadoEn: ahora,
+            creadoEn: ahora,
+          };
+        });
+
+      if (filasGaleria.length > 0) {
+        await db.insert(multimediaVehiculo).values(filasGaleria);
+      }
+    }
   } catch (error) {
     logFalloD1('vehiculos.guardar', error, { vehiculoId: item.id, localId });
     throw error;

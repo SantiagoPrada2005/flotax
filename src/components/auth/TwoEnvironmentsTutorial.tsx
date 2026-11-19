@@ -153,41 +153,36 @@ export function TwoEnvironmentsTutorial({
       className="touch-pan-y select-none space-y-6"
     >
       {/* 1. Indicador de progreso único y discreto */}
-      <div className="flex items-center justify-between gap-3">
-        <div
-          className="flex flex-1 items-center gap-1.5"
-          role="tablist"
-          aria-label="Progreso del tutorial"
-        >
-          {SLIDES.map((slide, index) => {
-            const isCurrent = index === activeSlide;
-            const isPast = index < activeSlide;
-            return (
-              <button
-                key={slide.id}
-                type="button"
-                role="tab"
-                aria-selected={isCurrent}
-                aria-label={`Diapositiva ${index + 1} de ${totalSlides}: ${slide.title}`}
-                onClick={() => setActiveSlide(index)}
-                className="fx-press flex h-7 flex-1 items-center"
-              >
-                <span
-                  className={`block h-1 w-full rounded-full transition-colors duration-200 ${
-                    isCurrent
-                      ? 'bg-[#111827] dark:bg-[#EDEDED]'
-                      : isPast
-                        ? 'bg-[#4B5563] dark:bg-[#9CA3AF]'
-                        : 'bg-[#9CA3AF]/30 dark:bg-white/15'
-                  }`}
-                />
-              </button>
-            );
-          })}
-        </div>
-        <span className="font-mono text-[11px] font-semibold tabular-nums text-[var(--fx-text-muted)]">
-          {activeSlide + 1}/{totalSlides}
-        </span>
+      <div
+        className="flex items-center gap-1.5"
+        role="tablist"
+        aria-label="Progreso del tutorial"
+      >
+        {SLIDES.map((slide, index) => {
+          const isCurrent = index === activeSlide;
+          const isPast = index < activeSlide;
+          return (
+            <button
+              key={slide.id}
+              type="button"
+              role="tab"
+              aria-selected={isCurrent}
+              aria-label={`Diapositiva ${index + 1} de ${totalSlides}: ${slide.title}`}
+              onClick={() => setActiveSlide(index)}
+              className="fx-press flex h-7 flex-1 items-center"
+            >
+              <span
+                className={`block h-1 w-full rounded-full transition-colors duration-200 ${
+                  isCurrent
+                    ? 'bg-[#111827] dark:bg-[#EDEDED]'
+                    : isPast
+                      ? 'bg-[#4B5563] dark:bg-[#9CA3AF]'
+                      : 'bg-[#9CA3AF]/30 dark:bg-white/15'
+                }`}
+              />
+            </button>
+          );
+        })}
       </div>
 
       {/* 2. Demostración visual protagonista (sin tarjetas anidadas innecesarias) */}
