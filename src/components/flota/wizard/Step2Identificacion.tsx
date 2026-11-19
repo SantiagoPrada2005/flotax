@@ -1,4 +1,13 @@
+import { useRef, type ChangeEvent } from 'react';
+import { Check } from 'lucide-react';
 import type { VehiculoWizardData } from './types';
+import { WheelPicker } from '@/components/ui/WheelPicker';
+import { formatearPlacaVehiculo } from '@/lib/flota/placa';
+
+const ANIOS_MODELO: readonly number[] = Array.from(
+  { length: 2035 - 1990 + 1 },
+  (_, index) => 1990 + index
+);
 
 export interface Step2IdentificacionProps {
   data: VehiculoWizardData;
@@ -12,29 +21,51 @@ export default function Step2Identificacion({
   onChange,
 }: Step2IdentificacionProps) {
   const isPatineta = data.categoria === 'PATINETA';
+  const placaInputRef = useRef<HTMLInputElement>(null);
 
-  const handlePlacaChange = (val: string) => {
-    const limpia = val.toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 10);
-    onChange({ placa: limpia });
+  const handlePlacaChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const raw = event.target.value;
+    if (isPatineta) {
+      const limpia = raw.toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 10);
+      onChange({ placa: limpia });
+      return;
+    }
+
+    const cursorPos = event.target.selectionStart;
+    const { value: formateada, cursor } = formatearPlacaVehiculo(
+      raw,
+      data.placa,
+      cursorPos
+    );
+    onChange({ placa: formateada });
+
+    if (typeof window !== 'undefined') {
+      window.requestAnimationFrame(() => {
+        const input = placaInputRef.current;
+        if (input && document.activeElement === input) {
+          input.setSelectionRange(cursor, cursor);
+        }
+      });
+    }
   };
 
   return (
     <div className="w-full space-y-6">
       {/* Pregunta Hero Principal */}
       <div className="space-y-2">
-        <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF] block">
+        <span className="block font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563] sm:text-xs dark:text-[#9CA3AF]">
           Paso 02 · Identificación Legal
         </span>
-        <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#111827] dark:text-[#EDEDED] leading-[1.12]">
+        <h1 className="font-display text-2xl leading-[1.12] font-bold tracking-tight text-[#111827] sm:text-3xl lg:text-4xl dark:text-[#EDEDED]">
           Empecemos por identificarlo
         </h1>
-        <p className="text-xs sm:text-sm text-[#4B5563] dark:text-[#9CA3AF] font-medium max-w-[50ch]">
-          Ingresa la placa física de circulación o matrícula pericial y el año del modelo.
+        <p className="max-w-[50ch] text-xs font-medium text-[#4B5563] sm:text-sm dark:text-[#9CA3AF]">
+          Ingresa la placa física de circulación o matrícula y el año del modelo.
         </p>
       </div>
 
       {/* Contenedor Inmersivo de 2 Entradas */}
-      <div className="rounded-[28px] border border-[#9CA3AF]/40 bg-white p-6 sm:p-8 shadow-xs space-y-6 dark:bg-[#1F2937] dark:border-white/10">
+      <div className="space-y-6 rounded-[28px] border border-[#9CA3AF]/40 bg-white p-6 shadow-xs sm:p-8 dark:border-white/10 dark:bg-[#1F2937]">
         {/* Entrada 1: Placa (Protagonista) */}
         <div className="space-y-2 text-center sm:text-left">
           <div className="flex items-center justify-between">
@@ -42,85 +73,66 @@ export default function Step2Identificacion({
               htmlFor="input-placa-hero"
               className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]"
             >
-              Placa / Matrícula <span className="text-rose-600 dark:text-rose-400">*</span>
+              Placa <span className="text-rose-600 dark:text-rose-400">*</span>
             </label>
             <span className="font-mono text-[11px] text-[#4B5563] dark:text-[#9CA3AF]">
-              {isPatineta ? 'Identificador Serial / QR' : '3 letras - 3 números'}
+              {isPatineta ? 'Identificador Serial / QR' : ''}
             </span>
           </div>
 
           <div className="relative">
             <input
+              ref={placaInputRef}
               id="input-placa-hero"
               type="text"
               autoFocus
+              autoCapitalize="characters"
+              autoComplete="off"
+              spellCheck={false}
+              maxLength={isPatineta ? 10 : 7}
               value={data.placa}
-              onChange={(e) => handlePlacaChange(e.target.value)}
+              onChange={handlePlacaChange}
               placeholder={isPatineta ? 'VOLT-001' : 'ABC-123'}
-              className={`w-full rounded-2xl bg-[#EDEDED]/50 px-5 py-4 font-mono text-2xl sm:text-3xl font-bold text-[#111827] placeholder-[#9CA3AF] border transition-all uppercase tracking-wider dark:bg-[#111827] dark:text-[#EDEDED] dark:placeholder-[#9CA3AF]/60 ${errors.placa
-                  ? 'border-rose-500 bg-rose-50/40 focus:border-rose-600 focus:outline-none dark:bg-rose-950/20 dark:border-rose-500'
-                  : 'border-transparent focus:border-[#111827] focus:bg-white focus:outline-none dark:border-white/10 dark:focus:border-white dark:focus:bg-[#111827]'
+              className={`w-full rounded-2xl border bg-[#EDEDED]/50 px-5 py-4 font-mono text-2xl font-bold tracking-wider text-[#111827] uppercase placeholder-[#9CA3AF] transition-colors duration-150 sm:text-3xl dark:bg-[#111827] dark:text-[#EDEDED] dark:placeholder-[#9CA3AF]/60 ${errors.placa
+                ? 'border-rose-500 bg-rose-50/40 focus:border-rose-600 dark:border-rose-500 dark:bg-rose-950/20'
+                : 'border-transparent focus:border-[#111827] focus:bg-white dark:border-white/10 dark:focus:border-white dark:focus:bg-[#111827]'
                 }`}
             />
             {data.placa.length >= 3 && (
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500 text-white text-xs font-bold">
-                ✓
-              </span>
+              <Check
+                aria-hidden="true"
+                className="pointer-events-none absolute top-1/2 right-4 h-4 w-4 -translate-y-1/2 stroke-[2.5] text-emerald-600 dark:text-emerald-400"
+              />
             )}
           </div>
 
           {errors.placa && (
-            <p className="text-xs font-bold text-rose-600 dark:text-rose-400 mt-1 animate-fade-in">
+            <p className="mt-1 text-xs font-bold text-rose-600 dark:text-rose-400">
               {errors.placa}
             </p>
           )}
         </div>
 
-        {/* Entrada 2: Año del Modelo */}
-        <div className="space-y-2 border-t border-[#EDEDED] dark:border-white/10 pt-5">
+        {/* Entrada 2: Año del Modelo (Wheel Picker vertical estilo iOS) */}
+        <div className="space-y-3 border-t border-[#EDEDED] pt-5 dark:border-white/10">
           <div className="flex items-center justify-between">
-            <label
-              htmlFor="input-anio-hero"
-              className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]"
-            >
+            <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
               Año del Modelo <span className="text-rose-600 dark:text-rose-400">*</span>
-            </label>
+            </span>
             <span className="font-mono text-[11px] text-[#4B5563] dark:text-[#9CA3AF]">
               1990 — 2035
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => onChange({ anio: Math.max(1990, Number(data.anio || 2024) - 1) })}
-              className="ios-press-bounce h-12 w-12 shrink-0 rounded-2xl border border-[#9CA3AF]/40 bg-white font-mono text-lg font-bold text-[#111827] hover:bg-[#EDEDED] transition flex items-center justify-center cursor-pointer shadow-xs dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20"
-            >
-              −
-            </button>
-            <input
-              id="input-anio-hero"
-              type="number"
-              min={1990}
-              max={2035}
-              value={data.anio}
-              onChange={(e) => onChange({ anio: Number(e.target.value) || 2024 })}
-              className={`flex-1 rounded-2xl bg-[#EDEDED]/50 px-4 py-3.5 font-mono text-lg font-bold text-[#111827] text-center border transition-all dark:bg-[#111827] dark:text-[#EDEDED] ${errors.anio
-                  ? 'border-rose-500 bg-rose-50/40 focus:border-rose-600 focus:outline-none dark:bg-rose-950/20 dark:border-rose-500'
-                  : 'border-transparent focus:border-[#111827] focus:bg-white focus:outline-none dark:border-white/10 dark:focus:border-white dark:focus:bg-[#111827]'
-                }`}
-            />
-            <button
-              type="button"
-              onClick={() => onChange({ anio: Math.min(2035, Number(data.anio || 2024) + 1) })}
-              className="ios-press-bounce h-12 w-12 shrink-0 rounded-2xl border border-[#9CA3AF]/40 bg-white font-mono text-lg font-bold text-[#111827] hover:bg-[#EDEDED] transition flex items-center justify-center cursor-pointer shadow-xs dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20"
-            >
-              +
-            </button>
-          </div>
+          <WheelPicker
+            items={ANIOS_MODELO}
+            value={Number(data.anio) || 2024}
+            onChange={(anio) => onChange({ anio })}
+            ariaLabel="Año del modelo"
+          />
 
           {errors.anio && (
-            <p className="text-xs font-bold text-rose-600 dark:text-rose-400 mt-1 animate-fade-in">
+            <p className="mt-1 text-xs font-bold text-rose-600 dark:text-rose-400">
               {errors.anio}
             </p>
           )}
