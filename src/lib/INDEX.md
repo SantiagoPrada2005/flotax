@@ -23,6 +23,7 @@
 | [`seo/`](./seo/) | Biblioteca de generación de esquemas Schema.org JSON-LD para entidades de negocio, vehículos y migas de pan. | [INDEX.md](./seo/INDEX.md) |
 | [`theme/`](./theme/) | Motor de temas visuales (Claro, Oscuro, Preferencia del Sistema) y persistencia cross-page sin FOUC. | [INDEX.md](./theme/INDEX.md) |
 | [`time/`](./time/) | Funciones y utilidades de cliente para manipulación y visualización de fechas y zonas horarias. | [INDEX.md](./time/INDEX.md) |
+| [`ubicacion/`](./ubicacion/) | Dominio geoespacial, cobertura y recargos por distancia de entregas a domicilio, enlaces externos de navegación (Google Maps / Waze) y cliente Mapbox Geocoding v6 con control de cuota diaria en KV. | [INDEX.md](./ubicacion/INDEX.md) |
 
 ## File Manifest
 

@@ -120,6 +120,8 @@ export default function MisReservasHub({
   const [buscandoClientes, setBuscandoClientes] = useState(false);
   const [errorModalNueva, setErrorModalNueva] = useState<string | null>(null);
   const [submittingModalNueva, setSubmittingModalNueva] = useState(false);
+  const [pasoNuevaMostrador, setPasoNuevaMostrador] = useState<1 | 2 | 3>(1);
+  const [mostrarDocsMostrador, setMostrarDocsMostrador] = useState(false);
 
   const [anioHoy = 2026, mesHoyUno = 10] = hoyISO.split('-').map(Number);
   const [mesCursor, setMesCursor] = useState<{
@@ -1039,7 +1041,7 @@ export default function MisReservasHub({
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
-                  Mostrador de Patio · 1 Paso
+                  Paso {pasoNuevaMostrador} de 3 · Mostrador de Patio
                 </span>
                 <h2 className="font-display text-lg font-extrabold text-[#111827]">
                   Nueva Reserva Operativa
@@ -1065,7 +1067,43 @@ export default function MisReservasHub({
               </button>
             </div>
 
-            <form onSubmit={manejarCrearReservaMostrador} className="space-y-3.5">
+            {/* Stepper de 3 slides (Progressive Disclosure) */}
+            <div className="grid grid-cols-3 gap-1.5" role="tablist" aria-label="Pasos de reserva en mostrador">
+              {(
+                [
+                  { num: 1 as const, label: '1. Unidad' },
+                  { num: 2 as const, label: '2. Conductor' },
+                  { num: 3 as const, label: '3. Recaudo' },
+                ] as const
+              ).map((item) => (
+                <button
+                  key={item.num}
+                  type="button"
+                  onClick={() => setPasoNuevaMostrador(item.num)}
+                  className={`min-h-[38px] rounded-[12px] px-2 py-1.5 text-[11px] font-bold transition-colors cursor-pointer ${
+                    pasoNuevaMostrador === item.num
+                      ? 'bg-[#111827] text-white'
+                      : pasoNuevaMostrador > item.num
+                        ? 'bg-[#EDEDED] text-[#111827]'
+                        : 'bg-[#EDEDED]/50 text-[#4B5563]'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                if (pasoNuevaMostrador < 3) {
+                  e.preventDefault();
+                  setPasoNuevaMostrador((prev) => (prev < 3 ? ((prev + 1) as 1 | 2 | 3) : prev));
+                  return;
+                }
+                void manejarCrearReservaMostrador(e);
+              }}
+              className="space-y-3.5"
+            >
               {/* Error inline accesible */}
               {errorModalNueva && (
                 <div
@@ -1084,369 +1122,420 @@ export default function MisReservasHub({
                 </div>
               )}
 
-              {/* Selección de Vehículo (Regla 16px: text-base) */}
-              <div>
-                <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
-                  Unidad de flota
-                </label>
-                {catalogoVehiculos.length === 0 ? (
-                  <div className="rounded-[16px] bg-[#EDEDED] border border-[#9CA3AF]/40 p-4 text-center space-y-2">
-                    <p className="text-xs font-bold text-[#111827]">
-                      No hay unidades disponibles en este patio
-                    </p>
-                    <a
-                      href="/admin/flota"
-                      className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-[#111827] px-4 py-2 text-xs font-bold text-white hover:bg-[#1F2937]"
-                    >
-                      Ir a gestión de flota
-                    </a>
-                  </div>
-                ) : (
-                  <select
-                    value={formVehiculoId}
-                    onChange={(e) => setFormVehiculoId(e.target.value)}
-                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3.5 py-2.5 text-base font-semibold text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
-                  >
-                    {catalogoVehiculos.map((veh) => (
-                      <option key={veh.id} value={veh.id}>
-                        {veh.marca} {veh.modelo} ({veh.placa}) ·{' '}
-                        {formatCop(veh.precioDia)}/día
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
-
-              {/* Rango de Fechas */}
-              <div className="grid grid-cols-2 gap-2.5">
-                <div>
-                  <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
-                    Entrega
-                  </label>
-                  <input
-                    type="date"
-                    value={formFechaInicio}
-                    onChange={(e) => setFormFechaInicio(e.target.value)}
-                    required
-                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3 py-2 text-base font-medium text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
-                    Devolución
-                  </label>
-                  <input
-                    type="date"
-                    value={formFechaFin}
-                    min={formFechaInicio}
-                    onChange={(e) => setFormFechaFin(e.target.value)}
-                    required
-                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3 py-2 text-base font-medium text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
-                  />
-                </div>
-              </div>
-
-              {/* Buscador de Clientes del Local / KYC */}
-              <div className="rounded-[18px] bg-[#EDEDED]/80 p-3 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-[#111827]">
-                    Buscador de clientes (Local)
-                  </span>
-                  {clienteSeleccionadoId && (
-                    <button
-                      type="button"
-                      onClick={limpiarClienteSeleccionado}
-                      className="text-[10px] font-semibold text-[#4B5563] hover:text-[#111827] underline cursor-pointer"
-                    >
-                      Modo presencial / Walk-in
-                    </button>
-                  )}
-                </div>
-
-                {!clienteSeleccionadoId ? (
-                  <div className="space-y-1.5">
-                    <input
-                      type="text"
-                      placeholder="Buscar por nombre, correo o documento..."
-                      value={busquedaCliente}
-                      onChange={(e) => ejecutarBusquedaCliente(e.target.value)}
-                      className="w-full rounded-[12px] bg-white border border-[#9CA3AF]/40 px-3 py-2 text-base text-[#111827] placeholder:text-[#9CA3AF] focus-visible:ring-2 focus-visible:ring-[#111827]"
-                    />
-                    {buscandoClientes && (
-                      <p className="text-[11px] text-[#4B5563]">Buscando clientes...</p>
-                    )}
-                    {clientesEncontrados.length > 0 && (
-                      <ul className="rounded-[12px] bg-white border border-[#9CA3AF]/40 divide-y divide-[#9CA3AF]/20 max-h-36 overflow-y-auto">
-                        {clientesEncontrados.map((c) => (
-                          <li key={c.id}>
-                            <button
-                              type="button"
-                              onClick={() => seleccionarCliente(c)}
-                              className="w-full p-2.5 text-left hover:bg-[#EDEDED] flex items-center justify-between text-xs cursor-pointer"
-                            >
-                              <div className="min-w-0">
-                                <p className="font-bold text-[#111827] truncate">{c.nombre}</p>
-                                <p className="text-[10px] text-[#4B5563] truncate">
-                                  {c.numeroDocumento ? `Doc: ${c.numeroDocumento} · ` : ''}{c.correo}
-                                </p>
-                              </div>
-                              <span
-                                className={`shrink-0 ml-2 rounded-full px-2 py-0.5 text-[9px] font-bold ${
-                                  c.estadoKyc === 'APROBADO'
-                                    ? 'bg-[#111827] text-white'
-                                    : c.estadoKyc === 'PENDIENTE'
-                                      ? 'bg-[#EDEDED] text-[#4B5563] border border-[#9CA3AF]/60'
-                                      : 'bg-[#EDEDED] text-[#4B5563]'
-                                }`}
-                              >
-                                {c.estadoKyc === 'APROBADO'
-                                  ? 'KYC OK'
-                                  : c.estadoKyc === 'PENDIENTE'
-                                    ? 'En revisión'
-                                    : 'Sin docs'}
-                              </span>
-                            </button>
-                          </li>
+              {/* =============================================================
+                  SLIDE 1: UNIDAD Y FECHAS (1 sola caja limpia)
+                  ============================================================= */}
+              {pasoNuevaMostrador === 1 && (
+                <div className="rounded-[20px] bg-[#EDEDED]/70 p-4 space-y-3.5 animate-fade-up">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
+                      Unidad de flota
+                    </label>
+                    {catalogoVehiculos.length === 0 ? (
+                      <div className="rounded-[16px] bg-white border border-[#9CA3AF]/40 p-4 text-center space-y-2">
+                        <p className="text-xs font-bold text-[#111827]">
+                          No hay unidades disponibles en este patio
+                        </p>
+                        <a
+                          href="/admin/flota"
+                          className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-[#111827] px-4 py-2 text-xs font-bold text-white hover:bg-[#1F2937]"
+                        >
+                          Ir a gestión de flota
+                        </a>
+                      </div>
+                    ) : (
+                      <select
+                        value={formVehiculoId}
+                        onChange={(e) => setFormVehiculoId(e.target.value)}
+                        className="w-full rounded-[14px] bg-white border border-[#9CA3AF]/50 px-3.5 py-2.5 text-base font-semibold text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                      >
+                        {catalogoVehiculos.map((veh) => (
+                          <option key={veh.id} value={veh.id}>
+                            {veh.marca} {veh.modelo} ({veh.placa}) ·{' '}
+                            {formatCop(veh.precioDia)}/día
+                          </option>
                         ))}
-                      </ul>
+                      </select>
                     )}
                   </div>
-                ) : (
-                  <div className="flex items-center justify-between rounded-[12px] bg-white border border-[#9CA3AF]/30 p-2.5 text-xs">
+
+                  <div className="grid grid-cols-2 gap-2.5">
                     <div>
-                      <p className="font-bold text-[#111827]">{formNombre}</p>
-                      <p className="text-[11px] text-[#4B5563]">
-                        {formNumDoc ? `${formTipoDoc} ${formNumDoc} · ` : ''}{formCorreo}
-                      </p>
+                      <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
+                        Entrega
+                      </label>
+                      <input
+                        type="date"
+                        value={formFechaInicio}
+                        onChange={(e) => setFormFechaInicio(e.target.value)}
+                        required
+                        className="w-full rounded-[14px] bg-white border border-[#9CA3AF]/50 px-3 py-2 text-base font-medium text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                      />
                     </div>
-                    <span className="rounded-full bg-[#111827] text-white px-2 py-0.5 text-[10px] font-bold">
-                      Cliente vinculado
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Datos del Conductor (Modo Walk-in: solo nombre y teléfono obligatorios) */}
-              <div>
-                <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
-                  Nombre completo del conductor <span className="text-[#111827]">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="Ej. Andrés Felipe Mejía"
-                  value={formNombre}
-                  onChange={(e) => setFormNombre(e.target.value)}
-                  required
-                  className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3.5 py-2.5 text-base text-[#111827] placeholder:text-[#9CA3AF] focus-visible:ring-2 focus-visible:ring-[#111827]"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                <div>
-                  <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
-                    Teléfono móvil <span className="text-[#111827]">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    placeholder="+57 300 000 0000"
-                    value={formTelefono}
-                    onChange={(e) => setFormTelefono(e.target.value)}
-                    required
-                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3 py-2.5 text-base text-[#111827] placeholder:text-[#9CA3AF] focus-visible:ring-2 focus-visible:ring-[#111827]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
-                    Correo electrónico (opcional)
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="cliente@ejemplo.com"
-                    value={formCorreo}
-                    onChange={(e) => setFormCorreo(e.target.value)}
-                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3 py-2.5 text-base text-[#111827] placeholder:text-[#9CA3AF] focus-visible:ring-2 focus-visible:ring-[#111827]"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-[90px_1fr_84px] gap-2">
-                <div>
-                  <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
-                    Tipo doc.
-                  </label>
-                  <select
-                    value={formTipoDoc}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      if (v === 'CC' || v === 'CE' || v === 'PASAPORTE') {
-                        setFormTipoDoc(v);
-                      }
-                    }}
-                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-2.5 py-2.5 text-base font-semibold text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
-                  >
-                    <option value="CC">CC</option>
-                    <option value="CE">CE</option>
-                    <option value="PASAPORTE">PAS</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
-                    Documento (opcional)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="1.037.654.321"
-                    value={formNumDoc}
-                    onChange={(e) => setFormNumDoc(e.target.value)}
-                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-3 py-2.5 text-base text-[#111827] placeholder:text-[#9CA3AF] focus-visible:ring-2 focus-visible:ring-[#111827]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
-                    Licencia (opc.)
-                  </label>
-                  <select
-                    value={formLicencia}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      if (
-                        v === 'B1' ||
-                        v === 'B2' ||
-                        v === 'A2' ||
-                        v === 'C1'
-                      ) {
-                        setFormLicencia(v);
-                      }
-                    }}
-                    className="w-full rounded-[14px] bg-[#EDEDED]/75 px-2.5 py-2.5 text-base font-semibold text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
-                  >
-                    <option value="B1">B1</option>
-                    <option value="B2">B2</option>
-                    <option value="A2">A2</option>
-                    <option value="C1">C1</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
-                  Modalidad de entrega
-                </label>
-                <select
-                  value={formModalidad}
-                  onChange={(e) =>
-                    setFormModalidad(
-                      e.target.value === 'DOMICILIO_MEDELLIN'
-                        ? 'DOMICILIO_MEDELLIN'
-                        : 'PATIO_PRINCIPAL'
-                    )
-                  }
-                  className="w-full rounded-[14px] bg-[#EDEDED]/75 px-2.5 py-2.5 text-base font-semibold text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
-                >
-                  <option value="PATIO_PRINCIPAL">En Patio</option>
-                  <option value="DOMICILIO_MEDELLIN">Domicilio</option>
-                </select>
-              </div>
-
-              {/* Estado inicial y Abono */}
-              <div className="grid grid-cols-2 gap-2 pt-1">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setFormEstadoInicial((prev) =>
-                      prev === 'CONFIRMADA' ? 'PENDIENTE' : 'CONFIRMADA'
-                    )
-                  }
-                  className="min-h-[44px] rounded-[16px] bg-[#EDEDED]/80 px-3 py-2 text-left cursor-pointer border border-[#9CA3AF]/30"
-                >
-                  <span className="block text-[10px] font-medium text-[#4B5563]">
-                    Estado inicial
-                  </span>
-                  <span className="font-display text-xs font-extrabold text-[#111827]">
-                    {formEstadoInicial === 'CONFIRMADA'
-                      ? '✓ Confirmada directa'
-                      : 'Pendiente revisión'}
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setFormPorcentajeAbono((prev) => (prev === 100 ? 30 : 100))
-                  }
-                  className="min-h-[44px] rounded-[16px] bg-[#EDEDED]/80 px-3 py-2 text-left cursor-pointer border border-[#9CA3AF]/30"
-                >
-                  <span className="block text-[10px] font-medium text-[#4B5563]">
-                    Recaudo en mostrador
-                  </span>
-                  <span className="font-display text-xs font-extrabold text-[#111827]">
-                    {formPorcentajeAbono === 100
-                      ? '100% Cancelado'
-                      : 'Abono 30%'}
-                  </span>
-                </button>
-              </div>
-
-              {/* Cuenta financiera para recaudo inmediato */}
-              {formEstadoInicial === 'CONFIRMADA' && cuentasFinancieras && cuentasFinancieras.length > 0 && (
-                <div className="rounded-[16px] bg-[#EDEDED]/80 p-3 space-y-2 border border-[#9CA3AF]/30">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-[#111827]">
-                      Asentar recaudo en caja
-                    </span>
-                    <span className="text-[10px] text-[#4B5563]">
-                      Cuenta operativa
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <select
-                      value={cuentaPagoId}
-                      onChange={(e) => setCuentaPagoId(e.target.value)}
-                      className="w-full rounded-[12px] bg-white border border-[#9CA3AF]/40 px-2.5 py-2 text-base text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
-                    >
-                      {cuentasFinancieras.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.nombre} ({c.tipo})
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      value={metodoPagoSeleccionado}
-                      onChange={(e) =>
-                        setMetodoPagoSeleccionado(
-                          e.target.value as 'efectivo' | 'transferencia' | 'tarjeta'
-                        )
-                      }
-                      className="w-full rounded-[12px] bg-white border border-[#9CA3AF]/40 px-2.5 py-2 text-base text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
-                    >
-                      <option value="efectivo">Efectivo</option>
-                      <option value="transferencia">Transferencia / PSE</option>
-                      <option value="tarjeta">Tarjeta Datáfono</option>
-                    </select>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
+                        Devolución
+                      </label>
+                      <input
+                        type="date"
+                        value={formFechaFin}
+                        min={formFechaInicio}
+                        onChange={(e) => setFormFechaFin(e.target.value)}
+                        required
+                        className="w-full rounded-[14px] bg-white border border-[#9CA3AF]/50 px-3 py-2 text-base font-medium text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
 
-              {/* Resumen de liquidación y Submit */}
-              <div className="flex items-center justify-between rounded-[18px] bg-[#EDEDED] px-4 py-3">
+              {/* =============================================================
+                  SLIDE 2: CONDUCTOR (1 sola caja con Progressive Disclosure)
+                  ============================================================= */}
+              {pasoNuevaMostrador === 2 && (
+                <div className="rounded-[20px] bg-[#EDEDED]/70 p-4 space-y-3 animate-fade-up">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-[#111827]">
+                        Buscar cliente registrado (opcional)
+                      </span>
+                      {clienteSeleccionadoId && (
+                        <button
+                          type="button"
+                          onClick={limpiarClienteSeleccionado}
+                          className="text-[10px] font-semibold text-[#4B5563] hover:text-[#111827] underline cursor-pointer"
+                        >
+                          Limpiar
+                        </button>
+                      )}
+                    </div>
+
+                    {!clienteSeleccionadoId ? (
+                      <div className="space-y-1.5">
+                        <input
+                          type="text"
+                          placeholder="Buscar por nombre, correo o documento..."
+                          value={busquedaCliente}
+                          onChange={(e) => ejecutarBusquedaCliente(e.target.value)}
+                          className="w-full rounded-[12px] bg-white border border-[#9CA3AF]/50 px-3 py-2 text-base text-[#111827] placeholder:text-[#9CA3AF] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                        />
+                        {buscandoClientes && (
+                          <p className="text-[11px] text-[#4B5563]">Buscando clientes...</p>
+                        )}
+                        {clientesEncontrados.length > 0 && (
+                          <ul className="rounded-[12px] bg-white border border-[#9CA3AF]/40 divide-y divide-[#9CA3AF]/20 max-h-36 overflow-y-auto">
+                            {clientesEncontrados.map((c) => (
+                              <li key={c.id}>
+                                <button
+                                  type="button"
+                                  onClick={() => seleccionarCliente(c)}
+                                  className="w-full p-2.5 text-left hover:bg-[#EDEDED] flex items-center justify-between text-xs cursor-pointer"
+                                >
+                                  <div className="min-w-0">
+                                    <p className="font-bold text-[#111827] truncate">{c.nombre}</p>
+                                    <p className="text-[10px] text-[#4B5563] truncate">
+                                      {c.numeroDocumento ? `Doc: ${c.numeroDocumento} · ` : ''}{c.correo}
+                                    </p>
+                                  </div>
+                                  <span className="shrink-0 ml-2 rounded-full bg-[#111827] text-white px-2 py-0.5 text-[9px] font-bold">
+                                    Elegir
+                                  </span>
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between rounded-[12px] bg-white border border-[#9CA3AF]/30 p-2.5 text-xs">
+                        <div>
+                          <p className="font-bold text-[#111827]">{formNombre}</p>
+                          <p className="text-[11px] text-[#4B5563]">
+                            {formNumDoc ? `${formTipoDoc} ${formNumDoc} · ` : ''}{formCorreo}
+                          </p>
+                        </div>
+                        <span className="rounded-full bg-[#111827] text-white px-2 py-0.5 text-[10px] font-bold">
+                          Vinculado ✓
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
+                      Nombre completo del conductor <span className="text-[#111827]">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ej. Andrés Felipe Mejía"
+                      value={formNombre}
+                      onChange={(e) => setFormNombre(e.target.value)}
+                      required
+                      className="w-full rounded-[14px] bg-white border border-[#9CA3AF]/50 px-3.5 py-2.5 text-base text-[#111827] placeholder:text-[#9CA3AF] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
+                        Teléfono móvil <span className="text-[#111827]">*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        placeholder="+57 300 000 0000"
+                        value={formTelefono}
+                        onChange={(e) => setFormTelefono(e.target.value)}
+                        required
+                        className="w-full rounded-[14px] bg-white border border-[#9CA3AF]/50 px-3 py-2.5 text-base text-[#111827] placeholder:text-[#9CA3AF] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
+                        Correo (opcional)
+                      </label>
+                      <input
+                        type="email"
+                        placeholder="cliente@ejemplo.com"
+                        value={formCorreo}
+                        onChange={(e) => setFormCorreo(e.target.value)}
+                        className="w-full rounded-[14px] bg-white border border-[#9CA3AF]/50 px-3 py-2.5 text-base text-[#111827] placeholder:text-[#9CA3AF] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setMostrarDocsMostrador((prev) => !prev)}
+                    className="w-full min-h-[42px] flex items-center justify-between rounded-[12px] bg-white border border-[#9CA3AF]/50 px-3 py-2 text-xs font-bold text-[#111827] cursor-pointer"
+                  >
+                    <span>
+                      {mostrarDocsMostrador
+                        ? '− Ocultar documento y licencia'
+                        : '+ Agregar documento y licencia ahora'}
+                    </span>
+                    <span className="text-[11px] text-[#4B5563]">Opcional</span>
+                  </button>
+
+                  {mostrarDocsMostrador && (
+                    <div className="grid grid-cols-[90px_1fr_84px] gap-2 pt-1">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
+                          Tipo doc.
+                        </label>
+                        <select
+                          value={formTipoDoc}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            if (v === 'CC' || v === 'CE' || v === 'PASAPORTE') {
+                              setFormTipoDoc(v);
+                            }
+                          }}
+                          className="w-full rounded-[14px] bg-white border border-[#9CA3AF]/50 px-2.5 py-2.5 text-base font-semibold text-[#111827]"
+                        >
+                          <option value="CC">CC</option>
+                          <option value="CE">CE</option>
+                          <option value="PASAPORTE">PAS</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
+                          Documento
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="1.037.654.321"
+                          value={formNumDoc}
+                          onChange={(e) => setFormNumDoc(e.target.value)}
+                          className="w-full rounded-[14px] bg-white border border-[#9CA3AF]/50 px-3 py-2.5 text-base text-[#111827]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
+                          Licencia
+                        </label>
+                        <select
+                          value={formLicencia}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            if (v === 'B1' || v === 'B2' || v === 'A2' || v === 'C1') {
+                              setFormLicencia(v);
+                            }
+                          }}
+                          className="w-full rounded-[14px] bg-white border border-[#9CA3AF]/50 px-2.5 py-2.5 text-base font-semibold text-[#111827]"
+                        >
+                          <option value="B1">B1</option>
+                          <option value="B2">B2</option>
+                          <option value="A2">A2</option>
+                          <option value="C1">C1</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* =============================================================
+                  SLIDE 3: ENTREGA Y RECAUDO EN CAJA (1 sola caja limpia)
+                  ============================================================= */}
+              {pasoNuevaMostrador === 3 && (
+                <div className="rounded-[20px] bg-[#EDEDED]/70 p-4 space-y-3.5 animate-fade-up">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
+                      Modalidad de entrega
+                    </label>
+                    <select
+                      value={formModalidad}
+                      onChange={(e) =>
+                        setFormModalidad(
+                          e.target.value === 'DOMICILIO_MEDELLIN'
+                            ? 'DOMICILIO_MEDELLIN'
+                            : 'PATIO_PRINCIPAL'
+                        )
+                      }
+                      className="w-full rounded-[14px] bg-white border border-[#9CA3AF]/50 px-3 py-2.5 text-base font-semibold text-[#111827]"
+                    >
+                      <option value="PATIO_PRINCIPAL">Retiro en Patio Principal</option>
+                      <option value="DOMICILIO_MEDELLIN">Entrega a Domicilio</option>
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFormEstadoInicial((prev) =>
+                          prev === 'CONFIRMADA' ? 'PENDIENTE' : 'CONFIRMADA'
+                        )
+                      }
+                      className="min-h-[44px] rounded-[14px] bg-white px-3 py-2 text-left cursor-pointer border border-[#9CA3AF]/50"
+                    >
+                      <span className="block text-[10px] font-medium text-[#4B5563]">
+                        Estado inicial
+                      </span>
+                      <span className="font-display text-xs font-extrabold text-[#111827]">
+                        {formEstadoInicial === 'CONFIRMADA'
+                          ? '✓ Confirmada directa'
+                          : 'Pendiente revisión'}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFormPorcentajeAbono((prev) => (prev === 100 ? 30 : 100))
+                      }
+                      className="min-h-[44px] rounded-[14px] bg-white px-3 py-2 text-left cursor-pointer border border-[#9CA3AF]/50"
+                    >
+                      <span className="block text-[10px] font-medium text-[#4B5563]">
+                        Recaudo en mostrador
+                      </span>
+                      <span className="font-display text-xs font-extrabold text-[#111827]">
+                        {formPorcentajeAbono === 100
+                          ? '100% Cancelado'
+                          : 'Abono 30%'}
+                      </span>
+                    </button>
+                  </div>
+
+                  {formEstadoInicial === 'CONFIRMADA' &&
+                    cuentasFinancieras &&
+                    cuentasFinancieras.length > 0 && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                        <div>
+                          <label className="block text-[10px] font-semibold text-[#4B5563] mb-1">
+                            Cuenta de caja
+                          </label>
+                          <select
+                            value={cuentaPagoId}
+                            onChange={(e) => setCuentaPagoId(e.target.value)}
+                            className="w-full rounded-[12px] bg-white border border-[#9CA3AF]/50 px-2.5 py-2 text-base text-[#111827]"
+                          >
+                            {cuentasFinancieras.map((c) => (
+                              <option key={c.id} value={c.id}>
+                                {c.nombre}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-semibold text-[#4B5563] mb-1">
+                            Método de pago
+                          </label>
+                          <select
+                            value={metodoPagoSeleccionado}
+                            onChange={(e) =>
+                              setMetodoPagoSeleccionado(
+                                e.target.value as 'efectivo' | 'transferencia' | 'tarjeta'
+                              )
+                            }
+                            className="w-full rounded-[12px] bg-white border border-[#9CA3AF]/50 px-2.5 py-2 text-base text-[#111827]"
+                          >
+                            <option value="efectivo">Efectivo</option>
+                            <option value="transferencia">Transferencia / PSE</option>
+                            <option value="tarjeta">Tarjeta Datáfono</option>
+                          </select>
+                        </div>
+                      </div>
+                    )}
+                </div>
+              )}
+
+              {/* Resumen de liquidación y Navegación de Slides */}
+              <div className="flex items-center justify-between gap-2 rounded-[18px] bg-[#EDEDED] px-4 py-3">
                 <div>
                   <span className="block text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
-                    Total ({cotizacionRapidaPatio.dias} días · Incluye R2)
+                    Total ({cotizacionRapidaPatio.dias} días)
                   </span>
                   <span className="font-display text-base font-black text-[#111827] tabular-nums">
                     {formatCop(cotizacionRapidaPatio.total)}
                   </span>
                 </div>
-                <button
-                  type="submit"
-                  disabled={submittingModalNueva || catalogoVehiculos.length === 0}
-                  className="min-h-[44px] rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
-                >
-                  {submittingModalNueva ? 'Radicando...' : 'Radicar reserva'}
-                </button>
+
+                <div className="flex items-center gap-2">
+                  {pasoNuevaMostrador > 1 && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setPasoNuevaMostrador((prev) =>
+                          prev > 1 ? ((prev - 1) as 1 | 2 | 3) : prev
+                        )
+                      }
+                      className="min-h-[44px] rounded-full bg-white border border-[#9CA3AF]/60 px-4 py-2 text-xs font-bold text-[#111827] cursor-pointer"
+                    >
+                      ← Anterior
+                    </button>
+                  )}
+
+                  {pasoNuevaMostrador < 3 ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (pasoNuevaMostrador === 2 && (!formNombre.trim() || !formTelefono.trim())) {
+                          setErrorModalNueva('Ingresa nombre y teléfono del conductor para continuar.');
+                          return;
+                        }
+                        setErrorModalNueva(null);
+                        setPasoNuevaMostrador((prev) =>
+                          prev < 3 ? ((prev + 1) as 1 | 2 | 3) : prev
+                        );
+                      }}
+                      className="min-h-[44px] rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] cursor-pointer"
+                    >
+                      Siguiente →
+                    </button>
+                  ) : (
+                    <button
+                      type="submit"
+                      disabled={submittingModalNueva || catalogoVehiculos.length === 0}
+                      className="min-h-[44px] rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                    >
+                      {submittingModalNueva ? 'Radicando...' : 'Radicar reserva'}
+                    </button>
+                  )}
+                </div>
               </div>
             </form>
           </div>

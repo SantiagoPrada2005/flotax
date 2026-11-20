@@ -106,6 +106,12 @@ export interface ReservaClienteItem {
   montoReportado: number;
   estado: EstadoReservaCliente;
   modalidadEntrega: ModalidadEntregaReserva;
+  direccionEntrega?: string | null | undefined;
+  entregaLatitud?: number | null | undefined;
+  entregaLongitud?: number | null | undefined;
+  entregaReferencia?: string | null | undefined;
+  distanciaEntregaKm?: number | null | undefined;
+  recargoEntregaDomicilio?: number | undefined;
   sedeNombre: string;
   creadaEn: string;
   specsBento: EspecificacionesBentoVehiculo;
@@ -344,7 +350,11 @@ export function obtenerRubrosWaybillReserva(
   reserva: ReservaClienteItem
 ): RubroLiquidacionWaybill[] {
   const subtotalTarifa = reserva.diasAlquiler * reserva.vehiculo.precioDia;
-  const coberturaR2 = Math.max(0, reserva.totalAlquiler - subtotalTarifa);
+  const recargoDomicilio = Math.max(0, reserva.recargoEntregaDomicilio ?? 0);
+  const coberturaR2 = Math.max(
+    0,
+    reserva.totalAlquiler - subtotalTarifa - recargoDomicilio
+  );
   const saldoPatio = Math.max(0, reserva.totalAlquiler - reserva.montoReportado);
   const baseCalculo = Math.max(1, reserva.totalAlquiler);
 
@@ -357,7 +367,7 @@ export function obtenerRubrosWaybillReserva(
           ? 'Saldo pendiente'
           : 'Paz y salvo';
 
-  return [
+  const rubros: RubroLiquidacionWaybill[] = [
     {
       id: 'total-contrato',
       etiqueta: `Total Contrato (${reserva.diasAlquiler} días)`,
@@ -379,6 +389,19 @@ export function obtenerRubrosWaybillReserva(
       monto: coberturaR2,
       porcentajeSobreTotal: Math.round((coberturaR2 / baseCalculo) * 100),
     },
+  ];
+
+  if (recargoDomicilio > 0) {
+    rubros.push({
+      id: 'recargo-domicilio',
+      etiqueta: 'Recargo Entrega a Domicilio',
+      etiquetaCorta: 'Domicilio',
+      monto: recargoDomicilio,
+      porcentajeSobreTotal: Math.round((recargoDomicilio / baseCalculo) * 100),
+    });
+  }
+
+  rubros.push(
     {
       id: 'abono-verificado',
       etiqueta: 'Abono Reportado',
@@ -394,8 +417,10 @@ export function obtenerRubrosWaybillReserva(
       etiquetaCorta: 'Garantía',
       monto: reserva.vehiculo.depositoGarantia,
       porcentajeSobreTotal: 100,
-    },
-  ];
+    }
+  );
+
+  return rubros;
 }
 
 export function obtenerInfoDiaFechaISO(fechaISO: string): {
@@ -519,6 +544,12 @@ export function obtenerReservasSemillaCliente(hoyISO: string): ReservaClienteIte
       montoReportado: Math.round(total3 * 0.3),
       estado: 'CONFIRMADA',
       modalidadEntrega: 'DOMICILIO_MEDELLIN',
+      direccionEntrega: 'Cra. 35 #7-50, Provenza, El Poblado, Medellín',
+      entregaLatitud: 6.2089,
+      entregaLongitud: -75.5668,
+      entregaReferencia: 'Lobby Edificio Provenza Suites',
+      distanciaEntregaKm: 2.76,
+      recargoEntregaDomicilio: 0,
       sedeNombre: 'Sede El Poblado',
       creadaEn: `${hoyISO}T10:15:00.000Z`,
       specsBento: obtenerSpecsBentoPorVehiculo(vehiculoSecundario.id),

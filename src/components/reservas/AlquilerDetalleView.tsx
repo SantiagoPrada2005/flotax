@@ -12,6 +12,7 @@ import {
 } from '@/lib/flota';
 import type { CapacidadesOperacionAlquiler } from '@/lib/auth/capacidades-alquiler';
 import SemaforoDocumentalPanel from './SemaforoDocumentalPanel';
+import DeliveryPointCard from './DeliveryPointCard';
 import {
   ModalPausar,
   ModalProrrogar,
@@ -27,6 +28,7 @@ export interface AlquilerDetalleViewProps {
   capacidades?: CapacidadesOperacionAlquiler | undefined;
   cuentasFinancieras?: Array<{ id: string; nombre: string; tipo: string }> | undefined;
   tokenAccesoPublico?: string | null | undefined;
+  mapboxPublicToken?: string | null | undefined;
 }
 
 type TabDetalleAlquiler = 'INSPECCION' | 'WAYBILL' | 'HIGHLIGHTS';
@@ -37,7 +39,7 @@ const ETIQUETA_ESTADO_CABECERA: Readonly<
   Record<EstadoReservaCliente, string>
 > = {
   PENDIENTE: 'Solicitud pendiente de revisión',
-  CONFIRMADA: 'Confirmada · Lista para entrega R2',
+  CONFIRMADA: 'Confirmada · Lista para entrega',
   EN_CURSO: 'En curso · Unidad en ruta',
   PAUSADA: 'Alquiler en pausa',
   COMPLETADA: 'Completada · Contrato cerrado',
@@ -60,11 +62,12 @@ export default function AlquilerDetalleView({
   capacidades,
   cuentasFinancieras = [],
   tokenAccesoPublico,
+  mapboxPublicToken = null,
 }: AlquilerDetalleViewProps) {
   const esAdmin = modo === 'admin';
 
   const [reserva, setReserva] = useState<ReservaClienteItem>(reservaInicial);
-  const [tabActiva, setTabActiva] = useState<TabDetalleAlquiler>('INSPECCION');
+  const [tabActiva, setTabActiva] = useState<TabDetalleAlquiler>('HIGHLIGHTS');
   const [puntoActivoId, setPuntoActivoId] = useState<string>('r2-carroceria');
   const [rubroActivoId, setRubroActivoId] = useState<string>('total-contrato');
 
@@ -524,38 +527,6 @@ export default function AlquilerDetalleView({
             aria-hidden="true"
             className="mx-auto -mt-2 h-3.5 w-4/5 rounded-full bg-[radial-gradient(ellipse_at_center,_rgba(17,24,39,0.20)_0%,_transparent_75%)]"
           />
-
-          {/* Puntos Interactivos R2 sobre la Silueta del Vehículo */}
-          {puntosR2.map((punto) => {
-            const activo = puntoSeleccionado.id === punto.id;
-            const tieneNovedad = punto.estado === 'NOVEDAD';
-            return (
-              <button
-                key={punto.id}
-                type="button"
-                onClick={() => {
-                  setPuntoActivoId(punto.id);
-                  setTabActiva('INSPECCION');
-                  setEditandoDictamen(false);
-                }}
-                style={{ left: punto.coordX, top: punto.coordY }}
-                aria-label={`Inspección: ${punto.zona}`}
-                className={`ios-press-bounce absolute -translate-x-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full transition-transform cursor-pointer ${
-                  activo
-                    ? 'bg-[#111827] text-white ring-4 ring-white/85 scale-110 z-20'
-                    : tieneNovedad
-                      ? 'bg-[#1F2937] text-white ring-2 ring-white z-10'
-                      : 'bg-white/90 text-[#111827] hover:scale-105 z-10'
-                }`}
-              >
-                <span
-                  className={`h-2 w-2 rounded-full ${
-                    activo || tieneNovedad ? 'bg-white' : 'bg-[#111827]'
-                  }`}
-                />
-              </button>
-            );
-          })}
         </div>
 
         {/* Insignia Inferior Izquierda: Silueta y Placa */}
@@ -578,35 +549,12 @@ export default function AlquilerDetalleView({
           </span>
         </div>
 
-        {/* Cápsula Vertical Flotante Derecha (3 Estaciones) */}
+        {/* Cápsula Vertical Flotante Derecha (2 Estaciones: Expediente y Liquidación) */}
         <div
           role="toolbar"
           aria-label="Cambiar estación de trabajo del alquiler"
           className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col gap-2 rounded-full bg-[#9CA3AF]/25 backdrop-blur-xl border border-white/60 p-1.5 shadow-[0_12px_28px_-8px_rgba(17,24,39,0.14)] z-20"
         >
-          <button
-            type="button"
-            onClick={() => setTabActiva('INSPECCION')}
-            aria-label="Inspección Pericial R2"
-            aria-pressed={tabActiva === 'INSPECCION'}
-            className={`ios-press-bounce flex h-10 w-10 items-center justify-center rounded-full transition-colors cursor-pointer ${
-              tabActiva === 'INSPECCION'
-                ? 'bg-[#111827] text-white'
-                : 'bg-white/80 text-[#111827] hover:bg-white'
-            }`}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="h-4 w-4"
-            >
-              <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-            </svg>
-          </button>
-
           <button
             type="button"
             onClick={() => setTabActiva('WAYBILL')}
@@ -1239,12 +1187,12 @@ export default function AlquilerDetalleView({
                   </span>
                   <p className="mt-1 font-display text-xs font-bold text-[#111827] truncate">
                     {reserva.modalidadEntrega === 'DOMICILIO_MEDELLIN'
-                      ? 'Domicilio Medellín'
+                      ? reserva.direccionEntrega || 'Domicilio coordinado'
                       : 'Entrega en Patio'}
                   </p>
                   <p className="mt-0.5 text-[10px] font-semibold text-[#4B5563]">
                     {reserva.conductor.ley1581Aceptada
-                      ? 'Datos y R2 autorizados ✓'
+                      ? 'Datos y ubicación autorizados ✓'
                       : 'Pendiente firma'}
                   </p>
                 </div>
@@ -1328,6 +1276,21 @@ export default function AlquilerDetalleView({
             =================================================================== */}
         {esAdmin && (
           <div className="border-t border-[#EDEDED] pt-3.5 space-y-3">
+            {/* Tarjeta visible de dirección y coordenadas para entregas a domicilio */}
+            <DeliveryPointCard
+              modalidadEntrega={reserva.modalidadEntrega}
+              sedeNombre={reserva.sedeNombre}
+              direccionEntrega={reserva.direccionEntrega}
+              entregaLatitud={reserva.entregaLatitud}
+              entregaLongitud={reserva.entregaLongitud}
+              entregaReferencia={reserva.entregaReferencia}
+              distanciaEntregaKm={reserva.distanciaEntregaKm}
+              recargoEntregaDomicilio={reserva.recargoEntregaDomicilio}
+              mapboxPublicToken={mapboxPublicToken}
+              vista="admin"
+              onAviso={mostrarAviso}
+            />
+
             {/* Panel Semáforo: KYC Cliente + SOAT / RTM Vehículo */}
             <SemaforoDocumentalPanel
               reserva={reserva}

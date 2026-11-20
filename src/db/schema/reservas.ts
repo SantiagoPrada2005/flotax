@@ -1,4 +1,4 @@
-import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { index, integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { user } from './auth';
 import { localesAlquiler } from './locales';
 import { vehiculos } from './vehiculos';
@@ -71,6 +71,11 @@ export const reservas = sqliteTable(
       .notNull()
       .default('PATIO_PRINCIPAL'),
     direccionEntrega: text('direccion_entrega'),
+    entregaLatitud: real('entrega_latitud'),
+    entregaLongitud: real('entrega_longitud'),
+    entregaReferencia: text('entrega_referencia'),
+    distanciaEntregaKm: real('distancia_entrega_km'),
+    recargoEntregaDomicilio: integer('recargo_entrega_domicilio').notNull().default(0),
     sedeNombre: text('sede_nombre').notNull(),
     tokenAccesoPublico: text('token_acceso_publico'),
 

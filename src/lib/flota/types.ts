@@ -119,6 +119,7 @@ export interface CotizacionAlquiler {
   precioDia: number;
   subtotalTarifa: number;
   coberturaPericial: number;
+  recargoDomicilio: number;
   depositoGarantia: number;
   totalAlquiler: number;
   abonoMinimoReserva: number;

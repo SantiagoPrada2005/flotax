@@ -25,6 +25,7 @@ export default function SemaforoDocumentalPanel({
   onDocumentosActualizados,
   puedeModificar = true,
 }: SemaforoDocumentalPanelProps) {
+  const [mostrarDetalleSemaforo, setMostrarDetalleSemaforo] = useState(false);
   const [mostrarFormularioRapido, setMostrarFormularioRapido] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [mensajeExito, setMensajeExito] = useState<string | null>(null);
@@ -110,10 +111,10 @@ export default function SemaforoDocumentalPanel({
   return (
     <section
       aria-label="Semáforo documental de cliente y vehículo"
-      className="rounded-[24px] bg-white border border-[#9CA3AF]/40 p-4 sm:p-5 space-y-4 shadow-xs"
+      className="rounded-[24px] bg-white border border-[#9CA3AF]/40 p-4 space-y-3 shadow-xs"
     >
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
           <span
             className={`h-3 w-3 rounded-full shrink-0 ${
               tieneDocsVehiculoVencidos
@@ -123,117 +124,144 @@ export default function SemaforoDocumentalPanel({
                   : 'bg-[#9CA3AF]'
             }`}
           />
-          <h3 className="font-display text-sm font-black text-[#111827] uppercase tracking-wider">
-            Semáforo Documental
-          </h3>
-        </div>
-        <span
-          className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
-            tieneDocsVehiculoVencidos
-              ? 'bg-[#111827] text-white'
-              : faltaDocCliente
-                ? 'bg-[#EDEDED] text-[#111827] border border-[#9CA3AF]/50'
-                : 'bg-[#EDEDED] text-[#4B5563]'
-          }`}
-        >
-          {tieneDocsVehiculoVencidos
-            ? 'Doc. Vehicular Vencido'
-            : faltaDocCliente
-              ? 'KYC / Licencia Incompleta'
-              : 'Verificación al día'}
-        </span>
-      </div>
-
-      {/* Alertas de Documentación del Cliente */}
-      <div className="rounded-[18px] bg-[#EDEDED]/70 border border-[#9CA3AF]/30 p-3.5 space-y-2.5">
-        <div className="flex items-center justify-between text-xs">
-          <span className="font-bold text-[#111827]">
-            Conductor: {reserva.conductor.nombreCompleto}
-          </span>
-          <span className="text-[11px] font-semibold text-[#4B5563]">
-            {reserva.conductor.telefono}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-          <div className="flex items-center justify-between rounded-[12px] bg-white p-2 border border-[#9CA3AF]/30">
-            <span className="text-[#4B5563]">Documento</span>
-            <span
-              className={`font-semibold ${
-                faltaNumDoc ? 'text-[#111827] underline decoration-[#4B5563]' : 'text-[#111827]'
-              }`}
-            >
+          <div className="min-w-0">
+            <h3 className="font-display text-xs font-black text-[#111827] uppercase tracking-wider">
+              Semáforo Documental
+            </h3>
+            <p className="text-[11px] text-[#4B5563] truncate">
               {faltaNumDoc
-                ? 'Sin registrar'
-                : `${reserva.conductor.tipoDocumento || 'CC'} ${reserva.conductor.numeroDocumento}`}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between rounded-[12px] bg-white p-2 border border-[#9CA3AF]/30">
-            <span className="text-[#4B5563]">Licencia de conducción</span>
-            <span
-              className={`font-semibold ${
-                faltaLicencia ? 'text-[#111827] underline decoration-[#4B5563]' : 'text-[#111827]'
-              }`}
-            >
+                ? 'Doc. pendiente'
+                : `${reserva.conductor.tipoDocumento || 'CC'} ${reserva.conductor.numeroDocumento}`}{' '}
+              ·{' '}
               {faltaLicencia
-                ? 'Sin registrar'
-                : `Categoría ${reserva.conductor.categoriaLicencia}`}
-            </span>
+                ? 'Lic. pendiente'
+                : `Lic. ${reserva.conductor.categoriaLicencia}`}{' '}
+              · SOAT/RTM {tieneDocsVehiculoVencidos ? 'Vencido' : 'OK'}
+            </p>
           </div>
         </div>
 
-        {puedeModificar && (
-          <div className="pt-1">
-            <button
-              type="button"
-              onClick={() => setMostrarFormularioRapido((prev) => !prev)}
-              className="min-h-[44px] inline-flex items-center justify-center rounded-full bg-[#111827] px-4 py-2 text-xs font-bold text-white hover:bg-[#1F2937] cursor-pointer"
-            >
-              {mostrarFormularioRapido
-                ? 'Ocultar formulario'
-                : 'Registrar / Comprobar datos del cliente'}
-            </button>
-          </div>
-        )}
-      </div>
+        <div className="flex items-center gap-1.5">
+          <span
+            className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${
+              tieneDocsVehiculoVencidos
+                ? 'bg-[#111827] text-white'
+                : faltaDocCliente
+                  ? 'bg-[#EDEDED] text-[#111827] border border-[#9CA3AF]/50'
+                  : 'bg-[#EDEDED] text-[#4B5563]'
+            }`}
+          >
+            {tieneDocsVehiculoVencidos
+              ? 'Doc. Vencido'
+              : faltaDocCliente
+                ? 'Incompleto'
+                : 'Al día ✓'}
+          </span>
 
-      {/* Alertas de Documentación del Vehículo */}
-      <div className="rounded-[18px] bg-[#EDEDED]/70 border border-[#9CA3AF]/30 p-3.5 space-y-2">
-        <div className="flex items-center justify-between text-xs">
-          <span className="font-bold text-[#111827]">
-            Unidad: {reserva.vehiculo.marca} {reserva.vehiculo.modelo} ({reserva.vehiculo.placa})
-          </span>
-          <span className="text-[11px] font-semibold text-[#4B5563]">
-            {reserva.vehiculo.categoria}
-          </span>
+          <button
+            type="button"
+            onClick={() => setMostrarDetalleSemaforo((prev) => !prev)}
+            className="min-h-[38px] rounded-full bg-[#EDEDED] border border-[#9CA3AF]/50 px-3 py-1 text-[11px] font-bold text-[#111827] hover:bg-[#9CA3AF]/25 cursor-pointer"
+          >
+            {mostrarDetalleSemaforo ? 'Ocultar −' : 'Revisar +'}
+          </button>
         </div>
-
-        {tieneDocsVehiculoVencidos && (
-          <div className="rounded-[12px] bg-[#111827] text-white p-2.5 text-xs space-y-1">
-            <p className="font-bold">Alerta: Documento legal vencido en flota</p>
-            {docsVehiculoVencidos.map((d) => (
-              <p key={d.tipo} className="text-[11px] text-[#EDEDED]/90">
-                · {d.tipo}: Vencido ({d.fechaVencimiento || 'Sin fecha'})
-              </p>
-            ))}
-          </div>
-        )}
-
-        {docsVehiculoSinCarga.length > 0 && !tieneDocsVehiculoVencidos && (
-          <div className="rounded-[12px] bg-white p-2.5 text-xs text-[#4B5563] border border-[#9CA3AF]/30">
-            <span className="font-semibold text-[#111827]">Docs sin registro en D1: </span>
-            {docsVehiculoSinCarga.join(', ')}. No bloquea la operación si el local cuenta con comprobante físico.
-          </div>
-        )}
-
-        {!tieneDocsVehiculoVencidos && docsVehiculoSinCarga.length === 0 && (
-          <div className="rounded-[12px] bg-white p-2 text-xs text-[#111827] font-medium border border-[#9CA3AF]/30 flex items-center justify-between">
-            <span>SOAT y Tecnicomecánica</span>
-            <span className="font-bold text-[#111827]">Vigentes</span>
-          </div>
-        )}
       </div>
+
+      {mostrarDetalleSemaforo && (
+        <div className="space-y-3 pt-1">
+          {/* Alertas de Documentación del Cliente */}
+          <div className="rounded-[18px] bg-[#EDEDED]/70 border border-[#9CA3AF]/30 p-3.5 space-y-2.5">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-bold text-[#111827]">
+                Conductor: {reserva.conductor.nombreCompleto}
+              </span>
+              <span className="text-[11px] font-semibold text-[#4B5563]">
+                {reserva.conductor.telefono}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <div className="flex items-center justify-between rounded-[12px] bg-white p-2 border border-[#9CA3AF]/30">
+                <span className="text-[#4B5563]">Documento</span>
+                <span
+                  className={`font-semibold ${
+                    faltaNumDoc ? 'text-[#111827] underline decoration-[#4B5563]' : 'text-[#111827]'
+                  }`}
+                >
+                  {faltaNumDoc
+                    ? 'Sin registrar'
+                    : `${reserva.conductor.tipoDocumento || 'CC'} ${reserva.conductor.numeroDocumento}`}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between rounded-[12px] bg-white p-2 border border-[#9CA3AF]/30">
+                <span className="text-[#4B5563]">Licencia de conducción</span>
+                <span
+                  className={`font-semibold ${
+                    faltaLicencia ? 'text-[#111827] underline decoration-[#4B5563]' : 'text-[#111827]'
+                  }`}
+                >
+                  {faltaLicencia
+                    ? 'Sin registrar'
+                    : `Categoría ${reserva.conductor.categoriaLicencia}`}
+                </span>
+              </div>
+            </div>
+
+            {puedeModificar && (
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={() => setMostrarFormularioRapido((prev) => !prev)}
+                  className="min-h-[44px] inline-flex items-center justify-center rounded-full bg-[#111827] px-4 py-2 text-xs font-bold text-white hover:bg-[#1F2937] cursor-pointer"
+                >
+                  {mostrarFormularioRapido
+                    ? 'Ocultar formulario'
+                    : 'Registrar / Comprobar datos del cliente'}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Alertas de Documentación del Vehículo */}
+          <div className="rounded-[18px] bg-[#EDEDED]/70 border border-[#9CA3AF]/30 p-3.5 space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-bold text-[#111827]">
+                Unidad: {reserva.vehiculo.marca} {reserva.vehiculo.modelo} ({reserva.vehiculo.placa})
+              </span>
+              <span className="text-[11px] font-semibold text-[#4B5563]">
+                {reserva.vehiculo.categoria}
+              </span>
+            </div>
+
+            {tieneDocsVehiculoVencidos && (
+              <div className="rounded-[12px] bg-[#111827] text-white p-2.5 text-xs space-y-1">
+                <p className="font-bold">Alerta: Documento legal vencido en flota</p>
+                {docsVehiculoVencidos.map((d) => (
+                  <p key={d.tipo} className="text-[11px] text-[#EDEDED]/90">
+                    · {d.tipo}: Vencido ({d.fechaVencimiento || 'Sin fecha'})
+                  </p>
+                ))}
+              </div>
+            )}
+
+            {docsVehiculoSinCarga.length > 0 && !tieneDocsVehiculoVencidos && (
+              <div className="rounded-[12px] bg-white p-2.5 text-xs text-[#4B5563] border border-[#9CA3AF]/30">
+                <span className="font-semibold text-[#111827]">Docs sin registro en D1: </span>
+                {docsVehiculoSinCarga.join(', ')}. No bloquea la operación si el local cuenta con comprobante físico.
+              </div>
+            )}
+
+            {!tieneDocsVehiculoVencidos && docsVehiculoSinCarga.length === 0 && (
+              <div className="rounded-[12px] bg-white p-2 text-xs text-[#111827] font-medium border border-[#9CA3AF]/30 flex items-center justify-between">
+                <span>SOAT y Tecnicomecánica</span>
+                <span className="font-bold text-[#111827]">Vigentes</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Formulario Rápido de Documentos de Cliente */}
       {mostrarFormularioRapido && puedeModificar && (

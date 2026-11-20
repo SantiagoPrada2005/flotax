@@ -244,6 +244,8 @@ export const crearPatioOperativo = defineAction({
       slug,
       ciudad: input.ciudad.trim(),
       direccion: input.direccion?.trim() || null,
+      latitud: null,
+      longitud: null,
       telefono: input.telefono?.trim() || null,
     });
 

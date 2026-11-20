@@ -21,6 +21,7 @@ declare namespace App {
 declare module 'cloudflare:workers' {
   interface Env {
     DB: import('@cloudflare/workers-types').D1Database;
+    SESSION?: import('@cloudflare/workers-types').KVNamespace;
     BUCKET_MULTIMEDIA: import('@cloudflare/workers-types').R2Bucket;
     EMAIL?: import('@cloudflare/workers-types').SendEmail;
     EMAIL_DEFAULT_FROM?: string;
@@ -35,6 +36,12 @@ declare module 'cloudflare:workers' {
     VAPID_SUBJECT?: string;
     GOOGLE_CLIENT_ID?: string;
     GOOGLE_CLIENT_SECRET?: string;
+    /** Token público Mapbox (pk.*) restringido por dominio para renderizado GL JS en cliente */
+    MAPBOX_PUBLIC_TOKEN?: string;
+    /** Token privado Mapbox (sk.* o restringido servidor) solo para Cloudflare Workers */
+    MAPBOX_SECRET_TOKEN?: string;
+    /** Tope diario de solicitudes de geocodificación/autocompletado (default: 2500) */
+    MAPBOX_DAILY_GEOCODE_LIMIT?: string;
     [key: string]: unknown;
   }
 

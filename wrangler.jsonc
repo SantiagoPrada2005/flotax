@@ -27,7 +27,8 @@
 		"ALERT_DEVELOPER_EMAILS": "santiagopradamoreno@gmail.com",
 		"APP_ENV": "development",
 		"VAPID_PUBLIC_KEY": "BKQjDE2hrc3Zqj8YbmLcBStABd8-LGGJnZN8wW54W91C7I5jo23WW8-NsLTdK4u5yEFmYKxTQSW87tDZRWfpgVU",
-		"VAPID_SUBJECT": "mailto:notificaciones@flotax.innovaweb.pro"
+		"VAPID_SUBJECT": "mailto:notificaciones@flotax.innovaweb.pro",
+		"MAPBOX_PUBLIC_TOKEN": "pk.eyJ1Ijoic2FudGlhZ29wcmFkYSIsImEiOiJjbXdlN2xtMTYwY2QzMzBvZGh4ZTB2ZTY5In0.CkC7qZHUFNn-UDC0nPyWNA"
 	},
 	"r2_buckets": [
 		{
@@ -106,7 +107,8 @@
 				"ALERT_DEVELOPER_EMAILS": "santiagopradamoreno@gmail.com",
 				"APP_ENV": "preview",
 				"VAPID_PUBLIC_KEY": "BKQjDE2hrc3Zqj8YbmLcBStABd8-LGGJnZN8wW54W91C7I5jo23WW8-NsLTdK4u5yEFmYKxTQSW87tDZRWfpgVU",
-				"VAPID_SUBJECT": "mailto:notificaciones@flotax.innovaweb.pro"
+				"VAPID_SUBJECT": "mailto:notificaciones@flotax.innovaweb.pro",
+				"MAPBOX_PUBLIC_TOKEN": "pk.eyJ1Ijoic2FudGlhZ29wcmFkYSIsImEiOiJjbXdlN2xtMTYwY2QzMzBvZGh4ZTB2ZTY5In0.CkC7qZHUFNn-UDC0nPyWNA"
 			}
 		}
 	}

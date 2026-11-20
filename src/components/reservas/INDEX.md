@@ -14,7 +14,8 @@
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
 | [`AlquilerCicloModals.tsx`](./AlquilerCicloModals.tsx) | Islas React 19: Modales del Ciclo Operativo | `ModalPausar`, `ModalProrrogar`, `ModalDevolverCerrar`, `ModalCancelarAnular` | `react`, `@/db/schema`, `astro:actions` |
-| [`AlquilerDetalleView.tsx`](./AlquilerDetalleView.tsx) | Isla React 19: Consola Operativa de Alquiler (Admin), Inspección R2 y Ciclo Operativo | `AlquilerDetalleView`, `AlquilerDetalleViewProps` | `@/lib/flota`, `astro:actions`, `astro:transitions/client` |
+| [`AlquilerDetalleView.tsx`](./AlquilerDetalleView.tsx) | Isla React 19: Consola Operativa de Alquiler (Admin), Inspección R2 y Ciclo Operativo | `AlquilerDetalleView`, `AlquilerDetalleViewProps` | `@/lib/flota`, `./DeliveryPointCard`, `astro:actions`, `astro:transitions/client` |
+| [`DeliveryPointCard.tsx`](./DeliveryPointCard.tsx) | Componente React 19: Tarjeta de Punto de Entrega a Domicilio (Dirección, Coordenadas, Enlaces Google Maps/Waze y Mapa Mapbox Diferido) | `DeliveryPointCard`, `DeliveryPointCardProps` | `@/lib/ubicacion`, `@/components/alquiler/MapboxCanvas` |
 | [`MisReservasHub.tsx`](./MisReservasHub.tsx) | Isla React 19: Calendario Suizo + Agenda de Alquileres (Cliente y Admin) | `MisReservasHub`, `MisReservasHubProps` | `@/lib/flota`, `astro:actions`, `astro:transitions/client` |
 | [`ReservaClienteDetalleView.tsx`](./ReservaClienteDetalleView.tsx) | Isla React 19: Vista Dedicada de Reserva para Cliente (`/reservas/[codigo]`) | `ReservaClienteDetalleView`, `ReservaClienteDetalleViewProps` | `@/lib/flota`, `astro:transitions/client`, `./AlquilerCicloModals` |
 | [`SemaforoDocumentalPanel.tsx`](./SemaforoDocumentalPanel.tsx) | Componente React 19: Semáforo Documental | `SemaforoDocumentalPanel`, `SemaforoDocumentalPanelProps` | `react`, `@/lib/flota` |

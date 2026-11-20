@@ -7,6 +7,7 @@ import { resolveClientTimeContext } from '@/lib/time/client-time';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
 import { validarAccesoReservaLectura } from '@/lib/auth';
+import { resolverTokenMapboxPublico } from '@/lib/ubicacion';
 
 const { codigo } = Astro.params;
 
@@ -42,6 +43,8 @@ const tokenPublicoValido =
     : usuario?.id === reservaInicial.clienteId
       ? reservaInicial.tokenAccesoPublico ?? null
       : null;
+
+const mapboxPublicToken = resolverTokenMapboxPublico(env);
 ---
 
 <LayoutApp
@@ -58,6 +61,7 @@ const tokenPublicoValido =
       reservaInicial={reservaInicial}
       hoyISO={hoyISO}
       tokenAccesoPublico={tokenPublicoValido}
+      mapboxPublicToken={mapboxPublicToken}
     />
   </div>
 </LayoutApp>

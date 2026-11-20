@@ -1,10 +1,10 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
 import { localesAlquiler } from './locales';
 
 /**
  * Políticas Operativas, Tarifarias y Datos Contractuales del Local (Relación 1:1 con locales_alquiler).
  * Responsabilidad única: Parametrizar porcentajes de abono, cobertura R2, sanciones de mora,
- * cargos operativos y datos legales del Arrendador para la generación de contratos.
+ * cobertura y recargos de entrega a domicilio, cargos operativos y datos legales del Arrendador.
  */
 export const politicasLocal = sqliteTable('politicas_local', {
   id: text('id').primaryKey(),
@@ -18,6 +18,18 @@ export const politicasLocal = sqliteTable('politicas_local', {
   coberturaPericialPct: integer('cobertura_pericial_pct').notNull().default(8),
   recargoMoraDiariaPct: integer('recargo_mora_diaria_pct').notNull().default(200), // Cláusula 3: 200% diario
   recargoAdminFotomultaPct: integer('recargo_admin_fotomulta_pct').notNull().default(30), // Cláusula 6: 30%
+
+  // Cobertura y recargo por distancia para entregas a domicilio
+  domicilioHabilitado: integer('domicilio_habilitado', { mode: 'boolean' })
+    .notNull()
+    .default(true),
+  radioCoberturaKm: real('radio_cobertura_km').notNull().default(15),
+  kmIncluidosDomicilio: real('km_incluidos_domicilio').notNull().default(5),
+  tarifaDomicilioBase: integer('tarifa_domicilio_base').notNull().default(0), // en COP
+  tarifaDomicilioPorKm: integer('tarifa_domicilio_por_km').notNull().default(0), // en COP por km adicional
+  zonaCoberturaEtiqueta: text('zona_cobertura_etiqueta')
+    .notNull()
+    .default('Medellín y Área Metropolitana'),
 
   // Cargos por estado de retorno (Cláusula 8)
   cargoLavadoEstandar: integer('cargo_lavado_estandar').notNull().default(45000), // en COP

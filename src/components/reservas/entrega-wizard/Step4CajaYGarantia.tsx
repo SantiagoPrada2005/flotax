@@ -34,7 +34,7 @@ export default function Step4CajaYGarantia({
     <div className="w-full space-y-6">
       <div className="space-y-2">
         <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#4B5563] block">
-          Paso 04 · Liquidación y Depósito de Garantía
+          Paso 03 · Liquidación y Depósito de Garantía
         </span>
         <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#111827] leading-[1.12]">
           Verifica el pago y la fianza en custodia

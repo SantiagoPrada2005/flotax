@@ -279,14 +279,16 @@ export default function EntregaVehiculoWizardIsland({
       return;
     }
     if (pasoActual < 5) {
-      cambiarPaso((pasoActual + 1) as EntregaStepId, 1);
+      const siguiente = (pasoActual === 2 ? 4 : pasoActual + 1) as EntregaStepId;
+      cambiarPaso(siguiente, 1);
     }
   };
 
   const retrocederPaso = () => {
     if (isTransitioning) return;
     if (pasoActual > 1) {
-      cambiarPaso((pasoActual - 1) as EntregaStepId, -1);
+      const anterior = (pasoActual === 4 ? 2 : pasoActual - 1) as EntregaStepId;
+      cambiarPaso(anterior, -1);
     }
   };
 
@@ -415,12 +417,14 @@ export default function EntregaVehiculoWizardIsland({
             Vehículo entregado en patio
           </h1>
           <p className="text-xs text-[#4B5563]">
-            Los datos del cliente, el acta pericial R2 y el contrato #{reservaInicial.codigo} han sido guardados en Cloudflare D1.
+            Los datos del cliente y el contrato #{reservaInicial.codigo} han sido guardados en Cloudflare D1.
           </p>
         </div>
       </div>
     );
   }
+
+  const numeroVisualPaso = pasoActual > 3 ? pasoActual - 1 : pasoActual;
 
   return (
     <div className="min-h-dvh bg-[#EDEDED] flex flex-col justify-between py-5 px-4 sm:px-8 max-w-4xl mx-auto w-full select-none">
@@ -443,7 +447,7 @@ export default function EntregaVehiculoWizardIsland({
             )}
 
             <span className="rounded-full px-3.5 py-1.5 font-mono text-xs font-bold tracking-wider uppercase bg-white text-[#111827] border border-[#9CA3AF]/50 shadow-xs">
-              PASO 0{pasoActual} / 05 · {pasoMeta.etiquetaCorta} · #{reservaInicial.codigo}
+              PASO 0{numeroVisualPaso} / 04 · {pasoMeta.etiquetaCorta} · #{reservaInicial.codigo}
             </span>
           </div>
 

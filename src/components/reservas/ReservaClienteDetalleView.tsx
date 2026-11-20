@@ -8,12 +8,14 @@ import {
   type ReservaClienteItem,
 } from '@/lib/flota';
 import { ModalCancelarAnular } from './AlquilerCicloModals';
+import DeliveryPointCard from './DeliveryPointCard';
 
 export interface ReservaClienteDetalleViewProps {
   codigo: string;
   reservaInicial: ReservaClienteItem;
   hoyISO: string;
   tokenAccesoPublico?: string | null | undefined;
+  mapboxPublicToken?: string | null | undefined;
 }
 
 type TabClienteDetalle = 'RESUMEN' | 'INSPECCION' | 'WAYBILL';
@@ -61,6 +63,7 @@ const formatCop = (val: number): string =>
 export default function ReservaClienteDetalleView({
   reservaInicial,
   tokenAccesoPublico,
+  mapboxPublicToken = null,
 }: ReservaClienteDetalleViewProps) {
   const [reserva, setReserva] = useState<ReservaClienteItem>(reservaInicial);
   const [tab, setTab] = useState<TabClienteDetalle>('RESUMEN');
@@ -168,30 +171,6 @@ export default function ReservaClienteDetalleView({
               alt={`${vehiculo.marca} ${vehiculo.modelo}`}
               className="w-full max-h-48 object-contain mx-auto drop-shadow-[0_18px_26px_rgba(17,24,39,0.16)]"
             />
-            {tab === 'INSPECCION' &&
-              puntosR2.map((punto) => {
-                const activo = puntoSeleccionado.id === punto.id;
-                return (
-                  <button
-                    key={punto.id}
-                    type="button"
-                    onClick={() => setPuntoActivoId(punto.id)}
-                    style={{ left: punto.coordX, top: punto.coordY }}
-                    aria-label={`Ver inspección ${punto.zona}`}
-                    className={`absolute -translate-x-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full cursor-pointer ${
-                      activo
-                        ? 'bg-[#111827] text-white ring-4 ring-white scale-110'
-                        : 'bg-white text-[#111827] ring-2 ring-[#9CA3AF]/50'
-                    }`}
-                  >
-                    <span
-                      className={`h-2 w-2 rounded-full ${
-                        activo ? 'bg-white' : 'bg-[#111827]'
-                      }`}
-                    />
-                  </button>
-                );
-              })}
           </section>
         </div>
 
@@ -199,11 +178,10 @@ export default function ReservaClienteDetalleView({
         <div className="w-full lg:w-5/12">
           <section className="rounded-[32px] bg-white p-5 sm:p-6 shadow-[0_10px_30px_-15px_rgba(17,24,39,0.06)] border border-[#9CA3AF]/25 space-y-4">
             {/* Selector de pestañas limpio para cliente */}
-            <div className="grid grid-cols-3 gap-1.5 rounded-full bg-[#EDEDED] p-1">
+            <div className="grid grid-cols-2 gap-1.5 rounded-full bg-[#EDEDED] p-1">
               {(
                 [
                   { id: 'RESUMEN', label: 'Mi Alquiler' },
-                  { id: 'INSPECCION', label: 'Peritaje R2' },
                   { id: 'WAYBILL', label: 'Pagos' },
                 ] as const
               ).map((item) => (
@@ -247,15 +225,29 @@ export default function ReservaClienteDetalleView({
                         : 'Pendiente de comprobar en patio'}
                     </span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-3">
                     <span className="text-[#4B5563]">Entrega</span>
-                    <span className="font-semibold text-[#111827]">
+                    <span className="font-semibold text-[#111827] text-right">
                       {reserva.modalidadEntrega === 'DOMICILIO_MEDELLIN'
-                        ? 'Domicilio Medellín'
+                        ? reserva.direccionEntrega || 'Entrega a domicilio'
                         : reserva.sedeNombre}
                     </span>
                   </div>
                 </div>
+
+                <DeliveryPointCard
+                  modalidadEntrega={reserva.modalidadEntrega}
+                  sedeNombre={reserva.sedeNombre}
+                  direccionEntrega={reserva.direccionEntrega}
+                  entregaLatitud={reserva.entregaLatitud}
+                  entregaLongitud={reserva.entregaLongitud}
+                  entregaReferencia={reserva.entregaReferencia}
+                  distanciaEntregaKm={reserva.distanciaEntregaKm}
+                  recargoEntregaDomicilio={reserva.recargoEntregaDomicilio}
+                  mapboxPublicToken={mapboxPublicToken}
+                  vista="cliente"
+                  onAviso={mostrarAviso}
+                />
 
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="rounded-[18px] bg-[#EDEDED]/70 p-3.5">

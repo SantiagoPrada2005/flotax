@@ -7,9 +7,11 @@
 
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
+| [`DeliveryLocationSelector.tsx`](./DeliveryLocationSelector.tsx) | Isla React 19: Selector de Punto de Entrega con Mapa Diferido, Autocompletado Exclusivo y GPS | `DeliveryLocationSelector`, `DeliveryLocationSelectorProps`, `EstadoEntregaWizard`, `ModalidadEntregaSeleccion` | `./MapboxCanvas`, `@/lib/ubicacion`, `astro:actions` |
 | [`EditorialAvailabilityCalendar.tsx`](./EditorialAvailabilityCalendar.tsx) | Isla React 19: Calendario Editorial | `EditorialAvailabilityCalendar`, `EditorialAvailabilityCalendarProps` | `@/lib/flota` |
+| [`MapboxCanvas.tsx`](./MapboxCanvas.tsx) | Componente React 19: Lienzo Mapbox GL JS Diferido (Claro/Oscuro, Pin Fijo o Arrastrable y Polígono de Cobertura) | `MapboxCanvas`, `MapboxCanvasProps` | `mapbox-gl`, `@/lib/ubicacion` |
 | [`RentalVehicleHero.tsx`](./RentalVehicleHero.tsx) | Componente React 19: Presentación Protagonista del Vehículo | `RentalVehicleHero`, `RentalVehicleHeroProps` | `@/lib/flota` |
-| [`RentalWizardFlow.tsx`](./RentalWizardFlow.tsx) | Isla React 19: Orquestador Multi-Paso | `RentalWizardFlow`, `RentalWizardFlowProps` | `./EditorialAvailabilityCalendar`, `./RentalVehicleHero`, `./SlideToConfirmControl`, `@/lib/flota` |
+| [`RentalWizardFlow.tsx`](./RentalWizardFlow.tsx) | Isla React 19: Orquestador Multi-Slide (5 Slides con Progressive Disclosure) | `RentalWizardFlow`, `RentalWizardFlowProps`, `PasoWizard`, `UsuarioSesionCliente` | `./DeliveryLocationSelector`, `./EditorialAvailabilityCalendar`, `./RentalVehicleHero`, `./SlideToConfirmControl`, `@/lib/flota`, `@/lib/ubicacion` |
 | [`SlideToConfirmControl.tsx`](./SlideToConfirmControl.tsx) | Control Interactivo: Deslizamiento Horizontal para Confirmar | `SlideToConfirmControl`, `SlideToConfirmControlProps`, `SlideConfirmStatus` | `react` |
 
 ## Invariants & Directory Rules

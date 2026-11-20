@@ -7,6 +7,7 @@ import {
   inspeccionesPericiales,
   puntosInspeccionR2,
   vehiculos,
+  localesAlquiler,
   politicasLocal,
   cuentasFinancieras,
   movimientosCaja,
@@ -35,6 +36,12 @@ import {
 } from './disponibilidad';
 import { resolverEstadoActualVehiculo } from '@/lib/mantenimientos/repositorio';
 import { resolverCuentaPorMetodoPago } from '@/lib/caja/calculos';
+import {
+  evaluarCoberturaDomicilio,
+  normalizarPoliticaDomicilio,
+  PATIO_COORDENADAS_DEFECTO,
+  sonCoordenadasValidas,
+} from '@/lib/ubicacion';
 import { eq, and, or, isNull, sql } from 'drizzle-orm';
 import type { RolUsuario, RolSistema } from '@/lib/auth/rbac';
 
@@ -68,6 +75,9 @@ export interface CrearReservaCicloInput {
   fechaFin: string;    // YYYY-MM-DD
   modalidadEntrega?: ModalidadEntregaReservaSchema | undefined;
   direccionEntrega?: string | null | undefined;
+  entregaLatitud?: number | null | undefined;
+  entregaLongitud?: number | null | undefined;
+  entregaReferencia?: string | null | undefined;
   sedeNombre?: string | undefined;
   modalidadPagoInicial?: ModalidadPagoInicial | undefined;
   metodoAbonoInicial?: MetodoAbonoInicial | undefined;
@@ -440,7 +450,103 @@ export async function crearReservaConValidaciones(
   const coberturaPericialCotizada = Math.round(
     subtotalTarifaCotizado * (coberturaPct / 100)
   );
-  const totalCotizado = subtotalTarifaCotizado + coberturaPericialCotizada;
+
+  // 4.1 Validar modalidad de entrega, cobertura geográfica y recargo por distancia
+  const modalidadEntregaFinal: ModalidadEntregaReservaSchema =
+    input.modalidadEntrega === 'DOMICILIO_MEDELLIN'
+      ? 'DOMICILIO_MEDELLIN'
+      : 'PATIO_PRINCIPAL';
+
+  let direccionEntregaFinal: string | null = null;
+  let entregaLatitudFinal: number | null = null;
+  let entregaLongitudFinal: number | null = null;
+  let entregaReferenciaFinal: string | null = null;
+  let distanciaEntregaKmFinal: number | null = null;
+  let recargoEntregaDomicilioFinal = 0;
+
+  if (modalidadEntregaFinal === 'DOMICILIO_MEDELLIN') {
+    const politicaDomicilio = normalizarPoliticaDomicilio(polRows[0]);
+    let patioCoords = { ...PATIO_COORDENADAS_DEFECTO };
+
+    try {
+      const localRows = await db
+        .select({
+          latitud: localesAlquiler.latitud,
+          longitud: localesAlquiler.longitud,
+        })
+        .from(localesAlquiler)
+        .where(eq(localesAlquiler.id, localId))
+        .limit(1);
+      const loc = localRows[0];
+      if (
+        loc &&
+        typeof loc.latitud === 'number' &&
+        typeof loc.longitud === 'number' &&
+        sonCoordenadasValidas(loc.latitud, loc.longitud)
+      ) {
+        patioCoords = { lat: loc.latitud, lng: loc.longitud };
+      }
+    } catch {
+      // Fallback seguro a coordenadas canónicas del patio
+    }
+
+    const direccionLimpia = input.direccionEntrega?.trim() || '';
+    const referenciaLimpia = input.entregaReferencia?.trim() || null;
+    const latInput = input.entregaLatitud;
+    const lngInput = input.entregaLongitud;
+    const tieneCoords =
+      typeof latInput === 'number' &&
+      typeof lngInput === 'number' &&
+      sonCoordenadasValidas(latInput, lngInput);
+
+    if (esFlujoWeb) {
+      if (direccionLimpia.length < 5) {
+        throw new ErrorCicloAlquiler(
+          'BAD_REQUEST',
+          'Para entrega a domicilio debes indicar una dirección de entrega válida.'
+        );
+      }
+      if (!tieneCoords) {
+        throw new ErrorCicloAlquiler(
+          'BAD_REQUEST',
+          'Debes confirmar la ubicación exacta en el mapa para entrega a domicilio.'
+        );
+      }
+    }
+
+    if (tieneCoords && typeof latInput === 'number' && typeof lngInput === 'number') {
+      const evalCobertura = evaluarCoberturaDomicilio(
+        { lat: latInput, lng: lngInput },
+        patioCoords,
+        politicaDomicilio
+      );
+
+      if (!evalCobertura.dentroCobertura) {
+        throw new ErrorCicloAlquiler('BAD_REQUEST', evalCobertura.mensaje);
+      }
+
+      direccionEntregaFinal = direccionLimpia || null;
+      entregaLatitudFinal = latInput;
+      entregaLongitudFinal = lngInput;
+      entregaReferenciaFinal = referenciaLimpia;
+      distanciaEntregaKmFinal = evalCobertura.distanciaKm;
+      recargoEntregaDomicilioFinal = evalCobertura.recargoDomicilio;
+    } else {
+      // Mostrador administrativo sin coordenadas explícitas
+      if (!politicaDomicilio.domicilioHabilitado) {
+        throw new ErrorCicloAlquiler(
+          'BAD_REQUEST',
+          'Esta sede no tiene entregas a domicilio habilitadas en este momento.'
+        );
+      }
+      direccionEntregaFinal = direccionLimpia || null;
+      entregaReferenciaFinal = referenciaLimpia;
+      recargoEntregaDomicilioFinal = politicaDomicilio.tarifaDomicilioBase;
+    }
+  }
+
+  const totalCotizado =
+    subtotalTarifaCotizado + coberturaPericialCotizada + recargoEntregaDomicilioFinal;
 
   // 5. Determinar identidad, token y estado inicial
   let tokenAccesoPublico: string | null = null;
@@ -518,8 +624,13 @@ export async function crearReservaConValidaciones(
       fechaFinOriginal: input.fechaFin,
       diasAlquiler,
       estado: estadoInicial,
-      modalidadEntrega: input.modalidadEntrega ?? 'PATIO_PRINCIPAL',
-      direccionEntrega: input.direccionEntrega ?? null,
+      modalidadEntrega: modalidadEntregaFinal,
+      direccionEntrega: direccionEntregaFinal,
+      entregaLatitud: entregaLatitudFinal,
+      entregaLongitud: entregaLongitudFinal,
+      entregaReferencia: entregaReferenciaFinal,
+      distanciaEntregaKm: distanciaEntregaKmFinal,
+      recargoEntregaDomicilio: recargoEntregaDomicilioFinal,
       sedeNombre: input.sedeNombre ?? 'Patio Central',
       tokenAccesoPublico,
       precioDiaCotizado: precioDia,

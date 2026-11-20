@@ -23,7 +23,6 @@ export default function Step5ContratoYConfirmacion({
   onEditPaso,
   onChange,
 }: Step5ContratoYConfirmacionProps) {
-  const novedadesR2 = data.puntosR2.filter((p) => p.estado === 'NOVEDAD').length;
   const itemsOk = data.respuestasChecklist.filter(
     (i) => i.estado === 'BIEN'
   ).length;
@@ -32,7 +31,7 @@ export default function Step5ContratoYConfirmacion({
     <div className="w-full space-y-6">
       <div className="space-y-2">
         <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#4B5563] block">
-          Paso 05 · Contrato y Salida a Alquiler
+          Paso 04 · Contrato y Salida a Alquiler
         </span>
         <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#111827] leading-[1.12]">
           Todo listo. Confirma el acta y entrega
@@ -44,109 +43,66 @@ export default function Step5ContratoYConfirmacion({
         </p>
       </div>
 
-      {/* Bento Grid de Resumen Final (4 tarjetas editables) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {/* Tarjeta 1: Cliente */}
-        <div className="rounded-[24px] border border-[#9CA3AF]/40 bg-white p-5 space-y-2.5 shadow-xs">
-          <div className="flex items-center justify-between border-b border-[#EDEDED] pb-2">
-            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
-              01 · Arrendatario Verificado
+      {/* Tarjeta Única de Resumen Consolidado (Progressive Disclosure) */}
+      <div className="rounded-[24px] border border-[#9CA3AF]/40 bg-white p-5 space-y-3 shadow-xs">
+        <div className="flex items-center justify-between border-b border-[#EDEDED] pb-2.5">
+          <div>
+            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563] block">
+              01 · Arrendatario
             </span>
-            <button
-              type="button"
-              onClick={() => onEditPaso(1)}
-              className="min-h-[44px] px-2 font-mono text-xs font-bold text-[#111827] hover:underline cursor-pointer"
-            >
-              Editar
-            </button>
+            <p className="font-display text-sm font-bold text-[#111827]">
+              {data.nombreCompleto} · {data.tipoDocumento} {data.numeroDocumento || 'S/D'} (Lic. {data.licenciaCategoria})
+            </p>
           </div>
-          <p className="font-display text-base font-bold text-[#111827]">
-            {data.nombreCompleto}
-          </p>
-          <p className="text-xs text-[#4B5563]">
-            {data.tipoDocumento} {data.numeroDocumento || 'Sin documento'} · Lic.{' '}
-            {data.licenciaCategoria}
-            {data.ciudadExpedicion ? ` · ${data.ciudadExpedicion}` : ''}
-          </p>
-          <p className="text-xs text-[#4B5563]">
-            Tel: {data.telefono}
-            {data.domicilio ? ` · ${data.domicilio}` : ''}
-          </p>
+          <button
+            type="button"
+            onClick={() => onEditPaso(1)}
+            className="min-h-[38px] px-2.5 rounded-full bg-[#EDEDED] font-mono text-xs font-bold text-[#111827] cursor-pointer"
+          >
+            Editar
+          </button>
         </div>
 
-        {/* Tarjeta 2: Telemetría */}
-        <div className="rounded-[24px] border border-[#9CA3AF]/40 bg-white p-5 space-y-2.5 shadow-xs">
-          <div className="flex items-center justify-between border-b border-[#EDEDED] pb-2">
-            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
+        <div className="flex items-center justify-between border-b border-[#EDEDED] pb-2.5">
+          <div>
+            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563] block">
               02 · Telemetría e Inventario
             </span>
-            <button
-              type="button"
-              onClick={() => onEditPaso(2)}
-              className="min-h-[44px] px-2 font-mono text-xs font-bold text-[#111827] hover:underline cursor-pointer"
-            >
-              Editar
-            </button>
+            <p className="font-mono text-sm font-bold text-[#111827]">
+              {data.medidorUsoEntrega.toLocaleString('es-CO')} km · {data.nivelEnergiaEntregaPct}% · {itemsOk}/{data.respuestasChecklist.length} ítems OK
+            </p>
           </div>
-          <p className="font-mono text-lg font-bold text-[#111827]">
-            {data.medidorUsoEntrega.toLocaleString('es-CO')} km ·{' '}
-            {data.nivelEnergiaEntregaPct}% Energía
-          </p>
-          <p className="text-xs text-[#4B5563]">
-            Checklist físico: {itemsOk} de {data.respuestasChecklist.length} ítems
-            conformes
-          </p>
+          <button
+            type="button"
+            onClick={() => onEditPaso(2)}
+            className="min-h-[38px] px-2.5 rounded-full bg-[#EDEDED] font-mono text-xs font-bold text-[#111827] cursor-pointer"
+          >
+            Editar
+          </button>
         </div>
 
-        {/* Tarjeta 3: Peritaje R2 */}
-        <div className="rounded-[24px] border border-[#9CA3AF]/40 bg-white p-5 space-y-2.5 shadow-xs">
-          <div className="flex items-center justify-between border-b border-[#EDEDED] pb-2">
-            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
-              03 · Peritaje R2 de Salida
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563] block">
+              03 · Caja y Garantía
             </span>
-            <button
-              type="button"
-              onClick={() => onEditPaso(3)}
-              className="min-h-[44px] px-2 font-mono text-xs font-bold text-[#111827] hover:underline cursor-pointer"
-            >
-              Editar
-            </button>
+            <p className="text-xs text-[#111827] font-semibold">
+              {data.cobrarSaldoAhora && data.montoCobroSaldo > 0
+                ? `Cobro: ${formatCop(data.montoCobroSaldo)}`
+                : `Abonado: ${formatCop(reserva.montoReportado)}`}{' '}
+              ·{' '}
+              {data.recibirGarantiaAhora && data.montoGarantia > 0
+                ? `Garantía: ${formatCop(data.montoGarantia)}`
+                : 'Garantía verificada'}
+            </p>
           </div>
-          <p className="font-display text-sm font-bold text-[#111827]">
-            Estado general: {data.estadoGeneralEntrega}
-          </p>
-          <p className="text-xs text-[#4B5563]">
-            {data.puntosR2.length} zonas verificadas · {novedadesR2}{' '}
-            {novedadesR2 === 1 ? 'novedad previa' : 'novedades previas'}
-          </p>
-        </div>
-
-        {/* Tarjeta 4: Caja y Garantía */}
-        <div className="rounded-[24px] border border-[#9CA3AF]/40 bg-white p-5 space-y-2.5 shadow-xs">
-          <div className="flex items-center justify-between border-b border-[#EDEDED] pb-2">
-            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
-              04 · Caja y Garantía
-            </span>
-            <button
-              type="button"
-              onClick={() => onEditPaso(4)}
-              className="min-h-[44px] px-2 font-mono text-xs font-bold text-[#111827] hover:underline cursor-pointer"
-            >
-              Editar
-            </button>
-          </div>
-          <p className="text-xs text-[#111827] font-semibold">
-            {data.cobrarSaldoAhora && data.montoCobroSaldo > 0
-              ? `Cobro en entrega: ${formatCop(data.montoCobroSaldo)} (${data.metodoCobroSaldo})`
-              : `Abono registrado: ${formatCop(reserva.montoReportado)}`}
-          </p>
-          <p className="text-xs text-[#4B5563]">
-            {data.recibirGarantiaAhora && data.montoGarantia > 0
-              ? `Garantía recibida ahora: ${formatCop(data.montoGarantia)} (${data.metodoGarantia})`
-              : reserva.estadoGarantia === 'CUSTODIA_ACTIVA'
-                ? 'Garantía en custodia activa'
-                : 'Garantía pendiente por recibir'}
-          </p>
+          <button
+            type="button"
+            onClick={() => onEditPaso(4)}
+            className="min-h-[38px] px-2.5 rounded-full bg-[#EDEDED] font-mono text-xs font-bold text-[#111827] cursor-pointer"
+          >
+            Editar
+          </button>
         </div>
       </div>
 
@@ -178,7 +134,7 @@ export default function Step5ContratoYConfirmacion({
             className="h-5 w-5 mt-0.5 rounded border-[#9CA3AF] shrink-0 cursor-pointer"
           />
           <span className="text-xs text-[#111827] leading-relaxed">
-            <strong>Tratamiento de datos (Ley 1581):</strong> El cliente autoriza el tratamiento de sus datos personales y el registro probatorio de inspección pericial R2.
+            <strong>Tratamiento de datos (Ley 1581):</strong> El cliente autoriza el tratamiento de sus datos personales para la formalización del contrato.
           </span>
         </label>
 

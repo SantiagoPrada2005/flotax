@@ -46,6 +46,10 @@ import {
   tienePermiso,
   resolverContextoOrigenReserva,
 } from '@/lib/auth';
+import {
+  COOKIE_PORTAL_MODO,
+  COOKIE_PORTAL_OPTIONS,
+} from '@/lib/auth/portal-modo';
 
 function manejarErrorCiclo(error: unknown): never {
   if (error instanceof ActionError) {
@@ -94,7 +98,10 @@ export const crearReservaAction = defineAction({
     coberturaPericialCotizada: z.number().nonnegative().optional(),
     totalCotizado: z.number().positive().optional(),
     modalidadEntrega: z.enum(modalidadesEntregaReserva).optional(),
-    direccionEntrega: z.string().optional(),
+    direccionEntrega: z.string().trim().max(240).optional(),
+    entregaLatitud: z.number().min(-90).max(90).optional(),
+    entregaLongitud: z.number().min(-180).max(180).optional(),
+    entregaReferencia: z.string().trim().max(200).optional(),
     sedeNombre: z.string().optional(),
     localId: z.string().optional(),
     modalidadPagoInicial: z.enum(modalidadesPagoInicial).optional(),
@@ -185,6 +192,10 @@ export const crearReservaAction = defineAction({
         });
       } catch {
         // Tolerante
+      }
+
+      if (contextoOrigen.origen === 'CLIENTE_WEB') {
+        context.cookies.set(COOKIE_PORTAL_MODO, 'CLIENTE', COOKIE_PORTAL_OPTIONS);
       }
 
       return {

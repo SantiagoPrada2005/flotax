@@ -11,6 +11,7 @@ import {
   calcularCapacidadesOperacionAlquiler,
 } from '@/lib/auth';
 import { cuentasFinancieras } from '@/db/schema';
+import { resolverTokenMapboxPublico } from '@/lib/ubicacion';
 import { and, eq } from 'drizzle-orm';
 
 const { codigo } = Astro.params;
@@ -62,6 +63,7 @@ const capacidades = calcularCapacidadesOperacionAlquiler({
   ...usuario.localActivo,
   esSuperAdmin: usuario.esSuperAdmin,
 });
+const mapboxPublicToken = resolverTokenMapboxPublico(env);
 ---
 
 <LayoutAdmin
@@ -79,6 +81,7 @@ const capacidades = calcularCapacidadesOperacionAlquiler({
       modo="admin"
       capacidades={capacidades}
       cuentasFinancieras={cuentasLocal}
+      mapboxPublicToken={mapboxPublicToken}
     />
   </div>
 </LayoutAdmin>

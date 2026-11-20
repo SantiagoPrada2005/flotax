@@ -191,6 +191,30 @@ export function mapRowToReservaItem(
     montoReportado: reservaRow.montoAbonoReportado,
     estado: estadoVisual,
     modalidadEntrega: reservaRow.modalidadEntrega as ModalidadEntregaReserva,
+    direccionEntrega:
+      reservaRow.modalidadEntrega === 'DOMICILIO_MEDELLIN'
+        ? reservaRow.direccionEntrega ?? null
+        : null,
+    entregaLatitud:
+      reservaRow.modalidadEntrega === 'DOMICILIO_MEDELLIN'
+        ? reservaRow.entregaLatitud ?? null
+        : null,
+    entregaLongitud:
+      reservaRow.modalidadEntrega === 'DOMICILIO_MEDELLIN'
+        ? reservaRow.entregaLongitud ?? null
+        : null,
+    entregaReferencia:
+      reservaRow.modalidadEntrega === 'DOMICILIO_MEDELLIN'
+        ? reservaRow.entregaReferencia ?? null
+        : null,
+    distanciaEntregaKm:
+      reservaRow.modalidadEntrega === 'DOMICILIO_MEDELLIN'
+        ? reservaRow.distanciaEntregaKm ?? null
+        : null,
+    recargoEntregaDomicilio:
+      reservaRow.modalidadEntrega === 'DOMICILIO_MEDELLIN'
+        ? reservaRow.recargoEntregaDomicilio ?? 0
+        : 0,
     sedeNombre: reservaRow.sedeNombre,
     creadaEn: new Date(reservaRow.creadoEn).toISOString(),
     specsBento:
