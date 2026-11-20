@@ -3,6 +3,7 @@ import LayoutAdmin from '@/layouts/LayoutAdmin.astro';
 import AlquilerDetalleView from '@/components/reservas/AlquilerDetalleView';
 import { obtenerReservaClientePorCodigo } from '@/lib/flota';
 import { obtenerReservaPorCodigoD1 } from '@/lib/flota/repositorio-reservas';
+import { obtenerDetalleReservaAdminD1 } from '@/lib/flota/detalle-reserva-admin';
 import { resolveClientTimeContext } from '@/lib/time/client-time';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
@@ -64,6 +65,12 @@ const capacidades = calcularCapacidadesOperacionAlquiler({
   esSuperAdmin: usuario.esSuperAdmin,
 });
 const mapboxPublicToken = resolverTokenMapboxPublico(env);
+
+const detalleAdmin = await obtenerDetalleReservaAdminD1(
+  db,
+  codigo,
+  usuario.localActivo.id
+);
 ---
 
 <LayoutAdmin
@@ -82,6 +89,7 @@ const mapboxPublicToken = resolverTokenMapboxPublico(env);
       capacidades={capacidades}
       cuentasFinancieras={cuentasLocal}
       mapboxPublicToken={mapboxPublicToken}
+      detalleAdminInicial={detalleAdmin}
     />
   </div>
 </LayoutAdmin>

@@ -417,11 +417,11 @@ export default function LocalCatalogShowcase({
                   </p>
                 </div>
 
-                <div className="w-28 sm:w-32 shrink-0 flex items-center justify-center">
+                <div className="w-28 sm:w-32 aspect-video shrink-0 rounded-[14px] bg-[#111827] flex items-center justify-center p-1.5 overflow-hidden">
                   <img
                     src={v.imagenUrl}
                     alt={`${v.marca} ${v.modelo}`}
-                    className="w-full max-h-24 object-contain"
+                    className="h-full w-full object-contain object-center block"
                     loading="lazy"
                   />
                 </div>
@@ -586,14 +586,13 @@ export default function LocalCatalogShowcase({
                     </div>
                   </div>
 
-                  <div className="w-36 sm:w-44 shrink-0 flex flex-col items-center justify-center">
+                  <div className="w-36 sm:w-44 aspect-video shrink-0 rounded-[16px] bg-[#111827] flex items-center justify-center p-2 overflow-hidden">
                     <img
                       src={bentoHorizontalAncho.imagenUrl}
                       alt={`${bentoHorizontalAncho.marca} ${bentoHorizontalAncho.modelo}`}
-                      className="w-full max-h-28 sm:max-h-32 object-contain"
+                      className="h-full w-full object-contain object-center block"
                       loading="lazy"
                     />
-                    <div className="h-3 w-4/5 mx-auto -mt-2 rounded-full bg-[radial-gradient(ellipse_at_center,_rgba(17,24,39,0.20)_0%,_transparent_75%)]" />
                   </div>
                 </a>
               )}
@@ -766,12 +765,14 @@ export default function LocalCatalogShowcase({
                             {formatCop(item.precioDia)}
                           </span>
                         </div>
-                        <img
-                          src={item.imagenUrl}
-                          alt={`${item.marca} ${item.modelo}`}
-                          className="h-14 w-16 object-contain shrink-0"
-                          loading="lazy"
-                        />
+                        <div className="w-20 aspect-video shrink-0 rounded-[12px] bg-[#111827] flex items-center justify-center p-1 overflow-hidden">
+                          <img
+                            src={item.imagenUrl}
+                            alt={`${item.marca} ${item.modelo}`}
+                            className="h-full w-full object-contain object-center block"
+                            loading="lazy"
+                          />
+                        </div>
                       </button>
                     );
                   })}

@@ -3,6 +3,7 @@ import type { VehiculoWizardData } from './types';
 
 export interface Step7PatioProps {
   data: VehiculoWizardData;
+  errors?: Record<string, string> | undefined;
   onChange: (updates: Partial<VehiculoWizardData>) => void;
 }
 
@@ -14,30 +15,28 @@ const ESTADOS_PATIO: { id: EstadoVehiculo; etiqueta: string; desc: string }[] = 
 
 export default function Step7Patio({
   data,
+  errors = {},
   onChange,
 }: Step7PatioProps) {
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-4">
       {/* Encabezado Hero */}
-      <div className="space-y-2">
+      <div className="space-y-1">
         <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF] block">
           Paso 07 · Documentación y Patio
         </span>
-        <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#111827] dark:text-[#EDEDED] leading-[1.12]">
+        <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[#111827] dark:text-[#EDEDED] leading-[1.12]">
           Prepara su documentación
         </h1>
-        <p className="text-xs sm:text-sm text-[#4B5563] dark:text-[#9CA3AF] font-medium max-w-[50ch]">
-          Verifica los requisitos documentales y define el estado operativo inicial en el patio.
-        </p>
       </div>
 
       {/* Contenedor Inmersivo de Máximo 3 Entradas */}
-      <div className="rounded-[28px] border border-[#9CA3AF]/40 bg-white p-6 sm:p-8 shadow-xs space-y-6 dark:bg-[#1F2937] dark:border-white/10">
+      <div className="rounded-[24px] border border-[#9CA3AF]/40 bg-white p-4 sm:p-6 shadow-xs space-y-4 dark:bg-[#1F2937] dark:border-white/10">
         {/* Entrada 1: Estado Operativo Inicial */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <label className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
-              Estado Operativo en Patio
+              Estado Operativo
             </label>
             <span className="font-mono text-[11px] text-[#4B5563] dark:text-[#9CA3AF]">
               Disponibilidad inmediata
@@ -52,26 +51,26 @@ export default function Step7Patio({
                   key={item.id}
                   type="button"
                   onClick={() => onChange({ estado: item.id })}
-                  className={`ios-press-bounce rounded-2xl p-4 border text-left transition cursor-pointer flex flex-col justify-between ${isSelected
-                      ? 'bg-[#111827] text-white border-[#111827] shadow-xs dark:bg-white dark:text-[#111827] dark:border-white'
-                      : 'bg-[#EDEDED]/50 text-[#111827] border-[#9CA3AF]/40 hover:bg-white hover:border-[#111827] dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20 dark:hover:border-white/40 dark:hover:text-white'
+                  className={`ios-press-bounce rounded-xl px-3 py-2.5 border text-left transition cursor-pointer flex flex-col justify-between ${isSelected
+                    ? 'bg-[#111827] text-white border-[#111827] shadow-xs dark:bg-white dark:text-[#111827] dark:border-white'
+                    : 'bg-[#EDEDED]/50 text-[#111827] border-[#9CA3AF]/40 hover:bg-white hover:border-[#111827] dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20 dark:hover:border-white/40 dark:hover:text-white'
                     }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="font-display font-bold text-sm">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-display font-bold text-xs sm:text-sm">
                       {item.etiqueta}
                     </span>
                     <span
-                      className={`h-4 w-4 rounded-full border flex items-center justify-center text-[10px] font-bold ${isSelected
-                          ? 'border-white bg-white text-[#111827] dark:border-[#111827] dark:bg-[#111827] dark:text-white'
-                          : 'border-[#9CA3AF] dark:border-white/30'
+                      className={`h-3.5 w-3.5 shrink-0 rounded-full border flex items-center justify-center text-[9px] font-bold ${isSelected
+                        ? 'border-white bg-white text-[#111827] dark:border-[#111827] dark:bg-[#111827] dark:text-white'
+                        : 'border-[#9CA3AF] dark:border-white/30'
                         }`}
                     >
                       {isSelected ? '✓' : ''}
                     </span>
                   </div>
                   <p
-                    className={`text-[11px] mt-2 leading-relaxed ${isSelected ? 'text-gray-300 dark:text-gray-600' : 'text-[#4B5563] dark:text-[#9CA3AF]'
+                    className={`text-[11px] mt-1 leading-snug ${isSelected ? 'text-gray-300 dark:text-gray-600' : 'text-[#4B5563] dark:text-[#9CA3AF]'
                       }`}
                   >
                     {item.desc}
@@ -80,10 +79,16 @@ export default function Step7Patio({
               );
             })}
           </div>
+
+          {errors.estado && (
+            <p className="mt-1 text-xs font-bold text-rose-600 dark:text-rose-400">
+              {errors.estado}
+            </p>
+          )}
         </div>
 
         {/* Entrada 2: Cumplimiento Documental */}
-        <div className="space-y-2 border-t border-[#EDEDED] dark:border-white/10 pt-5">
+        <div className="space-y-2 border-t border-[#EDEDED] dark:border-white/10 pt-4">
           <div className="flex items-center justify-between">
             <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
               Requisitos Documentales
@@ -107,8 +112,8 @@ export default function Step7Patio({
                   type="button"
                   onClick={() => onChange({ [doc.key]: !active } as Partial<VehiculoWizardData>)}
                   className={`ios-press-bounce rounded-2xl px-4 py-3 border text-left transition flex items-center justify-between cursor-pointer ${active
-                      ? 'bg-white border-[#111827] text-[#111827] shadow-xs dark:bg-white/15 dark:border-white dark:text-white'
-                      : 'bg-[#EDEDED]/40 border-[#9CA3AF]/30 text-[#4B5563] hover:bg-[#EDEDED] dark:bg-white/5 dark:border-white/10 dark:text-[#9CA3AF] dark:hover:bg-white/10'
+                    ? 'bg-white border-[#111827] text-[#111827] shadow-xs dark:bg-white/15 dark:border-white dark:text-white'
+                    : 'bg-[#EDEDED]/40 border-[#9CA3AF]/30 text-[#4B5563] hover:bg-[#EDEDED] dark:bg-white/5 dark:border-white/10 dark:text-[#9CA3AF] dark:hover:bg-white/10'
                     }`}
                 >
                   <span className="font-mono text-xs font-semibold">
@@ -116,8 +121,8 @@ export default function Step7Patio({
                   </span>
                   <span
                     className={`h-5 w-5 rounded-lg border flex items-center justify-center text-xs font-bold transition ${active
-                        ? 'bg-[#111827] text-white border-[#111827] dark:bg-white dark:text-[#111827] dark:border-white'
-                        : 'border-[#9CA3AF]/60 bg-white dark:border-white/20 dark:bg-white/10'
+                      ? 'bg-[#111827] text-white border-[#111827] dark:bg-white dark:text-[#111827] dark:border-white'
+                      : 'border-[#9CA3AF]/60 bg-white dark:border-white/20 dark:bg-white/10'
                       }`}
                   >
                     {active ? '✓' : ''}
@@ -126,16 +131,22 @@ export default function Step7Patio({
               );
             })}
           </div>
+
+          {errors.estado && (
+            <p className="mt-1 text-xs font-bold text-rose-600 dark:text-rose-400">
+              {errors.estado}
+            </p>
+          )}
         </div>
 
-        {/* Entrada 3: Observaciones Periciales */}
-        <div className="space-y-2 border-t border-[#EDEDED] dark:border-white/10 pt-5">
+        {/* Entrada 3: Observaciones */}
+        <div className="space-y-2 border-t border-[#EDEDED] dark:border-white/10 pt-4">
           <div className="flex items-center justify-between">
             <label
               htmlFor="textarea-descripcion-patio"
               className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]"
             >
-              Observaciones de Entrega
+              Observaciones
             </label>
             <span className="font-mono text-[11px] text-[#4B5563] dark:text-[#9CA3AF]">
               Opcional
@@ -147,7 +158,7 @@ export default function Step7Patio({
             rows={2}
             value={data.descripcion}
             onChange={(e) => onChange({ descripcion: e.target.value })}
-            placeholder="Detalles sobre accesorios, estado cosmético, o especificaciones especiales de patio..."
+            placeholder="Detalles sobre accesorios o especificaciones especiales de patio..."
             className="w-full rounded-2xl bg-[#EDEDED]/50 px-4 py-3 font-sans text-sm text-[#111827] placeholder-[#9CA3AF] border border-transparent focus:border-[#111827] focus:bg-white focus:outline-none transition-all resize-none dark:bg-[#111827] dark:text-[#EDEDED] dark:placeholder-[#9CA3AF]/60 dark:border-white/10 dark:focus:border-white dark:focus:bg-[#111827]"
           />
         </div>

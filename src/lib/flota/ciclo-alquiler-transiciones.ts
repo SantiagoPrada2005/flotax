@@ -4,6 +4,7 @@ import {
   contratosAlquiler,
   eventosAlquiler,
   inspeccionesPericiales,
+  puntosInspeccionR2,
   mantenimientosVehiculo,
   evaluacionesEntregaCliente,
   vehiculos,
@@ -70,10 +71,32 @@ export interface ProrrogarAlquilerParams {
   actor?: ContextoActorCiclo | undefined;
 }
 
+export interface NovedadZonaDevolucionInput {
+  zona: string;
+  etiqueta: string;
+  estado: 'SIN_NOVEDAD' | 'CON_NOVEDAD';
+  nota?: string | undefined;
+  evidenciaId?: string | undefined;
+  evidenciaUrl?: string | undefined;
+  cobroConcepto?: string | undefined;
+  cobroValor?: number | undefined;
+}
+
+export interface CobroAdicionalDevolucionInput {
+  id: string;
+  concepto: string;
+  valor: number;
+  nota?: string | undefined;
+  zona: string;
+  evidenciaId?: string | undefined;
+  evidenciaUrl?: string | undefined;
+}
+
 export interface DevolverYCerrarAlquilerParams {
   reservaId?: string | undefined;
   codigo?: string | undefined;
   localId?: string | undefined;
+  idempotencyKey?: string | undefined;
   fechaDevolucionReal?: string | undefined;
   medidorUsoRetorno: number;
   nivelEnergiaRetornoPct?: number | undefined;
@@ -102,6 +125,8 @@ export interface DevolverYCerrarAlquilerParams {
   tipoMantenimiento?: TipoMantenimientoVehiculo | undefined;
   etiquetaMantenimiento?: string | undefined;
   fechaFinEstimadaMantenimiento?: string | undefined;
+  novedadesZonas?: NovedadZonaDevolucionInput[] | undefined;
+  cobrosAdicionales?: CobroAdicionalDevolucionInput[] | undefined;
   usuarioId?: string | undefined;
   actor?: ContextoActorCiclo | undefined;
 }
@@ -696,7 +721,13 @@ export async function devolverYCerrarAlquilerD1(
     'No cuenta con permisos para cerrar contratos de alquiler (requiere CONTRATOS_FINALIZAR)'
   );
 
+  const cobrosAdicionales = params.cobrosAdicionales ?? [];
+  const totalCobrosAdicionales = cobrosAdicionales.reduce(
+    (acc, item) => acc + Math.max(0, Math.floor(item.valor || 0)),
+    0
+  );
   const sobrecostoLocal = Math.max(0, Math.floor(params.sobrecostoLocal ?? 0));
+  const sobrecostoTotal = sobrecostoLocal + totalCobrosAdicionales;
   const descuentoAjusteLocal = Math.max(0, Math.floor(params.descuentoAjusteLocal ?? 0));
 
   if (sobrecostoLocal > 0) {
@@ -711,6 +742,14 @@ export async function devolverYCerrarAlquilerD1(
         'El motivo de sobrecosto es obligatorio cuando sobrecostoLocal > 0'
       );
     }
+  }
+
+  if (totalCobrosAdicionales > 0) {
+    validarPermisoActor(
+      params.actor,
+      PERMISOS.NOVEDADES_CARGOS_APROBAR,
+      'No cuenta con permisos para aprobar cobros adicionales por novedades (requiere NOVEDADES_CARGOS_APROBAR)'
+    );
   }
 
   if (descuentoAjusteLocal > 0) {
@@ -730,6 +769,43 @@ export async function devolverYCerrarAlquilerD1(
     throw new ErrorCicloAlquiler('FORBIDDEN', 'No tiene permisos sobre este local');
   }
 
+  // Idempotencia transaccional ante doble pulsación o reintento de red
+  if (reserva.estado === 'COMPLETADA' && params.idempotencyKey) {
+    const eventosPrevios = await db
+      .select({ clausulaOTexto: eventosAlquiler.clausulaOTexto })
+      .from(eventosAlquiler)
+      .where(eq(eventosAlquiler.reservaId, reserva.id));
+    const yaProcesado = eventosPrevios.some((e) =>
+      e.clausulaOTexto?.includes(`[IDEMP:${params.idempotencyKey}]`)
+    );
+    if (yaProcesado) {
+      const contratoPrev = (await resolverContratoPorReservaId(db, reserva.id)) ?? null;
+      const garantiaPrev = (
+        await db
+          .select()
+          .from(depositosGarantia)
+          .where(
+            and(
+              eq(depositosGarantia.localId, reserva.localId),
+              or(
+                eq(depositosGarantia.contratoId, contratoPrev?.id ?? ''),
+                eq(depositosGarantia.contratoId, contratoPrev?.numeroContrato ?? ''),
+                eq(depositosGarantia.contratoId, reserva.codigo)
+              )
+            )
+          )
+          .limit(1)
+      )[0] ?? null;
+
+      return {
+        reserva,
+        contrato: contratoPrev,
+        garantia: garantiaPrev,
+        mensajeLegal: 'Las condiciones, ajustes y sobrecostos de devolución los establece el local.',
+      };
+    }
+  }
+
   if (reserva.estado !== 'EN_CURSO' && reserva.estado !== 'PAUSADA') {
     throw new ErrorCicloAlquiler(
       'BAD_REQUEST',
@@ -746,7 +822,7 @@ export async function devolverYCerrarAlquilerD1(
   // Cálculos financieros
   const totalBase = contrato ? contrato.totalLiquidado : reserva.totalCotizado;
   const totalPagadoActual = contrato ? contrato.totalPagado : reserva.montoAbonoReportado;
-  const nuevoTotalLiquidado = Math.max(0, totalBase + sobrecostoLocal - descuentoAjusteLocal);
+  const nuevoTotalLiquidado = Math.max(0, totalBase + sobrecostoTotal - descuentoAjusteLocal);
 
   const mensajeLegal = 'Las condiciones, ajustes y sobrecostos de devolución los establece el local.';
   const ahora = new Date();
@@ -1046,6 +1122,8 @@ export async function devolverYCerrarAlquilerD1(
 
   // Acta de recepción R2
   const inspeccionRecepcionId = `insp-rec-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+  const novedadesList = (params.novedadesZonas ?? []).filter((n) => n.estado === 'CON_NOVEDAD');
+  const tieneNovedadesEnInspeccion = novedadesList.length > 0;
   ops.push(
     db.insert(inspeccionesPericiales).values({
       id: inspeccionRecepcionId,
@@ -1057,14 +1135,43 @@ export async function devolverYCerrarAlquilerD1(
       tipoActo: 'RECEPCION',
       medidorUso: params.medidorUsoRetorno,
       nivelEnergiaPct: params.nivelEnergiaRetornoPct ?? 100,
-      estadoGeneral: params.estadoGeneral ?? 'OPTIMO',
-      respuestasChecklist: [],
+      estadoGeneral:
+        params.estadoGeneral ?? (tieneNovedadesEnInspeccion ? 'CON_NOVEDAD' : 'OPTIMO'),
+      respuestasChecklist: (params.novedadesZonas ?? []).map((z, idx) => ({
+        codigo: `zona-${idx + 1}`,
+        nombre: z.etiqueta,
+        estado: z.estado === 'CON_NOVEDAD' ? 'CON_NOVEDAD' : 'BIEN',
+        observacion: z.nota,
+        multimediaIds: z.evidenciaId ? [z.evidenciaId] : undefined,
+      })),
       observaciones: params.observaciones ?? null,
       iniciadaEn: ahora,
       finalizadaEn: ahora,
       creadoEn: ahora,
     })
   );
+
+  for (const nov of novedadesList) {
+    ops.push(
+      db.insert(puntosInspeccionR2).values({
+        id: `ptr-nov-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        localId: reserva.localId,
+        reservaId: reserva.id,
+        inspeccionId: inspeccionRecepcionId,
+        vehiculoId: reserva.vehiculoId,
+        zona: nov.zona,
+        etiqueta: nov.etiqueta,
+        dictamen: nov.nota?.trim() || 'Novedad reportada en inspección de devolución',
+        estado: 'NOVEDAD',
+        multimediaRetornoId: nov.evidenciaId || null,
+        costoEstimado: Math.max(0, Math.floor(nov.cobroValor ?? 0)),
+        generaCargoCliente: (nov.cobroValor ?? 0) > 0,
+        reparado: false,
+        creadoEn: ahora,
+        actualizadoEn: ahora,
+      })
+    );
+  }
 
   // Orden de taller si requiere mantenimiento
   if (params.requiereMantenimiento === true) {
@@ -1132,7 +1239,12 @@ export async function devolverYCerrarAlquilerD1(
     );
   }
 
-  if (sobrecostoLocal > 0) {
+  if (sobrecostoTotal > 0 || params.idempotencyKey) {
+    const marcadorIdemp = params.idempotencyKey ? ` [IDEMP:${params.idempotencyKey}]` : '';
+    const resumenCargos =
+      cobrosAdicionales.length > 0
+        ? cobrosAdicionales.map((c) => `${c.concepto}: ${c.valor}`).join('; ')
+        : params.motivoSobrecosto ?? 'Cierre operativo de alquiler';
     ops.push(
       db.insert(eventosAlquiler).values({
         id: `evt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -1143,8 +1255,8 @@ export async function devolverYCerrarAlquilerD1(
         tipoEvento: 'SOBRECOSTO_CLAUSULA',
         diasDelta: 0,
         modalidadTarifa: 'PRECIO_PACTADO',
-        montoDelta: sobrecostoLocal,
-        clausulaOTexto: `${mensajeLegal} Sobrecosto: ${params.motivoSobrecosto}`,
+        montoDelta: sobrecostoTotal,
+        clausulaOTexto: `${mensajeLegal} ${resumenCargos}${marcadorIdemp}`,
         actorId: params.usuarioId ?? params.actor?.usuarioId ?? null,
         activo: false,
         creadoEn: ahora,
@@ -1180,6 +1292,15 @@ export async function devolverYCerrarAlquilerD1(
   );
 
   if (contrato) {
+    const lineasConActor = cobrosAdicionales.map((c) => ({
+      ...c,
+      registradoPorId: usuarioResponsableId,
+    }));
+    const detalleCargosFinal =
+      lineasConActor.length > 0
+        ? JSON.stringify(lineasConActor)
+        : params.motivoSobrecosto ?? contrato.detalleOtrosCargos;
+
     ops.push(
       db
         .update(contratosAlquiler)
@@ -1189,7 +1310,9 @@ export async function devolverYCerrarAlquilerD1(
           totalLiquidado: nuevoTotalLiquidado,
           totalPagado: totalPagadoFinal,
           saldoPendiente: saldoPendienteFinal,
+          cargosNovedadesDanos: contrato.cargosNovedadesDanos + totalCobrosAdicionales,
           cargosOtrosLocal: contrato.cargosOtrosLocal + sobrecostoLocal,
+          detalleOtrosCargos: detalleCargosFinal ?? null,
           ajusteDescuentoLocal: contrato.ajusteDescuentoLocal + descuentoAjusteLocal,
           clausulaEncargado: params.clausulaEncargado ?? mensajeLegal,
           medidorUsoRetorno: params.medidorUsoRetorno,

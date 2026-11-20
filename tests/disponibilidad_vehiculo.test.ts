@@ -735,4 +735,48 @@ describe('Disponibilidad de Vehículos - FlotaX', () => {
     assert.equal(listaSoloDisponibles[0]?.id, 'veh-disponible-2');
     assert.equal(listaSoloDisponibles[0]?.estado, 'DISPONIBLE');
   });
+
+  test('19. listarVehiculos preserva RESERVADO y MANTENIMIENTO manuales en D1 sin bloqueos solapados', async () => {
+    const vehiculoReservado = {
+      id: 'veh-reservado-manual',
+      localId: 'local-test',
+      marca: 'Mazda',
+      modelo: '3',
+      anio: 2024,
+      categoria: 'SEDAN',
+      categoriaEtiqueta: 'Sedán Ejecutivo',
+      placa: 'RES123',
+      estado: 'RESERVADO',
+      precioDia: 180000,
+      depositoGarantia: 400000,
+      transmision: 'Automática',
+      combustible: 'Gasolina',
+      capacidadPasajeros: 5,
+      kilometraje: 5000,
+      imagenUrl: '/img/mazda3.png',
+      destacado: false,
+      descripcion: 'Reservado manualmente',
+      activo: true,
+    };
+
+    const vehiculoMantenimiento = {
+      ...vehiculoReservado,
+      id: 'veh-mant-manual',
+      placa: 'MNT456',
+      estado: 'MANTENIMIENTO',
+    };
+
+    const mockDbFlota = crearMockDb({
+      vehiculosLista: [vehiculoReservado, vehiculoMantenimiento],
+      reservas: [],
+      mantenimientos: [],
+    });
+
+    const lista = await listarVehiculos(mockDbFlota, {
+      soloDisponibles: false,
+      hoyISO: hoyPrueba,
+    });
+    assert.equal(lista.find((v) => v.id === 'veh-reservado-manual')?.estado, 'RESERVADO');
+    assert.equal(lista.find((v) => v.id === 'veh-mant-manual')?.estado, 'MANTENIMIENTO');
+  });
 });

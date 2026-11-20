@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   esLicenciaCompatibleConVehiculo,
   licenciaRecomendadaPorVehiculo,
@@ -27,12 +26,12 @@ const CATEGORIAS_LICENCIA: ReadonlyArray<{
   id: CategoriaLicenciaEntrega;
   etiqueta: string;
 }> = [
-  { id: 'B1', etiqueta: 'B1 · Auto' },
-  { id: 'B2', etiqueta: 'B2 · Camión' },
-  { id: 'C1', etiqueta: 'C1 · Público' },
-  { id: 'A2', etiqueta: 'A2 · Moto' },
-  { id: 'A1', etiqueta: 'A1 · Moto <125' },
-];
+    { id: 'B1', etiqueta: 'B1 · Auto' },
+    { id: 'B2', etiqueta: 'B2 · Camión' },
+    { id: 'C1', etiqueta: 'C1 · Público' },
+    { id: 'A2', etiqueta: 'A2 · Moto' },
+    { id: 'A1', etiqueta: 'A1 · Moto <125' },
+  ];
 
 export default function Step1ComprobacionCliente({
   reserva,
@@ -40,7 +39,6 @@ export default function Step1ComprobacionCliente({
   errors,
   onChange,
 }: Step1ComprobacionClienteProps) {
-  const [mostrarDetallesExtra, setMostrarDetallesExtra] = useState(false);
   const esPatineta = reserva.vehiculo.categoria === 'PATINETA';
   const licenciaCompatible = esLicenciaCompatibleConVehiculo(
     data.licenciaCategoria,
@@ -51,31 +49,24 @@ export default function Step1ComprobacionCliente({
   );
 
   return (
-    <div className="w-full space-y-6">
-      <div className="space-y-2">
-        <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#4B5563] block">
+    <div className="w-full space-y-3.5 sm:space-y-4">
+      <div className="space-y-1">
+        <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF] block">
           Paso 01 · Comprobación del Arrendatario
         </span>
-        <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#111827] leading-[1.12]">
+        <h1 className="font-display text-xl sm:text-2xl font-bold tracking-tight text-[#111827] dark:text-[#EDEDED] leading-tight">
           ¿A quién le entregamos la unidad hoy?
         </h1>
-        <p className="text-xs sm:text-sm text-[#4B5563] font-medium max-w-[54ch]">
-          Verifica el documento y la licencia del cliente antes de entregar el vehículo{' '}
-          <strong className="text-[#111827]">
-            {reserva.vehiculo.marca} {reserva.vehiculo.modelo} ({reserva.vehiculo.placa})
-          </strong>
-          .
-        </p>
       </div>
 
-      {/* Tarjeta única de identidad y licencia con Progressive Disclosure */}
-      <div className="rounded-[28px] border border-[#9CA3AF]/40 bg-white p-5 sm:p-7 shadow-xs space-y-4">
+      {/* Tarjeta de identidad y documento */}
+      <div className="rounded-[24px] border border-[#9CA3AF]/40 dark:border-white/15 bg-white dark:bg-[#1F2937] p-4 sm:p-5 shadow-xs space-y-3.5">
         {/* Nombre y contacto */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1">
             <label
               htmlFor="entrega-nombre"
-              className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827]"
+              className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]"
             >
               Nombre completo del conductor *
             </label>
@@ -85,21 +76,20 @@ export default function Step1ComprobacionCliente({
               value={data.nombreCompleto}
               onChange={(e) => onChange({ nombreCompleto: e.target.value })}
               placeholder="Nombre y apellidos"
-              className={`w-full min-h-[48px] rounded-2xl bg-[#EDEDED]/60 px-4 py-2.5 text-base font-semibold text-[#111827] border transition-colors focus:bg-white focus:outline-none ${
-                errors.nombreCompleto
-                  ? 'border-[#111827] ring-2 ring-[#111827]'
-                  : 'border-[#9CA3AF]/40 focus:border-[#111827]'
-              }`}
+              className={`w-full min-h-[44px] rounded-2xl bg-[#EDEDED]/60 dark:bg-[#111827] px-3.5 py-2 text-base font-semibold text-[#111827] dark:text-[#EDEDED] border focus:bg-white dark:focus:bg-[#111827] ${errors.nombreCompleto
+                  ? 'border-[#111827] dark:border-[#EDEDED] ring-2 ring-[#111827] dark:ring-[#EDEDED]'
+                  : 'border-[#9CA3AF]/40 dark:border-white/15 focus:border-[#111827] dark:focus:border-[#EDEDED]'
+                }`}
             />
             {errors.nombreCompleto && (
-              <p className="text-xs font-bold text-[#111827]">{errors.nombreCompleto}</p>
+              <p className="text-xs font-bold text-[#111827] dark:text-[#EDEDED]">{errors.nombreCompleto}</p>
             )}
           </div>
 
           <div className="space-y-1">
             <label
               htmlFor="entrega-telefono"
-              className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827]"
+              className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]"
             >
               Teléfono / WhatsApp *
             </label>
@@ -109,25 +99,24 @@ export default function Step1ComprobacionCliente({
               value={data.telefono}
               onChange={(e) => onChange({ telefono: e.target.value })}
               placeholder="300 000 0000"
-              className={`w-full min-h-[48px] rounded-2xl bg-[#EDEDED]/60 px-4 py-2.5 text-base font-semibold text-[#111827] border transition-colors focus:bg-white focus:outline-none ${
-                errors.telefono
-                  ? 'border-[#111827] ring-2 ring-[#111827]'
-                  : 'border-[#9CA3AF]/40 focus:border-[#111827]'
-              }`}
+              className={`w-full min-h-[44px] rounded-2xl bg-[#EDEDED]/60 dark:bg-[#111827] px-3.5 py-2 text-base font-semibold text-[#111827] dark:text-[#EDEDED] border focus:bg-white dark:focus:bg-[#111827] ${errors.telefono
+                  ? 'border-[#111827] dark:border-[#EDEDED] ring-2 ring-[#111827] dark:ring-[#EDEDED]'
+                  : 'border-[#9CA3AF]/40 dark:border-white/15 focus:border-[#111827] dark:focus:border-[#EDEDED]'
+                }`}
             />
             {errors.telefono && (
-              <p className="text-xs font-bold text-[#111827]">{errors.telefono}</p>
+              <p className="text-xs font-bold text-[#111827] dark:text-[#EDEDED]">{errors.telefono}</p>
             )}
           </div>
         </div>
 
         {/* Documento de identidad */}
-        <div className="space-y-2 border-t border-[#EDEDED] pt-3.5">
-          <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] block">
+        <div className="space-y-1.5 border-t border-[#EDEDED] dark:border-white/10 pt-3">
+          <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED] block">
             Documento de Identidad *
           </span>
           <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
-            <div className="sm:col-span-5 grid grid-cols-4 gap-1.5 rounded-2xl bg-[#EDEDED] p-1">
+            <div className="sm:col-span-4 grid grid-cols-4 gap-1 rounded-2xl bg-[#EDEDED] dark:bg-[#111827] p-1 border border-transparent dark:border-white/10">
               {TIPOS_DOC.map((td) => {
                 const activo = data.tipoDocumento === td.id;
                 return (
@@ -135,11 +124,10 @@ export default function Step1ComprobacionCliente({
                     key={td.id}
                     type="button"
                     onClick={() => onChange({ tipoDocumento: td.id })}
-                    className={`min-h-[44px] rounded-xl text-xs font-bold transition-colors cursor-pointer ${
-                      activo
-                        ? 'bg-[#111827] text-white'
-                        : 'text-[#4B5563] hover:text-[#111827]'
-                    }`}
+                    className={`min-h-[40px] rounded-xl text-xs font-bold cursor-pointer ${activo
+                        ? 'bg-[#111827] text-white dark:bg-[#EDEDED] dark:text-[#111827]'
+                        : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-[#EDEDED]'
+                      }`}
                   >
                     {td.label}
                   </button>
@@ -147,7 +135,7 @@ export default function Step1ComprobacionCliente({
               })}
             </div>
 
-            <div className="sm:col-span-7">
+            <div className="sm:col-span-5">
               <input
                 id="entrega-num-doc"
                 type="text"
@@ -164,32 +152,42 @@ export default function Step1ComprobacionCliente({
                 }
                 placeholder="Número de documento"
                 aria-label="Número de documento"
-                className={`w-full min-h-[48px] rounded-2xl bg-[#EDEDED]/60 px-4 py-2.5 font-mono text-base font-bold text-[#111827] border transition-colors focus:bg-white focus:outline-none ${
-                  errors.numeroDocumento
-                    ? 'border-[#111827] ring-2 ring-[#111827]'
-                    : 'border-[#9CA3AF]/40 focus:border-[#111827]'
-                }`}
+                className={`w-full min-h-[44px] rounded-2xl bg-[#EDEDED]/60 dark:bg-[#111827] px-3.5 py-2 font-mono text-base font-bold text-[#111827] dark:text-[#EDEDED] border focus:bg-white dark:focus:bg-[#111827] ${errors.numeroDocumento
+                    ? 'border-[#111827] dark:border-[#EDEDED] ring-2 ring-[#111827] dark:ring-[#EDEDED]'
+                    : 'border-[#9CA3AF]/40 dark:border-white/15 focus:border-[#111827] dark:focus:border-[#EDEDED]'
+                  }`}
+              />
+            </div>
+
+            <div className="sm:col-span-3">
+              <input
+                id="entrega-ciudad-exp"
+                type="text"
+                value={data.ciudadExpedicion}
+                onChange={(e) => onChange({ ciudadExpedicion: e.target.value })}
+                placeholder="Expedición"
+                aria-label="Ciudad de expedición"
+                className="w-full min-h-[44px] rounded-2xl bg-[#EDEDED]/60 dark:bg-[#111827] px-3.5 py-2 text-base font-medium text-[#111827] dark:text-[#EDEDED] border border-[#9CA3AF]/40 dark:border-white/15 focus:border-[#111827] dark:focus:border-[#EDEDED] focus:bg-white dark:focus:bg-[#111827]"
               />
             </div>
           </div>
           {errors.numeroDocumento && (
-            <p className="text-xs font-bold text-[#111827]">{errors.numeroDocumento}</p>
+            <p className="text-xs font-bold text-[#111827] dark:text-[#EDEDED]">{errors.numeroDocumento}</p>
           )}
         </div>
 
-        {/* Categoría de Licencia de Conducción */}
+        {/* Licencia de Conducción */}
         {!esPatineta && (
-          <div className="space-y-2.5 border-t border-[#EDEDED] pt-3.5">
+          <div className="space-y-2.5 border-t border-[#EDEDED] dark:border-white/10 pt-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827]">
-                Categoría de Licencia *
+              <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
+                Licencia de Conducción *
               </span>
               <span
-                className={`rounded-full px-3 py-1 text-[11px] font-bold ${
-                  licenciaCompatible
-                    ? 'bg-[#EDEDED] text-[#111827]'
-                    : 'bg-[#111827] text-white'
-                }`}
+                className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${licenciaCompatible
+                    ? 'bg-[#EDEDED] dark:bg-[#111827] text-[#111827] dark:text-[#EDEDED] border border-transparent dark:border-white/15'
+                    : 'bg-[#111827] dark:bg-[#EDEDED] text-white dark:text-[#111827]'
+                  }`}
               >
                 {licenciaCompatible
                   ? `Compatible con ${reserva.vehiculo.categoria}`
@@ -205,11 +203,10 @@ export default function Step1ComprobacionCliente({
                     key={cat.id}
                     type="button"
                     onClick={() => onChange({ licenciaCategoria: cat.id })}
-                    className={`min-h-[44px] rounded-full px-3.5 py-2 text-xs font-bold transition-colors cursor-pointer border ${
-                      activa
-                        ? 'bg-[#111827] text-white border-[#111827]'
-                        : 'bg-[#EDEDED]/70 text-[#4B5563] border-[#9CA3AF]/40 hover:text-[#111827]'
-                    }`}
+                    className={`min-h-[40px] rounded-full px-3 py-1.5 text-xs font-bold cursor-pointer border ${activa
+                        ? 'bg-[#111827] text-white border-[#111827] dark:bg-[#EDEDED] dark:text-[#111827] dark:border-[#EDEDED]'
+                        : 'bg-[#EDEDED]/70 dark:bg-[#111827] text-[#4B5563] dark:text-[#EDEDED] border-[#9CA3AF]/40 dark:border-white/15 hover:text-[#111827]'
+                      }`}
                   >
                     {cat.etiqueta}
                   </button>
@@ -217,127 +214,87 @@ export default function Step1ComprobacionCliente({
               })}
             </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div className="space-y-1">
+                <label
+                  htmlFor="entrega-lic-num"
+                  className="text-[11px] font-semibold text-[#4B5563] dark:text-[#9CA3AF]"
+                >
+                  Número de licencia
+                </label>
+                <input
+                  id="entrega-lic-num"
+                  type="text"
+                  value={data.licenciaNumero}
+                  onChange={(e) => onChange({ licenciaNumero: e.target.value })}
+                  placeholder="Igual a cédula o número"
+                  className="w-full min-h-[44px] rounded-2xl bg-[#EDEDED]/60 dark:bg-[#111827] px-3.5 py-2 font-mono text-base font-semibold text-[#111827] dark:text-[#EDEDED] border border-[#9CA3AF]/40 dark:border-white/15 focus:border-[#111827] dark:focus:border-[#EDEDED] focus:bg-white dark:focus:bg-[#111827]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label
+                  htmlFor="entrega-lic-venc"
+                  className="text-[11px] font-semibold text-[#4B5563] dark:text-[#9CA3AF]"
+                >
+                  Vigencia / Vencimiento (opcional)
+                </label>
+                <input
+                  id="entrega-lic-venc"
+                  type="date"
+                  value={data.licenciaVencimiento}
+                  onChange={(e) => onChange({ licenciaVencimiento: e.target.value })}
+                  className="w-full min-h-[44px] rounded-2xl bg-[#EDEDED]/60 dark:bg-[#111827] px-3.5 py-2 text-base font-medium text-[#111827] dark:text-[#EDEDED] border border-[#9CA3AF]/40 dark:border-white/15 focus:border-[#111827] dark:focus:border-[#EDEDED] focus:bg-white dark:focus:bg-[#111827]"
+                />
+              </div>
+            </div>
+
             {errors.licenciaCategoria && (
-              <p className="text-xs font-bold text-[#111827]">{errors.licenciaCategoria}</p>
+              <p className="text-xs font-bold text-[#111827] dark:text-[#EDEDED]">{errors.licenciaCategoria}</p>
             )}
           </div>
         )}
 
-        {/* Acordeón de Progressive Disclosure para campos secundarios */}
-        <div className="border-t border-[#EDEDED] pt-3.5">
-          <button
-            type="button"
-            onClick={() => setMostrarDetallesExtra((prev) => !prev)}
-            className="w-full min-h-[44px] flex items-center justify-between rounded-2xl bg-[#EDEDED]/70 border border-[#9CA3AF]/40 px-4 py-2.5 text-xs font-bold text-[#111827] cursor-pointer hover:bg-[#EDEDED]"
-          >
-            <span>
-              {mostrarDetallesExtra
-                ? '− Ocultar detalles opcionales del contrato'
-                : '+ Agregar expedición, vigencia, domicilio o correo'}
-            </span>
-            <span className="text-[11px] font-medium text-[#4B5563]">Opcional</span>
-          </button>
+        {/* Domicilio y Correo */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-[#EDEDED] dark:border-white/10 pt-3">
+          <div className="space-y-1">
+            <label
+              htmlFor="entrega-domicilio"
+              className="text-[11px] font-semibold text-[#4B5563] dark:text-[#9CA3AF]"
+            >
+              Domicilio / Dirección
+            </label>
+            <input
+              id="entrega-domicilio"
+              type="text"
+              value={data.domicilio}
+              onChange={(e) => onChange({ domicilio: e.target.value })}
+              placeholder="Ej. Cra 43A # 1-50, Medellín"
+              className="w-full min-h-[44px] rounded-2xl bg-[#EDEDED]/60 dark:bg-[#111827] px-3.5 py-2 text-base font-medium text-[#111827] dark:text-[#EDEDED] border border-[#9CA3AF]/40 dark:border-white/15 focus:border-[#111827] dark:focus:border-[#EDEDED] focus:bg-white dark:focus:bg-[#111827]"
+            />
+          </div>
 
-          {mostrarDetallesExtra && (
-            <div className="mt-3 space-y-3 pt-1">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="space-y-1">
-                  <label
-                    htmlFor="entrega-ciudad-exp"
-                    className="text-[11px] font-semibold text-[#4B5563]"
-                  >
-                    Ciudad de expedición
-                  </label>
-                  <input
-                    id="entrega-ciudad-exp"
-                    type="text"
-                    value={data.ciudadExpedicion}
-                    onChange={(e) => onChange({ ciudadExpedicion: e.target.value })}
-                    placeholder="Ej. Medellín"
-                    className="w-full min-h-[46px] rounded-2xl bg-[#EDEDED]/60 px-3.5 py-2.5 text-base font-medium text-[#111827] border border-[#9CA3AF]/40 focus:border-[#111827] focus:bg-white focus:outline-none"
-                  />
-                </div>
-
-                {!esPatineta && (
-                  <>
-                    <div className="space-y-1">
-                      <label
-                        htmlFor="entrega-lic-num"
-                        className="text-[11px] font-semibold text-[#4B5563]"
-                      >
-                        Número de licencia
-                      </label>
-                      <input
-                        id="entrega-lic-num"
-                        type="text"
-                        value={data.licenciaNumero}
-                        onChange={(e) => onChange({ licenciaNumero: e.target.value })}
-                        placeholder="Igual a cédula"
-                        className="w-full min-h-[46px] rounded-2xl bg-[#EDEDED]/60 px-3.5 py-2.5 font-mono text-base font-semibold text-[#111827] border border-[#9CA3AF]/40 focus:border-[#111827] focus:bg-white focus:outline-none"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label
-                        htmlFor="entrega-lic-venc"
-                        className="text-[11px] font-semibold text-[#4B5563]"
-                      >
-                        Vigencia / Vencimiento
-                      </label>
-                      <input
-                        id="entrega-lic-venc"
-                        type="date"
-                        value={data.licenciaVencimiento}
-                        onChange={(e) => onChange({ licenciaVencimiento: e.target.value })}
-                        className="w-full min-h-[46px] rounded-2xl bg-[#EDEDED]/60 px-3.5 py-2.5 text-base font-medium text-[#111827] border border-[#9CA3AF]/40 focus:border-[#111827] focus:bg-white focus:outline-none"
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label
-                    htmlFor="entrega-domicilio"
-                    className="text-[11px] font-semibold text-[#4B5563]"
-                  >
-                    Domicilio / Dirección de residencia
-                  </label>
-                  <input
-                    id="entrega-domicilio"
-                    type="text"
-                    value={data.domicilio}
-                    onChange={(e) => onChange({ domicilio: e.target.value })}
-                    placeholder="Ej. Cra 43A # 1-50, Medellín"
-                    className="w-full min-h-[46px] rounded-2xl bg-[#EDEDED]/60 px-3.5 py-2.5 text-base font-medium text-[#111827] border border-[#9CA3AF]/40 focus:border-[#111827] focus:bg-white focus:outline-none"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label
-                    htmlFor="entrega-correo"
-                    className="text-[11px] font-semibold text-[#4B5563]"
-                  >
-                    Correo electrónico (envío de acta)
-                  </label>
-                  <input
-                    id="entrega-correo"
-                    type="email"
-                    value={data.correo}
-                    onChange={(e) => onChange({ correo: e.target.value })}
-                    placeholder="conductor@correo.com"
-                    className="w-full min-h-[46px] rounded-2xl bg-[#EDEDED]/60 px-3.5 py-2.5 text-base font-medium text-[#111827] border border-[#9CA3AF]/40 focus:border-[#111827] focus:bg-white focus:outline-none"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
+          <div className="space-y-1">
+            <label
+              htmlFor="entrega-correo"
+              className="text-[11px] font-semibold text-[#4B5563] dark:text-[#9CA3AF]"
+            >
+              Correo electrónico (envío de acta)
+            </label>
+            <input
+              id="entrega-correo"
+              type="email"
+              value={data.correo}
+              onChange={(e) => onChange({ correo: e.target.value })}
+              placeholder="conductor@correo.com"
+              className="w-full min-h-[44px] rounded-2xl bg-[#EDEDED]/60 dark:bg-[#111827] px-3.5 py-2 text-base font-medium text-[#111827] dark:text-[#EDEDED] border border-[#9CA3AF]/40 dark:border-white/15 focus:border-[#111827] dark:focus:border-[#EDEDED] focus:bg-white dark:focus:bg-[#111827]"
+            />
+          </div>
         </div>
 
         {/* Autorización excepcional del local */}
         {(!licenciaCompatible || !data.numeroDocumento.trim() || data.autorizarSinDocumentos) && (
-          <div className="rounded-[20px] bg-[#111827] text-white p-4 space-y-3">
+          <div className="rounded-[18px] bg-[#111827] border border-white/15 text-white p-3.5 space-y-2.5">
             <label className="flex items-start gap-3 cursor-pointer">
               <input
                 type="checkbox"
@@ -352,7 +309,7 @@ export default function Step1ComprobacionCliente({
                   Autorizar entrega bajo responsabilidad del local
                 </span>
                 <span className="text-[#9CA3AF] block mt-0.5">
-                  Registra auditoría explícita si falta algún documento digital o requiere excepción en patio.
+                  Registra auditoría explícita en Cloudflare D1 si falta algún documento digital o la categoría requiere excepción aprobada en patio.
                 </span>
               </div>
             </label>
@@ -363,7 +320,7 @@ export default function Step1ComprobacionCliente({
                 value={data.notaAutorizacion}
                 onChange={(e) => onChange({ notaAutorizacion: e.target.value })}
                 placeholder="Motivo de autorización excepcional en patio..."
-                className="w-full min-h-[44px] rounded-xl bg-[#1F2937] border border-[#4B5563] px-3.5 py-2 text-base text-white placeholder-[#9CA3AF] focus:outline-none focus:border-white"
+                className="w-full min-h-[44px] rounded-xl bg-[#1F2937] border border-[#4B5563] px-3.5 py-2 text-base text-white placeholder-[#9CA3AF] focus:border-white"
               />
             )}
           </div>

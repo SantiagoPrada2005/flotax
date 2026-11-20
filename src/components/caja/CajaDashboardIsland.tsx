@@ -540,7 +540,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                 setContratoAbonoId(undefined);
                 setModalMovimientoAbierto(true);
               }}
-              className="fx-press inline-flex h-11 min-h-[44px] shrink-0 whitespace-nowrap items-center gap-2 rounded-full bg-[#111827] dark:bg-[#2D6BFF] hover:bg-[#1F2937] dark:hover:bg-blue-600 px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs cursor-pointer border border-transparent transition-colors"
+              className="fx-press inline-flex h-11 min-h-[44px] shrink-0 whitespace-nowrap items-center gap-2 rounded-full bg-[#111827] dark:bg-[#EDEDED] hover:bg-[#1F2937] dark:hover:bg-white px-4 py-2.5 text-xs sm:text-sm font-bold text-white dark:text-[#111827] shadow-xs cursor-pointer border border-transparent transition-colors"
             >
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/15 text-emerald-400 dark:text-emerald-300 font-black text-sm">
                 +
@@ -568,7 +568,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               onClick={() => setModalTransferenciaAbierto(true)}
               className="fx-press inline-flex h-11 min-h-[44px] shrink-0 whitespace-nowrap items-center gap-2 rounded-full border border-[#9CA3AF]/40 dark:border-white/10 bg-white dark:bg-[#1F2937] hover:bg-[#EDEDED] dark:hover:bg-white/10 px-4 py-2.5 text-xs sm:text-sm font-bold text-[#111827] dark:text-[#EDEDED] shadow-xs cursor-pointer transition-colors"
             >
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/60 text-[#2D6BFF] font-mono text-sm">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#EDEDED] dark:bg-white/10 text-[#111827] dark:text-[#EDEDED] font-mono text-sm">
                 ↔
               </span>
               <span>Mover Dinero</span>
@@ -690,7 +690,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                 onClick={() => setPeriodo(id)}
                 className={`fx-press rounded-md px-2.5 py-1 text-xs font-semibold cursor-pointer transition-all ${
                   periodo === id
-                    ? 'bg-white text-[#111827] shadow-xs dark:bg-[#2D6BFF] dark:text-white'
+                    ? 'bg-white text-[#111827] shadow-xs dark:bg-[#1F2937] dark:text-[#EDEDED]'
                     : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
                 }`}
               >
@@ -737,7 +737,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
           <section aria-label="Información esencial">
             <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#9CA3AF]/15 dark:border-white/10">
               <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-[#2D6BFF]" />
+                <span className="h-2 w-2 rounded-full bg-[#111827] dark:bg-[#EDEDED]" />
                 <h2 className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
                   Resumen de Tesorería & Balance
                 </h2>
@@ -796,7 +796,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
           <section aria-label="Análisis visual" className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2 border-b border-[#9CA3AF]/15 dark:border-white/10">
               <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-[#2D6BFF]" />
+                <span className="h-2 w-2 rounded-full bg-[#111827] dark:bg-[#EDEDED]" />
                 <h2 className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
                   Análisis Financiero & Distribución
                 </h2>
@@ -809,7 +809,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                   onClick={() => setVistaAnalisis('DISTRIBUCION')}
                   className={`fx-press rounded-lg px-3 py-1 text-xs font-semibold cursor-pointer transition-all ${
                     vistaAnalisis === 'DISTRIBUCION'
-                      ? 'bg-white text-[#111827] shadow-xs dark:bg-[#2D6BFF] dark:text-white'
+                      ? 'bg-white text-[#111827] shadow-xs dark:bg-[#1F2937] dark:text-[#EDEDED]'
                       : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
                   }`}
                 >
@@ -820,7 +820,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                   onClick={() => setVistaAnalisis('FLUJO')}
                   className={`fx-press rounded-lg px-3 py-1 text-xs font-semibold cursor-pointer transition-all ${
                     vistaAnalisis === 'FLUJO'
-                      ? 'bg-white text-[#111827] shadow-xs dark:bg-[#2D6BFF] dark:text-white'
+                      ? 'bg-white text-[#111827] shadow-xs dark:bg-[#1F2937] dark:text-[#EDEDED]'
                       : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
                   }`}
                 >
@@ -981,7 +981,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                               ? 'bg-emerald-100 text-emerald-800'
                               : m.tipo === 'EGRESO'
                                 ? 'bg-rose-100 text-rose-800'
-                                : 'bg-blue-100 text-blue-800'
+                                : 'bg-[#EDEDED] text-[#111827] dark:bg-white/15 dark:text-[#EDEDED]'
                           }`}
                       >
                         {m.tipo === 'INGRESO' ? '+' : m.tipo === 'EGRESO' ? '-' : '↔'}
@@ -1158,7 +1158,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               <button
                 type="button"
                 onClick={() => descargarCsv(exportarSesionesCajaCsv(data.historialSesionesCaja), 'historial_arqueos_caja.csv')}
-                className="fx-press text-xs font-bold text-[#2D6BFF] hover:underline cursor-pointer"
+                className="fx-press text-xs font-bold text-[#111827] dark:text-[#EDEDED] hover:underline cursor-pointer"
               >
                 ⬇ Exportar Historial CSV
               </button>
@@ -1221,7 +1221,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 rounded-[24px] border border-[#9CA3AF]/30 dark:border-white/10 bg-white dark:bg-[#1F2937] p-4 sm:p-5 shadow-xs">
             <div>
               <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-[#2D6BFF]" />
+                <span className="h-2 w-2 rounded-full bg-[#111827] dark:bg-[#EDEDED]" />
                 <h3 className="font-display text-sm font-bold text-[#111827] dark:text-white">
                   Cartera de Alquileres y Saldos Pendientes
                 </h3>
@@ -1240,7 +1240,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                   onClick={() => setFiltroCartera('TODOS')}
                   className={`fx-press rounded-lg px-2.5 py-1 text-xs font-semibold cursor-pointer transition-all ${
                     filtroCartera === 'TODOS'
-                      ? 'bg-white text-[#111827] shadow-xs dark:bg-[#2D6BFF] dark:text-white'
+                      ? 'bg-white text-[#111827] shadow-xs dark:bg-[#1F2937] dark:text-[#EDEDED]'
                       : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
                   }`}
                 >
@@ -1251,7 +1251,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                   onClick={() => setFiltroCartera('PENDIENTES')}
                   className={`fx-press rounded-lg px-2.5 py-1 text-xs font-semibold cursor-pointer transition-all ${
                     filtroCartera === 'PENDIENTES'
-                      ? 'bg-white text-[#111827] shadow-xs dark:bg-[#2D6BFF] dark:text-white'
+                      ? 'bg-white text-[#111827] shadow-xs dark:bg-[#1F2937] dark:text-[#EDEDED]'
                       : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
                   }`}
                 >
@@ -1262,7 +1262,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                   onClick={() => setFiltroCartera('PAGADOS')}
                   className={`fx-press rounded-lg px-2.5 py-1 text-xs font-semibold cursor-pointer transition-all ${
                     filtroCartera === 'PAGADOS'
-                      ? 'bg-white text-[#111827] shadow-xs dark:bg-[#2D6BFF] dark:text-white'
+                      ? 'bg-white text-[#111827] shadow-xs dark:bg-[#1F2937] dark:text-[#EDEDED]'
                       : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
                   }`}
                 >
@@ -1346,7 +1346,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                             setContratoAbonoId(c.codigoContrato);
                             setModalMovimientoAbierto(true);
                           }}
-                          className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg bg-[#111827] dark:bg-[#2D6BFF] px-3 text-xs font-bold text-white hover:bg-[#1F2937] dark:hover:bg-blue-600"
+                          className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg bg-[#111827] dark:bg-[#EDEDED] px-3 text-xs font-bold text-white dark:text-[#111827] hover:bg-[#1F2937] dark:hover:bg-white"
                         >
                           Registrar Abono
                         </button>
@@ -1376,7 +1376,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-[#9CA3AF]/20 dark:border-white/10">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-[#2D6BFF]" />
+                  <span className="h-2 w-2 rounded-full bg-[#111827] dark:bg-[#EDEDED]" />
                   <h3 className="font-display text-sm font-bold text-[#111827] dark:text-white">
                     Control de Depósitos de Garantía (Fianzas en Custodia)
                   </h3>
@@ -1393,7 +1393,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                     onClick={() => setFiltroGarantias('TODAS')}
                     className={`fx-press rounded-lg px-2.5 py-1 text-xs font-semibold cursor-pointer transition-all ${
                       filtroGarantias === 'TODAS'
-                        ? 'bg-white text-[#111827] shadow-xs dark:bg-[#2D6BFF] dark:text-white'
+                        ? 'bg-white text-[#111827] shadow-xs dark:bg-[#1F2937] dark:text-[#EDEDED]'
                         : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
                     }`}
                   >
@@ -1404,7 +1404,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                     onClick={() => setFiltroGarantias('CUSTODIA')}
                     className={`fx-press rounded-lg px-2.5 py-1 text-xs font-semibold cursor-pointer transition-all ${
                       filtroGarantias === 'CUSTODIA'
-                        ? 'bg-white text-[#111827] shadow-xs dark:bg-[#2D6BFF] dark:text-white'
+                        ? 'bg-white text-[#111827] shadow-xs dark:bg-[#1F2937] dark:text-[#EDEDED]'
                         : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
                     }`}
                   >
@@ -1415,7 +1415,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                     onClick={() => setFiltroGarantias('RESUELTAS')}
                     className={`fx-press rounded-lg px-2.5 py-1 text-xs font-semibold cursor-pointer transition-all ${
                       filtroGarantias === 'RESUELTAS'
-                        ? 'bg-white text-[#111827] shadow-xs dark:bg-[#2D6BFF] dark:text-white'
+                        ? 'bg-white text-[#111827] shadow-xs dark:bg-[#1F2937] dark:text-[#EDEDED]'
                         : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
                     }`}
                   >
@@ -1507,7 +1507,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                               setAccionGarantia('RECIBIR');
                               setModalGarantiaAbierto(true);
                             }}
-                            className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg bg-[#111827] dark:bg-[#2D6BFF] px-3 text-xs font-bold text-white hover:bg-[#1F2937] dark:hover:bg-blue-600"
+                            className="fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg bg-[#111827] dark:bg-[#EDEDED] px-3 text-xs font-bold text-white dark:text-[#111827] hover:bg-[#1F2937] dark:hover:bg-white"
                           >
                             Recibir Fianza
                           </button>
@@ -1592,7 +1592,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                 onClick={() => setFiltroCategoriaGasto('TODAS')}
                 className={`fx-press shrink-0 rounded-lg px-2.5 py-1 text-xs font-semibold cursor-pointer transition-all ${
                   filtroCategoriaGasto === 'TODAS'
-                    ? 'bg-[#111827] text-white shadow-xs dark:bg-[#2D6BFF]'
+                    ? 'bg-[#111827] text-white shadow-xs dark:bg-[#EDEDED] dark:text-[#111827]'
                     : 'bg-[#EDEDED] dark:bg-[#111827] text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
                 }`}
               >
@@ -1605,7 +1605,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                   onClick={() => setFiltroCategoriaGasto(cat.categoria)}
                   className={`fx-press shrink-0 rounded-lg px-2.5 py-1 text-xs font-semibold cursor-pointer transition-all ${
                     filtroCategoriaGasto === cat.categoria
-                      ? 'bg-[#111827] text-white shadow-xs dark:bg-[#2D6BFF]'
+                      ? 'bg-[#111827] text-white shadow-xs dark:bg-[#EDEDED] dark:text-[#111827]'
                       : 'bg-[#EDEDED] dark:bg-[#111827] text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
                   }`}
                 >
@@ -1670,7 +1670,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               <button
                 type="button"
                 onClick={() => setModalNuevaCuentaAbierto(true)}
-                className="inline-flex min-h-[40px] items-center gap-1.5 rounded-full bg-[#111827] dark:bg-[#2D6BFF] px-4 py-1.5 text-xs font-bold text-white hover:bg-[#1F2937] dark:hover:bg-blue-600 cursor-pointer"
+                className="inline-flex min-h-[40px] items-center gap-1.5 rounded-full bg-[#111827] dark:bg-[#EDEDED] px-4 py-1.5 text-xs font-bold text-white dark:text-[#111827] hover:bg-[#1F2937] dark:hover:bg-white cursor-pointer"
               >
                 + Crear Cuenta
               </button>
@@ -1773,7 +1773,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                   onClick={() => setReporteSeleccionado(rep.id)}
                   aria-pressed={reporteSeleccionado === rep.id}
                   className={`fx-pressable w-full cursor-pointer text-left rounded-2xl border p-4 transition-all ${reporteSeleccionado === rep.id
-                      ? 'border-[#2D6BFF] bg-blue-50/30 dark:bg-blue-950/40 shadow-xs'
+                      ? 'border-[#111827] bg-[#EDEDED]/50 dark:border-[#EDEDED]/60 dark:bg-white/8 shadow-xs'
                       : 'border-[#9CA3AF]/20 dark:border-white/10 hover:border-[#9CA3AF]/60 dark:hover:border-white/30'
                     }`}
                 >
@@ -1794,7 +1794,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
               <button
                 type="button"
                 onClick={() => descargarCsv(exportarMovimientosCsv(data.todosMovimientos), `reporte_${reporteSeleccionado}_flotax.csv`)}
-                className="min-h-[40px] rounded-lg bg-[#111827] dark:bg-[#2D6BFF] px-4 text-xs font-bold text-white hover:bg-[#1F2937] dark:hover:bg-blue-600 cursor-pointer"
+                className="min-h-[40px] rounded-lg bg-[#111827] dark:bg-[#EDEDED] px-4 text-xs font-bold text-white dark:text-[#111827] hover:bg-[#1F2937] dark:hover:bg-white cursor-pointer"
               >
                 ⬇ Exportar Reporte a CSV
               </button>
@@ -2069,7 +2069,7 @@ export default function CajaDashboardIsland({ initialData }: CajaDashboardIsland
                 </button>
                 <button
                   type="submit"
-                  className="min-h-[40px] rounded-full bg-[#111827] dark:bg-[#2D6BFF] px-5 text-xs font-bold text-white hover:bg-[#1F2937] dark:hover:bg-blue-600 cursor-pointer"
+                  className="min-h-[40px] rounded-full bg-[#111827] dark:bg-[#EDEDED] px-5 text-xs font-bold text-white dark:text-[#111827] hover:bg-[#1F2937] dark:hover:bg-white cursor-pointer"
                 >
                   Crear Cuenta
                 </button>

@@ -11,8 +11,12 @@ import {
   type ReservaClienteItem,
 } from '@/lib/flota';
 import type { CapacidadesOperacionAlquiler } from '@/lib/auth/capacidades-alquiler';
+import type { DetalleReservaAdminContext } from '@/lib/flota/detalle-reserva-admin';
 import SemaforoDocumentalPanel from './SemaforoDocumentalPanel';
 import DeliveryPointCard from './DeliveryPointCard';
+import { AdminControlCenterPanel } from './AdminControlCenterPanel';
+import { FinalizarAlquilerWizardModal } from './FinalizarAlquilerWizardModal';
+import { FacturaAlquilerModal } from './FacturaAlquilerModal';
 import {
   ModalPausar,
   ModalProrrogar,
@@ -29,6 +33,7 @@ export interface AlquilerDetalleViewProps {
   cuentasFinancieras?: Array<{ id: string; nombre: string; tipo: string }> | undefined;
   tokenAccesoPublico?: string | null | undefined;
   mapboxPublicToken?: string | null | undefined;
+  detalleAdminInicial?: DetalleReservaAdminContext | undefined;
 }
 
 type TabDetalleAlquiler = 'INSPECCION' | 'WAYBILL' | 'HIGHLIGHTS';
@@ -63,10 +68,26 @@ export default function AlquilerDetalleView({
   cuentasFinancieras = [],
   tokenAccesoPublico,
   mapboxPublicToken = null,
+  detalleAdminInicial,
 }: AlquilerDetalleViewProps) {
   const esAdmin = modo === 'admin';
 
   const [reserva, setReserva] = useState<ReservaClienteItem>(reservaInicial);
+  const [detalleAdmin, setDetalleAdmin] = useState<DetalleReservaAdminContext>(
+    () =>
+      detalleAdminInicial ?? {
+        fotosEntrega: [],
+        fotosDevolucion: [],
+        pagosHistorial: [],
+        contrato: null,
+        garantia: null,
+        eventos: [],
+        inspeccionEntregaFechaISO: null,
+        inspeccionDevolucionFechaISO: null,
+      }
+  );
+  const [modalFinalizarAbierto, setModalFinalizarAbierto] = useState<boolean>(false);
+  const [modalFacturaAbierto, setModalFacturaAbierto] = useState<boolean>(false);
   const [tabActiva, setTabActiva] = useState<TabDetalleAlquiler>('HIGHLIGHTS');
   const [puntoActivoId, setPuntoActivoId] = useState<string>('r2-carroceria');
   const [rubroActivoId, setRubroActivoId] = useState<string>('total-contrato');
@@ -102,6 +123,12 @@ export default function AlquilerDetalleView({
   useEffect(() => {
     setReserva(reservaInicial);
   }, [reservaInicial]);
+
+  useEffect(() => {
+    if (detalleAdminInicial) {
+      setDetalleAdmin(detalleAdminInicial);
+    }
+  }, [detalleAdminInicial]);
 
   const { vehiculo, specsBento } = reserva;
 
@@ -450,9 +477,9 @@ export default function AlquilerDetalleView({
       )}
 
       {/* Grid Responsivo: 1 Columna en móvil, 2 Columnas Cockpit en Desktop */}
-      <div className="flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-8">
+      <div className="flex flex-col lg:flex-row lg:items-start gap-2 sm:gap-5 lg:gap-8">
         {/* Columna Izquierda (En PC): Cabecera + Escenario 3D de Inspección R2 */}
-        <div className="w-full lg:w-7/12 xl:w-3/5 space-y-5 lg:sticky lg:top-20">
+        <div className="w-full lg:w-7/12 xl:w-3/5 space-y-2.5 sm:space-y-5 lg:sticky lg:top-20">
           {/* =====================================================================
               ZONA 1: CABECERA EDITORIAL Y PÍLDORAS DIRECTAS SOBRE EL LIENZO MÓVIL
               ===================================================================== */}
@@ -515,9 +542,11 @@ export default function AlquilerDetalleView({
           ===================================================================== */}
       <section
         aria-label={`Escenario de inspección de ${vehiculo.marca} ${vehiculo.modelo}`}
-        className="relative my-auto flex items-center justify-center py-5 min-h-[205px]"
+        className={`relative my-auto flex items-center justify-center ${
+          esAdmin ? 'py-2 sm:py-5 min-h-[150px] sm:min-h-[205px]' : 'py-5 min-h-[205px]'
+        }`}
       >
-        <div className="relative w-full pr-12">
+        <div className={`relative w-full ${esAdmin ? '' : 'pr-12'}`}>
           <img
             src={vehiculo.imagenUrl}
             alt={`${vehiculo.marca} ${vehiculo.modelo}`}
@@ -530,31 +559,32 @@ export default function AlquilerDetalleView({
         </div>
 
         {/* Insignia Inferior Izquierda: Silueta y Placa */}
-        <div className="absolute bottom-1 left-0 flex items-center gap-1.5 rounded-2xl bg-white/65 backdrop-blur-md px-3 py-1.5">
+        <div className="absolute bottom-1 left-0 flex items-center gap-1.5 rounded-2xl bg-white/85 dark:bg-[#1F2937] border border-[#9CA3AF]/30 dark:border-white/15 backdrop-blur-md px-3 py-1.5">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
             strokeWidth="1.7"
-            className="h-4 w-4 text-[#111827]"
+            className="h-4 w-4 text-[#111827] dark:text-[#EDEDED]"
           >
             <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2" />
             <circle cx="7" cy="17" r="2" />
             <path d="M9 17h6" />
             <circle cx="17" cy="17" r="2" />
           </svg>
-          <span className="font-mono text-[10px] font-bold text-[#111827]">
+          <span className="font-mono text-[10px] font-bold text-[#111827] dark:text-[#EDEDED]">
             {vehiculo.placa}
           </span>
         </div>
 
-        {/* Cápsula Vertical Flotante Derecha (2 Estaciones: Expediente y Liquidación) */}
-        <div
-          role="toolbar"
-          aria-label="Cambiar estación de trabajo del alquiler"
-          className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col gap-2 rounded-full bg-[#9CA3AF]/25 backdrop-blur-xl border border-white/60 p-1.5 shadow-[0_12px_28px_-8px_rgba(17,24,39,0.14)] z-20"
-        >
+        {/* Cápsula Vertical Flotante Derecha (2 Estaciones en modo cliente) */}
+        {!esAdmin && (
+          <div
+            role="toolbar"
+            aria-label="Cambiar estación de trabajo del alquiler"
+            className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col gap-2 rounded-full bg-[#9CA3AF]/25 backdrop-blur-xl border border-white/60 p-1.5 shadow-[0_12px_28px_-8px_rgba(17,24,39,0.14)] z-20"
+          >
           <button
             type="button"
             onClick={() => setTabActiva('WAYBILL')}
@@ -622,12 +652,75 @@ export default function AlquilerDetalleView({
               </svg>
             )}
           </button>
-        </div>
+          </div>
+        )}
       </section>
     </div>
 
-    {/* Columna Derecha (En PC): Panel Blanco de Estaciones (Inspección, Waybill, Highlights) */}
-    <div className="w-full lg:w-5/12 xl:w-2/5">
+    {/* Columna Derecha (En PC): Centro de Control Admin o Lámina Cliente */}
+    <div className="w-full lg:w-5/12 xl:w-2/5 space-y-3.5">
+      {esAdmin ? (
+        <>
+          <DeliveryPointCard
+            modalidadEntrega={reserva.modalidadEntrega}
+            sedeNombre={reserva.sedeNombre}
+            direccionEntrega={reserva.direccionEntrega}
+            entregaLatitud={reserva.entregaLatitud}
+            entregaLongitud={reserva.entregaLongitud}
+            entregaReferencia={reserva.entregaReferencia}
+            distanciaEntregaKm={reserva.distanciaEntregaKm}
+            recargoEntregaDomicilio={reserva.recargoEntregaDomicilio}
+            mapboxPublicToken={mapboxPublicToken}
+            vista="admin"
+            onAviso={mostrarAviso}
+          />
+          <AdminControlCenterPanel
+          reserva={reserva}
+          detalleAdmin={detalleAdmin}
+          capacidades={capacidades}
+          autorizarSinDocumentos={autorizarSinDocumentos}
+          onToggleAutorizarSinDocs={setAutorizarSinDocumentos}
+          onDocumentosActualizados={(datos) => {
+            if (datos) {
+              guardarCambioReserva({
+                ...reserva,
+                conductor: {
+                  ...reserva.conductor,
+                  tipoDocumento: datos.tipoDocumento,
+                  numeroDocumento: datos.numeroDocumento,
+                  categoriaLicencia: datos.categoriaLicencia,
+                  licenciaNumero: datos.licenciaNumero ?? reserva.conductor.licenciaNumero,
+                },
+              });
+            }
+            mostrarAviso('Expediente documental del cliente actualizado');
+          }}
+          operacionCargando={operacionCargando}
+          errorOperacion={errorOperacion}
+          onClearError={() => setErrorOperacion(null)}
+          onConfirmarReserva={confirmarReservaOperativa}
+          onRechazarReserva={() => {
+            setTipoModalCancelar('RECHAZAR');
+            setModalCancelarAbierto(true);
+          }}
+          onCancelarReserva={() => {
+            setTipoModalCancelar('CANCELAR');
+            setModalCancelarAbierto(true);
+          }}
+          onPausarAlquiler={() => setModalPausarAbierto(true)}
+          onReanudarAlquiler={reanudarAlquilerOperativo}
+          onProrrogarAlquiler={() => setModalProrrogarAbierto(true)}
+          onAbrirFinalizarAlquiler={() => setModalFinalizarAbierto(true)}
+          onAnularAlquiler={() => {
+            setTipoModalCancelar('ANULAR');
+            setModalCancelarAbierto(true);
+          }}
+          onReabrirReserva={reabrirReservaOperativa}
+          onAbrirFactura={() => setModalFacturaAbierto(true)}
+        />
+        </>
+      ) : (
+        <>
           {/* =====================================================================
               ZONA 3: ÚNICA LÁMINA BLANCA + ESTACIÓN ACTIVA + CICLO DE VIDA
               ===================================================================== */}
@@ -1626,6 +1719,8 @@ export default function AlquilerDetalleView({
           </div>
         )}
           </section>
+        </>
+      )}
         </div>
       </div>
 
@@ -1676,6 +1771,34 @@ export default function AlquilerDetalleView({
           if (msg) mostrarAviso(msg);
         }}
       />
+
+      {esAdmin && (
+        <>
+          <FinalizarAlquilerWizardModal
+            isOpen={modalFinalizarAbierto}
+            onClose={() => setModalFinalizarAbierto(false)}
+            reserva={reserva}
+            detalleAdmin={detalleAdmin}
+            hoyISO={_hoyISO}
+            capacidades={capacidades}
+            cuentasFinancieras={cuentasFinancieras}
+            onExito={(actualizada, detalleActualizado, msg) => {
+              guardarCambioReserva(actualizada);
+              if (detalleActualizado) {
+                setDetalleAdmin(detalleActualizado);
+              }
+              if (msg) mostrarAviso(msg);
+            }}
+          />
+
+          <FacturaAlquilerModal
+            isOpen={modalFacturaAbierto}
+            onClose={() => setModalFacturaAbierto(false)}
+            reserva={reserva}
+            detalleAdmin={detalleAdmin}
+          />
+        </>
+      )}
     </div>
   );
 }

@@ -11,7 +11,16 @@ import {
 } from '@/lib/flota/repositorio';
 import { obtenerBloquesNoDisponiblesD1 } from '@/lib/flota/disponibilidad';
 import { resolveClientTimeContext } from '@/lib/time/client-time';
-import type { VehiculoItem, CategoriaVehiculo } from '@/lib/flota/types';
+import type {
+  VehiculoItem,
+  CategoriaVehiculo,
+  VehiculoGaleriaFoto,
+} from '@/lib/flota/types';
+import {
+  construirClaveR2MultimediaVehiculo,
+  resolverUrlMultimediaR2,
+} from '@/lib/media/r2-vehiculo-keys';
+import type { ZonaEvidenciaVehiculo } from '@/db/schema';
 import {
   categoriasVehiculo,
   estadosVehiculo,
@@ -54,6 +63,18 @@ const vehiculoFormSchema = z.object({
   autonomiaKm: z.number().optional(),
   kilometraje: z.number().min(0),
   imagenUrl: z.string().min(1, { error: 'La URL de la imagen es obligatoria' }),
+  galeria: z
+    .array(
+      z.object({
+        id: z.string().min(1),
+        url: z.string().min(1),
+        categoria: z.enum(['EXTERIOR', 'INTERIOR', 'ESTADO']),
+        esPrincipal: z.boolean(),
+        orden: z.number().int().min(0),
+      })
+    )
+    .max(24)
+    .optional(),
   destacado: z.boolean().optional(),
   descripcion: z.string().min(1, { error: 'La descripción es obligatoria' }),
   aceleracion: z.string().optional(),
@@ -90,6 +111,80 @@ export const guardarVehiculoAction = defineAction({
     const isElectrico =
       input.combustible === 'Eléctrico' || input.combustible === 'Híbrido';
 
+    const bucket = env.BUCKET_MULTIMEDIA;
+
+    const subirDataUrlAR2 = async (
+      dataUrl: string,
+      zona: ZonaEvidenciaVehiculo,
+      indice: number
+    ): Promise<string> => {
+      if (!bucket || !dataUrl.startsWith('data:image/')) {
+        return dataUrl;
+      }
+      const match = /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/.exec(dataUrl);
+      if (!match || !match[1] || !match[2]) {
+        return dataUrl;
+      }
+      const mimeType = match[1];
+      const base64Data = match[2];
+      const ext =
+        mimeType === 'image/webp'
+          ? 'webp'
+          : mimeType === 'image/png'
+            ? 'png'
+            : 'jpg';
+      const binaryStr = atob(base64Data);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) {
+        bytes[i] = binaryStr.charCodeAt(i);
+      }
+      const r2Key = construirClaveR2MultimediaVehiculo({
+        localId,
+        vehiculoId: id,
+        etapaOperativa: 'CATALOGO_ESTUDIO',
+        zonaEvidencia: zona,
+        extension: ext,
+        timestampMs: Date.now() + indice,
+      });
+      await bucket.put(r2Key, bytes.buffer, {
+        httpMetadata: { contentType: mimeType },
+      });
+      return resolverUrlMultimediaR2(r2Key);
+    };
+
+    const zonaPorCategoria = (
+      cat: 'EXTERIOR' | 'INTERIOR' | 'ESTADO'
+    ): ZonaEvidenciaVehiculo => {
+      if (cat === 'INTERIOR') return 'INTERIOR_CABINA';
+      if (cat === 'ESTADO') return 'LLANTAS_RINES';
+      return 'EXTERIOR_FRONTAL';
+    };
+
+    let galeriaResuelta: VehiculoGaleriaFoto[] | undefined;
+    if (input.galeria && input.galeria.length > 0) {
+      galeriaResuelta = await Promise.all(
+        input.galeria.map(async (foto, idx) => ({
+          id: foto.id,
+          url: await subirDataUrlAR2(
+            foto.url.trim(),
+            zonaPorCategoria(foto.categoria),
+            idx
+          ),
+          categoria: foto.categoria,
+          esPrincipal: foto.esPrincipal,
+          orden: idx,
+        }))
+      );
+    }
+
+    const portadaGaleria =
+      galeriaResuelta?.find((f) => f.esPrincipal)?.url ??
+      galeriaResuelta?.[0]?.url;
+
+    const imagenPrincipalResuelta =
+      portadaGaleria ??
+      (await subirDataUrlAR2(input.imagenUrl.trim(), 'EXTERIOR_FRONTAL', 0));
+
     const vehiculoItem: VehiculoItem = {
       id,
       marca: input.marca.trim(),
@@ -106,7 +201,8 @@ export const guardarVehiculoAction = defineAction({
       capacidadPasajeros: input.capacidadPasajeros,
       autonomiaKm: input.autonomiaKm,
       kilometraje: Math.round(input.kilometraje),
-      imagenUrl: input.imagenUrl.trim(),
+      imagenUrl: imagenPrincipalResuelta,
+      galeria: galeriaResuelta,
       destacado: Boolean(input.destacado),
       descripcion: input.descripcion.trim(),
       aceleracion: input.aceleracion?.trim() || (isElectrico ? '4.5 s' : '7.2 s'),

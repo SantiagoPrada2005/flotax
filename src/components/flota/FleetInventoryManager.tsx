@@ -680,23 +680,23 @@ export default function FleetInventoryManager({
             return (
               <div
                 key={vehiculo.id}
-                className={`rounded-[24px] border bg-white dark:bg-[#1F2937] p-4 shadow-xs transition-colors duration-150 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 ${
+                className={`rounded-[24px] border bg-white dark:bg-[#1F2937] shadow-xs transition-colors duration-150 flex flex-col sm:flex-row sm:items-stretch overflow-hidden ${
                   vehiculo.estado === 'MANTENIMIENTO'
                     ? 'border-status-warning/70 ring-1 ring-status-warning/30 hover:border-status-warning'
                     : 'border-[#9CA3AF]/40 hover:border-[#111827] dark:border-white/10 dark:hover:border-white/30'
                 }`}
               >
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className="relative w-32 sm:w-36 aspect-video shrink-0 overflow-hidden rounded-xl">
-                    <img
-                      src={vehiculo.imagenUrl}
-                      alt={`${vehiculo.marca} ${vehiculo.modelo}`}
-                      className="h-full w-full object-cover object-center block"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </div>
+                <div className="relative w-full aspect-video sm:w-52 md:w-60 sm:aspect-[16/10] sm:self-stretch shrink-0 overflow-hidden">
+                  <img
+                    src={vehiculo.imagenUrl}
+                    alt={`${vehiculo.marca} ${vehiculo.modelo}`}
+                    className="h-full w-full object-cover object-center block"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
 
+                <div className="flex flex-1 flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 min-w-0">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-mono text-xs font-bold text-[#111827] bg-[#EDEDED] dark:bg-[#111827] dark:text-[#EDEDED] px-2.5 py-0.5 rounded-md border border-[#9CA3AF]/40 dark:border-white/15">
@@ -725,9 +725,8 @@ export default function FleetInventoryManager({
                       {vehiculo.anio} · {vehiculo.transmision} · {formatPrecio(vehiculo.precioDia)}/día
                     </p>
                   </div>
-                </div>
 
-                <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#EDEDED] dark:border-white/10">
+                  <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#EDEDED] dark:border-white/10">
                   <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#EDEDED] dark:bg-[#111827] border border-[#9CA3AF]/45 dark:border-white/15">
                     <span className={`h-2 w-2 rounded-full shrink-0 ${estadoInfo.dotColor}`} />
                     <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
@@ -816,6 +815,7 @@ export default function FleetInventoryManager({
                       </svg>
                     </button>
                   </div>
+                </div>
                 </div>
               </div>
             );

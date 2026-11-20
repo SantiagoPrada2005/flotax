@@ -37,13 +37,22 @@ export default function Step8Revision({
             <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
               01 · Identidad
             </span>
-            <button
-              type="button"
-              onClick={() => onEditPaso(2)}
-              className="font-mono text-xs font-bold text-[#111827] dark:text-white hover:underline cursor-pointer"
-            >
-              Editar
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => onEditPaso(2)}
+                className="font-mono text-xs font-bold text-[#111827] dark:text-white hover:underline cursor-pointer"
+              >
+                Editar
+              </button>
+              <button
+                type="button"
+                onClick={() => onEditPaso(3)}
+                className="font-mono text-xs font-semibold text-[#4B5563] dark:text-[#9CA3AF] hover:underline cursor-pointer"
+              >
+                Modelo
+              </button>
+            </div>
           </div>
 
           <div className="space-y-1">
@@ -137,27 +146,50 @@ export default function Step8Revision({
         <div className="md:col-span-2 rounded-[28px] border border-[#9CA3AF]/40 bg-white p-5 sm:p-6 shadow-xs space-y-4 dark:bg-[#1F2937] dark:border-white/10">
           <div className="flex items-center justify-between border-b border-[#EDEDED] dark:border-white/10 pb-3">
             <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
-              04 · Fotografía de Ficha
+              04 · Galería Fotográfica ({Math.max(data.galeria?.length ?? 0, data.imagenUrl ? 1 : 0)})
             </span>
             <button
               type="button"
               onClick={() => onEditPaso(6)}
               className="font-mono text-xs font-bold text-[#111827] dark:text-white hover:underline cursor-pointer"
             >
-              Cambiar
+              Editar
             </button>
           </div>
 
           {data.imagenUrl ? (
-            <div className="relative h-44 sm:h-52 w-full overflow-hidden rounded-2xl border border-[#9CA3AF]/30 dark:border-white/10">
-              <img
-                src={data.imagenUrl}
-                alt={`${data.marca} ${data.modelo}`}
-                className="h-full w-full object-cover"
-              />
-              <div className="absolute bottom-2 left-2 bg-[#111827]/80 backdrop-blur-xs px-3 py-1 rounded-full text-white font-mono text-[11px] font-bold border border-white/20">
-                {data.marca} {data.modelo}
+            <div className="space-y-2.5">
+              <div className="relative h-44 sm:h-52 w-full overflow-hidden rounded-2xl border border-[#9CA3AF]/30 dark:border-white/10">
+                <img
+                  src={data.imagenUrl}
+                  alt={`${data.marca} ${data.modelo}`}
+                  className="h-full w-full object-cover"
+                />
+                <div className="absolute bottom-2 left-2 bg-[#111827]/80 backdrop-blur-xs px-3 py-1 rounded-full text-white font-mono text-[11px] font-bold border border-white/20">
+                  Principal · {data.marca} {data.modelo}
+                </div>
               </div>
+              {data.galeria && data.galeria.length > 1 && (
+                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+                  {data.galeria.slice(0, 6).map((foto) => (
+                    <img
+                      key={foto.id}
+                      src={foto.url}
+                      alt=""
+                      className={`h-11 w-14 shrink-0 rounded-lg object-cover border ${
+                        foto.esPrincipal
+                          ? 'border-[#111827] dark:border-white'
+                          : 'border-[#9CA3AF]/30 dark:border-white/15 opacity-75'
+                      }`}
+                    />
+                  ))}
+                  {data.galeria.length > 6 && (
+                    <span className="shrink-0 rounded-lg border border-[#9CA3AF]/30 px-2.5 py-2 font-mono text-[11px] font-bold text-[#4B5563] dark:border-white/15 dark:text-[#9CA3AF]">
+                      +{data.galeria.length - 6}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           ) : (
             <div className="h-32 w-full flex items-center justify-center rounded-2xl bg-[#EDEDED]/40 border border-dashed border-[#9CA3AF]/40 text-[#4B5563] text-xs font-medium dark:bg-white/5 dark:border-white/10 dark:text-[#9CA3AF]">

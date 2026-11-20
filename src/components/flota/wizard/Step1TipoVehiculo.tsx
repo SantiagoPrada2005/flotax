@@ -95,10 +95,8 @@ export default function Step1TipoVehiculo({
       categoria: op.id,
       categoriaEtiqueta: op.etiqueta,
       capacidadPasajeros: op.id === 'PATINETA' ? 1 : data.capacidadPasajeros || op.defaultPasajeros,
-      transmision: op.id === 'PATINETA' ? 'Eléctrica' : data.transmision || op.defaultTransmision,
-      combustible: op.id === 'PATINETA' ? 'Eléctrico' : data.combustible || op.defaultCombustible,
-      precioDia: data.precioDia || op.defaultPrecioDia,
-      depositoGarantia: data.depositoGarantia || op.defaultGarantia,
+      transmision: op.id === 'PATINETA' ? 'Eléctrica' : data.transmision,
+      combustible: op.id === 'PATINETA' ? 'Eléctrico' : data.combustible,
     });
   };
 

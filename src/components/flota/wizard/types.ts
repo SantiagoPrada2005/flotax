@@ -1,11 +1,22 @@
 import type {
+  CategoriaGaleriaVehiculo,
   CategoriaVehiculo,
   EstadoVehiculo,
   TransmisionVehiculo,
   CombustibleVehiculo,
+  VehiculoGaleriaFoto,
 } from '@/lib/flota/types';
 
 export type WizardStepId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+
+export interface GaleriaFotoItem extends VehiculoGaleriaFoto {
+  nombre?: string | undefined;
+  firmaArchivo?: string | undefined;
+  estado?: 'cargando' | 'listo' | 'error' | undefined;
+  errorMsg?: string | undefined;
+}
+
+export type { CategoriaGaleriaVehiculo };
 
 export interface WizardStepInfo {
   id: WizardStepId;
@@ -22,15 +33,16 @@ export interface VehiculoWizardData {
   categoria: CategoriaVehiculo;
   categoriaEtiqueta: string;
   placa: string;
-  estado: EstadoVehiculo;
+  estado: EstadoVehiculo | '';
   precioDia: number | '';
   depositoGarantia: number | '';
-  transmision: TransmisionVehiculo;
-  combustible: CombustibleVehiculo;
+  transmision: TransmisionVehiculo | '';
+  combustible: CombustibleVehiculo | '';
   capacidadPasajeros: number;
   autonomiaKm: number | '';
   kilometraje: number | '';
   imagenUrl: string;
+  galeria: GaleriaFotoItem[];
   destacado: boolean;
   descripcion: string;
   aceleracion: string;

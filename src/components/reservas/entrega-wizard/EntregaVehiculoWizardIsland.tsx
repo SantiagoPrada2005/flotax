@@ -168,10 +168,10 @@ export default function EntregaVehiculoWizardIsland({
     cuentaGarantiaId: cuentasFinancieras[0]?.id ?? '',
     referenciaGarantia: '',
 
-    ley1581Aceptada: reservaInicial.conductor.ley1581Aceptada ?? true,
-    trasladoFotomultasAceptado: true,
+    ley1581Aceptada: false,
+    trasladoFotomultasAceptado: false,
     pagareBlancoFirmado: false,
-    confirmacionFirmaArrendatario: true,
+    confirmacionFirmaArrendatario: false,
   }));
 
   const [errors, setErrors] = useState<EntregaWizardErrors>({});
@@ -279,16 +279,14 @@ export default function EntregaVehiculoWizardIsland({
       return;
     }
     if (pasoActual < 5) {
-      const siguiente = (pasoActual === 2 ? 4 : pasoActual + 1) as EntregaStepId;
-      cambiarPaso(siguiente, 1);
+      cambiarPaso((pasoActual + 1) as EntregaStepId, 1);
     }
   };
 
   const retrocederPaso = () => {
     if (isTransitioning) return;
     if (pasoActual > 1) {
-      const anterior = (pasoActual === 4 ? 2 : pasoActual - 1) as EntregaStepId;
-      cambiarPaso(anterior, -1);
+      cambiarPaso((pasoActual - 1) as EntregaStepId, -1);
     }
   };
 
@@ -405,31 +403,29 @@ export default function EntregaVehiculoWizardIsland({
 
   if (entregaCompletada) {
     return (
-      <div className="min-h-dvh bg-[#EDEDED] flex items-center justify-center p-6">
-        <div className="w-full max-w-md rounded-[32px] bg-white border border-[#9CA3AF]/40 p-8 text-center space-y-4 shadow-sm">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#111827] text-white text-2xl font-bold">
+      <div className="min-h-dvh bg-[#EDEDED] dark:bg-transparent flex items-center justify-center p-6">
+        <div className="w-full max-w-md rounded-[32px] bg-white dark:bg-[#1F2937] border border-[#9CA3AF]/40 dark:border-white/15 p-8 text-center space-y-4 shadow-sm">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#111827] dark:bg-[#EDEDED] text-white dark:text-[#111827] text-2xl font-bold">
             ✓
           </div>
-          <span className="inline-block rounded-full bg-[#EDEDED] px-3 py-1 font-mono text-[11px] font-bold text-[#111827]">
+          <span className="inline-block rounded-full bg-[#EDEDED] dark:bg-[#111827] border border-transparent dark:border-white/15 px-3 py-1 font-mono text-[11px] font-bold text-[#111827] dark:text-[#EDEDED]">
             CONTRATO VIGENTE · EN ALQUILER
           </span>
-          <h1 className="font-display text-2xl font-bold text-[#111827]">
+          <h1 className="font-display text-2xl font-bold text-[#111827] dark:text-[#EDEDED]">
             Vehículo entregado en patio
           </h1>
-          <p className="text-xs text-[#4B5563]">
-            Los datos del cliente y el contrato #{reservaInicial.codigo} han sido guardados en Cloudflare D1.
+          <p className="text-xs text-[#4B5563] dark:text-[#9CA3AF]">
+            Los datos del cliente, el acta pericial R2 y el contrato #{reservaInicial.codigo} han sido guardados en Cloudflare D1.
           </p>
         </div>
       </div>
     );
   }
 
-  const numeroVisualPaso = pasoActual > 3 ? pasoActual - 1 : pasoActual;
-
   return (
-    <div className="min-h-dvh bg-[#EDEDED] flex flex-col justify-between py-5 px-4 sm:px-8 max-w-4xl mx-auto w-full select-none">
+    <div className="min-h-dvh bg-[#EDEDED] dark:bg-transparent flex flex-col justify-between py-3 sm:py-4 px-4 sm:px-6 max-w-2xl mx-auto w-full select-none">
       {/* HUD Superior Discreto (Filosofía Typeform FlotaX) */}
-      <header className="w-full space-y-3">
+      <header className="w-full space-y-2">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             {pasoActual > 1 ? (
@@ -438,7 +434,7 @@ export default function EntregaVehiculoWizardIsland({
                 onClick={retrocederPaso}
                 disabled={isTransitioning || isPending}
                 aria-label="Volver al paso anterior"
-                className="ios-press-bounce flex h-11 w-11 items-center justify-center rounded-full border border-[#9CA3AF]/60 bg-white text-[#111827] text-sm font-bold hover:bg-[#EDEDED] transition shadow-xs cursor-pointer disabled:opacity-50"
+                className="fx-press flex h-11 w-11 items-center justify-center rounded-full border border-[#9CA3AF]/60 dark:border-white/15 bg-white dark:bg-[#1F2937] text-[#111827] dark:text-[#EDEDED] text-sm font-bold hover:bg-[#EDEDED] dark:hover:bg-[#111827] shadow-xs cursor-pointer disabled:opacity-50"
               >
                 ←
               </button>
@@ -446,8 +442,8 @@ export default function EntregaVehiculoWizardIsland({
               <div className="h-11 w-11" />
             )}
 
-            <span className="rounded-full px-3.5 py-1.5 font-mono text-xs font-bold tracking-wider uppercase bg-white text-[#111827] border border-[#9CA3AF]/50 shadow-xs">
-              PASO 0{numeroVisualPaso} / 04 · {pasoMeta.etiquetaCorta} · #{reservaInicial.codigo}
+            <span className="rounded-full px-3.5 py-1.5 font-mono text-[11px] font-bold tracking-wider uppercase bg-white dark:bg-[#1F2937] text-[#111827] dark:text-[#EDEDED] border border-[#9CA3AF]/50 dark:border-white/15 shadow-xs">
+              PASO 0{pasoActual} / 05 · {pasoMeta.etiquetaCorta} · #{reservaInicial.codigo}
             </span>
           </div>
 
@@ -455,7 +451,7 @@ export default function EntregaVehiculoWizardIsland({
             type="button"
             onClick={() => navigate(`/admin/reservas/${reservaInicial.codigo}`)}
             aria-label="Cerrar formulario de entrega"
-            className="ios-press-bounce flex h-11 w-11 items-center justify-center rounded-full border border-[#9CA3AF]/60 bg-white text-[#111827] text-sm font-bold hover:bg-[#EDEDED] transition shadow-xs cursor-pointer"
+            className="fx-press flex h-11 w-11 items-center justify-center rounded-full border border-[#9CA3AF]/60 dark:border-white/15 bg-white dark:bg-[#1F2937] text-[#111827] dark:text-[#EDEDED] text-sm font-bold hover:bg-[#EDEDED] dark:hover:bg-[#111827] shadow-xs cursor-pointer"
           >
             ✕
           </button>
@@ -463,14 +459,14 @@ export default function EntregaVehiculoWizardIsland({
       </header>
 
       {/* Zona Central Typeform con Transición Vertical */}
-      <main className="my-auto py-4 w-full">
+      <main className="my-auto py-2 sm:py-3 w-full">
         <motion.div
           ref={containerRef}
           animate={{ height: containerHeight }}
           transition={{ duration: 0.4, ease: MOTION_EASE }}
-          className="w-full relative overflow-hidden bg-[#EDEDED]"
+          className="w-full relative overflow-hidden bg-transparent"
         >
-          <div className="grid grid-cols-1 grid-rows-1 items-start w-full bg-[#EDEDED]">
+          <div className="grid grid-cols-1 grid-rows-1 items-start w-full bg-transparent">
             <AnimatePresence mode="sync" custom={direction} initial={false}>
               <motion.div
                 key={pasoActual}
@@ -491,7 +487,7 @@ export default function EntregaVehiculoWizardIsland({
                     setContainerHeight('auto');
                   }
                 }}
-                className="col-start-1 row-start-1 w-full bg-[#EDEDED]"
+                className="col-start-1 row-start-1 w-full bg-transparent"
                 style={{ willChange: 'transform' }}
               >
                 {pasoActual === 1 && (
@@ -541,23 +537,23 @@ export default function EntregaVehiculoWizardIsland({
       </main>
 
       {/* Zona Inferior de Acciones (Thumb Zone) */}
-      <footer className="w-full space-y-3 pt-4 border-t border-[#9CA3AF]/30">
+      <footer className="w-full space-y-2.5 pt-3 border-t border-[#9CA3AF]/30 dark:border-white/10">
         {errorGeneral && (
           <div
             role="alert"
-            className="rounded-2xl bg-[#111827] px-4 py-3 text-center text-xs font-semibold text-white"
+            className="rounded-2xl bg-[#111827] dark:bg-[#1F2937] border border-transparent dark:border-white/15 px-4 py-2.5 text-center text-xs font-semibold text-[#EDEDED]"
           >
             {errorGeneral}
           </div>
         )}
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           {pasoActual > 1 && (
             <button
               type="button"
               onClick={retrocederPaso}
               disabled={isPending || isTransitioning}
-              className="ios-press-bounce h-14 px-6 rounded-2xl border border-[#9CA3AF]/50 bg-white font-display text-sm font-bold text-[#111827] hover:bg-[#EDEDED] transition shadow-xs cursor-pointer disabled:opacity-50"
+              className="fx-press h-12 px-5 rounded-2xl border border-[#9CA3AF]/50 dark:border-white/15 bg-white dark:bg-[#1F2937] font-display text-sm font-bold text-[#111827] dark:text-[#EDEDED] hover:bg-[#EDEDED] dark:hover:bg-[#111827] shadow-xs cursor-pointer disabled:opacity-50"
             >
               Atrás
             </button>
@@ -568,7 +564,7 @@ export default function EntregaVehiculoWizardIsland({
               type="button"
               onClick={avanzarPaso}
               disabled={isPending || isTransitioning}
-              className="ios-press-bounce flex-1 h-14 rounded-2xl bg-[#111827] hover:bg-[#1F2937] active:scale-[0.99] font-display text-base font-bold text-white shadow-xl transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="fx-press flex-1 h-12 rounded-2xl bg-[#111827] dark:bg-[#EDEDED] hover:bg-[#1F2937] dark:hover:bg-white font-display text-sm sm:text-base font-bold text-white dark:text-[#111827] shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <span>Continuar</span>
               <span className="font-mono text-sm">→</span>
@@ -578,7 +574,7 @@ export default function EntregaVehiculoWizardIsland({
               type="button"
               onClick={ejecutarEntregaDefinitiva}
               disabled={isPending || isTransitioning}
-              className="ios-press-bounce flex-1 h-14 rounded-2xl bg-[#111827] hover:bg-[#1F2937] active:scale-[0.99] font-display text-base font-bold text-white shadow-xl transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="fx-press flex-1 h-12 rounded-2xl bg-[#111827] dark:bg-[#EDEDED] hover:bg-[#1F2937] dark:hover:bg-white font-display text-sm sm:text-base font-bold text-white dark:text-[#111827] shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {isPending
                 ? 'Activando contrato y salida...'
