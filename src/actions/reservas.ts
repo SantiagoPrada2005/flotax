@@ -22,8 +22,15 @@ import {
   registrarOActualizarDocumentosClienteRapidoD1,
 } from '@/lib/flota/ciclo-alquiler';
 import { registrarCobroWaybillD1 } from '@/lib/flota/repositorio-reservas';
+import { obtenerDetalleReservaAdminD1 } from '@/lib/flota/detalle-reserva-admin';
+import {
+  construirClaveR2MultimediaVehiculo,
+  resolverUrlMultimediaR2,
+} from '@/lib/media/r2-vehiculo-keys';
 import {
   clientesLocal,
+  multimediaVehiculo,
+  reservas,
   user,
   verificacionesIdentidad,
   modalidadesEntregaReserva,
@@ -37,6 +44,7 @@ import {
   gravedadesNovedadInspeccion,
   tiposMantenimientoVehiculo,
   metodosPagoFinanciero,
+  zonasEvidenciaVehiculo,
 } from '@/db/schema';
 import { and, eq, like, or, sql } from 'drizzle-orm';
 import { crearServicioNotificaciones } from '@/lib/notificaciones';
@@ -676,6 +684,7 @@ export const devolverYCerrarAlquilerAction = defineAction({
   input: z.object({
     codigo: z.string().optional(),
     reservaId: z.string().optional(),
+    idempotencyKey: z.string().optional(),
     fechaDevolucionReal: z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/, { error: 'Fecha no válida (YYYY-MM-DD)' })
@@ -724,6 +733,46 @@ export const devolverYCerrarAlquilerAction = defineAction({
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/)
       .optional(),
+    fotosDevolucionNuevas: z
+      .array(
+        z.object({
+          tempId: z.string().min(1),
+          zonaEvidencia: z.enum(zonasEvidenciaVehiculo),
+          dataUrl: z.string().min(1),
+          observacion: z.string().optional(),
+        })
+      )
+      .max(20)
+      .optional(),
+    novedadesZonas: z
+      .array(
+        z.object({
+          zona: z.string().min(1),
+          etiqueta: z.string().min(1),
+          estado: z.enum(['SIN_NOVEDAD', 'CON_NOVEDAD']),
+          nota: z.string().optional(),
+          evidenciaId: z.string().optional(),
+          evidenciaUrl: z.string().optional(),
+          cobroConcepto: z.string().optional(),
+          cobroValor: z.number().min(0).optional(),
+        })
+      )
+      .max(20)
+      .optional(),
+    cobrosAdicionales: z
+      .array(
+        z.object({
+          id: z.string().min(1),
+          concepto: z.string().min(1),
+          valor: z.number().min(0),
+          nota: z.string().optional(),
+          zona: z.string().min(1),
+          evidenciaId: z.string().optional(),
+          evidenciaUrl: z.string().optional(),
+        })
+      )
+      .max(20)
+      .optional(),
   }),
   handler: async (input, context) => {
     marcarRevisionNavegacion(context.cookies);
@@ -739,10 +788,109 @@ export const devolverYCerrarAlquilerAction = defineAction({
     const db = getDb(env.DB);
 
     try {
+      const mapaEvidenciasNuevas = new Map<string, { id: string; url: string }>();
+      const fotosNuevas = input.fotosDevolucionNuevas ?? [];
+
+      if (fotosNuevas.length > 0 && env.BUCKET_MULTIMEDIA) {
+        const codigoNorm = input.codigo?.trim().toUpperCase();
+        const resMatch = await db
+          .select({ id: reservas.id, vehiculoId: reservas.vehiculoId, localId: reservas.localId })
+          .from(reservas)
+          .where(
+            and(
+              eq(reservas.localId, usuario.localActivo.id),
+              codigoNorm
+                ? eq(reservas.codigo, codigoNorm)
+                : eq(reservas.id, input.reservaId ?? '')
+            )
+          )
+          .limit(1);
+
+        const resRow = resMatch[0];
+        if (resRow) {
+          const ahoraFoto = new Date();
+          for (let i = 0; i < fotosNuevas.length; i++) {
+            const foto = fotosNuevas[i]!;
+            const matchData = /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/.exec(foto.dataUrl);
+            if (!matchData?.[1] || !matchData[2]) continue;
+
+            const mimeType = matchData[1];
+            const ext =
+              mimeType === 'image/webp'
+                ? 'webp'
+                : mimeType === 'image/png'
+                  ? 'png'
+                  : 'jpg';
+            const binaryStr = atob(matchData[2]);
+            const bytes = new Uint8Array(binaryStr.length);
+            for (let b = 0; b < binaryStr.length; b++) {
+              bytes[b] = binaryStr.charCodeAt(b);
+            }
+
+            const r2Key = construirClaveR2MultimediaVehiculo({
+              localId: resRow.localId,
+              vehiculoId: resRow.vehiculoId,
+              etapaOperativa: 'DEVOLUCION_RETORNO',
+              zonaEvidencia: foto.zonaEvidencia,
+              extension: ext,
+              timestampMs: Date.now() + i,
+            });
+
+            await env.BUCKET_MULTIMEDIA.put(r2Key, bytes.buffer, {
+              httpMetadata: { contentType: mimeType },
+            });
+
+            const mediaId = `med-dev-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+            await db.insert(multimediaVehiculo).values({
+              id: mediaId,
+              localId: resRow.localId,
+              vehiculoId: resRow.vehiculoId,
+              reservaId: resRow.id,
+              tipoMedio: 'IMAGEN',
+              etapaOperativa: 'DEVOLUCION_RETORNO',
+              zonaEvidencia: foto.zonaEvidencia,
+              esPortadaCatalogo: false,
+              ordenVisual: i,
+              r2Key,
+              mimeType,
+              tamanoBytes: bytes.byteLength,
+              observacion: foto.observacion ?? null,
+              subidoPorId: usuario.id,
+              capturadoEn: ahoraFoto,
+              creadoEn: ahoraFoto,
+            });
+
+            mapaEvidenciasNuevas.set(foto.tempId, {
+              id: mediaId,
+              url: resolverUrlMultimediaR2(r2Key),
+            });
+          }
+        }
+      }
+
+      const novedadesResueltas = input.novedadesZonas?.map((n) => {
+        const nueva = n.evidenciaId ? mapaEvidenciasNuevas.get(n.evidenciaId) : undefined;
+        return {
+          ...n,
+          evidenciaId: nueva?.id ?? n.evidenciaId,
+          evidenciaUrl: nueva?.url ?? n.evidenciaUrl,
+        };
+      });
+
+      const cobrosResueltos = input.cobrosAdicionales?.map((c) => {
+        const nueva = c.evidenciaId ? mapaEvidenciasNuevas.get(c.evidenciaId) : undefined;
+        return {
+          ...c,
+          evidenciaId: nueva?.id ?? c.evidenciaId,
+          evidenciaUrl: nueva?.url ?? c.evidenciaUrl,
+        };
+      });
+
       const res = await devolverYCerrarAlquilerD1(db, {
         codigo: input.codigo,
         reservaId: input.reservaId,
         localId: usuario.localActivo.id,
+        idempotencyKey: input.idempotencyKey,
         fechaDevolucionReal: input.fechaDevolucionReal,
         medidorUsoRetorno: input.medidorUsoRetorno,
         nivelEnergiaRetornoPct: input.nivelEnergiaRetornoPct,
@@ -761,6 +909,8 @@ export const devolverYCerrarAlquilerAction = defineAction({
         tipoMantenimiento: input.tipoMantenimiento,
         etiquetaMantenimiento: input.etiquetaMantenimiento,
         fechaFinEstimadaMantenimiento: input.fechaFinEstimadaMantenimiento,
+        novedadesZonas: novedadesResueltas,
+        cobrosAdicionales: cobrosResueltos,
         usuarioId: usuario.id,
         actor: {
           usuarioId: usuario.id,
@@ -769,11 +919,18 @@ export const devolverYCerrarAlquilerAction = defineAction({
         },
       });
 
+      const detalleAdminActualizado = await obtenerDetalleReservaAdminD1(
+        db,
+        res.reserva.codigo,
+        usuario.localActivo.id
+      );
+
       return {
         ok: true,
         reserva: res.reserva,
         contrato: res.contrato,
         garantia: res.garantia,
+        detalleAdmin: detalleAdminActualizado,
         mensajeLegal: res.mensajeLegal,
         mensaje:
           'Devolución registrada y contrato cerrado correctamente en Cloudflare D1.',

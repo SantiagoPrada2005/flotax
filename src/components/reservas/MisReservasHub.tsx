@@ -910,25 +910,25 @@ export default function MisReservasHub({
                       abrirDetalle(item);
                     }
                   }}
-                  className={`fx-pressable group w-full rounded-[22px] p-4 cursor-pointer bg-white dark:bg-[#1F2937] border ${
+                  className={`fx-pressable group w-full rounded-[22px] overflow-hidden cursor-pointer bg-white dark:bg-[#1F2937] border ${
                     esActiva
                       ? 'border-[#111827]/15 dark:border-white/20 shadow-sm ring-1 ring-[#111827]/10 dark:ring-white/10'
                       : 'border-[#E5E4DF] dark:border-white/10 hover:border-[#111827]/25 dark:hover:border-white/20 shadow-2xs'
                   }`}
                 >
-                  <div className="flex items-center gap-4 min-w-0">
-                    {/* Silueta vehicular con transparencia y brillo fiel */}
-                    <div className="relative w-28 sm:w-32 aspect-video shrink-0 rounded-[14px] bg-[#111827] flex items-center justify-center p-1.5 overflow-hidden">
+                  <div className="flex flex-col sm:flex-row sm:items-stretch min-w-0">
+                    {/* Fotografía integrada de borde a borde sin márgenes internos */}
+                    <div className="relative w-full aspect-video sm:w-44 md:w-48 sm:aspect-[16/10] sm:self-stretch shrink-0 overflow-hidden">
                       <img
                         src={item.vehiculo.imagenUrl}
                         alt={`${item.vehiculo.marca} ${item.vehiculo.modelo}`}
-                        className="h-full w-full object-contain object-center block"
+                        className="h-full w-full object-cover object-center block"
                         loading="lazy"
                       />
                     </div>
 
                     {/* Contenido e información de la reserva */}
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1 p-4">
                       <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-medium text-[#4B5563] dark:text-[#9CA3AF]">
                         <span className="tabular-nums">
                           {formatearRangoReservaHumano(

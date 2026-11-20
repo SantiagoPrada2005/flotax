@@ -31,27 +31,24 @@ export default function Step2TelemetriaYChecklist({
   };
 
   return (
-    <div className="w-full space-y-6">
-      <div className="space-y-2">
-        <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#4B5563] block">
+    <div className="w-full space-y-4">
+      <div className="space-y-1">
+        <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF] block">
           Paso 02 · Telemetría e Inventario
         </span>
-        <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#111827] leading-[1.12]">
+        <h1 className="font-display text-xl sm:text-2xl font-bold tracking-tight text-[#111827] dark:text-[#EDEDED] leading-tight">
           Registra la lectura inicial y el kit
         </h1>
-        <p className="text-xs sm:text-sm text-[#4B5563] font-medium max-w-[54ch]">
-          Confirma el odómetro de salida, el nivel de {esElectrico ? 'batería' : 'combustible'} y los elementos físicos entregados con la unidad.
-        </p>
       </div>
 
       {/* Bloque Telemetría */}
-      <div className="rounded-[28px] border border-[#9CA3AF]/40 bg-white p-5 sm:p-7 shadow-xs space-y-5">
+      <div className="rounded-[24px] border border-[#9CA3AF]/40 dark:border-white/15 bg-white dark:bg-[#1F2937] p-4 sm:p-5 shadow-xs space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Odómetro */}
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <label
               htmlFor="entrega-odometro"
-              className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] block"
+              className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED] block"
             >
               Odómetro de salida (km) *
             </label>
@@ -64,7 +61,7 @@ export default function Step2TelemetriaYChecklist({
                   })
                 }
                 aria-label="Restar 50 km"
-                className="min-h-[48px] min-w-[48px] rounded-2xl bg-[#EDEDED] font-mono text-sm font-bold text-[#111827] hover:bg-[#9CA3AF]/30 cursor-pointer"
+                className="min-h-[44px] min-w-[48px] rounded-2xl bg-[#EDEDED] dark:bg-[#111827] border border-transparent dark:border-white/15 font-mono text-sm font-bold text-[#111827] dark:text-[#EDEDED] hover:bg-[#9CA3AF]/30 dark:hover:bg-white/10 cursor-pointer"
               >
                 -50
               </button>
@@ -78,7 +75,7 @@ export default function Step2TelemetriaYChecklist({
                     medidorUsoEntrega: Math.max(0, Number(e.target.value) || 0),
                   })
                 }
-                className="flex-1 min-h-[48px] rounded-2xl bg-[#EDEDED]/60 px-4 py-3 text-center font-mono text-lg font-bold text-[#111827] border border-[#9CA3AF]/40 focus:border-[#111827] focus:bg-white focus:outline-none"
+                className="flex-1 min-h-[44px] rounded-2xl bg-[#EDEDED]/60 dark:bg-[#111827] px-3.5 py-2 text-center font-mono text-base font-bold text-[#111827] dark:text-[#EDEDED] border border-[#9CA3AF]/40 dark:border-white/15 focus:border-[#111827] dark:focus:border-[#EDEDED] focus:bg-white dark:focus:bg-[#111827]"
               />
               <button
                 type="button"
@@ -88,25 +85,25 @@ export default function Step2TelemetriaYChecklist({
                   })
                 }
                 aria-label="Sumar 50 km"
-                className="min-h-[48px] min-w-[48px] rounded-2xl bg-[#111827] font-mono text-sm font-bold text-white hover:bg-[#1F2937] cursor-pointer"
+                className="min-h-[44px] min-w-[48px] rounded-2xl bg-[#111827] dark:bg-[#EDEDED] font-mono text-sm font-bold text-white dark:text-[#111827] hover:bg-[#1F2937] dark:hover:bg-white cursor-pointer"
               >
                 +50
               </button>
             </div>
             {errors.medidorUsoEntrega && (
-              <p className="text-xs font-bold text-[#111827]">
+              <p className="text-xs font-bold text-[#111827] dark:text-[#EDEDED]">
                 {errors.medidorUsoEntrega}
               </p>
             )}
           </div>
 
           {/* Nivel de energía / combustible */}
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827]">
+              <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
                 {esElectrico ? 'Nivel de batería' : 'Nivel de combustible'}
               </span>
-              <span className="font-mono text-sm font-black text-[#111827] tabular-nums">
+              <span className="font-mono text-sm font-black text-[#111827] dark:text-[#EDEDED] tabular-nums">
                 {data.nivelEnergiaEntregaPct}%
               </span>
             </div>
@@ -119,11 +116,10 @@ export default function Step2TelemetriaYChecklist({
                     key={pct}
                     type="button"
                     onClick={() => onChange({ nivelEnergiaEntregaPct: pct })}
-                    className={`min-h-[48px] rounded-2xl font-mono text-xs font-bold transition-colors cursor-pointer border ${
-                      activo
-                        ? 'bg-[#111827] text-white border-[#111827]'
-                        : 'bg-[#EDEDED]/70 text-[#111827] border-[#9CA3AF]/40 hover:bg-white'
-                    }`}
+                    className={`min-h-[44px] rounded-2xl font-mono text-xs font-bold cursor-pointer border ${activo
+                        ? 'bg-[#111827] text-white border-[#111827] dark:bg-[#EDEDED] dark:text-[#111827] dark:border-[#EDEDED]'
+                        : 'bg-[#EDEDED]/70 dark:bg-[#111827] text-[#111827] dark:text-[#EDEDED] border-[#9CA3AF]/40 dark:border-white/15 hover:bg-white dark:hover:bg-white/10'
+                      }`}
                   >
                     {pct}%
                   </button>
@@ -134,24 +130,24 @@ export default function Step2TelemetriaYChecklist({
         </div>
 
         {/* Checklist de salida por categoría */}
-        <div className="space-y-3 border-t border-[#EDEDED] pt-4">
+        <div className="space-y-2.5 border-t border-[#EDEDED] dark:border-white/10 pt-3.5">
           <div className="flex items-center justify-between">
-            <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827]">
+            <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
               Checklist físico ({reserva.vehiculo.categoria})
             </span>
-            <span className="text-[11px] font-medium text-[#4B5563]">
+            <span className="text-[11px] font-medium text-[#4B5563] dark:text-[#9CA3AF]">
               {data.respuestasChecklist.filter((i) => i.estado === 'BIEN').length} de{' '}
               {data.respuestasChecklist.length} conformes
             </span>
           </div>
 
-          <div className="space-y-2.5">
+          <div className="space-y-2">
             {data.respuestasChecklist.map((item) => (
               <div
                 key={item.codigo}
-                className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 rounded-[20px] bg-[#EDEDED]/65 border border-[#9CA3AF]/30 p-3.5"
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-[18px] bg-[#EDEDED]/65 dark:bg-[#111827] border border-[#9CA3AF]/30 dark:border-white/10 p-3"
               >
-                <span className="text-xs font-bold text-[#111827] leading-snug">
+                <span className="text-xs font-bold text-[#111827] dark:text-[#EDEDED] leading-snug">
                   {item.nombre}
                 </span>
 
@@ -169,11 +165,10 @@ export default function Step2TelemetriaYChecklist({
                         key={op.id}
                         type="button"
                         onClick={() => cambiarEstadoChecklist(item.codigo, op.id)}
-                        className={`min-h-[44px] rounded-full px-3.5 py-1.5 text-[11px] font-bold transition-colors cursor-pointer ${
-                          activo
-                            ? 'bg-[#111827] text-white'
-                            : 'bg-white text-[#4B5563] hover:text-[#111827]'
-                        }`}
+                        className={`min-h-[40px] rounded-full px-3.5 py-1.5 text-[11px] font-bold border cursor-pointer ${activo
+                            ? 'bg-[#111827] text-white border-[#111827] dark:bg-[#EDEDED] dark:text-[#111827] dark:border-[#EDEDED]'
+                            : 'bg-white dark:bg-[#1F2937] text-[#4B5563] dark:text-[#EDEDED] border-[#9CA3AF]/35 dark:border-white/15 hover:text-[#111827]'
+                          }`}
                       >
                         {op.label}
                       </button>

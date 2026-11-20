@@ -1074,6 +1074,7 @@ html.dark .bg-white\/85:not([class*="dark:bg-"]):not([data-preserve-theme]):not(
 html.dark .bg-white\/80:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
 html.dark .bg-white\/75:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
 html.dark .bg-white\/70:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
+html.dark .bg-white\/65:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
 html.dark .bg-white\/60:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
 html.dark .bg-white\/50:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *),
 html.dark .bg-white\/40:not([class*="dark:bg-"]):not([data-preserve-theme]):not([data-preserve-theme] *) {
