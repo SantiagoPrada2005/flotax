@@ -1,9 +1,23 @@
 ---
 import LayoutApp from '@/layouts/LayoutApp.astro';
 import RentalWizardFlow from '@/components/alquiler/RentalWizardFlow';
-import { obtenerVehiculoAsync, obtenerBloquesNoDisponiblesD1 } from '@/lib/flota';
+import {
+  obtenerVehiculoAsync,
+  obtenerBloquesNoDisponiblesD1,
+  obtenerLocalPorSlugOId,
+  obtenerLocalCatalogoPorDefecto,
+} from '@/lib/flota';
 import { obtenerEstadoDocumentalVehiculoD1 } from '@/lib/flota/disponibilidad';
 import { resolveClientTimeContext } from '@/lib/time/client-time';
+import {
+  normalizarPoliticaDomicilio,
+  PATIO_COORDENADAS_DEFECTO,
+  resolverTokenMapboxPublico,
+  sonCoordenadasValidas,
+  type UbicacionPatio,
+} from '@/lib/ubicacion';
+import { politicasLocal } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
 
@@ -39,7 +53,15 @@ const desdeParam = Astro.url.searchParams.get('desde') ?? undefined;
 const hastaParam = Astro.url.searchParams.get('hasta') ?? undefined;
 const stepParam = Astro.url.searchParams.get('step');
 const pasoInicial =
-  stepParam === '2' ? 2 : stepParam === '3' ? 3 : stepParam === '4' ? 4 : 1;
+  stepParam === '2'
+    ? 2
+    : stepParam === '3'
+      ? 3
+      : stepParam === '4'
+        ? 4
+        : stepParam === '5'
+          ? 5
+          : 1;
 
 const usuarioLocals = Astro.locals.usuario;
 const usuarioActual = usuarioLocals
@@ -54,7 +76,46 @@ const usuarioActual = usuarioLocals
   : null;
 
 const localId = localCautivo?.id ?? vehiculo.localId ?? undefined;
-const sedeNombre = localCautivo?.nombre ?? undefined;
+const localInfo =
+  localCautivo ??
+  (localId ? await obtenerLocalPorSlugOId(localId, db) : null) ??
+  (await obtenerLocalCatalogoPorDefecto(db));
+
+const sedeNombre = localInfo.nombre;
+const patioUbicacion: UbicacionPatio = {
+  nombre: localInfo.nombre,
+  direccion: localInfo.direccion ?? null,
+  ciudad: localInfo.ciudad ?? 'Medellín',
+  lat:
+    typeof localInfo.latitud === 'number' &&
+    typeof localInfo.longitud === 'number' &&
+    sonCoordenadasValidas(localInfo.latitud, localInfo.longitud)
+      ? localInfo.latitud
+      : PATIO_COORDENADAS_DEFECTO.lat,
+  lng:
+    typeof localInfo.latitud === 'number' &&
+    typeof localInfo.longitud === 'number' &&
+    sonCoordenadasValidas(localInfo.latitud, localInfo.longitud)
+      ? localInfo.longitud
+      : PATIO_COORDENADAS_DEFECTO.lng,
+};
+
+let politicaRow = null;
+if (db && localInfo.id) {
+  try {
+    const rows = await db
+      .select()
+      .from(politicasLocal)
+      .where(eq(politicasLocal.localId, localInfo.id))
+      .limit(1);
+    politicaRow = rows[0] ?? null;
+  } catch {
+    politicaRow = null;
+  }
+}
+
+const politicaDomicilio = normalizarPoliticaDomicilio(politicaRow);
+const mapboxPublicToken = resolverTokenMapboxPublico(env);
 ---
 
 <LayoutApp
@@ -74,8 +135,11 @@ const sedeNombre = localCautivo?.nombre ?? undefined;
       fechaFinInicial={hastaParam}
       pasoInicial={pasoInicial}
       estadoDocumental={estadoDocumental}
-      localId={localId}
+      localId={localInfo.id}
       sedeNombre={sedeNombre}
+      patioUbicacion={patioUbicacion}
+      politicaDomicilio={politicaDomicilio}
+      mapboxPublicToken={mapboxPublicToken}
     />
   </div>
 </LayoutApp>

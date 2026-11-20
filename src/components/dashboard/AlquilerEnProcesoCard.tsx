@@ -366,12 +366,12 @@ export default function AlquilerEnProcesoCard({
                     aria-expanded={isExpanded}
                     className="fx-pressable flex w-full items-center gap-3 p-2.5 text-left sm:p-3"
                   >
-                    <div className="flex h-20 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[14px] bg-[#EDEDED] p-1.5 sm:h-22 sm:w-28">
+                    <div className="flex w-24 sm:w-28 aspect-video shrink-0 items-center justify-center overflow-hidden rounded-[14px] bg-[#111827] p-1.5">
                       <img
                         src={item.imagenUrl}
                         alt={`Vehículo ${item.placa}`}
                         loading="lazy"
-                        className="h-full w-full object-contain"
+                        className="h-full w-full object-contain object-center block"
                       />
                     </div>
 
@@ -391,9 +391,9 @@ export default function AlquilerEnProcesoCard({
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
-                            stroke-width="2.2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
+                            strokeWidth="2.2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
                             className={`h-3.5 w-3.5 transition-transform duration-150 ${
                               isExpanded ? 'rotate-180 text-white' : ''
                             }`}

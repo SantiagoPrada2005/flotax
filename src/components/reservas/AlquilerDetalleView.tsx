@@ -11,7 +11,12 @@ import {
   type ReservaClienteItem,
 } from '@/lib/flota';
 import type { CapacidadesOperacionAlquiler } from '@/lib/auth/capacidades-alquiler';
+import type { DetalleReservaAdminContext } from '@/lib/flota/detalle-reserva-admin';
 import SemaforoDocumentalPanel from './SemaforoDocumentalPanel';
+import DeliveryPointCard from './DeliveryPointCard';
+import { AdminControlCenterPanel } from './AdminControlCenterPanel';
+import { FinalizarAlquilerWizardModal } from './FinalizarAlquilerWizardModal';
+import { FacturaAlquilerModal } from './FacturaAlquilerModal';
 import {
   ModalPausar,
   ModalProrrogar,
@@ -27,6 +32,8 @@ export interface AlquilerDetalleViewProps {
   capacidades?: CapacidadesOperacionAlquiler | undefined;
   cuentasFinancieras?: Array<{ id: string; nombre: string; tipo: string }> | undefined;
   tokenAccesoPublico?: string | null | undefined;
+  mapboxPublicToken?: string | null | undefined;
+  detalleAdminInicial?: DetalleReservaAdminContext | undefined;
 }
 
 type TabDetalleAlquiler = 'INSPECCION' | 'WAYBILL' | 'HIGHLIGHTS';
@@ -37,7 +44,7 @@ const ETIQUETA_ESTADO_CABECERA: Readonly<
   Record<EstadoReservaCliente, string>
 > = {
   PENDIENTE: 'Solicitud pendiente de revisión',
-  CONFIRMADA: 'Confirmada · Lista para entrega R2',
+  CONFIRMADA: 'Confirmada · Lista para entrega',
   EN_CURSO: 'En curso · Unidad en ruta',
   PAUSADA: 'Alquiler en pausa',
   COMPLETADA: 'Completada · Contrato cerrado',
@@ -60,11 +67,28 @@ export default function AlquilerDetalleView({
   capacidades,
   cuentasFinancieras = [],
   tokenAccesoPublico,
+  mapboxPublicToken = null,
+  detalleAdminInicial,
 }: AlquilerDetalleViewProps) {
   const esAdmin = modo === 'admin';
 
   const [reserva, setReserva] = useState<ReservaClienteItem>(reservaInicial);
-  const [tabActiva, setTabActiva] = useState<TabDetalleAlquiler>('INSPECCION');
+  const [detalleAdmin, setDetalleAdmin] = useState<DetalleReservaAdminContext>(
+    () =>
+      detalleAdminInicial ?? {
+        fotosEntrega: [],
+        fotosDevolucion: [],
+        pagosHistorial: [],
+        contrato: null,
+        garantia: null,
+        eventos: [],
+        inspeccionEntregaFechaISO: null,
+        inspeccionDevolucionFechaISO: null,
+      }
+  );
+  const [modalFinalizarAbierto, setModalFinalizarAbierto] = useState<boolean>(false);
+  const [modalFacturaAbierto, setModalFacturaAbierto] = useState<boolean>(false);
+  const [tabActiva, setTabActiva] = useState<TabDetalleAlquiler>('HIGHLIGHTS');
   const [puntoActivoId, setPuntoActivoId] = useState<string>('r2-carroceria');
   const [rubroActivoId, setRubroActivoId] = useState<string>('total-contrato');
 
@@ -99,6 +123,12 @@ export default function AlquilerDetalleView({
   useEffect(() => {
     setReserva(reservaInicial);
   }, [reservaInicial]);
+
+  useEffect(() => {
+    if (detalleAdminInicial) {
+      setDetalleAdmin(detalleAdminInicial);
+    }
+  }, [detalleAdminInicial]);
 
   const { vehiculo, specsBento } = reserva;
 
@@ -374,45 +404,6 @@ export default function AlquilerDetalleView({
     }
   };
 
-  const entregarVehiculoOperativo = async () => {
-    if (operacionCargando) return;
-    setOperacionCargando(true);
-    setErrorOperacion(null);
-    try {
-      const res = await actions.reservas.entregarVehiculo({
-        codigo: reserva.codigo,
-        medidorUsoEntrega: reserva.kilometrajeEntrega,
-        nivelEnergiaEntregaPct: reserva.nivelCargaPorcentaje,
-        autorizarSinDocumentos,
-        notaAutorizacion: autorizarSinDocumentos
-          ? 'Entrega autorizada bajo responsabilidad del local'
-          : undefined,
-      });
-
-      if (res.error) {
-        setErrorOperacion(res.error.message);
-        mostrarAviso(res.error.message);
-      } else if (res.data?.reserva) {
-        guardarCambioReserva({
-          ...reserva,
-          estado: 'EN_CURSO',
-          kilometrajeEntrega:
-            res.data.reserva.kilometrajeEntrega ?? reserva.kilometrajeEntrega,
-        });
-        mostrarAviso(
-          `Vehículo entregado · Contrato vigente · Unidad ${vehiculo.placa} en ruta`
-        );
-      }
-    } catch (err: unknown) {
-      const msg =
-        err instanceof Error ? err.message : 'Error al entregar el vehículo';
-      setErrorOperacion(msg);
-      mostrarAviso(msg);
-    } finally {
-      setOperacionCargando(false);
-    }
-  };
-
   const reanudarAlquilerOperativo = async () => {
     if (operacionCargando) return;
     setOperacionCargando(true);
@@ -486,9 +477,9 @@ export default function AlquilerDetalleView({
       )}
 
       {/* Grid Responsivo: 1 Columna en móvil, 2 Columnas Cockpit en Desktop */}
-      <div className="flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-8">
+      <div className="flex flex-col lg:flex-row lg:items-start gap-2 sm:gap-5 lg:gap-8">
         {/* Columna Izquierda (En PC): Cabecera + Escenario 3D de Inspección R2 */}
-        <div className="w-full lg:w-7/12 xl:w-3/5 space-y-5 lg:sticky lg:top-20">
+        <div className="w-full lg:w-7/12 xl:w-3/5 space-y-2.5 sm:space-y-5 lg:sticky lg:top-20">
           {/* =====================================================================
               ZONA 1: CABECERA EDITORIAL Y PÍLDORAS DIRECTAS SOBRE EL LIENZO MÓVIL
               ===================================================================== */}
@@ -551,9 +542,11 @@ export default function AlquilerDetalleView({
           ===================================================================== */}
       <section
         aria-label={`Escenario de inspección de ${vehiculo.marca} ${vehiculo.modelo}`}
-        className="relative my-auto flex items-center justify-center py-5 min-h-[205px]"
+        className={`relative my-auto flex items-center justify-center ${
+          esAdmin ? 'py-2 sm:py-5 min-h-[150px] sm:min-h-[205px]' : 'py-5 min-h-[205px]'
+        }`}
       >
-        <div className="relative w-full pr-12">
+        <div className={`relative w-full ${esAdmin ? '' : 'pr-12'}`}>
           <img
             src={vehiculo.imagenUrl}
             alt={`${vehiculo.marca} ${vehiculo.modelo}`}
@@ -563,89 +556,35 @@ export default function AlquilerDetalleView({
             aria-hidden="true"
             className="mx-auto -mt-2 h-3.5 w-4/5 rounded-full bg-[radial-gradient(ellipse_at_center,_rgba(17,24,39,0.20)_0%,_transparent_75%)]"
           />
-
-          {/* Puntos Interactivos R2 sobre la Silueta del Vehículo */}
-          {puntosR2.map((punto) => {
-            const activo = puntoSeleccionado.id === punto.id;
-            const tieneNovedad = punto.estado === 'NOVEDAD';
-            return (
-              <button
-                key={punto.id}
-                type="button"
-                onClick={() => {
-                  setPuntoActivoId(punto.id);
-                  setTabActiva('INSPECCION');
-                  setEditandoDictamen(false);
-                }}
-                style={{ left: punto.coordX, top: punto.coordY }}
-                aria-label={`Inspección: ${punto.zona}`}
-                className={`ios-press-bounce absolute -translate-x-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full transition-transform cursor-pointer ${
-                  activo
-                    ? 'bg-[#111827] text-white ring-4 ring-white/85 scale-110 z-20'
-                    : tieneNovedad
-                      ? 'bg-[#1F2937] text-white ring-2 ring-white z-10'
-                      : 'bg-white/90 text-[#111827] hover:scale-105 z-10'
-                }`}
-              >
-                <span
-                  className={`h-2 w-2 rounded-full ${
-                    activo || tieneNovedad ? 'bg-white' : 'bg-[#111827]'
-                  }`}
-                />
-              </button>
-            );
-          })}
         </div>
 
         {/* Insignia Inferior Izquierda: Silueta y Placa */}
-        <div className="absolute bottom-1 left-0 flex items-center gap-1.5 rounded-2xl bg-white/65 backdrop-blur-md px-3 py-1.5">
+        <div className="absolute bottom-1 left-0 flex items-center gap-1.5 rounded-2xl bg-white/85 dark:bg-[#1F2937] border border-[#9CA3AF]/30 dark:border-white/15 backdrop-blur-md px-3 py-1.5">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
             strokeWidth="1.7"
-            className="h-4 w-4 text-[#111827]"
+            className="h-4 w-4 text-[#111827] dark:text-[#EDEDED]"
           >
             <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2" />
             <circle cx="7" cy="17" r="2" />
             <path d="M9 17h6" />
             <circle cx="17" cy="17" r="2" />
           </svg>
-          <span className="font-mono text-[10px] font-bold text-[#111827]">
+          <span className="font-mono text-[10px] font-bold text-[#111827] dark:text-[#EDEDED]">
             {vehiculo.placa}
           </span>
         </div>
 
-        {/* Cápsula Vertical Flotante Derecha (3 Estaciones) */}
-        <div
-          role="toolbar"
-          aria-label="Cambiar estación de trabajo del alquiler"
-          className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col gap-2 rounded-full bg-[#9CA3AF]/25 backdrop-blur-xl border border-white/60 p-1.5 shadow-[0_12px_28px_-8px_rgba(17,24,39,0.14)] z-20"
-        >
-          <button
-            type="button"
-            onClick={() => setTabActiva('INSPECCION')}
-            aria-label="Inspección Pericial R2"
-            aria-pressed={tabActiva === 'INSPECCION'}
-            className={`ios-press-bounce flex h-10 w-10 items-center justify-center rounded-full transition-colors cursor-pointer ${
-              tabActiva === 'INSPECCION'
-                ? 'bg-[#111827] text-white'
-                : 'bg-white/80 text-[#111827] hover:bg-white'
-            }`}
+        {/* Cápsula Vertical Flotante Derecha (2 Estaciones en modo cliente) */}
+        {!esAdmin && (
+          <div
+            role="toolbar"
+            aria-label="Cambiar estación de trabajo del alquiler"
+            className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col gap-2 rounded-full bg-[#9CA3AF]/25 backdrop-blur-xl border border-white/60 p-1.5 shadow-[0_12px_28px_-8px_rgba(17,24,39,0.14)] z-20"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="h-4 w-4"
-            >
-              <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-            </svg>
-          </button>
-
           <button
             type="button"
             onClick={() => setTabActiva('WAYBILL')}
@@ -713,12 +652,75 @@ export default function AlquilerDetalleView({
               </svg>
             )}
           </button>
-        </div>
+          </div>
+        )}
       </section>
     </div>
 
-    {/* Columna Derecha (En PC): Panel Blanco de Estaciones (Inspección, Waybill, Highlights) */}
-    <div className="w-full lg:w-5/12 xl:w-2/5">
+    {/* Columna Derecha (En PC): Centro de Control Admin o Lámina Cliente */}
+    <div className="w-full lg:w-5/12 xl:w-2/5 space-y-3.5">
+      {esAdmin ? (
+        <>
+          <DeliveryPointCard
+            modalidadEntrega={reserva.modalidadEntrega}
+            sedeNombre={reserva.sedeNombre}
+            direccionEntrega={reserva.direccionEntrega}
+            entregaLatitud={reserva.entregaLatitud}
+            entregaLongitud={reserva.entregaLongitud}
+            entregaReferencia={reserva.entregaReferencia}
+            distanciaEntregaKm={reserva.distanciaEntregaKm}
+            recargoEntregaDomicilio={reserva.recargoEntregaDomicilio}
+            mapboxPublicToken={mapboxPublicToken}
+            vista="admin"
+            onAviso={mostrarAviso}
+          />
+          <AdminControlCenterPanel
+          reserva={reserva}
+          detalleAdmin={detalleAdmin}
+          capacidades={capacidades}
+          autorizarSinDocumentos={autorizarSinDocumentos}
+          onToggleAutorizarSinDocs={setAutorizarSinDocumentos}
+          onDocumentosActualizados={(datos) => {
+            if (datos) {
+              guardarCambioReserva({
+                ...reserva,
+                conductor: {
+                  ...reserva.conductor,
+                  tipoDocumento: datos.tipoDocumento,
+                  numeroDocumento: datos.numeroDocumento,
+                  categoriaLicencia: datos.categoriaLicencia,
+                  licenciaNumero: datos.licenciaNumero ?? reserva.conductor.licenciaNumero,
+                },
+              });
+            }
+            mostrarAviso('Expediente documental del cliente actualizado');
+          }}
+          operacionCargando={operacionCargando}
+          errorOperacion={errorOperacion}
+          onClearError={() => setErrorOperacion(null)}
+          onConfirmarReserva={confirmarReservaOperativa}
+          onRechazarReserva={() => {
+            setTipoModalCancelar('RECHAZAR');
+            setModalCancelarAbierto(true);
+          }}
+          onCancelarReserva={() => {
+            setTipoModalCancelar('CANCELAR');
+            setModalCancelarAbierto(true);
+          }}
+          onPausarAlquiler={() => setModalPausarAbierto(true)}
+          onReanudarAlquiler={reanudarAlquilerOperativo}
+          onProrrogarAlquiler={() => setModalProrrogarAbierto(true)}
+          onAbrirFinalizarAlquiler={() => setModalFinalizarAbierto(true)}
+          onAnularAlquiler={() => {
+            setTipoModalCancelar('ANULAR');
+            setModalCancelarAbierto(true);
+          }}
+          onReabrirReserva={reabrirReservaOperativa}
+          onAbrirFactura={() => setModalFacturaAbierto(true)}
+        />
+        </>
+      ) : (
+        <>
           {/* =====================================================================
               ZONA 3: ÚNICA LÁMINA BLANCA + ESTACIÓN ACTIVA + CICLO DE VIDA
               ===================================================================== */}
@@ -1278,12 +1280,12 @@ export default function AlquilerDetalleView({
                   </span>
                   <p className="mt-1 font-display text-xs font-bold text-[#111827] truncate">
                     {reserva.modalidadEntrega === 'DOMICILIO_MEDELLIN'
-                      ? 'Domicilio Medellín'
+                      ? reserva.direccionEntrega || 'Domicilio coordinado'
                       : 'Entrega en Patio'}
                   </p>
                   <p className="mt-0.5 text-[10px] font-semibold text-[#4B5563]">
                     {reserva.conductor.ley1581Aceptada
-                      ? 'Datos y R2 autorizados ✓'
+                      ? 'Datos y ubicación autorizados ✓'
                       : 'Pendiente firma'}
                   </p>
                 </div>
@@ -1367,12 +1369,39 @@ export default function AlquilerDetalleView({
             =================================================================== */}
         {esAdmin && (
           <div className="border-t border-[#EDEDED] pt-3.5 space-y-3">
+            {/* Tarjeta visible de dirección y coordenadas para entregas a domicilio */}
+            <DeliveryPointCard
+              modalidadEntrega={reserva.modalidadEntrega}
+              sedeNombre={reserva.sedeNombre}
+              direccionEntrega={reserva.direccionEntrega}
+              entregaLatitud={reserva.entregaLatitud}
+              entregaLongitud={reserva.entregaLongitud}
+              entregaReferencia={reserva.entregaReferencia}
+              distanciaEntregaKm={reserva.distanciaEntregaKm}
+              recargoEntregaDomicilio={reserva.recargoEntregaDomicilio}
+              mapboxPublicToken={mapboxPublicToken}
+              vista="admin"
+              onAviso={mostrarAviso}
+            />
+
             {/* Panel Semáforo: KYC Cliente + SOAT / RTM Vehículo */}
             <SemaforoDocumentalPanel
               reserva={reserva}
               autorizarSinDocumentos={autorizarSinDocumentos}
               onToggleAutorizarSinDocs={setAutorizarSinDocumentos}
-              onDocumentosActualizados={() => {
+              onDocumentosActualizados={(datos) => {
+                if (datos) {
+                  guardarCambioReserva({
+                    ...reserva,
+                    conductor: {
+                      ...reserva.conductor,
+                      tipoDocumento: datos.tipoDocumento,
+                      numeroDocumento: datos.numeroDocumento,
+                      categoriaLicencia: datos.categoriaLicencia,
+                      licenciaNumero: datos.licenciaNumero ?? reserva.conductor.licenciaNumero,
+                    },
+                  });
+                }
                 mostrarAviso('Expediente documental del cliente actualizado');
               }}
             />
@@ -1428,19 +1457,19 @@ export default function AlquilerDetalleView({
               </div>
             )}
 
-            {/* Etapa 2: CONFIRMADA -> Entrega del vehículo (Contrato VIGENTE) o Cancelar */}
+            {/* Etapa 2: CONFIRMADA -> Formulario Typeform de Entrega del Vehículo */}
             {reserva.estado === 'CONFIRMADA' && (
               <div className="flex flex-wrap items-center gap-2">
                 {capacidades?.puedeEntregar && (
                   <button
                     type="button"
                     disabled={operacionCargando}
-                    onClick={entregarVehiculoOperativo}
-                    className="min-h-[44px] flex-1 rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] disabled:opacity-50 cursor-pointer"
+                    onClick={() =>
+                      navigate(`/admin/reservas/${reserva.codigo}/entrega`)
+                    }
+                    className="ios-press-bounce min-h-[48px] flex-1 rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] disabled:opacity-50 cursor-pointer"
                   >
-                    {operacionCargando
-                      ? 'Entregando...'
-                      : 'Confirmar entrega y salida R2 (Vigente)'}
+                    Iniciar entrega del vehículo (Formulario) →
                   </button>
                 )}
                 {capacidades?.puedeConfirmarRechazar && (
@@ -1451,7 +1480,7 @@ export default function AlquilerDetalleView({
                       setTipoModalCancelar('CANCELAR');
                       setModalCancelarAbierto(true);
                     }}
-                    className="min-h-[44px] rounded-full bg-[#EDEDED] px-4 py-2.5 text-xs font-bold text-[#111827] hover:bg-[#9CA3AF]/40 disabled:opacity-50 cursor-pointer"
+                    className="min-h-[48px] rounded-full bg-[#EDEDED] px-4 py-2.5 text-xs font-bold text-[#111827] hover:bg-[#9CA3AF]/40 disabled:opacity-50 cursor-pointer"
                   >
                     Cancelar reserva
                   </button>
@@ -1625,71 +1654,73 @@ export default function AlquilerDetalleView({
           )}
 
         {/* ===================================================================
-            BARRA DE ENTREGA Y EVALUACIÓN INTERACTIVA (100DVH WIZARD)
+            EVALUACIÓN DEL CLIENTE (EN MODO ADMIN SOLO MUESTRA RESUMEN SI EXISTE;
+            EN MODO CLIENTE SOLO HABILITA RETORNO SI ESTÁ EN_CURSO)
             =================================================================== */}
-        <div className="border-t border-[#EDEDED] pt-3.5 space-y-2.5">
-          {reserva.evaluacionEntrega ? (
-            <div className="flex items-center justify-between gap-3 rounded-[20px] bg-[#EDEDED]/85 px-3.5 py-2.5">
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="rounded-full bg-[#111827] px-2 py-0.5 font-mono text-[10px] font-bold text-white">
-                    {reserva.evaluacionEntrega.puntajeNumerico}.0 ★
-                  </span>
-                  <span className="font-display text-xs font-bold text-[#111827] truncate">
-                    Entrega y evaluación registradas
-                  </span>
+        {(reserva.evaluacionEntrega || !esAdmin) && (
+          <div className="border-t border-[#EDEDED] pt-3.5 space-y-2.5">
+            {reserva.evaluacionEntrega ? (
+              <div className="flex items-center justify-between gap-3 rounded-[20px] bg-[#EDEDED]/85 px-3.5 py-2.5">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="rounded-full bg-[#111827] px-2 py-0.5 font-mono text-[10px] font-bold text-white">
+                      {reserva.evaluacionEntrega.puntajeNumerico}.0 ★
+                    </span>
+                    <span className="font-display text-xs font-bold text-[#111827] truncate">
+                      Evaluación del cliente registrada
+                    </span>
+                  </div>
+                  <p className="mt-0.5 text-[11px] font-medium text-[#4B5563] truncate">
+                    {reserva.evaluacionEntrega.aspectosDestacados.join(' · ') ||
+                      'Paz y salvo digital R2 activo'}
+                  </p>
                 </div>
-                <p className="mt-0.5 text-[11px] font-medium text-[#4B5563] truncate">
-                  {reserva.evaluacionEntrega.aspectosDestacados.join(' · ') ||
-                    'Paz y salvo digital R2 activo'}
-                </p>
-              </div>
 
-              <button
-                type="button"
-                onClick={() =>
-                  navigate(
-                    esAdmin
-                      ? `/reservas/${reserva.codigo}/entrega?retorno=/admin/reservas/${reserva.codigo}`
-                      : `/reservas/${reserva.codigo}/entrega${
+                {!esAdmin && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigate(
+                        `/reservas/${reserva.codigo}/entrega${
                           tokenAccesoPublico
                             ? `?token=${encodeURIComponent(tokenAccesoPublico)}`
                             : ''
                         }`
-                  )
-                }
-                className="ios-press-bounce shrink-0 min-h-[44px] rounded-full bg-white px-4 py-2 text-xs font-bold text-[#111827] cursor-pointer"
-              >
-                Ver resumen
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() =>
-                navigate(
-                  esAdmin
-                    ? `/reservas/${reserva.codigo}/entrega?retorno=/admin/reservas/${reserva.codigo}`
-                    : `/reservas/${reserva.codigo}/entrega${
+                      )
+                    }
+                    className="ios-press-bounce shrink-0 min-h-[44px] rounded-full bg-white px-4 py-2 text-xs font-bold text-[#111827] cursor-pointer"
+                  >
+                    Ver resumen
+                  </button>
+                )}
+              </div>
+            ) : (
+              !esAdmin &&
+              reserva.estado === 'EN_CURSO' && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate(
+                      `/reservas/${reserva.codigo}/entrega${
                         tokenAccesoPublico
                           ? `?token=${encodeURIComponent(tokenAccesoPublico)}`
                           : ''
                       }`
-                )
-              }
-              className="ios-press-bounce flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#1F2937] cursor-pointer"
-            >
-              <span>⛶</span>
-              <span>
-                {esAdmin
-                  ? 'Realizar entrega pericial y evaluación R2'
-                  : 'Entregar vehículo y calificar servicio'}
-              </span>
-              <span>→</span>
-            </button>
-          )}
-        </div>
+                    )
+                  }
+                  className="ios-press-bounce flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#1F2937] cursor-pointer"
+                >
+                  <span>⛶</span>
+                  <span>Entregar vehículo y calificar servicio</span>
+                  <span>→</span>
+                </button>
+              )
+            )}
+          </div>
+        )}
           </section>
+        </>
+      )}
         </div>
       </div>
 
@@ -1740,6 +1771,34 @@ export default function AlquilerDetalleView({
           if (msg) mostrarAviso(msg);
         }}
       />
+
+      {esAdmin && (
+        <>
+          <FinalizarAlquilerWizardModal
+            isOpen={modalFinalizarAbierto}
+            onClose={() => setModalFinalizarAbierto(false)}
+            reserva={reserva}
+            detalleAdmin={detalleAdmin}
+            hoyISO={_hoyISO}
+            capacidades={capacidades}
+            cuentasFinancieras={cuentasFinancieras}
+            onExito={(actualizada, detalleActualizado, msg) => {
+              guardarCambioReserva(actualizada);
+              if (detalleActualizado) {
+                setDetalleAdmin(detalleActualizado);
+              }
+              if (msg) mostrarAviso(msg);
+            }}
+          />
+
+          <FacturaAlquilerModal
+            isOpen={modalFacturaAbierto}
+            onClose={() => setModalFacturaAbierto(false)}
+            reserva={reserva}
+            detalleAdmin={detalleAdmin}
+          />
+        </>
+      )}
     </div>
   );
 }

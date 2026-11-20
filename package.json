@@ -38,6 +38,7 @@
     "framer-motion": "^14.0.0",
     "gsap": "^3.15.0",
     "lucide-react": "^1.49.0",
+    "mapbox-gl": "^3.35.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "tailwindcss": "^4.3.5",

@@ -1,4 +1,9 @@
+import { useRef, type ChangeEvent } from 'react';
 import type { VehiculoWizardData } from './types';
+import {
+  formatearNumeroConMiles,
+  formatearValorMiles,
+} from '@/lib/flota/numero';
 
 export interface Step4CaracteristicasProps {
   data: VehiculoWizardData;
@@ -15,34 +20,52 @@ export default function Step4Caracteristicas({
   onChange,
 }: Step4CaracteristicasProps) {
   const isPatineta = data.categoria === 'PATINETA';
+  const kmInputRef = useRef<HTMLInputElement>(null);
+
+  const handleKmChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { formatted, numericValue, cursor } = formatearNumeroConMiles(
+      event.target.value,
+      event.target.selectionStart
+    );
+    onChange({ kilometraje: numericValue });
+
+    if (typeof window !== 'undefined') {
+      window.requestAnimationFrame(() => {
+        const input = kmInputRef.current;
+        if (input && document.activeElement === input) {
+          input.value = formatted;
+          input.setSelectionRange(cursor, cursor);
+        }
+      });
+    }
+  };
 
   return (
     <div className="w-full space-y-6">
-      {/* Encabezado Hero */}
+      {/* Encabezado Hero (sin texto descriptivo adicional) */}
       <div className="space-y-2">
-        <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF] block">
+        <span className="block font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563] sm:text-xs dark:text-[#9CA3AF]">
           Paso 04 · Especificaciones Técnicas
         </span>
-        <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#111827] dark:text-[#EDEDED] leading-[1.12]">
+        <h1 className="font-display text-2xl leading-[1.12] font-bold tracking-tight text-[#111827] sm:text-3xl lg:text-4xl dark:text-[#EDEDED]">
           ¿Qué características tiene?
         </h1>
-        <p className="text-xs sm:text-sm text-[#4B5563] dark:text-[#9CA3AF] font-medium max-w-[50ch]">
-          Configura la propulsión mecánica, el odómetro de patio y la capacidad de la unidad.
-        </p>
       </div>
 
-      {/* Contenedor Inmersivo de Máximo 4 Entradas */}
-      <div className="rounded-[28px] border border-[#9CA3AF]/40 bg-white p-6 sm:p-8 shadow-xs space-y-6 dark:bg-[#1F2937] dark:border-white/10">
-        {/* Entrada 1: Transmisión */}
+      {/* Contenedor de Características */}
+      <div className="space-y-6 rounded-[28px] border border-[#9CA3AF]/40 bg-white p-6 shadow-xs sm:p-8 dark:border-white/10 dark:bg-[#1F2937]">
+        {/* Entrada 1: Tipo de caja */}
         {!isPatineta && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
-                Transmisión
-              </label>
-              <span className="font-mono text-[11px] text-[#4B5563] dark:text-[#9CA3AF]">
-                Tipo de caja
+              <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
+                Tipo de caja <span className="text-rose-600 dark:text-rose-400">*</span>
               </span>
+              {!data.transmision && (
+                <span className="font-mono text-[11px] text-[#9CA3AF]">
+                  Selecciona una opción
+                </span>
+              )}
             </div>
 
             <div className="grid grid-cols-3 gap-2">
@@ -52,87 +75,107 @@ export default function Step4Caracteristicas({
                   <button
                     key={t}
                     type="button"
+                    aria-pressed={isSelected}
                     onClick={() => onChange({ transmision: t })}
-                    className={`ios-press-bounce rounded-2xl py-3 px-2 font-mono text-xs sm:text-sm font-bold border transition text-center cursor-pointer ${isSelected
-                        ? 'bg-[#111827] text-white border-[#111827] shadow-xs dark:bg-white dark:text-[#111827] dark:border-white'
-                        : 'bg-[#EDEDED]/50 text-[#111827] border-[#9CA3AF]/40 hover:bg-white hover:border-[#111827] dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20 dark:hover:border-white/40 dark:hover:text-white'
-                      }`}
+                    className={`fx-press min-h-[44px] cursor-pointer rounded-2xl border px-2 py-3 text-center font-mono text-xs font-bold transition-colors duration-120 sm:text-sm ${
+                      isSelected
+                        ? 'border-[#111827] bg-[#111827] text-white shadow-xs dark:border-white dark:bg-white dark:text-[#111827]'
+                        : 'border-[#9CA3AF]/40 bg-[#EDEDED]/50 text-[#111827] hover:border-[#111827] hover:bg-white dark:border-white/15 dark:bg-[#111827]/70 dark:text-[#EDEDED] dark:hover:border-white/40 dark:hover:bg-[#111827]'
+                    }`}
                   >
                     {t}
                   </button>
                 );
               })}
             </div>
+
+            {errors.transmision && (
+              <p className="mt-1 text-xs font-bold text-rose-600 dark:text-rose-400">
+                {errors.transmision}
+              </p>
+            )}
           </div>
         )}
 
-        {/* Entrada 2: Combustible / Energía */}
+        {/* Entrada 2: Combustible/Motor */}
         {!isPatineta && (
-          <div className="space-y-2 border-t border-[#EDEDED] dark:border-white/10 pt-5">
+          <div className="space-y-2 border-t border-[#EDEDED] pt-5 dark:border-white/10">
             <div className="flex items-center justify-between">
-              <label className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
-                Fuente de Energía
-              </label>
-              <span className="font-mono text-[11px] text-[#4B5563] dark:text-[#9CA3AF]">
-                Combustible / Motor
+              <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
+                Combustible/Motor <span className="text-rose-600 dark:text-rose-400">*</span>
               </span>
+              {!data.combustible && (
+                <span className="font-mono text-[11px] text-[#9CA3AF]">
+                  Selecciona una opción
+                </span>
+              )}
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {OPCIONES_COMBUSTIBLE.map((c) => {
                 const isSelected = data.combustible === c;
                 return (
                   <button
                     key={c}
                     type="button"
+                    aria-pressed={isSelected}
                     onClick={() => onChange({ combustible: c })}
-                    className={`ios-press-bounce rounded-2xl py-3 px-2 font-mono text-xs sm:text-sm font-bold border transition text-center cursor-pointer ${isSelected
-                        ? 'bg-[#111827] text-white border-[#111827] shadow-xs dark:bg-white dark:text-[#111827] dark:border-white'
-                        : 'bg-[#EDEDED]/50 text-[#111827] border-[#9CA3AF]/40 hover:bg-white hover:border-[#111827] dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20 dark:hover:border-white/40 dark:hover:text-white'
-                      }`}
+                    className={`fx-press min-h-[44px] cursor-pointer rounded-2xl border px-2 py-3 text-center font-mono text-xs font-bold transition-colors duration-120 sm:text-sm ${
+                      isSelected
+                        ? 'border-[#111827] bg-[#111827] text-white shadow-xs dark:border-white dark:bg-white dark:text-[#111827]'
+                        : 'border-[#9CA3AF]/40 bg-[#EDEDED]/50 text-[#111827] hover:border-[#111827] hover:bg-white dark:border-white/15 dark:bg-[#111827]/70 dark:text-[#EDEDED] dark:hover:border-white/40 dark:hover:bg-[#111827]'
+                    }`}
                   >
                     {c}
                   </button>
                 );
               })}
             </div>
+
+            {errors.combustible && (
+              <p className="mt-1 text-xs font-bold text-rose-600 dark:text-rose-400">
+                {errors.combustible}
+              </p>
+            )}
           </div>
         )}
 
-        {/* Entrada 3: Odómetro actual de patio */}
-        <div className={`space-y-2 ${!isPatineta ? 'border-t border-[#EDEDED] dark:border-white/10 pt-5' : ''}`}>
+        {/* Entrada 3: Kilómetros Acumulados con formato automático de miles */}
+        <div
+          className={`space-y-2 ${!isPatineta ? 'border-t border-[#EDEDED] pt-5 dark:border-white/10' : ''}`}
+        >
           <div className="flex items-center justify-between">
             <label
               htmlFor="input-km-hero"
               className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]"
             >
-              Odómetro Inicial <span className="text-rose-600 dark:text-rose-400">*</span>
+              Kilómetros Acumulados <span className="text-rose-600 dark:text-rose-400">*</span>
             </label>
-            <span className="font-mono text-[11px] text-[#4B5563] dark:text-[#9CA3AF]">
-              Kilómetros acumulados
-            </span>
           </div>
 
           <div className="relative">
             <input
+              ref={kmInputRef}
               id="input-km-hero"
-              type="number"
-              min={0}
-              value={data.kilometraje}
-              onChange={(e) => onChange({ kilometraje: e.target.value === '' ? '' : Number(e.target.value) })}
-              placeholder="0"
-              className={`w-full rounded-2xl bg-[#EDEDED]/50 px-5 py-4 font-mono text-xl sm:text-2xl font-bold text-[#111827] placeholder-[#9CA3AF] border transition-all dark:bg-[#111827] dark:text-[#EDEDED] dark:placeholder-[#9CA3AF]/60 ${errors.kilometraje
-                  ? 'border-rose-500 bg-rose-50/40 focus:border-rose-600 focus:outline-none dark:bg-rose-950/20 dark:border-rose-500'
-                  : 'border-transparent focus:border-[#111827] focus:bg-white focus:outline-none dark:border-white/10 dark:focus:border-white dark:focus:bg-[#111827]'
-                }`}
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              value={formatearValorMiles(data.kilometraje)}
+              onChange={handleKmChange}
+              placeholder="Ej: 25.000"
+              className={`w-full rounded-2xl border bg-[#EDEDED]/50 px-5 py-4 pr-14 font-mono text-xl font-bold text-[#111827] placeholder-[#9CA3AF] transition-colors duration-150 sm:text-2xl dark:bg-[#111827] dark:text-[#EDEDED] dark:placeholder-[#9CA3AF]/60 ${
+                errors.kilometraje
+                  ? 'border-rose-500 bg-rose-50/40 focus:border-rose-600 dark:border-rose-500 dark:bg-rose-950/20'
+                  : 'border-transparent focus:border-[#111827] focus:bg-white dark:border-white/10 dark:focus:border-white dark:focus:bg-[#111827]'
+              }`}
             />
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 font-mono text-xs font-bold text-[#4B5563] dark:text-[#9CA3AF]">
+            <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 font-mono text-xs font-bold text-[#4B5563] dark:text-[#9CA3AF]">
               KM
             </span>
           </div>
 
           {errors.kilometraje && (
-            <p className="text-xs font-bold text-rose-600 dark:text-rose-400 mt-1 animate-fade-in">
+            <p className="mt-1 text-xs font-bold text-rose-600 dark:text-rose-400">
               {errors.kilometraje}
             </p>
           )}

@@ -107,25 +107,26 @@ const VALORES_INICIALES_DEFAULT: VehiculoWizardData = {
   modelo: '',
   anio: 2024,
   placa: '',
-  estado: 'DISPONIBLE',
-  precioDia: 180000,
-  depositoGarantia: 500000,
-  transmision: 'Automática',
-  combustible: 'Gasolina',
+  estado: '',
+  precioDia: '',
+  depositoGarantia: '',
+  transmision: '',
+  combustible: '',
   capacidadPasajeros: 5,
   autonomiaKm: '',
-  kilometraje: 0,
+  kilometraje: '',
   imagenUrl: '',
+  galeria: [],
   destacado: false,
   descripcion: '',
   aceleracion: '6.5 s',
   velocidadMaxima: '190 km/h',
   rating: 4.8,
   autonomiaOdo: '0 km',
-  soatVigente: true,
-  tarjetaPropiedad: true,
-  tecnicoMecanica: true,
-  kitCarretera: true,
+  soatVigente: false,
+  tarjetaPropiedad: false,
+  tecnicoMecanica: false,
+  kitCarretera: false,
 };
 
 export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIslandProps) {
@@ -133,6 +134,7 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
 
   const [pasoActual, setPasoActual] = useState<WizardStepId>(1);
   const [pasoMaximoAlcanzado, setPasoMaximoAlcanzado] = useState<number>(esEdicion ? 8 : 1);
+  const [editandoDesdeConfirmacion, setEditandoDesdeConfirmacion] = useState<boolean>(false);
   const [direction, setDirection] = useState<number>(1);
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
   const [containerHeight, setContainerHeight] = useState<number | 'auto'>('auto');
@@ -158,6 +160,21 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
         autonomiaKm: vehiculoInicial.autonomiaKm ?? '',
         kilometraje: vehiculoInicial.kilometraje,
         imagenUrl: vehiculoInicial.imagenUrl,
+        galeria:
+          vehiculoInicial.galeria && vehiculoInicial.galeria.length > 0
+            ? vehiculoInicial.galeria.map((f) => ({ ...f, estado: 'listo' as const }))
+            : vehiculoInicial.imagenUrl
+              ? [
+                  {
+                    id: 'portada-inicial',
+                    url: vehiculoInicial.imagenUrl,
+                    categoria: 'EXTERIOR' as const,
+                    esPrincipal: true,
+                    orden: 0,
+                    estado: 'listo' as const,
+                  },
+                ]
+              : [],
         destacado: Boolean(vehiculoInicial.destacado),
         descripcion: vehiculoInicial.descripcion,
         aceleracion: vehiculoInicial.aceleracion,
@@ -252,15 +269,20 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
         nuevosErrores.anio = 'Indique un año válido entre 1990 y 2035.';
       }
     } else if (paso === 3) {
-      if (!data.marca.trim()) {
-        nuevosErrores.marca = 'Indique la marca o fabricante.';
-      }
-      if (!data.modelo.trim()) {
-        nuevosErrores.modelo = 'Indique el modelo o versión comercial.';
+      if (!data.marca.trim() || !data.modelo.trim()) {
+        nuevosErrores.marca = 'Indica la marca y el modelo (ej. Toyota Corolla).';
       }
     } else if (paso === 4) {
+      if (data.categoria !== 'PATINETA') {
+        if (!data.transmision) {
+          nuevosErrores.transmision = 'Selecciona el tipo de caja.';
+        }
+        if (!data.combustible) {
+          nuevosErrores.combustible = 'Selecciona el combustible o motor.';
+        }
+      }
       if (data.kilometraje === '' || Number(data.kilometraje) < 0) {
-        nuevosErrores.kilometraje = 'Indique el kilometraje de patio.';
+        nuevosErrores.kilometraje = 'Indique los kilómetros acumulados.';
       }
     } else if (paso === 5) {
       if (data.precioDia === '' || Number(data.precioDia) <= 0) {
@@ -272,6 +294,10 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
     } else if (paso === 6) {
       if (!data.imagenUrl.trim()) {
         nuevosErrores.imagenUrl = 'Suba una fotografía para registrar la ficha de la unidad.';
+      }
+    } else if (paso === 7) {
+      if (!data.estado) {
+        nuevosErrores.estado = 'Selecciona el estado operativo inicial.';
       }
     }
 
@@ -289,7 +315,26 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
     setIsTransitioning(true);
     setPasoActual(nuevoPaso);
     setPasoMaximoAlcanzado((prev) => Math.max(prev, nuevoPaso));
+    if (nuevoPaso === 8) {
+      setEditandoDesdeConfirmacion(false);
+    }
     setErrorMsgGeneral(null);
+  };
+
+  const handleEditarDesdeConfirmacion = (paso: WizardStepId) => {
+    if (isTransitioning) return;
+    setEditandoDesdeConfirmacion(true);
+    cambiarPaso(paso, -1);
+  };
+
+  const handleVolverAConfirmacion = () => {
+    if (isTransitioning) return;
+    if (!validarPasoActual(pasoActual)) {
+      setErrorMsgGeneral('Complete los datos requeridos para volver a la confirmación.');
+      return;
+    }
+    setEditandoDesdeConfirmacion(false);
+    cambiarPaso(8, 1);
   };
 
   const avanzarPaso = () => {
@@ -341,9 +386,9 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
       case 6:
         return <Step6Fotografia data={data} errors={errors} onChange={handleDataChange} />;
       case 7:
-        return <Step7Patio data={data} onChange={handleDataChange} />;
+        return <Step7Patio data={data} errors={errors} onChange={handleDataChange} />;
       case 8:
-        return <Step8Revision data={data} onEditPaso={handleSelectPaso} />;
+        return <Step8Revision data={data} onEditPaso={handleEditarDesdeConfirmacion} />;
       default:
         return null;
     }
@@ -361,6 +406,11 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
       setErrorMsgGeneral('Verifique la marca y modelo.');
       return;
     }
+    if (!validarPasoActual(4)) {
+      setPasoActual(4);
+      setErrorMsgGeneral('Complete las características mecánicas y kilómetros acumulados.');
+      return;
+    }
     if (!validarPasoActual(5)) {
       setPasoActual(5);
       setErrorMsgGeneral('Verifique las tarifas de alquiler.');
@@ -369,6 +419,11 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
     if (!validarPasoActual(6)) {
       setPasoActual(6);
       setErrorMsgGeneral('Suba una fotografía para la ficha técnica.');
+      return;
+    }
+    if (!validarPasoActual(7)) {
+      setPasoActual(7);
+      setErrorMsgGeneral('Selecciona el estado operativo del vehículo.');
       return;
     }
 
@@ -387,15 +442,30 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
           categoria: data.categoria,
           categoriaEtiqueta: data.categoriaEtiqueta.trim() || data.categoria,
           placa: data.placa.trim().toUpperCase(),
-          estado: data.estado,
+          estado: data.estado || 'DISPONIBLE',
           precioDia: Number(data.precioDia),
           depositoGarantia: Number(data.depositoGarantia),
-          transmision: data.categoria === 'PATINETA' ? 'Eléctrica' : data.transmision,
-          combustible: data.categoria === 'PATINETA' ? 'Eléctrico' : data.combustible,
+          transmision:
+            data.categoria === 'PATINETA'
+              ? 'Eléctrica'
+              : data.transmision || 'Automática',
+          combustible:
+            data.categoria === 'PATINETA'
+              ? 'Eléctrico'
+              : data.combustible || 'Gasolina',
           capacidadPasajeros: data.categoria === 'PATINETA' ? 1 : Number(data.capacidadPasajeros || 1),
           autonomiaKm: data.autonomiaKm !== '' ? Number(data.autonomiaKm) : undefined,
           kilometraje: Number(data.kilometraje || 0),
           imagenUrl: data.imagenUrl.trim(),
+          galeria: (data.galeria ?? [])
+            .filter((f) => Boolean(f.url))
+            .map((f, idx) => ({
+              id: f.id,
+              url: f.url,
+              categoria: f.categoria,
+              esPrincipal: f.esPrincipal,
+              orden: idx,
+            })),
           destacado: Boolean(data.destacado),
           descripcion:
             data.descripcion.trim() ||
@@ -438,8 +508,10 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
         pasoActual={pasoActual}
         pasoMaximoAlcanzado={pasoMaximoAlcanzado}
         isTransitioning={isTransitioning}
+        showReturnToConfirmation={editandoDesdeConfirmacion && pasoActual < 8}
         onSelectPaso={handleSelectPaso}
         onPrevPaso={pasoActual > 1 ? retrocederPaso : undefined}
+        onReturnToConfirmation={handleVolverAConfirmacion}
         onCancelar={() => navigate('/admin/flota')}
       />
 

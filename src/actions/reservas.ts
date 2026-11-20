@@ -22,8 +22,15 @@ import {
   registrarOActualizarDocumentosClienteRapidoD1,
 } from '@/lib/flota/ciclo-alquiler';
 import { registrarCobroWaybillD1 } from '@/lib/flota/repositorio-reservas';
+import { obtenerDetalleReservaAdminD1 } from '@/lib/flota/detalle-reserva-admin';
+import {
+  construirClaveR2MultimediaVehiculo,
+  resolverUrlMultimediaR2,
+} from '@/lib/media/r2-vehiculo-keys';
 import {
   clientesLocal,
+  multimediaVehiculo,
+  reservas,
   user,
   verificacionesIdentidad,
   modalidadesEntregaReserva,
@@ -37,10 +44,20 @@ import {
   gravedadesNovedadInspeccion,
   tiposMantenimientoVehiculo,
   metodosPagoFinanciero,
+  zonasEvidenciaVehiculo,
 } from '@/db/schema';
 import { and, eq, like, or, sql } from 'drizzle-orm';
 import { crearServicioNotificaciones } from '@/lib/notificaciones';
-import { requireLocalAuth, PERMISOS, tienePermiso } from '@/lib/auth';
+import {
+  requireLocalAuth,
+  PERMISOS,
+  tienePermiso,
+  resolverContextoOrigenReserva,
+} from '@/lib/auth';
+import {
+  COOKIE_PORTAL_MODO,
+  COOKIE_PORTAL_OPTIONS,
+} from '@/lib/auth/portal-modo';
 
 function manejarErrorCiclo(error: unknown): never {
   if (error instanceof ActionError) {
@@ -89,7 +106,10 @@ export const crearReservaAction = defineAction({
     coberturaPericialCotizada: z.number().nonnegative().optional(),
     totalCotizado: z.number().positive().optional(),
     modalidadEntrega: z.enum(modalidadesEntregaReserva).optional(),
-    direccionEntrega: z.string().optional(),
+    direccionEntrega: z.string().trim().max(240).optional(),
+    entregaLatitud: z.number().min(-90).max(90).optional(),
+    entregaLongitud: z.number().min(-180).max(180).optional(),
+    entregaReferencia: z.string().trim().max(200).optional(),
     sedeNombre: z.string().optional(),
     localId: z.string().optional(),
     modalidadPagoInicial: z.enum(modalidadesPagoInicial).optional(),
@@ -104,6 +124,7 @@ export const crearReservaAction = defineAction({
     contactoCorreo: z.email({ error: 'Correo electrónico de contacto no válido' }).optional(),
     ley1581Aceptada: z.boolean().optional(),
     clienteId: z.string().optional(),
+    origen: z.enum(['CLIENTE_WEB', 'MOSTRADOR_ADMIN']).optional(),
     estadoInicial: z.enum(['PENDIENTE', 'CONFIRMADA']).optional(),
     pagoConfirmadoInmediato: z
       .object({
@@ -132,21 +153,31 @@ export const crearReservaAction = defineAction({
       context.locals.localCaptacion?.id ||
       'local-patio-norte';
 
+    const contextoOrigen = resolverContextoOrigenReserva(
+      usuario,
+      input.origen,
+      input.clienteId
+    );
+    if (!contextoOrigen.permitido) {
+      throw new ActionError({
+        code: 'FORBIDDEN',
+        message: 'Solo el personal autorizado del local puede crear reservas de mostrador.',
+      });
+    }
+
     try {
       const res = await crearReservaConValidaciones(
         db,
         {
           ...input,
           localId,
-          clienteId:
-            input.clienteId ??
-            (usuario?.localActivo ? null : usuario?.id ?? null),
+          clienteId: contextoOrigen.clienteId,
         },
         {
           usuarioId: usuario?.id ?? null,
           rol: usuario?.localActivo?.rol ?? (usuario ? 'USUARIO' : undefined),
           localId,
-          origen: usuario?.localActivo ? 'MOSTRADOR_ADMIN' : 'CLIENTE_WEB',
+          origen: contextoOrigen.origen,
         }
       );
 
@@ -169,6 +200,10 @@ export const crearReservaAction = defineAction({
         });
       } catch {
         // Tolerante
+      }
+
+      if (contextoOrigen.origen === 'CLIENTE_WEB') {
+        context.cookies.set(COOKIE_PORTAL_MODO, 'CLIENTE', COOKIE_PORTAL_OPTIONS);
       }
 
       return {
@@ -369,8 +404,68 @@ export const entregarVehiculoAction = defineAction({
       .int()
       .min(0, { error: 'Medidor de entrega no válido' }),
     nivelEnergiaEntregaPct: z.number().int().min(0).max(100).optional(),
+    conductorVerificado: z
+      .object({
+        nombreCompleto: z.string().min(1, { error: 'Nombre completo requerido' }),
+        telefono: z.string().min(1, { error: 'Teléfono requerido' }),
+        correo: z.email({ error: 'Correo electrónico no válido' }).optional(),
+        tipoDocumento: z.enum(tiposDocumentoIdentidad).optional(),
+        numeroDocumento: z.string().optional(),
+        ciudadExpedicion: z.string().optional(),
+        licenciaNumero: z.string().optional(),
+        licenciaCategoria: z.enum(categoriasLicenciaConduccion).optional(),
+        licenciaVencimiento: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/, { error: 'Fecha de vencimiento no válida' })
+          .optional(),
+        domicilio: z.string().optional(),
+      })
+      .optional(),
+    estadoGeneralEntrega: z.enum(estadosGeneralesInspeccion).optional(),
+    observacionesEntrega: z.string().optional(),
+    respuestasChecklist: z
+      .array(
+        z.object({
+          codigo: z.string().min(1),
+          nombre: z.string().min(1),
+          estado: z.enum(['BIEN', 'CON_NOVEDAD', 'NO_APLICA']),
+          observacion: z.string().optional(),
+        })
+      )
+      .optional(),
+    puntosR2: z
+      .array(
+        z.object({
+          id: z.string().optional(),
+          zona: z.string().min(1),
+          etiqueta: z.string().min(1),
+          dictamen: z.string().min(1),
+          estado: z.enum(estadosPuntoInspeccionR2),
+          gravedad: z.enum(gravedadesNovedadInspeccion).optional(),
+          coordX: z.string().optional(),
+          coordY: z.string().optional(),
+          costoEstimado: z.number().optional(),
+          generaCargoCliente: z.boolean().optional(),
+        })
+      )
+      .optional(),
+    consentimientosContrato: z
+      .object({
+        ley1581Aceptada: z.boolean().optional(),
+        trasladoFotomultasAceptado: z.boolean().optional(),
+        pagareBlancoFirmado: z.boolean().optional(),
+      })
+      .optional(),
     firmaArrendadorR2Key: z.string().optional(),
     firmaArrendatarioR2Key: z.string().optional(),
+    cobrarSaldoAhora: z
+      .object({
+        monto: z.number().positive({ error: 'Monto a cobrar debe ser mayor a 0' }),
+        metodoPago: z.enum(metodosPagoFinanciero),
+        cuentaId: z.string().optional(),
+        referencia: z.string().optional(),
+      })
+      .optional(),
     recibirGarantiaAhora: z
       .object({
         monto: z.number().min(0),
@@ -403,8 +498,15 @@ export const entregarVehiculoAction = defineAction({
         usuarioId: usuario.id,
         medidorUsoEntrega: input.medidorUsoEntrega,
         nivelEnergiaEntregaPct: input.nivelEnergiaEntregaPct,
+        conductorVerificado: input.conductorVerificado,
+        estadoGeneralEntrega: input.estadoGeneralEntrega,
+        observacionesEntrega: input.observacionesEntrega,
+        respuestasChecklist: input.respuestasChecklist,
+        puntosR2: input.puntosR2,
+        consentimientosContrato: input.consentimientosContrato,
         firmaArrendadorR2Key: input.firmaArrendadorR2Key,
         firmaArrendatarioR2Key: input.firmaArrendatarioR2Key,
+        cobrarSaldoAhora: input.cobrarSaldoAhora,
         recibirGarantiaAhora: input.recibirGarantiaAhora,
         autorizarSinDocumentos: input.autorizarSinDocumentos,
         notaAutorizacion: input.notaAutorizacion,
@@ -593,6 +695,7 @@ export const devolverYCerrarAlquilerAction = defineAction({
   input: z.object({
     codigo: z.string().optional(),
     reservaId: z.string().optional(),
+    idempotencyKey: z.string().optional(),
     fechaDevolucionReal: z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/, { error: 'Fecha no válida (YYYY-MM-DD)' })
@@ -641,6 +744,46 @@ export const devolverYCerrarAlquilerAction = defineAction({
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/)
       .optional(),
+    fotosDevolucionNuevas: z
+      .array(
+        z.object({
+          tempId: z.string().min(1),
+          zonaEvidencia: z.enum(zonasEvidenciaVehiculo),
+          dataUrl: z.string().min(1),
+          observacion: z.string().optional(),
+        })
+      )
+      .max(20)
+      .optional(),
+    novedadesZonas: z
+      .array(
+        z.object({
+          zona: z.string().min(1),
+          etiqueta: z.string().min(1),
+          estado: z.enum(['SIN_NOVEDAD', 'CON_NOVEDAD']),
+          nota: z.string().optional(),
+          evidenciaId: z.string().optional(),
+          evidenciaUrl: z.string().optional(),
+          cobroConcepto: z.string().optional(),
+          cobroValor: z.number().min(0).optional(),
+        })
+      )
+      .max(20)
+      .optional(),
+    cobrosAdicionales: z
+      .array(
+        z.object({
+          id: z.string().min(1),
+          concepto: z.string().min(1),
+          valor: z.number().min(0),
+          nota: z.string().optional(),
+          zona: z.string().min(1),
+          evidenciaId: z.string().optional(),
+          evidenciaUrl: z.string().optional(),
+        })
+      )
+      .max(20)
+      .optional(),
   }),
   handler: async (input, context) => {
     marcarRevisionNavegacion(context.cookies);
@@ -656,10 +799,109 @@ export const devolverYCerrarAlquilerAction = defineAction({
     const db = getDb(env.DB);
 
     try {
+      const mapaEvidenciasNuevas = new Map<string, { id: string; url: string }>();
+      const fotosNuevas = input.fotosDevolucionNuevas ?? [];
+
+      if (fotosNuevas.length > 0 && env.BUCKET_MULTIMEDIA) {
+        const codigoNorm = input.codigo?.trim().toUpperCase();
+        const resMatch = await db
+          .select({ id: reservas.id, vehiculoId: reservas.vehiculoId, localId: reservas.localId })
+          .from(reservas)
+          .where(
+            and(
+              eq(reservas.localId, usuario.localActivo.id),
+              codigoNorm
+                ? eq(reservas.codigo, codigoNorm)
+                : eq(reservas.id, input.reservaId ?? '')
+            )
+          )
+          .limit(1);
+
+        const resRow = resMatch[0];
+        if (resRow) {
+          const ahoraFoto = new Date();
+          for (let i = 0; i < fotosNuevas.length; i++) {
+            const foto = fotosNuevas[i]!;
+            const matchData = /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/.exec(foto.dataUrl);
+            if (!matchData?.[1] || !matchData[2]) continue;
+
+            const mimeType = matchData[1];
+            const ext =
+              mimeType === 'image/webp'
+                ? 'webp'
+                : mimeType === 'image/png'
+                  ? 'png'
+                  : 'jpg';
+            const binaryStr = atob(matchData[2]);
+            const bytes = new Uint8Array(binaryStr.length);
+            for (let b = 0; b < binaryStr.length; b++) {
+              bytes[b] = binaryStr.charCodeAt(b);
+            }
+
+            const r2Key = construirClaveR2MultimediaVehiculo({
+              localId: resRow.localId,
+              vehiculoId: resRow.vehiculoId,
+              etapaOperativa: 'DEVOLUCION_RETORNO',
+              zonaEvidencia: foto.zonaEvidencia,
+              extension: ext,
+              timestampMs: Date.now() + i,
+            });
+
+            await env.BUCKET_MULTIMEDIA.put(r2Key, bytes.buffer, {
+              httpMetadata: { contentType: mimeType },
+            });
+
+            const mediaId = `med-dev-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+            await db.insert(multimediaVehiculo).values({
+              id: mediaId,
+              localId: resRow.localId,
+              vehiculoId: resRow.vehiculoId,
+              reservaId: resRow.id,
+              tipoMedio: 'IMAGEN',
+              etapaOperativa: 'DEVOLUCION_RETORNO',
+              zonaEvidencia: foto.zonaEvidencia,
+              esPortadaCatalogo: false,
+              ordenVisual: i,
+              r2Key,
+              mimeType,
+              tamanoBytes: bytes.byteLength,
+              observacion: foto.observacion ?? null,
+              subidoPorId: usuario.id,
+              capturadoEn: ahoraFoto,
+              creadoEn: ahoraFoto,
+            });
+
+            mapaEvidenciasNuevas.set(foto.tempId, {
+              id: mediaId,
+              url: resolverUrlMultimediaR2(r2Key),
+            });
+          }
+        }
+      }
+
+      const novedadesResueltas = input.novedadesZonas?.map((n) => {
+        const nueva = n.evidenciaId ? mapaEvidenciasNuevas.get(n.evidenciaId) : undefined;
+        return {
+          ...n,
+          evidenciaId: nueva?.id ?? n.evidenciaId,
+          evidenciaUrl: nueva?.url ?? n.evidenciaUrl,
+        };
+      });
+
+      const cobrosResueltos = input.cobrosAdicionales?.map((c) => {
+        const nueva = c.evidenciaId ? mapaEvidenciasNuevas.get(c.evidenciaId) : undefined;
+        return {
+          ...c,
+          evidenciaId: nueva?.id ?? c.evidenciaId,
+          evidenciaUrl: nueva?.url ?? c.evidenciaUrl,
+        };
+      });
+
       const res = await devolverYCerrarAlquilerD1(db, {
         codigo: input.codigo,
         reservaId: input.reservaId,
         localId: usuario.localActivo.id,
+        idempotencyKey: input.idempotencyKey,
         fechaDevolucionReal: input.fechaDevolucionReal,
         medidorUsoRetorno: input.medidorUsoRetorno,
         nivelEnergiaRetornoPct: input.nivelEnergiaRetornoPct,
@@ -678,6 +920,8 @@ export const devolverYCerrarAlquilerAction = defineAction({
         tipoMantenimiento: input.tipoMantenimiento,
         etiquetaMantenimiento: input.etiquetaMantenimiento,
         fechaFinEstimadaMantenimiento: input.fechaFinEstimadaMantenimiento,
+        novedadesZonas: novedadesResueltas,
+        cobrosAdicionales: cobrosResueltos,
         usuarioId: usuario.id,
         actor: {
           usuarioId: usuario.id,
@@ -686,11 +930,18 @@ export const devolverYCerrarAlquilerAction = defineAction({
         },
       });
 
+      const detalleAdminActualizado = await obtenerDetalleReservaAdminD1(
+        db,
+        res.reserva.codigo,
+        usuario.localActivo.id
+      );
+
       return {
         ok: true,
         reserva: res.reserva,
         contrato: res.contrato,
         garantia: res.garantia,
+        detalleAdmin: detalleAdminActualizado,
         mensajeLegal: res.mensajeLegal,
         mensaje:
           'Devolución registrada y contrato cerrado correctamente en Cloudflare D1.',
@@ -992,11 +1243,18 @@ export const registrarEntregaEvaluacionAction = defineAction({
 });
 
 /**
- * 15. Registrar o actualizar documentación KYC rápida de un cliente presencial en mostrador.
+ * 15. Registrar o actualizar documentación KYC rápida de un cliente presencial o invitado en mostrador.
  */
 export const registrarOActualizarDocumentosRapidoAction = defineAction({
   input: z.object({
-    usuarioId: z.string().min(1, { error: 'ID de usuario requerido' }),
+    usuarioId: z.string().optional(),
+    codigo: z.string().optional(),
+    reservaId: z.string().optional(),
+    nombreCompleto: z.string().optional(),
+    telefono: z.string().optional(),
+    correo: z.email({ error: 'Correo no válido' }).optional(),
+    ciudadExpedicion: z.string().optional(),
+    domicilio: z.string().optional(),
     tipoDocumento: z.enum(['CC', 'CE', 'PASAPORTE', 'NIT']),
     numeroDocumento: z.string().min(4, { error: 'Número de documento requerido' }),
     licenciaNumero: z.string().optional(),
@@ -1015,6 +1273,13 @@ export const registrarOActualizarDocumentosRapidoAction = defineAction({
     marcarRevisionNavegacion(context.cookies);
     const usuario = requireLocalAuth(context, PERMISOS.CLIENTES_ACTUALIZAR);
 
+    if (!input.usuarioId && !input.codigo && !input.reservaId) {
+      throw new ActionError({
+        code: 'BAD_REQUEST',
+        message: 'Debe indicar la reserva o el identificador del cliente.',
+      });
+    }
+
     if (!env.DB) {
       throw new ActionError({
         code: 'INTERNAL_SERVER_ERROR',
@@ -1027,6 +1292,13 @@ export const registrarOActualizarDocumentosRapidoAction = defineAction({
     try {
       await registrarOActualizarDocumentosClienteRapidoD1(db, {
         usuarioId: input.usuarioId,
+        codigo: input.codigo,
+        reservaId: input.reservaId,
+        nombreCompleto: input.nombreCompleto,
+        telefono: input.telefono,
+        correo: input.correo,
+        ciudadExpedicion: input.ciudadExpedicion,
+        domicilio: input.domicilio,
         tipoDocumento: input.tipoDocumento,
         numeroDocumento: input.numeroDocumento,
         licenciaNumero: input.licenciaNumero,

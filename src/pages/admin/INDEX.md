@@ -11,7 +11,7 @@
 | [`flota/`](./flota/) | Enrutamiento para la gestión perimetral e inventario de la flota (listado, alta de nuevas unidades, edición y disponibilidad). | [INDEX.md](./flota/INDEX.md) |
 | [`metricas/`](./metricas/) | Directory `metricas` | *(No index)* |
 | [`operaciones/`](./operaciones/) | Directory `operaciones` | *(No index)* |
-| [`reservas/`](./reservas/) | Directory `reservas` | *(No index)* |
+| [`reservas/`](./reservas/) | Gestión de reservas de patio, detalle operativo y Wizard Typeform de entrega de vehículos (`/admin/reservas/[codigo]/entrega`). | *(No index)* |
 
 ## File Manifest
 

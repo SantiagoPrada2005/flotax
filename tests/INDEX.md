@@ -22,6 +22,7 @@
 | [`pwa_cache_policy.test.ts`](./pwa_cache_policy.test.ts) | Test Suite | Matriz de `Cache-Control`/`Vary` por ruta y comportamiento de `aplicarPoliticaCacheHtml` | `node:test`, `src/lib/pwa/cache-policy.ts` |
 | [`rbac_permisos_alquiler.test.ts`](./rbac_permisos_alquiler.test.ts) | Test Suite | Validación de matriz RBAC, capacidades operativas y permisos según rol | `node:test`, `src/lib/auth/capacidades-alquiler.ts` |
 | [`register-loader.mjs`](./register-loader.mjs) | ESM Registration | Registra `loader-ts.mjs` con `module.register` para `node --test` | `node:module` |
+| [`ubicacion_entrega_domicilio.test.ts`](./ubicacion_entrega_domicilio.test.ts) | Test Suite | Validación geodésica Haversine, cobertura y recargo de domicilio, protección de tokens Mapbox, tope diario KV y persistencia condicional en reservas | `node:test`, `src/lib/ubicacion`, `src/lib/flota/ciclo-alquiler.ts` |
 
 ## Invariants & Directory Rules
 

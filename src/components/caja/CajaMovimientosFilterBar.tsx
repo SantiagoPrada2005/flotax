@@ -138,12 +138,12 @@ export function CajaCustomSelect<T extends string = string>({
         aria-controls={listboxId}
         onClick={() => (isOpen ? setIsOpen(false) : openDropdown())}
         onKeyDown={handleTriggerKeyDown}
-        className={`flex min-h-[44px] w-full items-center justify-between gap-2 rounded-xl bg-white dark:bg-[#1F2937] px-3.5 py-2 text-left text-base sm:text-sm transition-all duration-150 cursor-pointer ${
+        className={`flex min-h-[44px] w-full items-center justify-between gap-2 rounded-xl bg-white dark:bg-[#1F2937] px-3.5 py-2 text-left text-base sm:text-sm transition-colors duration-150 cursor-pointer ${
           isOpen
-            ? 'border border-[#2D6BFF] text-[#111827] dark:text-[#EDEDED] font-semibold ring-3 ring-[#2D6BFF]/15 shadow-2xs'
+            ? 'border border-[#111827] dark:border-[#EDEDED]/60 text-[#111827] dark:text-[#EDEDED] font-semibold ring-2 ring-[#111827]/10 dark:ring-white/15 shadow-2xs'
             : isDefaultState
-              ? 'border border-[#9CA3AF]/40 dark:border-white/10 text-[#4B5563] dark:text-[#9CA3AF] font-normal hover:border-[#2D6BFF]/60 hover:text-[#111827] dark:hover:text-[#EDEDED]'
-              : 'border border-[#2D6BFF]/40 dark:border-[#2D6BFF]/50 text-[#111827] dark:text-[#EDEDED] font-medium bg-blue-50/20 dark:bg-blue-950/20'
+              ? 'border border-[#9CA3AF]/40 dark:border-white/10 text-[#4B5563] dark:text-[#9CA3AF] font-normal hover:border-[#111827]/60 dark:hover:border-white/30 hover:text-[#111827] dark:hover:text-[#EDEDED]'
+              : 'border border-[#111827]/45 dark:border-white/30 text-[#111827] dark:text-[#EDEDED] font-medium bg-[#EDEDED]/40 dark:bg-white/8'
         }`}
       >
         <span className="flex min-w-0 items-center gap-2 truncate">
@@ -166,10 +166,10 @@ export function CajaCustomSelect<T extends string = string>({
           aria-hidden="true"
           className={`h-4 w-4 shrink-0 transition-transform duration-200 ${
             isOpen
-              ? 'rotate-180 text-[#2D6BFF]'
+              ? 'rotate-180 text-[#111827] dark:text-[#EDEDED]'
               : isDefaultState
                 ? 'text-[#9CA3AF]'
-                : 'text-[#2D6BFF]'
+                : 'text-[#111827] dark:text-[#EDEDED]'
           }`}
         >
           <path d="m6 9 6 6 6-6" />
@@ -208,7 +208,7 @@ export function CajaCustomSelect<T extends string = string>({
                 }}
                 className={`flex min-h-[40px] w-full items-center justify-between gap-2 rounded-xl px-3.5 py-2 text-left text-sm transition-colors cursor-pointer ${
                   isSelected
-                    ? 'bg-[#111827] text-white dark:bg-[#2D6BFF] font-semibold'
+                    ? 'bg-[#111827] text-white dark:bg-[#EDEDED] dark:text-[#111827] font-semibold'
                     : isFocused
                       ? 'bg-[#EDEDED]/70 dark:bg-white/10 text-[#111827] dark:text-[#EDEDED]'
                       : 'text-[#1F2937] dark:text-[#D1D5DB] hover:bg-[#EDEDED]/55 dark:hover:bg-white/10'
@@ -388,7 +388,7 @@ export function CajaMovimientosFilterBar({
             placeholder="Buscar por concepto, cliente, contrato, referencia..."
             value={filtroBusqueda}
             onChange={(e) => onChangeBusqueda(e.target.value)}
-            className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 dark:border-white/10 bg-white dark:bg-[#111827] pl-10 pr-9 py-2 text-base text-[#111827] dark:text-[#EDEDED] placeholder-[#9CA3AF] transition-all focus:border-[#2D6BFF] focus:ring-3 focus:ring-[#2D6BFF]/15 focus:outline-none"
+            className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 dark:border-white/10 bg-white dark:bg-[#111827] pl-10 pr-9 py-2 text-base text-[#111827] dark:text-[#EDEDED] placeholder-[#9CA3AF] transition-colors focus:border-[#111827] dark:focus:border-[#EDEDED]/60 focus:ring-2 focus:ring-[#111827]/10 dark:focus:ring-white/15"
           />
 
           {filtroBusqueda.length > 0 && (
@@ -418,9 +418,9 @@ export function CajaMovimientosFilterBar({
                 role="radio"
                 aria-checked={isSelected}
                 onClick={() => onChangeTipo(seg.id)}
-                className={`ios-press-bounce min-h-[36px] whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-bold tracking-tight transition-all cursor-pointer ${
+                className={`fx-press min-h-[36px] whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-bold tracking-tight transition-colors cursor-pointer ${
                   isSelected
-                    ? 'bg-white text-[#111827] shadow-xs dark:bg-[#2D6BFF] dark:text-white'
+                    ? 'bg-white text-[#111827] shadow-xs dark:bg-[#1F2937] dark:text-[#EDEDED]'
                     : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/5'
                 }`}
               >
@@ -436,9 +436,9 @@ export function CajaMovimientosFilterBar({
             type="button"
             onClick={() => setFiltrosAvanzadosAbiertos((prev) => !prev)}
             aria-expanded={filtrosAvanzadosAbiertos}
-            className={`ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition-all cursor-pointer ${
+            className={`fx-press inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition-colors cursor-pointer ${
               filtrosSecundariosActivos > 0
-                ? 'bg-[#2D6BFF] text-white border-[#2D6BFF] shadow-xs'
+                ? 'bg-[#111827] text-[#EDEDED] border-[#111827] dark:bg-[#EDEDED] dark:text-[#111827] dark:border-[#EDEDED] shadow-xs'
                 : filtrosAvanzadosAbiertos
                   ? 'bg-[#EDEDED] text-[#111827] border-[#9CA3AF]/50 dark:bg-white/15 dark:text-white dark:border-white/20'
                   : 'bg-white text-[#4B5563] border-[#9CA3AF]/40 hover:bg-[#EDEDED] dark:bg-[#111827] dark:text-[#EDEDED] dark:border-white/10 dark:hover:bg-white/10'
@@ -467,7 +467,7 @@ export function CajaMovimientosFilterBar({
             </svg>
             <span>Filtros</span>
             {filtrosSecundariosActivos > 0 && (
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-[#2D6BFF] font-black text-[10px]">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-[#111827] dark:bg-[#111827] dark:text-[#EDEDED] font-black text-[10px]">
                 {filtrosSecundariosActivos}
               </span>
             )}
@@ -515,7 +515,7 @@ export function CajaMovimientosFilterBar({
                   onChangeCuenta('TODAS');
                   onChangeEstado('TODOS');
                 }}
-                className="text-xs font-semibold text-[#2D6BFF] hover:underline cursor-pointer"
+                className="text-xs font-semibold text-[#111827] dark:text-[#EDEDED] hover:underline cursor-pointer"
               >
                 Limpiar avanzados
               </button>
@@ -577,7 +577,7 @@ export function CajaMovimientosFilterBar({
 
         <div className="flex items-center gap-1.5 text-[11px]">
           {filtroTipo !== 'TODOS' && (
-            <span className="rounded-md bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/40 px-2 py-0.5 font-medium text-blue-700 dark:text-blue-300">
+            <span className="rounded-md bg-[#EDEDED] dark:bg-white/10 border border-[#9CA3AF]/30 dark:border-white/15 px-2 py-0.5 font-medium text-[#111827] dark:text-[#EDEDED]">
               Tipo: {filtroTipo}
             </span>
           )}

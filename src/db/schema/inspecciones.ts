@@ -76,9 +76,9 @@ export interface RespuestaItemChecklistInspeccion {
   codigo: string;
   nombre: string;
   estado: 'BIEN' | 'CON_NOVEDAD' | 'NO_APLICA';
-  valorTextoONumero?: string | number | boolean;
-  observacion?: string;
-  multimediaIds?: string[];
+  valorTextoONumero?: string | number | boolean | undefined;
+  observacion?: string | undefined;
+  multimediaIds?: string[] | undefined;
 }
 
 /**

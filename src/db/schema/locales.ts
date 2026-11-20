@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
 import { user } from './auth';
 
 /**
@@ -12,6 +12,8 @@ export const localesAlquiler = sqliteTable('locales_alquiler', {
   slug: text('slug').notNull().unique(), // URL-friendly: ej. "rentas-medellin"
   ciudad: text('ciudad'),
   direccion: text('direccion'),
+  latitud: real('latitud'), // Latitud WGS84 del patio principal (ej. 6.2088)
+  longitud: real('longitud'), // Longitud WGS84 del patio principal (ej. -75.5697)
   telefono: text('telefono'),
   
   // Dueño o propietario actual del local (titular legal y operativo)

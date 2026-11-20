@@ -492,6 +492,8 @@ export function ModalDevolverCerrar({
   hoyISO,
   onExito,
 }: ModalDevolverCerrarProps) {
+  const [pasoDevolucion, setPasoDevolucion] = useState<1 | 2 | 3 | 4>(1);
+  const [mostrarAjustesExtra, setMostrarAjustesExtra] = useState<boolean>(false);
   const [fechaDevolucionReal, setFechaDevolucionReal] = useState<string>(hoyISO);
   const [medidorUsoRetorno, setMedidorUsoRetorno] = useState<number>(
     reserva.kilometrajeRetorno || reserva.kilometrajeEntrega + reserva.diasAlquiler * 55
@@ -549,17 +551,51 @@ export function ModalDevolverCerrar({
   const tieneSaldoPendiente = saldoDiferencia > 0;
   const tieneExcedente = saldoDiferencia < 0;
 
+  const pasosDevolucion = [
+    { num: 1 as const, label: 'Telemetría' },
+    { num: 2 as const, label: 'Ajustes' },
+    { num: 3 as const, label: 'Liquidación' },
+    { num: 4 as const, label: 'Garantía' },
+  ];
+
+  const avanzarPaso = () => {
+    setErrorMsg(null);
+    if (pasoDevolucion === 2) {
+      if (sobrecostoLocal > 0 && !motivoSobrecosto.trim()) {
+        setErrorMsg('Especifica el motivo del sobrecosto antes de continuar.');
+        return;
+      }
+      if (descuentoAjusteLocal > 0 && !motivoDescuento.trim()) {
+        setErrorMsg('Especifica el motivo del descuento antes de continuar.');
+        return;
+      }
+    }
+    setPasoDevolucion((prev) => (prev < 4 ? ((prev + 1) as 1 | 2 | 3 | 4) : prev));
+  };
+
+  const retrocederPaso = () => {
+    setErrorMsg(null);
+    setPasoDevolucion((prev) => (prev > 1 ? ((prev - 1) as 1 | 2 | 3 | 4) : prev));
+  };
+
   const manejarSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMsg(null);
 
+    if (pasoDevolucion < 4) {
+      avanzarPaso();
+      return;
+    }
+
     if (sobrecostoLocal > 0 && !motivoSobrecosto.trim()) {
       setErrorMsg('Debes especificar el motivo del sobrecosto establecido por el local.');
+      setPasoDevolucion(2);
       return;
     }
 
     if (descuentoAjusteLocal > 0 && !motivoDescuento.trim()) {
       setErrorMsg('Debes especificar el motivo del descuento o ajuste aplicado.');
+      setPasoDevolucion(2);
       return;
     }
 
@@ -636,17 +672,18 @@ export function ModalDevolverCerrar({
       aria-labelledby="modal-devolver-titulo"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overflow-y-auto"
     >
-      <div className="w-full max-w-lg rounded-[28px] bg-white border border-[#9CA3AF]/40 p-5 sm:p-6 shadow-xl space-y-4 my-8">
+      <div className="w-full max-w-md rounded-[28px] bg-white border border-[#9CA3AF]/40 p-5 sm:p-6 shadow-xl space-y-4">
+        {/* Cabecera limpia con indicador de paso */}
         <div className="flex items-center justify-between border-b border-[#9CA3AF]/30 pb-3">
           <div>
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
-              Recepción Pericial & Cierre de Contrato
+              Paso {pasoDevolucion} de 4 · Cierre de Contrato
             </span>
             <h3
               id="modal-devolver-titulo"
               className="font-display text-lg font-black text-[#111827]"
             >
-              Devolver y Cerrar #{reserva.codigo}
+              Devolver #{reserva.codigo}
             </h3>
           </div>
           <button
@@ -659,9 +696,28 @@ export function ModalDevolverCerrar({
           </button>
         </div>
 
-        {/* Copy canónico de responsabilidad del local */}
-        <div className="rounded-[16px] bg-[#EDEDED] border border-[#9CA3AF]/40 p-3 text-xs text-[#111827] font-medium leading-relaxed">
-          Las condiciones, ajustes y sobrecostos de devolución los establece el local.
+        {/* Stepper horizontal de 4 slides (Progressive Disclosure) */}
+        <div className="grid grid-cols-4 gap-1.5" role="tablist" aria-label="Etapas de devolución">
+          {pasosDevolucion.map((item) => {
+            const activo = pasoDevolucion === item.num;
+            const completado = pasoDevolucion > item.num;
+            return (
+              <button
+                key={item.num}
+                type="button"
+                onClick={() => setPasoDevolucion(item.num)}
+                className={`min-h-[38px] rounded-[12px] px-2 py-1.5 text-[11px] font-bold transition-colors cursor-pointer ${
+                  activo
+                    ? 'bg-[#111827] text-white'
+                    : completado
+                      ? 'bg-[#EDEDED] text-[#111827]'
+                      : 'bg-[#EDEDED]/50 text-[#4B5563]'
+                }`}
+              >
+                {item.num}. {item.label}
+              </button>
+            );
+          })}
         </div>
 
         {errorMsg && (
@@ -674,397 +730,504 @@ export function ModalDevolverCerrar({
         )}
 
         <form onSubmit={manejarSubmit} className="space-y-4 text-xs">
-          {/* Telemetría de Retorno */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-            <div>
-              <label className="block font-bold text-[#111827] mb-1">
-                Fecha devolución
-              </label>
-              <input
-                type="date"
-                required
-                value={fechaDevolucionReal}
-                onChange={(e) => setFechaDevolucionReal(e.target.value)}
-                className="w-full min-h-[44px] rounded-[12px] bg-[#EDEDED] border border-[#9CA3AF] px-3 py-2 text-base text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
-              />
-            </div>
-
-            <div>
-              <label className="block font-bold text-[#111827] mb-1">
-                Odómetro (km)
-              </label>
-              <input
-                type="number"
-                min={0}
-                required
-                value={medidorUsoRetorno}
-                onChange={(e) => setMedidorUsoRetorno(Number(e.target.value))}
-                className="w-full min-h-[44px] rounded-[12px] bg-[#EDEDED] border border-[#9CA3AF] px-3 py-2 text-base text-[#111827] font-bold focus-visible:ring-2 focus-visible:ring-[#111827]"
-              />
-            </div>
-
-            <div>
-              <label className="block font-bold text-[#111827] mb-1">
-                Nivel energía (%)
-              </label>
-              <input
-                type="number"
-                min={0}
-                max={100}
-                required
-                value={nivelEnergiaRetornoPct}
-                onChange={(e) => setNivelEnergiaRetornoPct(Number(e.target.value))}
-                className="w-full min-h-[44px] rounded-[12px] bg-[#EDEDED] border border-[#9CA3AF] px-3 py-2 text-base text-[#111827] font-bold focus-visible:ring-2 focus-visible:ring-[#111827]"
-              />
-            </div>
-          </div>
-
-          {/* Cláusula y Ajustes del Local (Solo con permiso) */}
-          {capacidades?.puedeAjustarTarifasYCargos && (
-            <div className="rounded-[18px] bg-[#EDEDED]/60 border border-[#9CA3AF]/40 p-3.5 space-y-3">
-              <span className="font-bold text-[#111827] block">
-                Ajustes y Sobrecostos del Local
-              </span>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-[#4B5563] mb-1">
-                    Sobrecosto local (+COP)
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    step={1000}
-                    value={sobrecostoLocal}
-                    onChange={(e) => setSobrecostoLocal(Math.max(0, Number(e.target.value)))}
-                    className="w-full min-h-[44px] rounded-[12px] bg-white border border-[#9CA3AF]/40 px-3 py-2 text-base text-[#111827] font-bold focus-visible:ring-2 focus-visible:ring-[#111827]"
-                  />
-                  {sobrecostoLocal > 0 && (
-                    <input
-                      type="text"
-                      placeholder="Motivo del sobrecosto..."
-                      value={motivoSobrecosto}
-                      onChange={(e) => setMotivoSobrecosto(e.target.value)}
-                      className="w-full min-h-[44px] rounded-[10px] bg-white border border-[#9CA3AF]/40 px-2.5 py-1.5 text-base text-[#111827] mt-1.5"
-                    />
-                  )}
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-[#4B5563] mb-1">
-                    Descuento / Devolución anticipada (-COP)
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    step={1000}
-                    value={descuentoAjusteLocal}
-                    onChange={(e) => setDescuentoAjusteLocal(Math.max(0, Number(e.target.value)))}
-                    className="w-full min-h-[44px] rounded-[12px] bg-white border border-[#9CA3AF]/40 px-3 py-2 text-base text-[#111827] font-bold focus-visible:ring-2 focus-visible:ring-[#111827]"
-                  />
-                  {descuentoAjusteLocal > 0 && (
-                    <input
-                      type="text"
-                      placeholder="Motivo del descuento..."
-                      value={motivoDescuento}
-                      onChange={(e) => setMotivoDescuento(e.target.value)}
-                      className="w-full min-h-[44px] rounded-[10px] bg-white border border-[#9CA3AF]/40 px-2.5 py-1.5 text-base text-[#111827] mt-1.5"
-                    />
-                  )}
-                </div>
+          {/* ===============================================================
+              SLIDE 1: TELEMETRÍA DE RETORNO (1 sola caja enfocada)
+              =============================================================== */}
+          {pasoDevolucion === 1 && (
+            <div className="rounded-[20px] bg-[#EDEDED]/70 border border-[#9CA3AF]/40 p-4 space-y-3.5 animate-fade-up">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563] block">
+                  Recepción en patio
+                </span>
+                <h4 className="font-display text-sm font-bold text-[#111827]">
+                  Telemetría de entrada del vehículo
+                </h4>
               </div>
 
               <div>
-                <label className="block font-semibold text-[#4B5563] mb-1">
-                  Cláusula u observaciones del encargado
+                <label className="block font-bold text-[#111827] mb-1">
+                  Fecha de devolución real
                 </label>
                 <input
-                  type="text"
-                  placeholder="Observaciones de cierre..."
-                  value={clausulaEncargado}
-                  onChange={(e) => setClausulaEncargado(e.target.value)}
-                  className="w-full min-h-[44px] rounded-[12px] bg-white border border-[#9CA3AF]/40 px-3 py-2 text-base text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                  type="date"
+                  required
+                  value={fechaDevolucionReal}
+                  onChange={(e) => setFechaDevolucionReal(e.target.value)}
+                  className="w-full min-h-[44px] rounded-[12px] bg-white border border-[#9CA3AF]/60 px-3 py-2 text-base text-[#111827] font-semibold focus-visible:ring-2 focus-visible:ring-[#111827]"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-[#111827] mb-1">
+                    Odómetro (km)
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    required
+                    value={medidorUsoRetorno}
+                    onChange={(e) => setMedidorUsoRetorno(Number(e.target.value))}
+                    className="w-full min-h-[44px] rounded-[12px] bg-white border border-[#9CA3AF]/60 px-3 py-2 text-base text-[#111827] font-bold focus-visible:ring-2 focus-visible:ring-[#111827]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-[#111827] mb-1">
+                    Nivel energía (%)
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    required
+                    value={nivelEnergiaRetornoPct}
+                    onChange={(e) => setNivelEnergiaRetornoPct(Number(e.target.value))}
+                    className="w-full min-h-[44px] rounded-[12px] bg-white border border-[#9CA3AF]/60 px-3 py-2 text-base text-[#111827] font-bold focus-visible:ring-2 focus-visible:ring-[#111827]"
+                  />
+                </div>
               </div>
             </div>
           )}
 
-          {/* Liquidación de Saldo Pendiente o Reembolso */}
-          <div className="rounded-[18px] bg-[#111827] text-white p-3.5 space-y-2.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[#9CA3AF] font-bold">Estado financiero final</span>
-              <span className="font-display font-black text-sm">
-                Total neto: {formatCop(totalConAjustes)}
-              </span>
-            </div>
+          {/* ===============================================================
+              SLIDE 2: AJUSTES DEL LOCAL (Progressive Disclosure)
+              =============================================================== */}
+          {pasoDevolucion === 2 && (
+            <div className="rounded-[20px] bg-[#EDEDED]/70 border border-[#9CA3AF]/40 p-4 space-y-3.5 animate-fade-up">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563] block">
+                    Condiciones de recepción
+                  </span>
+                  <h4 className="font-display text-sm font-bold text-[#111827]">
+                    Observaciones y ajustes
+                  </h4>
+                </div>
+                <span className="rounded-full bg-white px-2.5 py-1 font-mono text-[11px] font-bold text-[#111827] border border-[#9CA3AF]/40">
+                  {sobrecostoLocal === 0 && descuentoAjusteLocal === 0
+                    ? 'Sin cargos extra'
+                    : `${formatCop(sobrecostoLocal - descuentoAjusteLocal)}`}
+                </span>
+              </div>
 
-            {tieneSaldoPendiente && (
-              <div className="space-y-2 pt-1 border-t border-[#4B5563]/40">
-                <div className="flex items-center justify-between">
-                  <span>Saldo pendiente por cobrar:</span>
-                  <span className="font-bold text-white text-sm">
-                    {formatCop(saldoDiferencia)}
+              <div>
+                <label className="block font-semibold text-[#4B5563] mb-1">
+                  Observaciones de cierre (opcional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ej. Vehículo recibido a conformidad..."
+                  value={clausulaEncargado}
+                  onChange={(e) => setClausulaEncargado(e.target.value)}
+                  className="w-full min-h-[44px] rounded-[12px] bg-white border border-[#9CA3AF]/60 px-3 py-2 text-base text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                />
+              </div>
+
+              {capacidades?.puedeAjustarTarifasYCargos && (
+                <div className="pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setMostrarAjustesExtra((prev) => !prev)}
+                    className="w-full min-h-[44px] flex items-center justify-between rounded-[14px] bg-white border border-[#9CA3AF]/50 px-3.5 py-2.5 text-xs font-bold text-[#111827] cursor-pointer"
+                  >
+                    <span>
+                      {mostrarAjustesExtra
+                        ? '− Ocultar sobrecostos o descuentos'
+                        : '+ Agregar sobrecosto o descuento del local'}
+                    </span>
+                    <span className="text-[#4B5563]">Opcional</span>
+                  </button>
+
+                  {mostrarAjustesExtra && (
+                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                      <div>
+                        <label className="block font-semibold text-[#4B5563] mb-1">
+                          Sobrecosto (+COP)
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          step={1000}
+                          value={sobrecostoLocal}
+                          onChange={(e) =>
+                            setSobrecostoLocal(Math.max(0, Number(e.target.value)))
+                          }
+                          className="w-full min-h-[44px] rounded-[12px] bg-white border border-[#9CA3AF]/60 px-3 py-2 text-base text-[#111827] font-bold"
+                        />
+                        {sobrecostoLocal > 0 && (
+                          <input
+                            type="text"
+                            placeholder="Motivo del sobrecosto..."
+                            value={motivoSobrecosto}
+                            onChange={(e) => setMotivoSobrecosto(e.target.value)}
+                            className="w-full min-h-[44px] rounded-[10px] bg-white border border-[#9CA3AF]/60 px-2.5 py-1.5 text-base text-[#111827] mt-1.5"
+                          />
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block font-semibold text-[#4B5563] mb-1">
+                          Descuento (-COP)
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          step={1000}
+                          value={descuentoAjusteLocal}
+                          onChange={(e) =>
+                            setDescuentoAjusteLocal(Math.max(0, Number(e.target.value)))
+                          }
+                          className="w-full min-h-[44px] rounded-[12px] bg-white border border-[#9CA3AF]/60 px-3 py-2 text-base text-[#111827] font-bold"
+                        />
+                        {descuentoAjusteLocal > 0 && (
+                          <input
+                            type="text"
+                            placeholder="Motivo del descuento..."
+                            value={motivoDescuento}
+                            onChange={(e) => setMotivoDescuento(e.target.value)}
+                            className="w-full min-h-[44px] rounded-[10px] bg-white border border-[#9CA3AF]/60 px-2.5 py-1.5 text-base text-[#111827] mt-1.5"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ===============================================================
+              SLIDE 3: LIQUIDACIÓN FINANCIERA EN CAJA (1 sola tarjeta)
+              =============================================================== */}
+          {pasoDevolucion === 3 && (
+            <div className="rounded-[20px] bg-[#111827] text-white p-4 space-y-3.5 animate-fade-up">
+              <div className="flex items-center justify-between border-b border-[#4B5563]/40 pb-2.5">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF] block">
+                    Estado financiero final
+                  </span>
+                  <span className="font-display font-black text-base text-white">
+                    Total neto: {formatCop(totalConAjustes)}
                   </span>
                 </div>
+                <span className="rounded-full bg-[#1F2937] border border-[#4B5563] px-2.5 py-1 text-[11px] font-bold text-[#EDEDED]">
+                  Abonado: {formatCop(reserva.montoReportado)}
+                </span>
+              </div>
 
-                <label className="flex items-center gap-2 cursor-pointer pt-1">
-                  <input
-                    type="checkbox"
-                    checked={cobrarSaldoAhora}
-                    onChange={(e) => setCobrarSaldoAhora(e.target.checked)}
-                    className="h-4 w-4 rounded text-[#111827]"
-                  />
-                  <span>Cobrar saldo ahora y asentar en caja</span>
-                </label>
+              {!tieneSaldoPendiente && !tieneExcedente && (
+                <p className="text-xs text-[#EDEDED] py-2">
+                  El contrato se encuentra 100% paz y salvo. No hay saldo pendiente por cobrar.
+                </p>
+              )}
 
-                {cobrarSaldoAhora && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                    <select
-                      value={cuentaCobroId}
-                      onChange={(e) => setCuentaCobroId(e.target.value)}
-                      className="w-full min-h-[44px] rounded-[10px] bg-[#1F2937] border border-[#4B5563] px-2.5 py-1 text-base text-white"
+              {tieneSaldoPendiente && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[#EDEDED]">Saldo pendiente por cobrar:</span>
+                    <span className="font-mono font-bold text-white text-sm">
+                      {formatCop(saldoDiferencia)}
+                    </span>
+                  </div>
+
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={cobrarSaldoAhora}
+                      onChange={(e) => setCobrarSaldoAhora(e.target.checked)}
+                      className="h-4 w-4 rounded text-[#111827]"
+                    />
+                    <span className="font-semibold">Cobrar saldo ahora y asentar en caja</span>
+                  </label>
+
+                  {cobrarSaldoAhora && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                      <div>
+                        <label className="block text-[10px] uppercase tracking-wider text-[#9CA3AF] mb-1">
+                          Cuenta de ingreso
+                        </label>
+                        <select
+                          value={cuentaCobroId}
+                          onChange={(e) => setCuentaCobroId(e.target.value)}
+                          className="w-full min-h-[44px] rounded-[12px] bg-[#1F2937] border border-[#4B5563] px-3 py-1.5 text-base text-white"
+                        >
+                          {cuentasFinancieras?.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.nombre}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] uppercase tracking-wider text-[#9CA3AF] mb-1">
+                          Método de pago
+                        </label>
+                        <select
+                          value={metodoCobro}
+                          onChange={(e) =>
+                            setMetodoCobro(
+                              e.target.value as 'efectivo' | 'transferencia' | 'tarjeta'
+                            )
+                          }
+                          className="w-full min-h-[44px] rounded-[12px] bg-[#1F2937] border border-[#4B5563] px-3 py-1.5 text-base text-white"
+                        >
+                          <option value="efectivo">Efectivo</option>
+                          <option value="transferencia">Transferencia / PSE</option>
+                          <option value="tarjeta">Tarjeta Datáfono</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {tieneExcedente && capacidades?.puedeReembolsarYAnularCaja && (
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span>Excedente a favor del cliente:</span>
+                    <span className="font-bold text-[#EDEDED] text-sm">
+                      {formatCop(Math.abs(saldoDiferencia))}
+                    </span>
+                  </div>
+
+                  <div className="flex gap-3 pt-1">
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="resolucionExcedente"
+                        value="REEMBOLSO_ALQUILER"
+                        checked={resolucionExcedente === 'REEMBOLSO_ALQUILER'}
+                        onChange={() => setResolucionExcedente('REEMBOLSO_ALQUILER')}
+                        className="text-white"
+                      />
+                      <span>Reembolsar en caja</span>
+                    </label>
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="resolucionExcedente"
+                        value="RETENER_SALDO_LOCAL"
+                        checked={resolucionExcedente === 'RETENER_SALDO_LOCAL'}
+                        onChange={() => setResolucionExcedente('RETENER_SALDO_LOCAL')}
+                        className="text-white"
+                      />
+                      <span>Retener saldo local</span>
+                    </label>
+                  </div>
+
+                  {resolucionExcedente === 'REEMBOLSO_ALQUILER' &&
+                    cuentasFinancieras &&
+                    cuentasFinancieras.length > 0 && (
+                      <div className="pt-1">
+                        <label
+                          htmlFor="cuenta-reembolso-select"
+                          className="block text-[10px] text-[#9CA3AF] mb-1"
+                        >
+                          Cuenta de salida para reembolso:
+                        </label>
+                        <select
+                          id="cuenta-reembolso-select"
+                          value={cuentaReembolsoId}
+                          onChange={(e) => setCuentaReembolsoId(e.target.value)}
+                          className="w-full min-h-[44px] rounded-[10px] bg-[#1F2937] border border-[#4B5563] px-2.5 py-1 text-base text-white"
+                        >
+                          {cuentasFinancieras.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.nombre}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ===============================================================
+              SLIDE 4: DEPÓSITO DE GARANTÍA Y CIERRE FINAL (1 sola caja)
+              =============================================================== */}
+          {pasoDevolucion === 4 && (
+            <div className="rounded-[20px] bg-[#EDEDED]/75 border border-[#9CA3AF]/40 p-4 space-y-3.5 animate-fade-up">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563] block">
+                  Paso final de cierre
+                </span>
+                <h4 className="font-display text-sm font-bold text-[#111827]">
+                  Resolución de Depósito de Garantía
+                </h4>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { id: 'DEVOLVER_TOTAL', label: 'Devolver Total' },
+                  { id: 'DEVOLVER_PARCIAL', label: 'Devolver Parcial' },
+                  { id: 'RETENER_CARGOS', label: 'Retener Cargos' },
+                  { id: 'DEJAR_CUSTODIA', label: 'Dejar en Custodia' },
+                ].map((op) => (
+                  <button
+                    key={op.id}
+                    type="button"
+                    onClick={() =>
+                      setResolucionGarantia(
+                        op.id as
+                          | 'DEVOLVER_TOTAL'
+                          | 'DEVOLVER_PARCIAL'
+                          | 'RETENER_CARGOS'
+                          | 'DEJAR_CUSTODIA'
+                      )
+                    }
+                    className={`min-h-[44px] rounded-[12px] p-2 text-xs font-bold border cursor-pointer ${
+                      resolucionGarantia === op.id
+                        ? 'bg-[#111827] text-white border-[#111827]'
+                        : 'bg-white text-[#111827] border-[#9CA3AF]/40'
+                    }`}
+                  >
+                    {op.label}
+                  </button>
+                ))}
+              </div>
+
+              {(resolucionGarantia === 'DEVOLVER_TOTAL' ||
+                resolucionGarantia === 'DEVOLVER_PARCIAL') &&
+                cuentasFinancieras &&
+                cuentasFinancieras.length > 0 && (
+                  <div>
+                    <label
+                      htmlFor="cuenta-garantia-select"
+                      className="block text-[11px] font-semibold text-[#4B5563] mb-1"
                     >
-                      {cuentasFinancieras?.map((c) => (
+                      Cuenta bancaria de desembolso:
+                    </label>
+                    <select
+                      id="cuenta-garantia-select"
+                      value={cuentaGarantiaId}
+                      onChange={(e) => setCuentaGarantiaId(e.target.value)}
+                      className="w-full min-h-[44px] rounded-[12px] bg-white border border-[#9CA3AF]/50 px-3 py-1.5 text-base text-[#111827]"
+                    >
+                      {cuentasFinancieras.map((c) => (
                         <option key={c.id} value={c.id}>
                           {c.nombre}
                         </option>
                       ))}
                     </select>
-
-                    <select
-                      value={metodoCobro}
-                      onChange={(e) =>
-                        setMetodoCobro(
-                          e.target.value as 'efectivo' | 'transferencia' | 'tarjeta'
-                        )
-                      }
-                      className="w-full min-h-[44px] rounded-[10px] bg-[#1F2937] border border-[#4B5563] px-2.5 py-1 text-base text-white"
-                    >
-                      <option value="efectivo">Efectivo</option>
-                      <option value="transferencia">Transferencia / PSE</option>
-                      <option value="tarjeta">Tarjeta Datáfono</option>
-                    </select>
                   </div>
                 )}
-              </div>
-            )}
 
-            {tieneExcedente && capacidades?.puedeReembolsarYAnularCaja && (
-              <div className="space-y-2 pt-1 border-t border-[#4B5563]/40">
-                <div className="flex items-center justify-between">
-                  <span>Excedente a favor del cliente:</span>
-                  <span className="font-bold text-[#EDEDED] text-sm">
-                    {formatCop(Math.abs(saldoDiferencia))}
-                  </span>
-                </div>
-
-                <div className="flex gap-2 pt-1">
-                  <label className="flex items-center gap-1.5 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="resolucionExcedente"
-                      value="REEMBOLSO_ALQUILER"
-                      checked={resolucionExcedente === 'REEMBOLSO_ALQUILER'}
-                      onChange={() => setResolucionExcedente('REEMBOLSO_ALQUILER')}
-                      className="text-white"
-                    />
-                    <span>Reembolsar en caja</span>
+              {resolucionGarantia === 'DEVOLVER_PARCIAL' && (
+                <div>
+                  <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
+                    Monto a devolver de garantía (COP)
                   </label>
-                  <label className="flex items-center gap-1.5 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="resolucionExcedente"
-                      value="RETENER_SALDO_LOCAL"
-                      checked={resolucionExcedente === 'RETENER_SALDO_LOCAL'}
-                      onChange={() => setResolucionExcedente('RETENER_SALDO_LOCAL')}
-                      className="text-white"
-                    />
-                    <span>Retener saldo local</span>
-                  </label>
-                </div>
-
-                {resolucionExcedente === 'REEMBOLSO_ALQUILER' &&
-                  cuentasFinancieras &&
-                  cuentasFinancieras.length > 0 && (
-                    <div className="pt-1">
-                      <label
-                        htmlFor="cuenta-reembolso-select"
-                        className="block text-[10px] text-[#9CA3AF] mb-1"
-                      >
-                        Cuenta de salida para reembolso:
-                      </label>
-                      <select
-                        id="cuenta-reembolso-select"
-                        value={cuentaReembolsoId}
-                        onChange={(e) => setCuentaReembolsoId(e.target.value)}
-                        className="w-full min-h-[44px] rounded-[10px] bg-[#1F2937] border border-[#4B5563] px-2.5 py-1 text-base text-white"
-                      >
-                        {cuentasFinancieras.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.nombre}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-              </div>
-            )}
-          </div>
-
-          {/* Resolución del Depósito de Garantía */}
-          <div className="rounded-[18px] bg-[#EDEDED] border border-[#9CA3AF]/40 p-3.5 space-y-2">
-            <span className="font-bold text-[#111827] block">
-              Resolución de Depósito de Garantía
-            </span>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { id: 'DEVOLVER_TOTAL', label: 'Devolver Total' },
-                { id: 'DEVOLVER_PARCIAL', label: 'Devolver Parcial' },
-                { id: 'RETENER_CARGOS', label: 'Retener Cargos' },
-                { id: 'DEJAR_CUSTODIA', label: 'Dejar en Custodia' },
-              ].map((op) => (
-                <button
-                  key={op.id}
-                  type="button"
-                  onClick={() =>
-                    setResolucionGarantia(
-                      op.id as 'DEVOLVER_TOTAL' | 'DEVOLVER_PARCIAL' | 'RETENER_CARGOS' | 'DEJAR_CUSTODIA'
-                    )
-                  }
-                  className={`min-h-[44px] rounded-[12px] p-2 text-xs font-bold border cursor-pointer ${
-                    resolucionGarantia === op.id
-                      ? 'bg-[#111827] text-white border-[#111827]'
-                      : 'bg-white text-[#111827] border-[#9CA3AF]/40'
-                  }`}
-                >
-                  {op.label}
-                </button>
-              ))}
-            </div>
-
-            {(resolucionGarantia === 'DEVOLVER_TOTAL' ||
-              resolucionGarantia === 'DEVOLVER_PARCIAL') &&
-              cuentasFinancieras &&
-              cuentasFinancieras.length > 0 && (
-                <div className="pt-1">
-                  <label
-                    htmlFor="cuenta-garantia-select"
-                    className="block text-[11px] font-semibold text-[#4B5563] mb-1"
-                  >
-                    Cuenta bancaria de desembolso:
-                  </label>
-                  <select
-                    id="cuenta-garantia-select"
-                    value={cuentaGarantiaId}
-                    onChange={(e) => setCuentaGarantiaId(e.target.value)}
-                    className="w-full min-h-[44px] rounded-[10px] bg-white border border-[#9CA3AF]/40 px-2.5 py-1 text-base text-[#111827]"
-                  >
-                    {cuentasFinancieras.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.nombre}
-                      </option>
-                    ))}
-                  </select>
+                  <input
+                    type="number"
+                    min={0}
+                    step={1000}
+                    value={montoDevolverGarantia}
+                    onChange={(e) => setMontoDevolverGarantia(Number(e.target.value))}
+                    className="w-full min-h-[44px] rounded-[12px] bg-white border border-[#9CA3AF]/50 px-3 py-2 text-base text-[#111827] font-bold"
+                  />
                 </div>
               )}
 
-            {resolucionGarantia === 'DEVOLVER_PARCIAL' && (
-              <div className="pt-1">
-                <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
-                  Monto a devolver de garantía (COP)
-                </label>
-                <input
-                  type="number"
-                  min={0}
-                  step={1000}
-                  value={montoDevolverGarantia}
-                  onChange={(e) => setMontoDevolverGarantia(Number(e.target.value))}
-                  className="w-full min-h-[44px] rounded-[12px] bg-white border border-[#9CA3AF]/40 px-3 py-2 text-base text-[#111827] font-bold"
-                />
-              </div>
-            )}
+              {resolucionGarantia === 'RETENER_CARGOS' && (
+                <div>
+                  <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
+                    Motivo de retención de garantía
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Detallar daño, multa o novedad..."
+                    value={motivoRetencionGarantia}
+                    onChange={(e) => setMotivoRetencionGarantia(e.target.value)}
+                    className="w-full min-h-[44px] rounded-[12px] bg-white border border-[#9CA3AF]/50 px-3 py-2 text-base text-[#111827]"
+                  />
+                </div>
+              )}
 
-            {resolucionGarantia === 'RETENER_CARGOS' && (
-              <div className="pt-1">
-                <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
-                  Motivo de retención de garantía
-                </label>
-                <input
-                  type="text"
-                  placeholder="Detallar daño, multa o novedad..."
-                  value={motivoRetencionGarantia}
-                  onChange={(e) => setMotivoRetencionGarantia(e.target.value)}
-                  className="w-full min-h-[44px] rounded-[12px] bg-white border border-[#9CA3AF]/40 px-3 py-2 text-base text-[#111827]"
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Toggle Mantenimiento Taller */}
-          {capacidades?.puedeGestionarTaller && (
-            <div className="rounded-[18px] bg-[#EDEDED] border border-[#9CA3AF]/40 p-3.5 space-y-2">
-              <label className="flex items-center gap-2 cursor-pointer font-bold text-[#111827]">
-                <input
-                  type="checkbox"
-                  checked={requiereMantenimiento}
-                  onChange={(e) => setRequiereMantenimiento(e.target.checked)}
-                  className="h-4 w-4 rounded text-[#111827]"
-                />
-                <span>Enviar vehículo directamente a taller / mantenimiento</span>
-              </label>
-
-              {requiereMantenimiento && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                  <div>
-                    <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
-                      Tipo de mantenimiento
-                    </label>
-                    <select
-                      value={tipoMantenimiento}
-                      onChange={(e) =>
-                        setTipoMantenimiento(
-                          e.target.value as 'PREVENTIVO' | 'CORRECTIVO_NOVEDAD' | 'ALISTAMIENTO'
-                        )
-                      }
-                      className="w-full min-h-[44px] rounded-[12px] bg-white border border-[#9CA3AF]/40 px-3 py-2 text-base text-[#111827]"
-                    >
-                      <option value="CORRECTIVO_NOVEDAD">Correctivo / Novedad</option>
-                      <option value="PREVENTIVO">Preventivo</option>
-                      <option value="ALISTAMIENTO">Alistamiento</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
-                      Fecha estimada fin taller
-                    </label>
+              {capacidades?.puedeGestionarTaller && (
+                <div className="pt-2 border-t border-[#9CA3AF]/30">
+                  <label className="flex items-center gap-2 cursor-pointer font-semibold text-[#111827]">
                     <input
-                      type="date"
-                      value={fechaFinTaller}
-                      onChange={(e) => setFechaFinTaller(e.target.value)}
-                      className="w-full min-h-[44px] rounded-[12px] bg-white border border-[#9CA3AF]/40 px-3 py-2 text-base text-[#111827]"
+                      type="checkbox"
+                      checked={requiereMantenimiento}
+                      onChange={(e) => setRequiereMantenimiento(e.target.checked)}
+                      className="h-4 w-4 rounded text-[#111827]"
                     />
-                  </div>
+                    <span>Enviar unidad a taller / alistamiento al cerrar</span>
+                  </label>
+
+                  {requiereMantenimiento && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+                      <select
+                        value={tipoMantenimiento}
+                        onChange={(e) =>
+                          setTipoMantenimiento(
+                            e.target.value as
+                              | 'PREVENTIVO'
+                              | 'CORRECTIVO_NOVEDAD'
+                              | 'ALISTAMIENTO'
+                          )
+                        }
+                        className="w-full min-h-[44px] rounded-[12px] bg-white border border-[#9CA3AF]/50 px-3 py-2 text-base text-[#111827]"
+                      >
+                        <option value="CORRECTIVO_NOVEDAD">Correctivo / Novedad</option>
+                        <option value="PREVENTIVO">Preventivo</option>
+                        <option value="ALISTAMIENTO">Alistamiento</option>
+                      </select>
+
+                      <input
+                        type="date"
+                        value={fechaFinTaller}
+                        onChange={(e) => setFechaFinTaller(e.target.value)}
+                        className="w-full min-h-[44px] rounded-[12px] bg-white border border-[#9CA3AF]/50 px-3 py-2 text-base text-[#111827]"
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           )}
 
-          <div className="flex justify-end gap-2.5 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="min-h-[44px] rounded-full bg-[#EDEDED] border border-[#9CA3AF]/60 px-5 py-2.5 text-xs font-bold text-[#111827] cursor-pointer"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={guardando}
-              className="min-h-[44px] rounded-full bg-[#111827] px-6 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] disabled:opacity-50 cursor-pointer"
-            >
-              {guardando ? 'Cerrando contrato...' : 'Registrar Devolución y Cerrar'}
-            </button>
+          {/* Barra de navegación inferior por Slide */}
+          <div className="flex items-center justify-between gap-2.5 pt-2">
+            {pasoDevolucion > 1 ? (
+              <button
+                type="button"
+                onClick={retrocederPaso}
+                className="min-h-[44px] rounded-full bg-[#EDEDED] border border-[#9CA3AF]/60 px-5 py-2.5 text-xs font-bold text-[#111827] cursor-pointer"
+              >
+                ← Anterior
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={onClose}
+                className="min-h-[44px] rounded-full bg-[#EDEDED] border border-[#9CA3AF]/60 px-5 py-2.5 text-xs font-bold text-[#111827] cursor-pointer"
+              >
+                Cancelar
+              </button>
+            )}
+
+            {pasoDevolucion < 4 ? (
+              <button
+                type="button"
+                onClick={avanzarPaso}
+                className="min-h-[44px] flex-1 rounded-full bg-[#111827] px-6 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] cursor-pointer"
+              >
+                Siguiente paso →
+              </button>
+            ) : (
+              <button
+                type="submit"
+                disabled={guardando}
+                className="min-h-[44px] flex-1 rounded-full bg-[#111827] px-6 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] disabled:opacity-50 cursor-pointer"
+              >
+                {guardando ? 'Cerrando contrato...' : 'Registrar Devolución y Cerrar'}
+              </button>
+            )}
           </div>
         </form>
       </div>

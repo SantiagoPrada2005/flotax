@@ -61,6 +61,11 @@ import {
   crearMantenimiento,
   cambiarEstadoMantenimiento,
 } from './mantenimientos';
+import {
+  buscarDireccionesAction,
+  geocodificarInversaAction,
+  validarCoberturaDomicilioAction,
+} from './ubicacion';
 
 export const server = {
   perfil: {
@@ -128,6 +133,11 @@ export const server = {
   mantenimientos: {
     crearMantenimiento,
     cambiarEstadoMantenimiento,
+  },
+  ubicacion: {
+    buscarDirecciones: buscarDireccionesAction,
+    geocodificarInversa: geocodificarInversaAction,
+    validarCobertura: validarCoberturaDomicilioAction,
   },
 };
 

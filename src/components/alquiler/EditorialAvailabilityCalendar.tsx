@@ -152,88 +152,59 @@ export default function EditorialAvailabilityCalendar({
   return (
     <section
       aria-label="Calendario de franjas disponibles"
-      className="relative overflow-hidden rounded-[32px] bg-white border border-[#9CA3AF]/45 px-4 pt-4 pb-3.5 sm:p-6 shadow-[0_20px_50px_-15px_rgba(17,24,39,0.12)]"
+      className="relative overflow-hidden rounded-[28px] bg-white border border-[#9CA3AF]/45 px-4 pt-4 pb-3.5 sm:p-6 shadow-xs dark:bg-[#1F2937] dark:border-white/12"
     >
-      {/* Halo Geométrico Arquitectónico de Fondo detrás del Vehículo */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -top-10 -right-10 h-56 w-56 rounded-full border border-[#9CA3AF]/25 bg-[radial-gradient(circle_at_center,_rgba(237,237,237,0.85)_0%,_transparent_72%)]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute top-2 right-2 h-36 w-36 rounded-full border border-[#9CA3AF]/20"
-      />
+      {/* 1. Cabecera del Selector de Fechas: Contador de Días + Rango */}
+      <div className="flex items-center justify-between gap-3 border-b border-[#9CA3AF]/30 pb-3.5 dark:border-white/12">
+        <div className="flex items-baseline gap-2.5">
+          <span
+            key={diasSeleccionados}
+            className="animate-zoom-in font-display text-[3.25rem] sm:text-[3.75rem] font-black leading-[0.84] tracking-tighter text-[#111827] dark:text-[#EDEDED] tabular-nums select-none"
+          >
+            {diasSeleccionados > 0 ? diasSeleccionados : '—'}
+          </span>
 
-      {/* 1. Cabecera Unificada: Identidad del Vehículo + Contador Suizo + Imagen de Estudio */}
-      <div className="relative z-10 flex items-start justify-between gap-2">
-        {/* Columna Izquierda: Marca/Modelo + Contador Gigante */}
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
-            <span className="font-display text-base sm:text-lg font-black tracking-tight text-[#111827] truncate">
-              {vehiculo.marca}
+          <div className="flex flex-col">
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#4B5563] dark:text-[#D1D5DB]">
+              {diasSeleccionados === 1 ? 'Día elegido' : 'Días de alquiler'}
             </span>
-            <span className="rounded-full bg-[#EDEDED] border border-[#9CA3AF]/40 px-2 py-0.5 text-[10px] font-bold text-[#4B5563]">
-              {vehiculo.placa}
-            </span>
-          </div>
-          <p className="text-[11px] font-medium text-[#4B5563] truncate">
-            {vehiculo.modelo}
-          </p>
-
-          {/* Contador Gigante SWA + Píldora de Rango */}
-          <div className="mt-2 flex items-baseline gap-2.5">
-            <span
-              key={diasSeleccionados}
-              className="animate-zoom-in font-display text-[3.75rem] sm:text-[4.5rem] font-black leading-[0.84] tracking-tighter text-[#111827] tabular-nums select-none"
-            >
-              {diasSeleccionados > 0 ? diasSeleccionados : '—'}
-            </span>
-
-            <div className="flex flex-col">
-              <span className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#4B5563]">
-                {diasSeleccionados === 1 ? 'Día elegido' : 'Días de alquiler'}
+            {fechaInicio ? (
+              <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-[#111827] px-2.5 py-0.5 text-[11px] font-bold text-white shadow-2xs dark:bg-[#EDEDED] dark:text-[#111827]">
+                <span>{formatearFechaCorta(fechaInicio)}</span>
+                <span className="opacity-70">→</span>
+                <span>{formatearFechaCorta(fechaFin ?? fechaInicio)}</span>
               </span>
-              {fechaInicio ? (
-                <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-[#111827] px-2.5 py-0.5 text-[11px] font-bold text-white shadow-2xs">
-                  <span>{formatearFechaCorta(fechaInicio)}</span>
-                  <span className="text-[#9CA3AF]">→</span>
-                  <span>{formatearFechaCorta(fechaFin ?? fechaInicio)}</span>
-                </span>
-              ) : (
-                <span className="mt-0.5 text-[11px] font-medium text-[#4B5563]">
-                  Toca un día libre
-                </span>
-              )}
-            </div>
+            ) : (
+              <span className="mt-0.5 text-[11px] font-medium text-[#4B5563] dark:text-[#D1D5DB]">
+                Toca un día libre
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Columna Derecha: Imagen del Vehículo Integrada en el Calendario */}
-        <div className="relative w-38 sm:w-48 shrink-0 flex flex-col items-end">
-          <div className="relative w-full pt-1">
-            <img
-              src={vehiculo.imagenUrl}
-              alt={`${vehiculo.marca} ${vehiculo.modelo}`}
-              className="h-22 sm:h-26 w-full object-contain drop-shadow-[0_10px_14px_rgba(17,24,39,0.18)] animate-float"
-            />
-            <div className="mx-auto -mt-2 h-2.5 w-4/5 rounded-full bg-[radial-gradient(ellipse_at_center,_rgba(17,24,39,0.22)_0%,_transparent_75%)]" />
-          </div>
+        <div className="text-right">
+          <span className="block text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#D1D5DB]">
+            Horario estándar
+          </span>
+          <span className="mt-0.5 block font-mono text-xs font-bold text-[#111827] dark:text-[#EDEDED]">
+            09:00 → 18:00
+          </span>
         </div>
       </div>
 
       {/* 2. Barra Editorial: MES / AÑO + Día Semana + Controles de Mes */}
-      <div className="relative z-10 mt-2 flex items-end justify-between border-b border-[#9CA3AF]/30 pb-2.5">
+      <div className="mt-3 flex items-end justify-between border-b border-[#9CA3AF]/25 pb-2.5 dark:border-white/10">
         <div className="flex items-baseline gap-2">
-          <h3 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-[#111827] leading-none">
+          <h3 className="font-display text-xl sm:text-2xl font-black tracking-tight text-[#111827] dark:text-[#EDEDED] leading-none">
             {calendarioMes.nombreMes}
           </h3>
-          <span className="font-display text-lg sm:text-xl font-medium tracking-tight text-[#4B5563] leading-none tabular-nums">
+          <span className="font-display text-base sm:text-lg font-medium tracking-tight text-[#4B5563] dark:text-[#D1D5DB] leading-none tabular-nums">
             {calendarioMes.anio}
           </span>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="font-display text-xs sm:text-sm font-extrabold tracking-tight text-[#4B5563] uppercase mr-1">
+          <span className="font-display text-xs sm:text-sm font-extrabold tracking-tight text-[#4B5563] dark:text-[#D1D5DB] uppercase mr-1">
             {codigoDiaEditorial}
           </span>
 
@@ -242,7 +213,7 @@ export default function EditorialAvailabilityCalendar({
             onClick={() => cambiarMes(-1)}
             disabled={!puedeIrMesAnterior}
             aria-label="Mes anterior"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#EDEDED] border border-[#9CA3AF]/45 text-[#111827] transition-transform active:scale-[0.96] disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+            className="fx-press flex h-9 w-9 items-center justify-center rounded-full bg-[#EDEDED] border border-[#9CA3AF]/45 text-[#111827] disabled:opacity-30 disabled:pointer-events-none cursor-pointer dark:bg-[#111827] dark:border-white/15 dark:text-[#EDEDED]"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -259,7 +230,7 @@ export default function EditorialAvailabilityCalendar({
             type="button"
             onClick={() => cambiarMes(1)}
             aria-label="Mes siguiente"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#EDEDED] border border-[#9CA3AF]/45 text-[#111827] transition-transform active:scale-[0.96] cursor-pointer"
+            className="fx-press flex h-9 w-9 items-center justify-center rounded-full bg-[#EDEDED] border border-[#9CA3AF]/45 text-[#111827] cursor-pointer dark:bg-[#111827] dark:border-white/15 dark:text-[#EDEDED]"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -275,10 +246,10 @@ export default function EditorialAvailabilityCalendar({
         </div>
       </div>
 
-      {/* 3. Píldoras de Franjas Disponibles (Estilo Segmented Pills de la Referencia) */}
+      {/* 3. Píldoras de Franjas Disponibles */}
       {calendarioMes.franjasMes.length > 0 && (
-        <div className="relative z-10 mt-2.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
-          <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-[#4B5563] mr-1">
+        <div className="mt-2.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+          <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#D1D5DB] mr-1">
             Franjas:
           </span>
           {calendarioMes.franjasMes.map((franja) => {
@@ -290,16 +261,18 @@ export default function EditorialAvailabilityCalendar({
                 key={franja.id}
                 type="button"
                 onClick={() => aplicarFranjaRapida(franja)}
-                className={`shrink-0 min-h-[32px] rounded-full px-3 py-1 text-[11px] font-bold transition-transform active:scale-[0.96] cursor-pointer border ${
+                className={`fx-press shrink-0 min-h-[32px] rounded-full px-3 py-1 text-[11px] font-bold cursor-pointer border ${
                   franjaSeleccionada
-                    ? 'bg-[#111827] text-white border-[#111827] shadow-2xs'
-                    : 'bg-[#EDEDED] text-[#111827] border-[#9CA3AF]/45 hover:border-[#111827]'
+                    ? 'bg-[#111827] text-white border-[#111827] shadow-2xs dark:bg-[#EDEDED] dark:text-[#111827] dark:border-[#EDEDED]'
+                    : 'bg-[#EDEDED] text-[#111827] border-[#9CA3AF]/45 hover:border-[#111827] dark:bg-[#111827] dark:text-[#EDEDED] dark:border-white/15 dark:hover:border-white/40'
                 }`}
               >
                 <span>{franja.etiquetaCorta}</span>
                 <span
                   className={`ml-1 text-[10px] ${
-                    franjaSeleccionada ? 'text-[#EDEDED]' : 'text-[#4B5563]'
+                    franjaSeleccionada
+                      ? 'text-[#EDEDED] dark:text-[#4B5563]'
+                      : 'text-[#4B5563] dark:text-[#D1D5DB]'
                   }`}
                 >
                   · {franja.diasDisponibles}d
@@ -311,11 +284,11 @@ export default function EditorialAvailabilityCalendar({
       )}
 
       {/* 4. Encabezados de Semana + Matriz Circular de 7 Columnas */}
-      <div className="relative z-10 mt-2 grid grid-cols-7 gap-1 text-center">
+      <div className="mt-2 grid grid-cols-7 gap-1 text-center">
         {ENCABEZADOS_SEMANA_EDITORIAL.map((dia) => (
           <div
             key={dia.corto}
-            className="py-0.5 text-[10px] font-semibold tracking-tight text-[#4B5563]"
+            className="py-0.5 text-[10px] font-semibold tracking-tight text-[#4B5563] dark:text-[#D1D5DB]"
           >
             {dia.corto}
           </div>
@@ -324,7 +297,7 @@ export default function EditorialAvailabilityCalendar({
 
       <div
         key={`${calendarioMes.anio}-${calendarioMes.mesIndexCero}`}
-        className="relative z-10 mt-1 grid grid-cols-7 gap-y-1.5 gap-x-1.5 sm:gap-2 animate-fade-in"
+        className="mt-1 grid grid-cols-7 gap-y-1.5 gap-x-1.5 sm:gap-2 animate-fade-in"
       >
         {Array.from({ length: calendarioMes.celdasVaciasInicio }).map((_, idx) => (
           <div key={`empty-${idx}`} className="h-10 sm:h-11 w-full" aria-hidden="true" />
@@ -349,26 +322,27 @@ export default function EditorialAvailabilityCalendar({
           let clasesCirculo = '';
           if (esInicio || esFin) {
             clasesCirculo =
-              'bg-[#111827] text-white font-black shadow-md ring-2 ring-[#111827] ring-offset-1 ring-offset-white z-10';
+              'bg-[#111827] text-white font-black shadow-md ring-2 ring-[#111827] ring-offset-1 ring-offset-white dark:bg-[#EDEDED] dark:text-[#111827] dark:ring-[#EDEDED] dark:ring-offset-[#1F2937] z-10';
           } else if (esIntermedio) {
-            clasesCirculo = 'bg-[#1F2937] text-white font-bold z-10';
+            clasesCirculo =
+              'bg-[#1F2937] text-white font-bold dark:bg-white/20 dark:text-[#EDEDED] z-10';
           } else if (dia.estado === 'DISPONIBLE') {
             if (perteneceAFranjaActiva) {
               clasesCirculo =
-                'bg-[#EDEDED] text-[#111827] font-semibold border border-[#9CA3AF]/55 hover:border-[#111827]';
+                'bg-[#EDEDED] text-[#111827] font-semibold border border-[#9CA3AF]/55 hover:border-[#111827] dark:bg-[#111827] dark:text-[#EDEDED] dark:border-white/20 dark:hover:border-white/50';
             } else {
               clasesCirculo =
-                'bg-[#EDEDED]/60 text-[#4B5563] font-medium border border-dashed border-[#9CA3AF]/55 hover:bg-[#EDEDED]';
+                'bg-[#EDEDED]/70 text-[#4B5563] font-medium border border-dashed border-[#9CA3AF]/55 hover:bg-[#EDEDED] dark:bg-[#111827]/60 dark:text-[#D1D5DB] dark:border-white/15 dark:hover:bg-[#111827]';
             }
           } else if (dia.estado === 'PASADO') {
             clasesCirculo =
-              'bg-[#EDEDED]/40 text-[#9CA3AF] font-normal cursor-not-allowed opacity-55';
+              'bg-[#EDEDED]/40 text-[#9CA3AF] font-normal cursor-not-allowed opacity-55 dark:bg-white/5 dark:text-[#6B7280]';
           } else if (dia.estado === 'NO_DISPONIBLE') {
             clasesCirculo =
-              'bg-[#1F2937]/15 text-[#4B5563] font-medium border border-[#4B5563]/50 cursor-not-allowed';
+              'bg-[#1F2937]/15 text-[#4B5563] font-medium border border-[#4B5563]/50 cursor-not-allowed dark:bg-white/5 dark:text-[#9CA3AF] dark:border-white/10';
           } else {
             clasesCirculo =
-              'bg-[#4B5563]/15 text-[#4B5563]/65 font-medium border border-[#9CA3AF]/35 cursor-not-allowed';
+              'bg-[#4B5563]/15 text-[#4B5563]/75 font-medium border border-[#9CA3AF]/35 cursor-not-allowed dark:bg-white/5 dark:text-[#9CA3AF] dark:border-white/10';
           }
 
           return (
@@ -379,7 +353,7 @@ export default function EditorialAvailabilityCalendar({
               {enRango && fechaInicio !== finEfectivo && (
                 <div
                   aria-hidden="true"
-                  className={`absolute inset-y-1 bg-[#111827]/12 ${
+                  className={`absolute inset-y-1 bg-[#111827]/12 dark:bg-white/12 ${
                     esInicio
                       ? 'left-1/2 right-0 rounded-l-full'
                       : esFin
@@ -399,14 +373,14 @@ export default function EditorialAvailabilityCalendar({
                     : dia.etiquetaBloqueo ?? (dia.estado === 'NO_DISPONIBLE' ? 'No disponible' : 'Ocupado')
                 }`}
                 aria-pressed={enRango}
-                className={`ios-press-bounce relative flex h-10 w-10 sm:h-11 sm:w-11 flex-col items-center justify-center rounded-full text-xs tabular-nums select-none cursor-pointer ${clasesCirculo}`}
+                className={`fx-press relative flex h-10 w-10 sm:h-11 sm:w-11 flex-col items-center justify-center rounded-full text-xs tabular-nums select-none cursor-pointer ${clasesCirculo}`}
               >
                 <span
                   className={
                     dia.estado === 'RESERVADO' ||
                     dia.estado === 'MANTENIMIENTO' ||
                     dia.estado === 'NO_DISPONIBLE'
-                      ? 'line-through decoration-[#4B5563]/70'
+                      ? 'line-through decoration-[#4B5563]/70 dark:decoration-[#9CA3AF]/70'
                       : ''
                   }
                 >
@@ -414,7 +388,7 @@ export default function EditorialAvailabilityCalendar({
                 </span>
 
                 {(esInicio || esFin) && (
-                  <span className="h-1 w-1 rounded-full bg-white" />
+                  <span className="h-1 w-1 rounded-full bg-white dark:bg-[#111827]" />
                 )}
               </button>
             </div>
@@ -426,35 +400,35 @@ export default function EditorialAvailabilityCalendar({
       {avisoFranja ? (
         <div
           role="status"
-          className="mt-2.5 rounded-full bg-[#EDEDED] border border-[#9CA3AF]/50 px-3 py-1 text-[11px] font-medium text-[#111827] flex items-center justify-between gap-2 animate-fade-in"
+          className="mt-2.5 rounded-full bg-[#EDEDED] border border-[#9CA3AF]/50 px-3 py-1 text-[11px] font-medium text-[#111827] flex items-center justify-between gap-2 animate-fade-in dark:bg-[#111827] dark:border-white/15 dark:text-[#EDEDED]"
         >
           <span className="truncate">{avisoFranja}</span>
           <button
             type="button"
             onClick={() => setAvisoFranja(null)}
             aria-label="Cerrar aviso"
-            className="text-[#4B5563] hover:text-[#111827] font-bold cursor-pointer"
+            className="text-[#4B5563] hover:text-[#111827] dark:text-[#D1D5DB] dark:hover:text-white font-bold cursor-pointer"
           >
             ✕
           </button>
         </div>
       ) : (
-        <div className="mt-2.5 flex items-center justify-between border-t border-[#9CA3AF]/25 pt-2 text-[10px] font-medium text-[#4B5563]">
+        <div className="mt-2.5 flex items-center justify-between border-t border-[#9CA3AF]/25 pt-2 text-[10px] font-medium text-[#4B5563] dark:border-white/10 dark:text-[#D1D5DB]">
           <div className="flex items-center gap-3">
             <span className="inline-flex items-center gap-1">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#EDEDED] border border-[#9CA3AF]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#EDEDED] border border-[#9CA3AF] dark:bg-[#111827] dark:border-white/30" />
               Libre
             </span>
             <span className="inline-flex items-center gap-1">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#111827]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#111827] dark:bg-[#EDEDED]" />
               Seleccionado
             </span>
             <span className="inline-flex items-center gap-1">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#4B5563]/25" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#4B5563]/25 dark:bg-white/15" />
               Ocupado
             </span>
           </div>
-          <span className="font-semibold text-[#111827]">
+          <span className="font-semibold text-[#111827] dark:text-[#EDEDED]">
             {faseSeleccion === 'ELIGIENDO_FIN' && fechaInicio
               ? 'Toca día final'
               : 'Rango listo'}

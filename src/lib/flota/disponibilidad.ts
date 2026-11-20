@@ -461,12 +461,14 @@ export function encontrarPrimerRangoDisponible(
 export function calcularCotizacionAlquiler(
   vehiculo: VehiculoItem,
   fechaInicio: string,
-  fechaFin: string
+  fechaFin: string,
+  recargoDomicilio: number = 0
 ): CotizacionAlquiler {
   const diasAlquiler = calcularDiasInclusivos(fechaInicio, fechaFin);
   const subtotalTarifa = diasAlquiler * vehiculo.precioDia;
   const coberturaPericial = Math.round(subtotalTarifa * 0.08);
-  const totalAlquiler = subtotalTarifa + coberturaPericial;
+  const recargoSeguro = Math.max(0, Math.round(recargoDomicilio));
+  const totalAlquiler = subtotalTarifa + coberturaPericial + recargoSeguro;
   const abonoMinimoReserva = Math.round(totalAlquiler * 0.3);
 
   return {
@@ -477,6 +479,7 @@ export function calcularCotizacionAlquiler(
     precioDia: vehiculo.precioDia,
     subtotalTarifa,
     coberturaPericial,
+    recargoDomicilio: recargoSeguro,
     depositoGarantia: vehiculo.depositoGarantia,
     totalAlquiler,
     abonoMinimoReserva,

@@ -145,6 +145,8 @@ Representa cada agencia o sede física de alquiler de vehículos.
 | `slug` | TEXT | NOT NULL, UNIQUE | Identificador de URL (ej. 'patio-norte'). |
 | `ciudad` | TEXT | NULLABLE | Ciudad de operación. |
 | `direccion` | TEXT | NULLABLE | Ubicación física. |
+| `latitud` | REAL | NULLABLE | Latitud WGS84 del patio principal para pin fijo de mapa y cálculo de distancias. |
+| `longitud` | REAL | NULLABLE | Longitud WGS84 del patio principal para pin fijo de mapa y cálculo de distancias. |
 | `telefono` | TEXT | NULLABLE | Teléfono de atención de la sede. |
 | `dueno_id` | TEXT | NOT NULL, FK `user.id` | Dueño/propietario actual del local. |
 | `activo` | INTEGER (boolean) | NOT NULL, DEFAULT true | Estado del local. |
@@ -162,6 +164,12 @@ Políticas operativas, tarifarias, recargos de mora y datos jurídicos del arren
 | `cobertura_pericial_pct` | INTEGER | NOT NULL, DEFAULT 8 | Porcentaje de cobertura e inspección R2 (ej. 8%). |
 | `recargo_mora_diaria_pct` | INTEGER | NOT NULL, DEFAULT 200 | Sanción por mora diaria según Cláusula 3 (ej. 200%). |
 | `recargo_admin_fotomulta_pct` | INTEGER | NOT NULL, DEFAULT 30 | Recargo administrativo por gestión de comparendos (Cláusula 6). |
+| `domicilio_habilitado` | INTEGER (boolean) | NOT NULL, DEFAULT true | Habilita o deshabilita la opción de entrega a domicilio para la sede. |
+| `radio_cobertura_km` | REAL | NOT NULL, DEFAULT 15 | Radio máximo de cobertura en kilómetros desde las coordenadas del patio. |
+| `km_incluidos_domicilio` | REAL | NOT NULL, DEFAULT 5 | Kilómetros incluidos en domicilio antes de aplicar tarifa por km adicional. |
+| `tarifa_domicilio_base` | INTEGER | NOT NULL, DEFAULT 0 | Tarifa base en COP para entregas a domicilio dentro de cobertura. |
+| `tarifa_domicilio_por_km` | INTEGER | NOT NULL, DEFAULT 0 | Recargo en COP por cada km adicional sobre `km_incluidos_domicilio`. |
+| `zona_cobertura_etiqueta` | TEXT | NOT NULL, DEFAULT 'Medellín y Área Metropolitana' | Nombre visible de la zona de cobertura del patio. |
 | `cargo_lavado_estandar` | INTEGER | NOT NULL, DEFAULT 45000 | Cargo base en COP por entrega con suciedad excesiva (Cláusula 8). |
 | `limite_km_diario` | INTEGER | NULLABLE | Límite de km por día (`NULL` = kilometraje libre). |
 | `cargo_km_adicional` | INTEGER | NOT NULL, DEFAULT 0 | Tarifa en COP por km excedido. |
@@ -408,7 +416,12 @@ Solicitudes comerciales de alquiler, bloqueo de fechas en el calendario suizo y 
 | `dias_alquiler` | INTEGER | NOT NULL | Cantidad de días inclusivos. |
 | `estado` | TEXT | NOT NULL, DEFAULT 'PENDIENTE' | 'PENDIENTE', 'CONFIRMADA', 'EN_CURSO', 'PAUSADA', 'COMPLETADA', 'RECHAZADA', 'CANCELADA'. |
 | `modalidad_entrega` | TEXT | NOT NULL, DEFAULT 'PATIO_PRINCIPAL' | 'PATIO_PRINCIPAL', 'DOMICILIO_MEDELLIN'. |
-| `direccion_entrega` | TEXT | NULLABLE | Dirección cuando es entrega a domicilio. |
+| `direccion_entrega` | TEXT | NULLABLE | Dirección de entrega (solo si `modalidad_entrega = 'DOMICILIO_MEDELLIN'`, cubierta por Ley 1581). |
+| `entrega_latitud` | REAL | NULLABLE | Latitud WGS84 del punto de entrega a domicilio (NULL en retiro en patio). |
+| `entrega_longitud` | REAL | NULLABLE | Longitud WGS84 del punto de entrega a domicilio (NULL en retiro en patio). |
+| `entrega_referencia` | TEXT | NULLABLE | Nota de referencia (apartamento, torre, portería) para el asesor de flota en domicilio. |
+| `distancia_entrega_km` | REAL | NULLABLE | Distancia geodésica en km desde el patio hasta el punto de entrega (NULL en retiro en patio). |
+| `recargo_entrega_domicilio` | INTEGER | NOT NULL, DEFAULT 0 | Recargo calculado en servidor en COP por entrega a domicilio (incluido en `total_cotizado`). |
 | `sede_nombre` | TEXT | NOT NULL | Nombre de la sede de entrega. |
 | `token_acceso_publico` | TEXT | NULLABLE | Token firmado para consulta y cancelación segura de reservas web sin sesión. |
 | `precio_dia_cotizado` | INTEGER | NOT NULL | Tarifa diaria congelada al cotizar en COP. |
@@ -911,6 +924,8 @@ erDiagram
         string slug UK
         string ciudad
         string direccion
+        real latitud
+        real longitud
         string telefono
         string dueno_id FK
         boolean activo
@@ -925,6 +940,12 @@ erDiagram
         integer cobertura_pericial_pct
         integer recargo_mora_diaria_pct
         integer recargo_admin_fotomulta_pct
+        boolean domicilio_habilitado
+        real radio_cobertura_km
+        real km_incluidos_domicilio
+        integer tarifa_domicilio_base
+        integer tarifa_domicilio_por_km
+        string zona_cobertura_etiqueta
         integer cargo_lavado_estandar
         integer limite_km_diario
         integer cargo_km_adicional
@@ -1113,6 +1134,12 @@ erDiagram
         integer dias_alquiler
         string estado
         string modalidad_entrega
+        string direccion_entrega
+        real entrega_latitud
+        real entrega_longitud
+        string entrega_referencia
+        real distancia_entrega_km
+        integer recargo_entrega_domicilio
         string token_acceso_publico
         integer precio_dia_cotizado
         integer subtotal_tarifa_cotizado

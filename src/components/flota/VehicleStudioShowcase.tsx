@@ -1,6 +1,13 @@
-import { useState, useMemo } from 'react';
-import type { VehiculoItem } from '@/lib/flota/types';
+import { useEffect, useState, useMemo } from 'react';
+import { ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react';
+import type { CategoriaGaleriaVehiculo, VehiculoItem } from '@/lib/flota/types';
 import type { LocalPublicoContexto } from '@/lib/flota/locales-captacion';
+
+const ETIQUETA_CATEGORIA_GALERIA: Record<CategoriaGaleriaVehiculo, string> = {
+  EXTERIOR: 'Exterior',
+  INTERIOR: 'Interior',
+  ESTADO: 'Estado',
+};
 
 export interface VehicleStudioShowcaseProps {
   vehiculoInicial: VehiculoItem;
@@ -71,9 +78,41 @@ export default function VehicleStudioShowcase({
 
   const [unidadIndex, setUnidadIndex] = useState<number>(indiceInicial);
   const [angleIndex, setAngleIndex] = useState<number>(2); // Tercer thumbnail activo en oscuro como en Pantalla 3
+  const [galeriaIndex, setGaleriaIndex] = useState<number>(0);
+  const [lightboxAbierto, setLightboxAbierto] = useState<boolean>(false);
 
   const vehiculo = listaUnidades[unidadIndex] ?? vehiculoInicial;
   const currentAngle = STUDIO_ANGLES[angleIndex] ?? STUDIO_ANGLES[0]!;
+  const galeriaPublica = useMemo(() => {
+    if (!vehiculo.galeria || vehiculo.galeria.length === 0) return [];
+    return [...vehiculo.galeria].sort((a, b) => {
+      if (a.esPrincipal && !b.esPrincipal) return -1;
+      if (!a.esPrincipal && b.esPrincipal) return 1;
+      return a.orden - b.orden;
+    });
+  }, [vehiculo.galeria]);
+  const tieneGaleria = galeriaPublica.length > 0;
+  const fotoActualGaleria = galeriaPublica[galeriaIndex] ?? galeriaPublica[0];
+
+  useEffect(() => {
+    setGaleriaIndex(0);
+    setLightboxAbierto(false);
+  }, [vehiculo.id]);
+
+  useEffect(() => {
+    if (!lightboxAbierto) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setLightboxAbierto(false);
+      } else if (e.key === 'ArrowRight' && galeriaPublica.length > 1) {
+        setGaleriaIndex((prev) => (prev + 1) % galeriaPublica.length);
+      } else if (e.key === 'ArrowLeft' && galeriaPublica.length > 1) {
+        setGaleriaIndex((prev) => (prev - 1 + galeriaPublica.length) % galeriaPublica.length);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [galeriaPublica.length, lightboxAbierto]);
 
   const triggerHaptic = (ms = 8) => {
     if (typeof window !== 'undefined' && 'vibrate' in navigator) {
@@ -103,183 +142,256 @@ export default function VehicleStudioShowcase({
       {/* =====================================================================
           1. ESCENARIO STUDIO 360° CON PEDESTAL ELÍPTICO Y MINIATURAS (PANTALLAS 3 Y 4)
          ===================================================================== */}
-      <section className="rounded-[32px] bg-white border border-[#9CA3AF]/30 p-4 sm:p-6 shadow-[0_16px_38px_-10px_rgba(17,24,39,0.08)] space-y-5 relative overflow-hidden">
-        {/* Escenario Principal */}
-        <div className="relative flex flex-col items-center justify-center pt-3 pb-2 min-h-[230px] sm:min-h-[260px]">
-          {/* Silueta Secundaria Desenfocada Flotante (Detalle artístico de Pantallas 3 y 4) */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute left-1 top-2 w-20 h-20 rounded-2xl bg-[#EDEDED]/60 p-2 flex items-center justify-center blur-[1px] opacity-75"
-          >
-            <img
-              src={vehiculo.imagenUrl}
-              alt=""
-              className="w-full h-full object-contain -scale-x-100 opacity-70"
-            />
-          </div>
-
-          {/* Etiqueta de Vista Activa */}
-          <span className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-[#EDEDED] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
-            <span>{currentAngle.badge}</span>
-            <span>•</span>
-            <span className="font-mono tabular-nums text-[#111827]">
-              ★ {vehiculo.rating}
-            </span>
-          </span>
-
-          {/* Imagen Principal del Vehículo con Transición Elástica */}
-          <div className="w-full px-6 flex items-center justify-center overflow-hidden">
-            <img
-              src={vehiculo.imagenUrl}
-              alt={`${vehiculo.marca} ${vehiculo.modelo} - ${currentAngle.label}`}
-              className={`w-full max-h-48 sm:max-h-56 object-contain mx-auto transition-all duration-500 ease-out select-none ${currentAngle.imageClass}`}
-            />
-          </div>
-
-          {/* Indicadores Verticales de Paginación a la Derecha (Pantallas 3 y 4) */}
-          <div
-            aria-label="Indicador de perspectiva"
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2"
-          >
-            {STUDIO_ANGLES.map((ang, idx) => {
-              const active = idx === angleIndex;
-              return (
-                <button
-                  key={ang.id}
-                  type="button"
-                  onClick={() => {
-                    triggerHaptic(6);
-                    setAngleIndex(idx);
-                  }}
-                  aria-label={`Ver perspectiva ${ang.label}`}
-                  className={`transition-all cursor-pointer flex items-center justify-center ${active
-                    ? 'h-5 w-5 rounded-full border border-[#111827] bg-white shadow-2xs'
-                    : 'h-2.5 w-2.5 rounded-full bg-[#9CA3AF]/50 hover:bg-[#4B5563]'
-                    }`}
-                >
-                  {active && (
-                    <span className="h-2 w-2 rounded-full bg-[#111827]" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Pedestal Elíptico Curvo 360° con Botón '< >' Central (Pantalla 3) */}
-          <div className="relative w-full max-w-[290px] sm:max-w-[330px] mt-1 flex flex-col items-center">
-            <svg
-              viewBox="0 0 320 42"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-full h-10 text-[#111827]"
-              aria-hidden="true"
-            >
-              <ellipse
-                cx="160"
-                cy="16"
-                rx="145"
-                ry="13"
-                stroke="#9CA3AF"
-                strokeWidth="1.2"
-                strokeDasharray="3 3"
-                opacity="0.55"
-              />
-              <path
-                d="M 18 16 A 145 14 0 0 0 302 16"
-                stroke="#111827"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-
-            <button
-              type="button"
-              onClick={rotarAngulo}
-              aria-label="Rotar perspectiva del vehículo"
-              className="ios-press-bounce -mt-6 flex h-9 w-9 items-center justify-center rounded-full bg-[#1F2937] text-[#EDEDED] border-2 border-white shadow-md hover:bg-[#111827] cursor-pointer"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-4 w-4"
-              >
-                <path d="m9 18-6-6 6-6" />
-                <path d="m15 6 6 6-6 6" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* Tira de 4 Miniaturas Squircle (Pantalla 3: Activa en #1F2937) */}
-        <div className="grid grid-cols-4 gap-2.5">
-          {STUDIO_ANGLES.map((ang, idx) => {
-            const isSelected = idx === angleIndex;
-            return (
+      <section className="rounded-[32px] bg-white dark:bg-[#1F2937] border border-[#9CA3AF]/30 dark:border-white/12 shadow-[0_16px_38px_-10px_rgba(17,24,39,0.08)] relative overflow-hidden">
+        {/* Escenario Principal: Fotografía 16:9 de borde a borde, sin marco ni relleno */}
+        <div className="relative w-full aspect-video rounded-t-[31px] overflow-hidden">
+          {tieneGaleria && fotoActualGaleria ? (
+            <>
               <button
-                key={ang.id}
                 type="button"
-                onClick={() => {
-                  triggerHaptic(8);
-                  setAngleIndex(idx);
-                }}
-                className={`ios-press-bounce rounded-[18px] p-2.5 flex flex-col items-center justify-center gap-1.5 transition cursor-pointer border ${isSelected
-                  ? 'bg-[#1F2937] text-[#EDEDED] border-[#111827] shadow-md scale-[1.02]'
-                  : 'bg-[#EDEDED]/55 text-[#111827] border-[#9CA3AF]/25 hover:bg-[#EDEDED]'
-                  }`}
+                onClick={() => setLightboxAbierto(true)}
+                aria-label="Ampliar fotografía del vehículo"
+                className="block h-full w-full cursor-pointer"
               >
                 <img
-                  src={vehiculo.imagenUrl}
-                  alt={ang.label}
-                  className={`h-10 w-full object-contain transition-transform ${ang.imageClass}`}
+                  src={fotoActualGaleria.url}
+                  alt={`${vehiculo.marca} ${vehiculo.modelo} - ${ETIQUETA_CATEGORIA_GALERIA[fotoActualGaleria.categoria]}`}
+                  className="h-full w-full object-cover object-center block select-none"
                 />
-                <span
-                  className={`text-[10px] font-bold truncate max-w-full ${isSelected ? 'text-[#EDEDED]' : 'text-[#4B5563]'
-                    }`}
-                >
-                  {ang.label}
-                </span>
               </button>
-            );
-          })}
+
+              <span className="absolute left-3.5 top-3.5 inline-flex items-center gap-1.5 rounded-full bg-[#111827]/75 backdrop-blur-md border border-white/20 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+                <span>
+                  {fotoActualGaleria.esPrincipal
+                    ? 'Principal'
+                    : ETIQUETA_CATEGORIA_GALERIA[fotoActualGaleria.categoria]}
+                </span>
+                <span>•</span>
+                <span className="font-mono tabular-nums">
+                  {galeriaIndex + 1}/{galeriaPublica.length}
+                </span>
+              </span>
+
+              {galeriaPublica.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    aria-label="Fotografía anterior"
+                    onClick={() => {
+                      triggerHaptic(6);
+                      setGaleriaIndex((prev) => (prev - 1 + galeriaPublica.length) % galeriaPublica.length);
+                    }}
+                    className="fx-press absolute left-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-[#111827]/75 text-white border border-white/20 backdrop-blur-md hover:bg-[#111827] cursor-pointer"
+                  >
+                    <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Siguiente fotografía"
+                    onClick={() => {
+                      triggerHaptic(6);
+                      setGaleriaIndex((prev) => (prev + 1) % galeriaPublica.length);
+                    }}
+                    className="fx-press absolute right-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-[#111827]/75 text-white border border-white/20 backdrop-blur-md hover:bg-[#111827] cursor-pointer"
+                  >
+                    <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                </>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setLightboxAbierto(true)}
+                aria-label="Ver fotografía ampliada"
+                className="fx-press absolute right-3.5 bottom-3.5 flex h-9 w-9 items-center justify-center rounded-full bg-[#111827]/80 text-white border border-white/25 backdrop-blur-md shadow-md hover:bg-[#111827] cursor-pointer"
+              >
+                <ZoomIn className="h-4 w-4" aria-hidden="true" />
+              </button>
+            </>
+          ) : (
+            <>
+              <img
+                src={vehiculo.imagenUrl}
+                alt={`${vehiculo.marca} ${vehiculo.modelo} - ${currentAngle.label}`}
+                className={`h-full w-full object-cover object-center block transition-transform duration-300 ease-out select-none ${currentAngle.imageClass}`}
+              />
+
+              {/* Etiqueta de Vista Activa */}
+              <span className="absolute left-3.5 top-3.5 inline-flex items-center gap-1.5 rounded-full bg-[#111827]/75 backdrop-blur-md border border-white/20 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+                <span>{currentAngle.badge}</span>
+                <span>•</span>
+                <span className="font-mono tabular-nums">
+                  ★ {vehiculo.rating}
+                </span>
+              </span>
+
+              {/* Indicadores Verticales de Paginación a la Derecha */}
+              <div
+                aria-label="Indicador de perspectiva"
+                className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2"
+              >
+                {STUDIO_ANGLES.map((ang, idx) => {
+                  const active = idx === angleIndex;
+                  return (
+                    <button
+                      key={ang.id}
+                      type="button"
+                      onClick={() => {
+                        triggerHaptic(6);
+                        setAngleIndex(idx);
+                      }}
+                      aria-label={`Ver perspectiva ${ang.label}`}
+                      className={`transition-colors cursor-pointer flex items-center justify-center ${
+                        active
+                          ? 'h-5 w-5 rounded-full border border-white bg-[#111827]/85 shadow-2xs'
+                          : 'h-2.5 w-2.5 rounded-full bg-white/55 hover:bg-white'
+                      }`}
+                    >
+                      {active && (
+                        <span className="h-2 w-2 rounded-full bg-white" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Botón '< >' para rotar perspectiva */}
+              <button
+                type="button"
+                onClick={rotarAngulo}
+                aria-label="Rotar perspectiva del vehículo"
+                className="fx-press absolute right-3.5 bottom-3.5 flex h-9 w-9 items-center justify-center rounded-full bg-[#111827]/80 text-white border border-white/25 backdrop-blur-md shadow-md hover:bg-[#111827] cursor-pointer"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4"
+                >
+                  <path d="m9 18-6-6 6-6" />
+                  <path d="m15 6 6 6-6 6" />
+                </svg>
+              </button>
+            </>
+          )}
         </div>
+
+        <div className="p-4 sm:p-6 space-y-5">
+          {/* Tira de Miniaturas */}
+          {tieneGaleria ? (
+            <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-1">
+              {galeriaPublica.map((foto, idx) => {
+                const isSelected = idx === galeriaIndex;
+                return (
+                  <button
+                    key={foto.id}
+                    type="button"
+                    onClick={() => {
+                      triggerHaptic(8);
+                      setGaleriaIndex(idx);
+                    }}
+                    className={`fx-press shrink-0 w-24 rounded-[18px] overflow-hidden pb-1.5 flex flex-col items-center justify-center gap-1 transition-colors cursor-pointer border ${
+                      isSelected
+                        ? 'bg-[#1F2937] text-[#EDEDED] border-[#111827] shadow-md dark:bg-[#EDEDED] dark:text-[#111827] dark:border-[#EDEDED]'
+                        : 'bg-[#EDEDED]/55 text-[#111827] border-[#9CA3AF]/25 hover:bg-[#EDEDED] dark:bg-[#111827] dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/10'
+                    }`}
+                  >
+                    <div className="w-full aspect-video overflow-hidden">
+                      <img
+                        src={foto.url}
+                        alt={ETIQUETA_CATEGORIA_GALERIA[foto.categoria]}
+                        className="h-full w-full object-cover object-center block"
+                      />
+                    </div>
+                    <span
+                      className={`px-1 text-[10px] font-bold truncate max-w-full ${
+                        isSelected
+                          ? 'text-[#EDEDED] dark:text-[#111827]'
+                          : 'text-[#4B5563] dark:text-[#D1D5DB]'
+                      }`}
+                    >
+                      {foto.esPrincipal ? 'Principal' : ETIQUETA_CATEGORIA_GALERIA[foto.categoria]}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="grid grid-cols-4 gap-2.5">
+              {STUDIO_ANGLES.map((ang, idx) => {
+                const isSelected = idx === angleIndex;
+                return (
+                  <button
+                    key={ang.id}
+                    type="button"
+                    onClick={() => {
+                      triggerHaptic(8);
+                      setAngleIndex(idx);
+                    }}
+                    className={`fx-press rounded-[18px] overflow-hidden pb-2 flex flex-col items-center justify-center gap-1.5 transition-colors cursor-pointer border ${
+                      isSelected
+                        ? 'bg-[#1F2937] text-[#EDEDED] border-[#111827] shadow-md dark:bg-[#EDEDED] dark:text-[#111827] dark:border-[#EDEDED]'
+                        : 'bg-[#EDEDED]/55 text-[#111827] border-[#9CA3AF]/25 hover:bg-[#EDEDED] dark:bg-[#111827] dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/10'
+                    }`}
+                  >
+                    <div className="w-full aspect-video overflow-hidden">
+                      <img
+                        src={vehiculo.imagenUrl}
+                        alt={ang.label}
+                        className={`h-full w-full object-cover object-center block transition-transform ${ang.imageClass}`}
+                      />
+                    </div>
+                    <span
+                      className={`px-1 text-[10px] font-bold truncate max-w-full ${
+                        isSelected
+                          ? 'text-[#EDEDED] dark:text-[#111827]'
+                          : 'text-[#4B5563] dark:text-[#D1D5DB]'
+                      }`}
+                    >
+                      {ang.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         {/* ===================================================================
             2. INFORMACIÓN PRINCIPAL: FICHA TÉCNICA Y REQUISITOS (EN UN SOLO LUGAR)
            =================================================================== */}
         <div className="space-y-3.5 pt-1">
           {/* Ficha Técnica */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between border-b border-[#EDEDED] pb-1.5">
-              <span className="text-xs sm:text-sm font-bold text-[#111827]">
+            <div className="flex items-center justify-between border-b border-[#EDEDED] dark:border-white/10 pb-1.5">
+              <span className="text-xs sm:text-sm font-bold text-[#111827] dark:text-[#EDEDED]">
                 Ficha Técnica
               </span>
-              <span className="text-[11px] font-semibold text-[#4B5563]">
+              <span className="text-[11px] font-semibold text-[#4B5563] dark:text-[#D1D5DB]">
                 {vehiculo.categoriaEtiqueta} • {vehiculo.anio}
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="rounded-2xl bg-[#EDEDED]/60 p-2.5 sm:p-3 flex items-center justify-between">
-                <span className="text-[#4B5563]">Transmisión</span>
-                <span className="font-bold text-[#111827]">{vehiculo.transmision}</span>
+            <div className="grid grid-cols-2 rounded-2xl overflow-hidden bg-[#EDEDED]/60 dark:bg-[#111827] border border-[#9CA3AF]/25 dark:border-white/10 text-xs">
+              <div className="p-2.5 sm:p-3 flex items-center justify-between gap-2 border-r border-b border-[#9CA3AF]/25 dark:border-white/10">
+                <span className="text-[#4B5563] dark:text-[#D1D5DB]">Transmisión</span>
+                <span className="font-bold text-[#111827] dark:text-[#EDEDED] truncate">{vehiculo.transmision}</span>
               </div>
-              <div className="rounded-2xl bg-[#EDEDED]/60 p-2.5 sm:p-3 flex items-center justify-between">
-                <span className="text-[#4B5563]">Propulsión</span>
-                <span className="font-bold text-[#111827]">{vehiculo.combustible}</span>
+              <div className="p-2.5 sm:p-3 flex items-center justify-between gap-2 border-b border-[#9CA3AF]/25 dark:border-white/10">
+                <span className="text-[#4B5563] dark:text-[#D1D5DB]">Propulsión</span>
+                <span className="font-bold text-[#111827] dark:text-[#EDEDED] truncate">{vehiculo.combustible}</span>
               </div>
-              <div className="rounded-2xl bg-[#EDEDED]/60 p-2.5 sm:p-3 flex items-center justify-between">
-                <span className="text-[#4B5563]">Capacidad</span>
-                <span className="font-mono tabular-nums font-bold text-[#111827]">
+              <div className="p-2.5 sm:p-3 flex items-center justify-between gap-2 border-r border-[#9CA3AF]/25 dark:border-white/10">
+                <span className="text-[#4B5563] dark:text-[#D1D5DB]">Capacidad</span>
+                <span className="font-mono tabular-nums font-bold text-[#111827] dark:text-[#EDEDED] truncate">
                   {vehiculo.capacidadPasajeros} pasajeros
                 </span>
               </div>
-              <div className="rounded-2xl bg-[#EDEDED]/60 p-2.5 sm:p-3 flex items-center justify-between">
-                <span className="text-[#4B5563]">Depósito</span>
-                <span className="font-mono tabular-nums font-bold text-[#111827]">
+              <div className="p-2.5 sm:p-3 flex items-center justify-between gap-2">
+                <span className="text-[#4B5563] dark:text-[#D1D5DB]">Depósito</span>
+                <span className="font-mono tabular-nums font-bold text-[#111827] dark:text-[#EDEDED] truncate">
                   {formatCop(vehiculo.depositoGarantia)}
                 </span>
               </div>
@@ -287,25 +399,42 @@ export default function VehicleStudioShowcase({
           </div>
 
           {/* Requisitos de Alquiler */}
-          <div className="rounded-2xl bg-[#EDEDED]/60 p-3 sm:p-3.5 space-y-2 text-xs text-[#4B5563]">
-            <span className="text-xs font-bold text-[#111827] block">
-              Requisitos para Alquilar
-            </span>
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-[#111827]">
-                ✓ Documento de identidad y licencia vigente
+          <div className="space-y-2">
+            <div className="flex items-center justify-between border-b border-[#EDEDED] dark:border-white/10 pb-1.5">
+              <span className="text-xs sm:text-sm font-bold text-[#111827] dark:text-[#EDEDED]">
+                Requisitos para Alquilar
               </span>
-              <span className="font-mono text-[10px] text-[#4B5563] shrink-0">KYC en línea</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-[#111827]">
-                ✓ Depósito reembolsable en garantía ({local.nombre})
-              </span>
-              <span className="font-mono tabular-nums font-bold text-[#111827] shrink-0">
-                {formatCop(vehiculo.depositoGarantia)}
+              <span className="font-mono text-[10px] font-semibold text-[#4B5563] dark:text-[#D1D5DB]">
+                Verificación en patio
               </span>
             </div>
-            <p className="text-[11px] text-[#4B5563] pt-0.5">
+
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="rounded-2xl bg-[#EDEDED]/60 dark:bg-[#111827] dark:border dark:border-white/10 p-2.5 sm:p-3 flex flex-col justify-between gap-1.5">
+                <span className="font-mono text-[10px] font-semibold text-[#4B5563] dark:text-[#D1D5DB]">
+                  ✓ KYC en línea
+                </span>
+                <span className="font-semibold text-[#111827] dark:text-[#EDEDED] leading-snug">
+                  Documento de identidad y licencia vigente
+                </span>
+              </div>
+
+              <div className="rounded-2xl bg-[#EDEDED]/60 dark:bg-[#111827] dark:border dark:border-white/10 p-2.5 sm:p-3 flex flex-col justify-between gap-1.5">
+                <span className="text-[10px] font-semibold text-[#4B5563] dark:text-[#D1D5DB] truncate">
+                  ✓ Garantía ({local.nombre})
+                </span>
+                <div>
+                  <span className="font-mono tabular-nums font-bold text-sm text-[#111827] dark:text-[#EDEDED] block">
+                    {formatCop(vehiculo.depositoGarantia)}
+                  </span>
+                  <span className="text-[10px] text-[#4B5563] dark:text-[#D1D5DB]">
+                    Depósito reembolsable
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-[#4B5563] dark:text-[#D1D5DB]">
               Entrega con acta fotográfica pericial verificada en patio.
             </p>
           </div>
@@ -318,11 +447,12 @@ export default function VehicleStudioShowcase({
           <a
             href={`/alquilar/${vehiculo.id}`}
             onClick={() => triggerHaptic(8)}
-            className="ios-press-bounce min-h-[48px] inline-flex items-center justify-center rounded-full bg-white border border-[#9CA3AF]/60 px-4 py-3 text-xs sm:text-sm font-extrabold text-[#111827] hover:bg-[#EDEDED]/60 transition"
+            className="fx-press min-h-[48px] inline-flex items-center justify-center rounded-full bg-white border border-[#9CA3AF]/60 px-4 py-3 text-xs sm:text-sm font-extrabold text-[#111827] hover:bg-[#EDEDED]/60 transition-colors dark:bg-[#111827] dark:border-white/20 dark:text-[#EDEDED] dark:hover:bg-white/10"
           >
             Elegir fechas
           </a>
 
+        </div>
         </div>
       </section>
 
@@ -369,6 +499,77 @@ export default function VehicleStudioShowcase({
           >
             →
           </button>
+        </div>
+      )}
+
+      {/* Lightbox de galería pública */}
+      {lightboxAbierto && fotoActualGaleria && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Galería ampliada del vehículo"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        >
+          <button
+            type="button"
+            tabIndex={-1}
+            aria-label="Cerrar galería ampliada"
+            onClick={() => setLightboxAbierto(false)}
+            className="fixed inset-0 bg-[#090E1A]/85 backdrop-blur-xs"
+          />
+
+          <div className="relative z-10 flex w-full max-w-2xl flex-col overflow-hidden rounded-[28px] border border-white/15 bg-[#111827] text-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-white/10 px-5 py-3.5">
+              <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#EDEDED]">
+                {fotoActualGaleria.esPrincipal
+                  ? 'Principal'
+                  : ETIQUETA_CATEGORIA_GALERIA[fotoActualGaleria.categoria]}{' '}
+                · {galeriaIndex + 1}/{galeriaPublica.length}
+              </span>
+              <button
+                type="button"
+                aria-label="Cerrar galería ampliada"
+                onClick={() => setLightboxAbierto(false)}
+                className="fx-press flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+              >
+                <X className="h-4 w-4" aria-hidden="true" />
+              </button>
+            </div>
+
+            <div className="relative flex max-h-[75vh] items-center justify-center bg-[#090D16]">
+              <img
+                src={fotoActualGaleria.url}
+                alt={`${vehiculo.marca} ${vehiculo.modelo}`}
+                className="max-h-[75vh] w-full object-contain"
+              />
+              {galeriaPublica.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    aria-label="Fotografía anterior"
+                    onClick={() =>
+                      setGaleriaIndex(
+                        (prev) => (prev - 1 + galeriaPublica.length) % galeriaPublica.length
+                      )
+                    }
+                    className="fx-press absolute left-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#111827]/80 text-white border border-white/15 hover:bg-[#111827]"
+                  >
+                    <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Siguiente fotografía"
+                    onClick={() =>
+                      setGaleriaIndex((prev) => (prev + 1) % galeriaPublica.length)
+                    }
+                    className="fx-press absolute right-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#111827]/80 text-white border border-white/15 hover:bg-[#111827]"
+                  >
+                    <ChevronRight className="h-5 w-5" aria-hidden="true" />
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

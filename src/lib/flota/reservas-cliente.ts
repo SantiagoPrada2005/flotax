@@ -6,6 +6,7 @@ import {
 } from './disponibilidad';
 import { FLOTA_CANONICA, obtenerVehiculoPorId } from './mock-vehiculos';
 import type { VehiculoItem } from './types';
+import type { RespuestaItemChecklistInspeccion } from '@/db/schema/inspecciones';
 
 export const STORAGE_KEY_RESERVAS_FLOTAX = 'flotax_reservas_cliente';
 
@@ -32,7 +33,11 @@ export interface DatosConductorReserva {
   nombreCompleto: string;
   tipoDocumento?: 'CC' | 'CE' | 'PASAPORTE' | 'NIT' | null | undefined;
   numeroDocumento?: string | null | undefined;
-  categoriaLicencia?: 'B1' | 'B2' | 'A2' | 'C1' | string | null | undefined;
+  categoriaLicencia?: 'B1' | 'B2' | 'A2' | 'C1' | 'A1' | string | null | undefined;
+  licenciaNumero?: string | null | undefined;
+  licenciaVencimiento?: string | null | undefined;
+  ciudadExpedicion?: string | null | undefined;
+  domicilio?: string | null | undefined;
   telefono: string;
   correo?: string | null | undefined;
   ley1581Aceptada: boolean;
@@ -101,6 +106,12 @@ export interface ReservaClienteItem {
   montoReportado: number;
   estado: EstadoReservaCliente;
   modalidadEntrega: ModalidadEntregaReserva;
+  direccionEntrega?: string | null | undefined;
+  entregaLatitud?: number | null | undefined;
+  entregaLongitud?: number | null | undefined;
+  entregaReferencia?: string | null | undefined;
+  distanciaEntregaKm?: number | null | undefined;
+  recargoEntregaDomicilio?: number | undefined;
   sedeNombre: string;
   creadaEn: string;
   specsBento: EspecificacionesBentoVehiculo;
@@ -339,7 +350,11 @@ export function obtenerRubrosWaybillReserva(
   reserva: ReservaClienteItem
 ): RubroLiquidacionWaybill[] {
   const subtotalTarifa = reserva.diasAlquiler * reserva.vehiculo.precioDia;
-  const coberturaR2 = Math.max(0, reserva.totalAlquiler - subtotalTarifa);
+  const recargoDomicilio = Math.max(0, reserva.recargoEntregaDomicilio ?? 0);
+  const coberturaR2 = Math.max(
+    0,
+    reserva.totalAlquiler - subtotalTarifa - recargoDomicilio
+  );
   const saldoPatio = Math.max(0, reserva.totalAlquiler - reserva.montoReportado);
   const baseCalculo = Math.max(1, reserva.totalAlquiler);
 
@@ -352,7 +367,7 @@ export function obtenerRubrosWaybillReserva(
           ? 'Saldo pendiente'
           : 'Paz y salvo';
 
-  return [
+  const rubros: RubroLiquidacionWaybill[] = [
     {
       id: 'total-contrato',
       etiqueta: `Total Contrato (${reserva.diasAlquiler} días)`,
@@ -374,6 +389,19 @@ export function obtenerRubrosWaybillReserva(
       monto: coberturaR2,
       porcentajeSobreTotal: Math.round((coberturaR2 / baseCalculo) * 100),
     },
+  ];
+
+  if (recargoDomicilio > 0) {
+    rubros.push({
+      id: 'recargo-domicilio',
+      etiqueta: 'Recargo Entrega a Domicilio',
+      etiquetaCorta: 'Domicilio',
+      monto: recargoDomicilio,
+      porcentajeSobreTotal: Math.round((recargoDomicilio / baseCalculo) * 100),
+    });
+  }
+
+  rubros.push(
     {
       id: 'abono-verificado',
       etiqueta: 'Abono Reportado',
@@ -389,8 +417,10 @@ export function obtenerRubrosWaybillReserva(
       etiquetaCorta: 'Garantía',
       monto: reserva.vehiculo.depositoGarantia,
       porcentajeSobreTotal: 100,
-    },
-  ];
+    }
+  );
+
+  return rubros;
 }
 
 export function obtenerInfoDiaFechaISO(fechaISO: string): {
@@ -514,6 +544,12 @@ export function obtenerReservasSemillaCliente(hoyISO: string): ReservaClienteIte
       montoReportado: Math.round(total3 * 0.3),
       estado: 'CONFIRMADA',
       modalidadEntrega: 'DOMICILIO_MEDELLIN',
+      direccionEntrega: 'Cra. 35 #7-50, Provenza, El Poblado, Medellín',
+      entregaLatitud: 6.2089,
+      entregaLongitud: -75.5668,
+      entregaReferencia: 'Lobby Edificio Provenza Suites',
+      distanciaEntregaKm: 2.76,
+      recargoEntregaDomicilio: 0,
       sedeNombre: 'Sede El Poblado',
       creadaEn: `${hoyISO}T10:15:00.000Z`,
       specsBento: obtenerSpecsBentoPorVehiculo(vehiculoSecundario.id),
@@ -1183,6 +1219,95 @@ export function formatearRangoReservaHumano(
   fechaFin: string
 ): string {
   return `${formatearFechaCorta(fechaInicio)} – ${formatearFechaCorta(fechaFin)}`;
+}
+
+export function obtenerPlantillaChecklistEntrega(
+  categoria?: string | null
+): RespuestaItemChecklistInspeccion[] {
+  const cat = (categoria ?? 'SUV').toUpperCase();
+
+  if (cat === 'MOTO') {
+    return [
+      {
+        codigo: 'doc-soat-rtm',
+        nombre: 'SOAT y Técnico-Mecánica vigentes entregados',
+        estado: 'BIEN',
+      },
+      {
+        codigo: 'cascos-chaleco',
+        nombre: 'Casco(s) certificados DOT/ECE y chaleco',
+        estado: 'BIEN',
+      },
+      {
+        codigo: 'llantas-frenos-moto',
+        nombre: 'Llantas, frenos delantero/trasero y cadena',
+        estado: 'BIEN',
+      },
+      {
+        codigo: 'luces-tablero-moto',
+        nombre: 'Luces, direccionales, espejos y testigos',
+        estado: 'BIEN',
+      },
+      {
+        codigo: 'llaves-entrega-moto',
+        nombre: 'Llave / Tarjeta y copia entregadas al conductor',
+        estado: 'BIEN',
+      },
+    ];
+  }
+
+  if (cat === 'PATINETA') {
+    return [
+      {
+        codigo: 'bateria-cargador',
+        nombre: 'Batería verificada y cargador entregado',
+        estado: 'BIEN',
+      },
+      {
+        codigo: 'frenos-ruedas-patineta',
+        nombre: 'Frenos, ruedas y manillar sin holguras',
+        estado: 'BIEN',
+      },
+      {
+        codigo: 'luces-casco-patineta',
+        nombre: 'Luces frontales/traseras, timbre y casco',
+        estado: 'BIEN',
+      },
+      {
+        codigo: 'candado-nfc',
+        nombre: 'Candado de seguridad y tarjeta NFC',
+        estado: 'BIEN',
+      },
+    ];
+  }
+
+  return [
+    {
+      codigo: 'doc-soat-rtm',
+      nombre: 'SOAT y Revisión Técnico-Mecánica vigentes',
+      estado: 'BIEN',
+    },
+    {
+      codigo: 'kit-carretera',
+      nombre: 'Kit de carretera, gato, cruceta y llanta de repuesto',
+      estado: 'BIEN',
+    },
+    {
+      codigo: 'llantas-frenos',
+      nombre: 'Llantas, frenos, vidrios y espejos sin novedades',
+      estado: 'BIEN',
+    },
+    {
+      codigo: 'interior-limpieza',
+      nombre: 'Aseo interior/exterior, aire y testigos de tablero',
+      estado: 'BIEN',
+    },
+    {
+      codigo: 'llaves-tarjeta',
+      nombre: 'Llave / Tarjeta de acceso entregada al arrendatario',
+      estado: 'BIEN',
+    },
+  ];
 }
 
 /**

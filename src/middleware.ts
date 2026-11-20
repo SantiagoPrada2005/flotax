@@ -287,7 +287,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   // Blindaje perimetral de rutas de cliente (/reservas, /reservas/[codigo]) cuando el operador está en modo ADMIN
-  if (usuario) {
+  // Excepción: si viene con ?token=... desde el flujo de reserva de cliente (esInvitadoConToken),
+  // mantener la vista de cliente (/reservas/[codigo]) para que no salte al panel de administrador.
+  if (esInvitadoConToken) {
+    context.locals.modoPortal = 'CLIENTE';
+  } else if (usuario) {
     const esPersonal = esUsuarioPersonal(usuario);
     const destinoRedireccion = evaluarRedireccionModoPortal(
       pathname,

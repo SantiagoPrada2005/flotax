@@ -55,6 +55,10 @@ export const ALL: APIRoute = async (context) => {
         `${requestOrigin}/login?error=${errorParam}&error_description=${errorMsg}`
       );
     }
-    throw error;
+    const errorMessage = error instanceof Error ? error.message : 'Error interno en el servicio de autenticación.';
+    return new Response(
+      JSON.stringify({ error: { message: errorMessage } }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 };
