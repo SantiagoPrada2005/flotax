@@ -10,7 +10,7 @@ export const COOKIE_PORTAL_MODO = 'movix_portal_modo';
 export const COOKIE_PORTAL_OPTIONS = {
   path: '/',
   httpOnly: true,
-  secure: import.meta.env.PROD,
+  secure: Boolean(import.meta.env?.PROD),
   sameSite: 'lax' as const,
   maxAge: 60 * 60 * 24 * 30, // 30 días de persistencia
 };

@@ -1,4 +1,4 @@
-# Index: `src/pages/admin`
+# Index: `src\pages\admin`
 
 **Responsibility**: Enrutamiento de páginas del entorno operativo y administración de FlotaX (Dashboard de patio, control de flota, operaciones, reservas y caja).
 **Architectural Layer**: Presentation / Admin Routing Layer
@@ -11,7 +11,7 @@
 | [`flota/`](./flota/) | Enrutamiento para la gestión perimetral e inventario de la flota (listado, alta de nuevas unidades, edición y disponibilidad). | [INDEX.md](./flota/INDEX.md) |
 | [`metricas/`](./metricas/) | Directory `metricas` | *(No index)* |
 | [`operaciones/`](./operaciones/) | Directory `operaciones` | *(No index)* |
-| [`reservas/`](./reservas/) | Gestión de reservas de patio, detalle operativo y Wizard Typeform de entrega de vehículos (`/admin/reservas/[codigo]/entrega`). | *(No index)* |
+| [`reservas/`](./reservas/) | Directory `reservas` | *(No index)* |
 
 ## File Manifest
 

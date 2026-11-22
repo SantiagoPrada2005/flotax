@@ -1,4 +1,4 @@
-# Index: `src/lib/theme`
+# Index: `src\lib\theme`
 
 **Responsibility**: Motor de temas visuales (Claro, Oscuro, Preferencia del Sistema) y persistencia cross-page sin FOUC.
 **Architectural Layer**: Presentation / Shared Layer

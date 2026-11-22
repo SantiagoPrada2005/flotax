@@ -1,4 +1,4 @@
-# Index: `src/db`
+# Index: `src\db`
 
 **Responsibility**: Capa de persistencia relacional, esquemas de tablas Drizzle ORM y configuración de base de datos para SQLite / Cloudflare D1.
 **Architectural Layer**: Infrastructure / Data Layer

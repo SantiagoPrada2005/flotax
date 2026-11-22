@@ -4,9 +4,9 @@ import { navigate } from 'astro:transitions/client';
 import { motion, AnimatePresence, useReducedMotion, type Variants } from 'framer-motion';
 import {
   obtenerPlantillaChecklistEntrega,
-  obtenerPuntosInspeccionPorVehiculo,
   type ReservaClienteItem,
 } from '@/lib/flota';
+import type { FotoInspeccionItem } from '@/lib/flota/detalle-reserva-admin';
 import {
   esLicenciaCompatibleConVehiculo,
   licenciaRecomendadaPorVehiculo,
@@ -15,6 +15,7 @@ import {
   type EntregaStepMeta,
   type EntregaWizardData,
   type EntregaWizardErrors,
+  type FotoEntregaCapturada,
   type TipoDocumentoEntrega,
 } from './types';
 import Step1ComprobacionCliente from './Step1ComprobacionCliente';
@@ -26,6 +27,7 @@ import Step5ContratoYConfirmacion from './Step5ContratoYConfirmacion';
 export interface EntregaVehiculoWizardIslandProps {
   reservaInicial: ReservaClienteItem;
   cuentasFinancieras?: Array<{ id: string; nombre: string; tipo: string }> | undefined;
+  fotosEntregaIniciales?: FotoInspeccionItem[] | undefined;
 }
 
 const MOTION_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -72,9 +74,9 @@ const PASOS_CONFIG: ReadonlyArray<EntregaStepMeta> = [
   },
   {
     id: 3,
-    titulo: 'Peritaje visual R2',
-    subtitulo: 'Zonas de salida',
-    etiquetaCorta: 'Peritaje R2',
+    titulo: 'Fotografías de entrega',
+    subtitulo: '6 zonas de salida',
+    etiquetaCorta: 'Fotos',
   },
   {
     id: 4,
@@ -108,6 +110,7 @@ function normalizarCategoriaLic(
 export default function EntregaVehiculoWizardIsland({
   reservaInicial,
   cuentasFinancieras = [],
+  fotosEntregaIniciales = [],
 }: EntregaVehiculoWizardIslandProps) {
   const storageKey = `flotax_entrega_draft_${reservaInicial.codigo}`;
   const saldoPendienteInicial = Math.max(
@@ -149,10 +152,13 @@ export default function EntregaVehiculoWizardIsland({
       reservaInicial.vehiculo.categoria
     ),
 
-    puntosR2: obtenerPuntosInspeccionPorVehiculo(
-      reservaInicial.vehiculo,
-      reservaInicial
-    ),
+    fotosEntrega: fotosEntregaIniciales.map<FotoEntregaCapturada>((f) => ({
+      id: f.id,
+      zonaEvidencia: f.zonaEvidencia,
+      url: f.url,
+      capturadoEnISO: f.capturadoEnISO ?? new Date().toISOString(),
+      subidaEnR2: true,
+    })),
     estadoGeneralEntrega: 'IMPECABLE',
     observacionesEntrega: '',
 
@@ -179,7 +185,7 @@ export default function EntregaVehiculoWizardIsland({
   const [entregaCompletada, setEntregaCompletada] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
 
-  // Restaurar borrador si el operador refrescó en medio de la inspección
+  // Restaurar borrador si el operador refrescó en medio de la entrega
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
@@ -187,7 +193,16 @@ export default function EntregaVehiculoWizardIsland({
       if (raw) {
         const parsed = JSON.parse(raw) as Partial<EntregaWizardData>;
         if (parsed && typeof parsed.nombreCompleto === 'string') {
-          setData((prev) => ({ ...prev, ...parsed }));
+          setData((prev) => ({
+            ...prev,
+            ...parsed,
+            fotosEntrega:
+              prev.fotosEntrega.length > 0
+                ? prev.fotosEntrega
+                : Array.isArray(parsed.fotosEntrega)
+                  ? parsed.fotosEntrega
+                  : [],
+          }));
         }
       }
     } catch {
@@ -195,12 +210,18 @@ export default function EntregaVehiculoWizardIsland({
     }
   }, [storageKey]);
 
-  // Autoguardado silencioso en sessionStorage
+  // Autoguardado silencioso en sessionStorage (sin dataUrls base64 pesados)
   useEffect(() => {
     if (typeof window === 'undefined' || entregaCompletada) return;
     const timer = window.setTimeout(() => {
       try {
-        sessionStorage.setItem(storageKey, JSON.stringify(data));
+        const fotosLigeras = data.fotosEntrega
+          .filter((f) => f.subidaEnR2)
+          .map(({ dataUrlFallback: _omit, ...rest }) => rest);
+        sessionStorage.setItem(
+          storageKey,
+          JSON.stringify({ ...data, fotosEntrega: fotosLigeras })
+        );
       } catch {
         // Tolerante
       }
@@ -333,15 +354,13 @@ export default function EntregaVehiculoWizardIsland({
             estado: item.estado,
             observacion: item.observacion,
           })),
-          puntosR2: data.puntosR2.map((p) => ({
-            id: p.id,
-            zona: p.zona,
-            etiqueta: p.etiqueta,
-            dictamen: p.dictamen,
-            estado: p.estado,
-            coordX: p.coordX,
-            coordY: p.coordY,
-          })),
+          fotosEntregaNuevas: data.fotosEntrega
+            .filter((f) => !f.subidaEnR2 && Boolean(f.dataUrlFallback))
+            .map((f) => ({
+              zonaEvidencia: f.zonaEvidencia,
+              dataUrl: f.dataUrlFallback!,
+              capturadoEnISO: f.capturadoEnISO,
+            })),
           consentimientosContrato: {
             ley1581Aceptada: data.ley1581Aceptada,
             trasladoFotomultasAceptado: data.trasladoFotomultasAceptado,

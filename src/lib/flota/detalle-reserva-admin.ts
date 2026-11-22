@@ -1,3 +1,4 @@
+import type { R2Bucket } from '@cloudflare/workers-types';
 import type { AppDb } from '@/lib/db';
 import { logFalloD1 } from '@/lib/db/diagnostics';
 import {
@@ -8,9 +9,15 @@ import {
   movimientosCaja,
   multimediaVehiculo,
   reservas,
+  user,
   type ZonaEvidenciaVehiculo,
 } from '@/db/schema';
-import { resolverUrlMultimediaR2 } from '@/lib/media/r2-vehiculo-keys';
+import {
+  construirClaveR2MultimediaVehiculo,
+  resolverUrlMultimediaR2,
+} from '@/lib/media/r2-vehiculo-keys';
+import { obtenerReservaPorCodigoD1 } from './repositorio-reservas';
+import type { ReservaClienteItem } from './reservas-cliente';
 import { and, asc, desc, eq, inArray, or } from 'drizzle-orm';
 
 export interface FotoInspeccionItem {
@@ -44,6 +51,16 @@ export interface LineaCobroAdicionalItem {
   evidenciaId?: string | undefined;
   evidenciaUrl?: string | undefined;
   registradoPorId?: string | undefined;
+  registradoPorNombre?: string | undefined;
+  registradoEnISO?: string | undefined;
+}
+
+export interface RevisionZonaResultadoItem {
+  codigo: string;
+  nombre: string;
+  estado: 'BIEN' | 'CON_NOVEDAD' | 'NO_APLICA';
+  observacion?: string | undefined;
+  multimediaIds?: string[] | undefined;
 }
 
 export interface EventoTimelineItem {
@@ -93,8 +110,16 @@ export interface DetalleReservaAdminContext {
   contrato: ContratoDetalleAdmin | null;
   garantia: GarantiaDetalleAdmin | null;
   eventos: EventoTimelineItem[];
+  revisionDevolucion: RevisionZonaResultadoItem[];
   inspeccionEntregaFechaISO: string | null;
   inspeccionDevolucionFechaISO: string | null;
+}
+
+export interface DetalleCompletoAlquilerResponse {
+  ok: true;
+  reserva: ReservaClienteItem;
+  detalleAdmin: DetalleReservaAdminContext;
+  actualizadoEn: string;
 }
 
 export function parsearLineasCobrosAdicionales(
@@ -120,6 +145,12 @@ export function parsearLineasCobrosAdicionales(
             evidenciaUrl: typeof item.evidenciaUrl === 'string' ? item.evidenciaUrl : undefined,
             registradoPorId:
               typeof item.registradoPorId === 'string' ? item.registradoPorId : undefined,
+            registradoPorNombre:
+              typeof item.registradoPorNombre === 'string'
+                ? item.registradoPorNombre
+                : undefined,
+            registradoEnISO:
+              typeof item.registradoEnISO === 'string' ? item.registradoEnISO : undefined,
           }));
       }
     } catch {
@@ -148,21 +179,26 @@ function toSafeISO(val: Date | number | string | null | undefined): string | nul
   return Number.isNaN(d.getTime()) ? null : d.toISOString();
 }
 
-export async function obtenerDetalleReservaAdminD1(
-  db: AppDb | undefined,
-  codigo: string,
-  localId: string
-): Promise<DetalleReservaAdminContext> {
-  const vacio: DetalleReservaAdminContext = {
+export function crearDetalleReservaAdminVacio(): DetalleReservaAdminContext {
+  return {
     fotosEntrega: [],
     fotosDevolucion: [],
     pagosHistorial: [],
     contrato: null,
     garantia: null,
     eventos: [],
+    revisionDevolucion: [],
     inspeccionEntregaFechaISO: null,
     inspeccionDevolucionFechaISO: null,
   };
+}
+
+export async function obtenerDetalleReservaAdminD1(
+  db: AppDb | undefined,
+  codigo: string,
+  localId: string
+): Promise<DetalleReservaAdminContext> {
+  const vacio = crearDetalleReservaAdminVacio();
 
   if (!db || !codigo) return vacio;
 
@@ -190,6 +226,18 @@ export async function obtenerDetalleReservaAdminD1(
       .limit(1);
     const contratoRow = contratoRows[0] ?? null;
 
+    // Asociar movimientos de caja por todos los identificadores posibles del alquiler
+    const idsMovimiento = Array.from(
+      new Set(
+        [
+          contratoRow?.id,
+          contratoRow?.numeroContrato,
+          reservaRow.codigo,
+          reservaRow.id,
+        ].filter((v): v is string => Boolean(v && v.trim().length > 0))
+      )
+    );
+
     const [multimediaRows, movimientosRows, garantiaRows, eventosRows, inspeccionesRows] =
       await Promise.all([
         db
@@ -201,15 +249,15 @@ export async function obtenerDetalleReservaAdminD1(
               inArray(multimediaVehiculo.etapaOperativa, ['ENTREGA_SALIDA', 'DEVOLUCION_RETORNO'])
             )
           )
-          .orderBy(asc(multimediaVehiculo.ordenVisual), asc(multimediaVehiculo.capturadoEn)),
-        contratoRow
+          .orderBy(desc(multimediaVehiculo.capturadoEn), asc(multimediaVehiculo.ordenVisual)),
+        idsMovimiento.length > 0
           ? db
               .select()
               .from(movimientosCaja)
               .where(
                 and(
                   eq(movimientosCaja.localId, localId),
-                  eq(movimientosCaja.contratoId, contratoRow.id)
+                  inArray(movimientosCaja.contratoId, idsMovimiento)
                 )
               )
               .orderBy(desc(movimientosCaja.fechaMovimiento))
@@ -223,7 +271,8 @@ export async function obtenerDetalleReservaAdminD1(
               or(
                 eq(depositosGarantia.contratoId, contratoRow?.id ?? ''),
                 eq(depositosGarantia.contratoId, contratoRow?.numeroContrato ?? ''),
-                eq(depositosGarantia.contratoId, reservaRow.codigo)
+                eq(depositosGarantia.contratoId, reservaRow.codigo),
+                eq(depositosGarantia.contratoId, reservaRow.id)
               )
             )
           )
@@ -237,7 +286,7 @@ export async function obtenerDetalleReservaAdminD1(
           .select()
           .from(inspeccionesPericiales)
           .where(eq(inspeccionesPericiales.reservaId, reservaRow.id))
-          .orderBy(asc(inspeccionesPericiales.creadoEn)),
+          .orderBy(desc(inspeccionesPericiales.creadoEn)),
       ]);
 
     const fotosEntrega: FotoInspeccionItem[] = [];
@@ -288,6 +337,33 @@ export async function obtenerDetalleReservaAdminD1(
         }
       : null;
 
+    // Parsear cobros adicionales y completar nombres de operadores faltantes desde tabla user
+    let cobrosAdicionalesLineas = contratoRow
+      ? parsearLineasCobrosAdicionales(contratoRow.detalleOtrosCargos, contratoRow.cargosOtrosLocal)
+      : [];
+
+    const idsSinNombre = Array.from(
+      new Set(
+        cobrosAdicionalesLineas
+          .filter((l) => l.registradoPorId && !l.registradoPorNombre)
+          .map((l) => l.registradoPorId!)
+      )
+    );
+
+    if (idsSinNombre.length > 0) {
+      const usuariosCobros = await db
+        .select({ id: user.id, name: user.name })
+        .from(user)
+        .where(inArray(user.id, idsSinNombre));
+      const mapaNombres = new Map(usuariosCobros.map((u) => [u.id, u.name]));
+      cobrosAdicionalesLineas = cobrosAdicionalesLineas.map((linea) => ({
+        ...linea,
+        registradoPorNombre:
+          linea.registradoPorNombre ??
+          (linea.registradoPorId ? mapaNombres.get(linea.registradoPorId) : undefined),
+      }));
+    }
+
     const contrato: ContratoDetalleAdmin | null = contratoRow
       ? {
           id: contratoRow.id,
@@ -304,10 +380,7 @@ export async function obtenerDetalleReservaAdminD1(
           cargosNovedadesDanos: contratoRow.cargosNovedadesDanos,
           cargosCombustibleLavado: contratoRow.cargosCombustibleLavado,
           cargosOtrosLocal: contratoRow.cargosOtrosLocal,
-          cobrosAdicionalesLineas: parsearLineasCobrosAdicionales(
-            contratoRow.detalleOtrosCargos,
-            contratoRow.cargosOtrosLocal
-          ),
+          cobrosAdicionalesLineas,
           ajusteDescuentoLocal: contratoRow.ajusteDescuentoLocal,
           totalLiquidado: contratoRow.totalLiquidado,
           totalPagado: contratoRow.totalPagado,
@@ -317,6 +390,18 @@ export async function obtenerDetalleReservaAdminD1(
 
     const inspEntrega = inspeccionesRows.find((i) => i.tipoActo === 'ENTREGA');
     const inspDevolucion = inspeccionesRows.find((i) => i.tipoActo === 'RECEPCION');
+
+    const revisionDevolucion: RevisionZonaResultadoItem[] = Array.isArray(
+      inspDevolucion?.respuestasChecklist
+    )
+      ? inspDevolucion.respuestasChecklist.map((r) => ({
+          codigo: r.codigo,
+          nombre: r.nombre,
+          estado: r.estado,
+          observacion: r.observacion,
+          multimediaIds: r.multimediaIds,
+        }))
+      : [];
 
     const eventos: EventoTimelineItem[] = eventosRows.map((ev) => ({
       id: ev.id,
@@ -332,6 +417,7 @@ export async function obtenerDetalleReservaAdminD1(
       contrato,
       garantia,
       eventos,
+      revisionDevolucion,
       inspeccionEntregaFechaISO: toSafeISO(inspEntrega?.finalizadaEn ?? inspEntrega?.iniciadaEn),
       inspeccionDevolucionFechaISO: toSafeISO(
         inspDevolucion?.finalizadaEn ?? inspDevolucion?.iniciadaEn
@@ -341,4 +427,155 @@ export async function obtenerDetalleReservaAdminD1(
     logFalloD1('reservas.obtenerDetalleAdmin', error, { codigo: codigoNorm, localId });
     return vacio;
   }
+}
+
+/**
+ * Obtiene en una sola consulta unificada los datos del alquiler (reserva, cliente, vehículo)
+ * junto con todo el contexto administrativo (fotos con fecha, pagos, fechas reales, estado y factura).
+ */
+export async function obtenerDetalleCompletoAlquilerD1(
+  db: AppDb | undefined,
+  codigo: string,
+  localId: string
+): Promise<{
+  reserva: ReservaClienteItem;
+  detalleAdmin: DetalleReservaAdminContext;
+} | null> {
+  if (!db || !codigo) return null;
+  const [reserva, detalleAdmin] = await Promise.all([
+    obtenerReservaPorCodigoD1(db, codigo),
+    obtenerDetalleReservaAdminD1(db, codigo, localId),
+  ]);
+  if (!reserva) return null;
+  return { reserva, detalleAdmin };
+}
+
+export interface RegistrarFotoAlquilerParams {
+  codigo?: string | undefined;
+  reservaId?: string | undefined;
+  localId: string;
+  usuarioId: string;
+  etapaOperativa: 'ENTREGA_SALIDA' | 'DEVOLUCION_RETORNO';
+  zonaEvidencia: ZonaEvidenciaVehiculo;
+  dataUrl: string;
+  observacion?: string | undefined;
+  ordenVisual?: number | undefined;
+  capturadoEnISO?: string | undefined;
+}
+
+/**
+ * Sube una fotografía individual de entrega o devolución a Cloudflare R2 (`BUCKET_MULTIMEDIA`)
+ * y la registra en `multimedia_vehiculo` con fecha/hora exacta de captura.
+ */
+export async function registrarFotoAlquilerR2D1(
+  db: AppDb,
+  bucket: R2Bucket,
+  params: RegistrarFotoAlquilerParams
+): Promise<FotoInspeccionItem> {
+  const codigoNorm = params.codigo?.trim().toUpperCase();
+  const resMatch = await db
+    .select({
+      id: reservas.id,
+      codigo: reservas.codigo,
+      vehiculoId: reservas.vehiculoId,
+      localId: reservas.localId,
+    })
+    .from(reservas)
+    .where(
+      and(
+        eq(reservas.localId, params.localId),
+        codigoNorm
+          ? eq(reservas.codigo, codigoNorm)
+          : eq(reservas.id, params.reservaId ?? '')
+      )
+    )
+    .limit(1);
+
+  const resRow = resMatch[0];
+  if (!resRow) {
+    throw new Error('Reserva no encontrada para el local activo.');
+  }
+
+  const matchData = /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/.exec(params.dataUrl.trim());
+  if (!matchData?.[1] || !matchData[2]) {
+    throw new Error('Formato de fotografía no válido.');
+  }
+
+  const mimeType = matchData[1];
+  const ext: 'webp' | 'png' | 'jpg' =
+    mimeType === 'image/webp'
+      ? 'webp'
+      : mimeType === 'image/png'
+        ? 'png'
+        : 'jpg';
+
+  const binaryStr = atob(matchData[2]);
+  const bytes = new Uint8Array(binaryStr.length);
+  for (let b = 0; b < binaryStr.length; b++) {
+    bytes[b] = binaryStr.charCodeAt(b);
+  }
+
+  const contratoRows = await db
+    .select({ id: contratosAlquiler.id })
+    .from(contratosAlquiler)
+    .where(eq(contratosAlquiler.reservaId, resRow.id))
+    .limit(1);
+  const contratoId = contratoRows[0]?.id ?? null;
+
+  const fechaParsed = params.capturadoEnISO ? new Date(params.capturadoEnISO) : new Date();
+  const capturadoEn = Number.isNaN(fechaParsed.getTime()) ? new Date() : fechaParsed;
+  const ahora = new Date();
+
+  const r2Key = construirClaveR2MultimediaVehiculo({
+    localId: resRow.localId,
+    vehiculoId: resRow.vehiculoId,
+    reservaCodigo: resRow.codigo,
+    etapaOperativa: params.etapaOperativa,
+    zonaEvidencia: params.zonaEvidencia,
+    extension: ext,
+    timestampMs: ahora.getTime(),
+  });
+
+  await bucket.put(r2Key, bytes.buffer, {
+    httpMetadata: { contentType: mimeType },
+    customMetadata: {
+      reservaCodigo: resRow.codigo,
+      etapa: params.etapaOperativa,
+      zona: params.zonaEvidencia,
+      capturadoEn: capturadoEn.toISOString(),
+    },
+  });
+
+  const prefijo = params.etapaOperativa === 'ENTREGA_SALIDA' ? 'med-ent' : 'med-dev';
+  const mediaId = `${prefijo}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+
+  await db.insert(multimediaVehiculo).values({
+    id: mediaId,
+    localId: resRow.localId,
+    vehiculoId: resRow.vehiculoId,
+    reservaId: resRow.id,
+    contratoId,
+    tipoMedio: 'IMAGEN',
+    etapaOperativa: params.etapaOperativa,
+    zonaEvidencia: params.zonaEvidencia,
+    esPortadaCatalogo: false,
+    ordenVisual: params.ordenVisual ?? 0,
+    r2Key,
+    mimeType,
+    tamanoBytes: bytes.byteLength,
+    observacion: params.observacion?.trim() || null,
+    subidoPorId: params.usuarioId,
+    capturadoEn,
+    creadoEn: ahora,
+  });
+
+  return {
+    id: mediaId,
+    url: resolverUrlMultimediaR2(r2Key),
+    r2Key,
+    etapaOperativa: params.etapaOperativa,
+    zonaEvidencia: params.zonaEvidencia,
+    capturadoEnISO: capturadoEn.toISOString(),
+    observacion: params.observacion?.trim() || null,
+  };
 }

@@ -1,4 +1,4 @@
-# Index: `src/components/caja`
+# Index: `src\components\caja`
 
 **Responsibility**: Componentes interactivos de UI para el módulo de Caja, Arqueos, Flujos Financieros, Depósitos de Garantía y Transferencias entre Patios.
 **Architectural Layer**: Presentation Layer (Tier 2 Domain Modules)

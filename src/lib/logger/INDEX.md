@@ -1,4 +1,4 @@
-# Index: `src/lib/logger`
+# Index: `src\lib\logger`
 
 **Responsibility**: Módulo de logging centralizado, sanitización de datos sensibles (PII/Secretos), gobernanza de errores y alertas tempranas con prevención de tormentas por correo para desarrolladores en Cloudflare Workers y D1.
 **Architectural Layer**: Application / Infrastructure Port & Adapter / Observability

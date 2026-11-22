@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { navigate } from 'astro:transitions/client';
 import {
   formatearRangoReservaHumano,
-  obtenerPuntosInspeccionPorVehiculo,
   obtenerRubrosWaybillReserva,
   type EstadoReservaCliente,
   type ReservaClienteItem,
@@ -18,7 +17,7 @@ export interface ReservaClienteDetalleViewProps {
   mapboxPublicToken?: string | null | undefined;
 }
 
-type TabClienteDetalle = 'RESUMEN' | 'INSPECCION' | 'WAYBILL';
+type TabClienteDetalle = 'RESUMEN' | 'WAYBILL';
 
 const ETIQUETA_ESTADO_CLIENTE: Readonly<
   Record<EstadoReservaCliente, { titulo: string; detalle: string }>
@@ -67,7 +66,6 @@ export default function ReservaClienteDetalleView({
 }: ReservaClienteDetalleViewProps) {
   const [reserva, setReserva] = useState<ReservaClienteItem>(reservaInicial);
   const [tab, setTab] = useState<TabClienteDetalle>('RESUMEN');
-  const [puntoActivoId, setPuntoActivoId] = useState<string>('r2-carroceria');
   const [rubroActivoId, setRubroActivoId] = useState<string>('total-contrato');
   const [modalCancelarAbierto, setModalCancelarAbierto] = useState<boolean>(false);
   const [toastMensaje, setToastMensaje] = useState<string | null>(null);
@@ -83,16 +81,6 @@ export default function ReservaClienteDetalleView({
 
   const { vehiculo } = reserva;
   const infoEstado = ETIQUETA_ESTADO_CLIENTE[reserva.estado];
-
-  const puntosR2 = useMemo(
-    () => obtenerPuntosInspeccionPorVehiculo(vehiculo, reserva),
-    [vehiculo, reserva]
-  );
-
-  const puntoSeleccionado = useMemo(
-    () => puntosR2.find((p) => p.id === puntoActivoId) ?? puntosR2[0]!,
-    [puntosR2, puntoActivoId]
-  );
 
   const rubrosWaybill = useMemo(
     () => obtenerRubrosWaybillReserva(reserva),
@@ -270,41 +258,6 @@ export default function ReservaClienteDetalleView({
               </div>
             )}
 
-            {tab === 'INSPECCION' && (
-              <div className="space-y-3">
-                <div className="rounded-[20px] bg-[#EDEDED]/70 p-4 space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <h2 className="font-display text-sm font-bold text-[#111827]">
-                      {puntoSeleccionado.zona}
-                    </h2>
-                    <span className="rounded-full bg-[#111827] px-2.5 py-0.5 text-[10px] font-bold text-white">
-                      {puntoSeleccionado.estado}
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#4B5563] leading-relaxed">
-                    {puntoSeleccionado.dictamen}
-                  </p>
-                </div>
-
-                <div className="flex flex-wrap gap-1.5">
-                  {puntosR2.map((punto) => (
-                    <button
-                      key={punto.id}
-                      type="button"
-                      onClick={() => setPuntoActivoId(punto.id)}
-                      className={`min-h-[44px] rounded-full px-3 py-1.5 text-[11px] font-semibold cursor-pointer ${
-                        puntoSeleccionado.id === punto.id
-                          ? 'bg-[#111827] text-white'
-                          : 'bg-[#EDEDED] text-[#4B5563]'
-                      }`}
-                    >
-                      {punto.zona.split(' ')[0]} · {punto.etiqueta}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {tab === 'WAYBILL' && (
               <div className="space-y-3">
                 <div className="space-y-1.5">
@@ -368,7 +321,7 @@ export default function ReservaClienteDetalleView({
                   <button
                     type="button"
                     onClick={() => navigate(rutaEvaluacionCliente)}
-                    className="ios-press-bounce flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] cursor-pointer"
+                    className="fx-press flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] cursor-pointer"
                   >
                     <span>Devolver unidad y calificar servicio</span>
                     <span>→</span>

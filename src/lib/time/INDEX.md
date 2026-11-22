@@ -1,4 +1,4 @@
-# Index: `src/lib/time`
+# Index: `src\lib\time`
 
 **Responsibility**: Funciones y utilidades de cliente para manipulación y visualización de fechas y zonas horarias.
 **Architectural Layer**: Presentation / Shared Helpers

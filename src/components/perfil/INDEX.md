@@ -1,4 +1,4 @@
-# Index: `src/components/perfil`
+# Index: `src\components\perfil`
 
 **Responsibility**: Componentes de interfaz de usuario para el perfil de usuario y control de conmutación de portal (Cliente / Operativo).
 **Architectural Layer**: Presentation / Profile Domain Components

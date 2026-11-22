@@ -50,6 +50,8 @@ import {
   registrarOActualizarDocumentosRapidoAction,
   buscarClientesLocalAction,
   cambiarEstadoReservaAction,
+  obtenerDetalleAdminAction,
+  registrarFotoAlquilerAction,
 } from './reservas';
 import { actualizarPerfilAction } from './perfil';
 import {
@@ -129,6 +131,8 @@ export const server = {
       registrarOActualizarDocumentosRapidoAction,
     buscarClientesLocal: buscarClientesLocalAction,
     cambiarEstado: cambiarEstadoReservaAction,
+    obtenerDetalleAdmin: obtenerDetalleAdminAction,
+    registrarFotoAlquiler: registrarFotoAlquilerAction,
   },
   mantenimientos: {
     crearMantenimiento,

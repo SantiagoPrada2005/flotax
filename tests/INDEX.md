@@ -14,14 +14,19 @@
 | [`ciclo_alquiler_transiciones.test.ts`](./ciclo_alquiler_transiciones.test.ts) | Test Suite | Validación de transiciones de estado, máquina de estados y cálculo de penalidades | `node:test`, `src/lib/flota/ciclo-alquiler-transiciones.ts` |
 | [`dashboard_proceso_y_guest.test.ts`](./dashboard_proceso_y_guest.test.ts) | Test Suite | Validación de visualización de reservas en proceso y modo invitado | `node:test`, `src/lib/flota` |
 | [`disponibilidad_vehiculo.test.ts`](./disponibilidad_vehiculo.test.ts) | Test Suite | Validación de consulta de disponibilidad, detección de colisiones, franjas y preselección inteligente | `node:test`, `src/lib/flota/disponibilidad.ts` |
+| [`flota-formato-campos.test.ts`](./flota-formato-campos.test.ts) | Test Suite | - | - |
+| [`geo-colombia.test.ts`](./geo-colombia.test.ts) | Test Suite | - | - |
 | [`liquid-notch.test.ts`](./liquid-notch.test.ts) | Test Suite | Validación de comportamiento y estados visuales del Liquid Notch | `node:test` |
+| [`liquidacion_cierre_alquiler.test.ts`](./liquidacion_cierre_alquiler.test.ts) | Test Suite | Validación de cobros adicionales, descuento automático sobre garantía (devolver diferencia o generar saldo pendiente) y trazabilidad de quién/cuándo | `node:test`, `src/lib/flota/liquidacion-cierre.ts`, `src/lib/flota/ciclo-alquiler-transiciones.ts` |
 | [`loader-ts.mjs`](./loader-ts.mjs) | ESM Loader | Hook `resolve` que mapea `@/` a `src/` y añade `.ts` a imports sin extensión | `node:fs`, `node:url` |
 | [`metricas_reales_local.test.ts`](./metricas_reales_local.test.ts) | Test Suite | Validación de cálculo de indicadores operacionales por local | `node:test`, `src/lib/metricas` |
 | [`page-transitions.test.ts`](./page-transitions.test.ts) | Test Suite | Validación de contratos de View Transitions y navegación SPA | `node:test` |
+| [`placa-formato.test.ts`](./placa-formato.test.ts) | Test Suite | - | - |
 | [`portal_modo_persistencia.test.ts`](./portal_modo_persistencia.test.ts) | Test Suite | Validación de resolución y persistencia del modo portal (Cliente/Admin) | `node:test`, `src/lib/auth/portal-modo.ts` |
 | [`pwa_cache_policy.test.ts`](./pwa_cache_policy.test.ts) | Test Suite | Matriz de `Cache-Control`/`Vary` por ruta y comportamiento de `aplicarPoliticaCacheHtml` | `node:test`, `src/lib/pwa/cache-policy.ts` |
 | [`rbac_permisos_alquiler.test.ts`](./rbac_permisos_alquiler.test.ts) | Test Suite | Validación de matriz RBAC, capacidades operativas y permisos según rol | `node:test`, `src/lib/auth/capacidades-alquiler.ts` |
 | [`register-loader.mjs`](./register-loader.mjs) | ESM Registration | Registra `loader-ts.mjs` con `module.register` para `node --test` | `node:module` |
+| [`reservas_origen_y_acceso.test.ts`](./reservas_origen_y_acceso.test.ts) | Test Suite | - | - |
 | [`ubicacion_entrega_domicilio.test.ts`](./ubicacion_entrega_domicilio.test.ts) | Test Suite | Validación geodésica Haversine, cobertura y recargo de domicilio, protección de tokens Mapbox, tope diario KV y persistencia condicional en reservas | `node:test`, `src/lib/ubicacion`, `src/lib/flota/ciclo-alquiler.ts` |
 
 ## Invariants & Directory Rules

@@ -1,4 +1,4 @@
-# Index: `src/db/schema`
+# Index: `src\db\schema`
 
 **Responsibility**: Definición canónica de tablas, relaciones y tipos del ORM Drizzle para SQLite/Cloudflare D1 (Multi-tenant, Better Auth, Flota, Historial Multimedia R2, Reservas, Contratos, Peritaje y Caja).
 **Architectural Layer**: Infrastructure / Data Layer

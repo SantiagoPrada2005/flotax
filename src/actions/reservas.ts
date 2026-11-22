@@ -22,15 +22,13 @@ import {
   registrarOActualizarDocumentosClienteRapidoD1,
 } from '@/lib/flota/ciclo-alquiler';
 import { registrarCobroWaybillD1 } from '@/lib/flota/repositorio-reservas';
-import { obtenerDetalleReservaAdminD1 } from '@/lib/flota/detalle-reserva-admin';
 import {
-  construirClaveR2MultimediaVehiculo,
-  resolverUrlMultimediaR2,
-} from '@/lib/media/r2-vehiculo-keys';
+  obtenerDetalleCompletoAlquilerD1,
+  obtenerDetalleReservaAdminD1,
+  registrarFotoAlquilerR2D1,
+} from '@/lib/flota/detalle-reserva-admin';
 import {
   clientesLocal,
-  multimediaVehiculo,
-  reservas,
   user,
   verificacionesIdentidad,
   modalidadesEntregaReserva,
@@ -476,6 +474,17 @@ export const entregarVehiculoAction = defineAction({
       .optional(),
     autorizarSinDocumentos: z.boolean().optional(),
     notaAutorizacion: z.string().optional(),
+    fotosEntregaNuevas: z
+      .array(
+        z.object({
+          zonaEvidencia: z.enum(zonasEvidenciaVehiculo),
+          dataUrl: z.string().min(40),
+          observacion: z.string().optional(),
+          capturadoEnISO: z.string().optional(),
+        })
+      )
+      .max(20)
+      .optional(),
   }),
   handler: async (input, context) => {
     marcarRevisionNavegacion(context.cookies);
@@ -511,6 +520,24 @@ export const entregarVehiculoAction = defineAction({
         autorizarSinDocumentos: input.autorizarSinDocumentos,
         notaAutorizacion: input.notaAutorizacion,
       });
+
+      const fotosEntrega = input.fotosEntregaNuevas ?? [];
+      if (fotosEntrega.length > 0 && env.BUCKET_MULTIMEDIA) {
+        for (let i = 0; i < fotosEntrega.length; i++) {
+          const foto = fotosEntrega[i]!;
+          await registrarFotoAlquilerR2D1(db, env.BUCKET_MULTIMEDIA, {
+            codigo: res.reserva.codigo,
+            localId: usuario.localActivo.id,
+            usuarioId: usuario.id,
+            etapaOperativa: 'ENTREGA_SALIDA',
+            zonaEvidencia: foto.zonaEvidencia,
+            dataUrl: foto.dataUrl,
+            observacion: foto.observacion,
+            ordenVisual: i,
+            capturadoEnISO: foto.capturadoEnISO,
+          });
+        }
+      }
 
       return {
         ok: true,
@@ -731,6 +758,7 @@ export const devolverYCerrarAlquilerAction = defineAction({
           'DEVOLVER_PARCIAL',
           'RETENER_CARGOS',
           'DEJAR_CUSTODIA',
+          'LIQUIDAR_AUTOMATICO',
         ]),
         montoDevolver: z.number().min(0).optional(),
         cuentaId: z.string().optional(),
@@ -803,79 +831,23 @@ export const devolverYCerrarAlquilerAction = defineAction({
       const fotosNuevas = input.fotosDevolucionNuevas ?? [];
 
       if (fotosNuevas.length > 0 && env.BUCKET_MULTIMEDIA) {
-        const codigoNorm = input.codigo?.trim().toUpperCase();
-        const resMatch = await db
-          .select({ id: reservas.id, vehiculoId: reservas.vehiculoId, localId: reservas.localId })
-          .from(reservas)
-          .where(
-            and(
-              eq(reservas.localId, usuario.localActivo.id),
-              codigoNorm
-                ? eq(reservas.codigo, codigoNorm)
-                : eq(reservas.id, input.reservaId ?? '')
-            )
-          )
-          .limit(1);
-
-        const resRow = resMatch[0];
-        if (resRow) {
-          const ahoraFoto = new Date();
-          for (let i = 0; i < fotosNuevas.length; i++) {
-            const foto = fotosNuevas[i]!;
-            const matchData = /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/.exec(foto.dataUrl);
-            if (!matchData?.[1] || !matchData[2]) continue;
-
-            const mimeType = matchData[1];
-            const ext =
-              mimeType === 'image/webp'
-                ? 'webp'
-                : mimeType === 'image/png'
-                  ? 'png'
-                  : 'jpg';
-            const binaryStr = atob(matchData[2]);
-            const bytes = new Uint8Array(binaryStr.length);
-            for (let b = 0; b < binaryStr.length; b++) {
-              bytes[b] = binaryStr.charCodeAt(b);
-            }
-
-            const r2Key = construirClaveR2MultimediaVehiculo({
-              localId: resRow.localId,
-              vehiculoId: resRow.vehiculoId,
-              etapaOperativa: 'DEVOLUCION_RETORNO',
-              zonaEvidencia: foto.zonaEvidencia,
-              extension: ext,
-              timestampMs: Date.now() + i,
-            });
-
-            await env.BUCKET_MULTIMEDIA.put(r2Key, bytes.buffer, {
-              httpMetadata: { contentType: mimeType },
-            });
-
-            const mediaId = `med-dev-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-            await db.insert(multimediaVehiculo).values({
-              id: mediaId,
-              localId: resRow.localId,
-              vehiculoId: resRow.vehiculoId,
-              reservaId: resRow.id,
-              tipoMedio: 'IMAGEN',
-              etapaOperativa: 'DEVOLUCION_RETORNO',
-              zonaEvidencia: foto.zonaEvidencia,
-              esPortadaCatalogo: false,
-              ordenVisual: i,
-              r2Key,
-              mimeType,
-              tamanoBytes: bytes.byteLength,
-              observacion: foto.observacion ?? null,
-              subidoPorId: usuario.id,
-              capturadoEn: ahoraFoto,
-              creadoEn: ahoraFoto,
-            });
-
-            mapaEvidenciasNuevas.set(foto.tempId, {
-              id: mediaId,
-              url: resolverUrlMultimediaR2(r2Key),
-            });
-          }
+        for (let i = 0; i < fotosNuevas.length; i++) {
+          const foto = fotosNuevas[i]!;
+          const guardada = await registrarFotoAlquilerR2D1(db, env.BUCKET_MULTIMEDIA, {
+            codigo: input.codigo,
+            reservaId: input.reservaId,
+            localId: usuario.localActivo.id,
+            usuarioId: usuario.id,
+            etapaOperativa: 'DEVOLUCION_RETORNO',
+            zonaEvidencia: foto.zonaEvidencia,
+            dataUrl: foto.dataUrl,
+            observacion: foto.observacion,
+            ordenVisual: i,
+          });
+          mapaEvidenciasNuevas.set(foto.tempId, {
+            id: guardada.id,
+            url: guardada.url,
+          });
         }
       }
 
@@ -923,6 +895,7 @@ export const devolverYCerrarAlquilerAction = defineAction({
         novedadesZonas: novedadesResueltas,
         cobrosAdicionales: cobrosResueltos,
         usuarioId: usuario.id,
+        usuarioNombre: usuario.nombre,
         actor: {
           usuarioId: usuario.id,
           rol: usuario.localActivo.rol,
@@ -941,10 +914,11 @@ export const devolverYCerrarAlquilerAction = defineAction({
         reserva: res.reserva,
         contrato: res.contrato,
         garantia: res.garantia,
+        liquidacion: res.liquidacion,
         detalleAdmin: detalleAdminActualizado,
         mensajeLegal: res.mensajeLegal,
         mensaje:
-          'Devolución registrada y contrato cerrado correctamente en Cloudflare D1.',
+          'Devolución registrada y contrato cerrado correctamente.',
       };
     } catch (error) {
       manejarErrorCiclo(error);
@@ -1562,6 +1536,108 @@ export const cambiarEstadoReservaAction = defineAction({
         codigo: input.codigo,
         nuevoEstado: input.nuevoEstado,
         mensaje: `Reserva #${input.codigo} actualizada a ${input.nuevoEstado}.`,
+      };
+    } catch (error) {
+      manejarErrorCiclo(error);
+    }
+  },
+});
+
+/**
+ * 18. Consultar en una sola llamada todo el detalle operativo del alquiler
+ * (datos de reserva, cliente, fotos de entrega/devolución con fecha, pagos, fechas reales y estado).
+ */
+export const obtenerDetalleAdminAction = defineAction({
+  input: z.object({
+    codigo: z.string().min(1, { error: 'El código de reserva es obligatorio' }),
+  }),
+  handler: async (input, context) => {
+    const usuario = requireLocalAuth(context);
+    if (!env.DB) {
+      throw new ActionError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Base de datos no disponible.',
+      });
+    }
+    const db = getDb(env.DB);
+    const resultado = await obtenerDetalleCompletoAlquilerD1(
+      db,
+      input.codigo,
+      usuario.localActivo.id
+    );
+    if (!resultado) {
+      throw new ActionError({
+        code: 'NOT_FOUND',
+        message: 'Reserva no encontrada en el local activo.',
+      });
+    }
+    return {
+      ok: true,
+      reserva: resultado.reserva,
+      detalleAdmin: resultado.detalleAdmin,
+      actualizadoEn: new Date().toISOString(),
+    };
+  },
+});
+
+/**
+ * 19. Registrar una fotografía individual de entrega (`ENTREGA_SALIDA`) o
+ * devolución (`DEVOLUCION_RETORNO`) en Cloudflare R2 + D1 con marca temporal exacta.
+ */
+export const registrarFotoAlquilerAction = defineAction({
+  input: z.object({
+    codigo: z.string().min(1, { error: 'El código de reserva es obligatorio' }),
+    etapaOperativa: z.enum(['ENTREGA_SALIDA', 'DEVOLUCION_RETORNO']),
+    zonaEvidencia: z.enum(zonasEvidenciaVehiculo),
+    dataUrl: z.string().min(40, { error: 'La fotografía es obligatoria' }),
+    observacion: z.string().max(400).optional(),
+    ordenVisual: z.number().int().min(0).max(50).optional(),
+    capturadoEnISO: z.string().optional(),
+  }),
+  handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
+    const usuario = requireLocalAuth(context);
+    const sujeto = {
+      rol: usuario.localActivo.rol,
+      esSuperAdmin: usuario.esSuperAdmin,
+      permisosConcedidos: usuario.localActivo.permisosConcedidos,
+      permisosRevocados: usuario.localActivo.permisosRevocados,
+    };
+
+    if (
+      !tienePermiso(sujeto, PERMISOS.CONTRATOS_CREAR) &&
+      !tienePermiso(sujeto, PERMISOS.CONTRATOS_FINALIZAR)
+    ) {
+      throw new ActionError({
+        code: 'FORBIDDEN',
+        message: 'No tiene permisos para registrar fotografías del alquiler.',
+      });
+    }
+
+    if (!env.DB || !env.BUCKET_MULTIMEDIA) {
+      throw new ActionError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Servicios de almacenamiento multimedia no disponibles.',
+      });
+    }
+
+    try {
+      const db = getDb(env.DB);
+      const foto = await registrarFotoAlquilerR2D1(db, env.BUCKET_MULTIMEDIA, {
+        codigo: input.codigo,
+        localId: usuario.localActivo.id,
+        usuarioId: usuario.id,
+        etapaOperativa: input.etapaOperativa,
+        zonaEvidencia: input.zonaEvidencia,
+        dataUrl: input.dataUrl,
+        observacion: input.observacion,
+        ordenVisual: input.ordenVisual,
+        capturadoEnISO: input.capturadoEnISO,
+      });
+
+      return {
+        ok: true,
+        foto,
       };
     } catch (error) {
       manejarErrorCiclo(error);

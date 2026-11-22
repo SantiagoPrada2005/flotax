@@ -1,4 +1,4 @@
-# Index: `src/pages/admin/flota/[id]`
+# Index: `src\pages\admin\flota\[id]`
 
 **Responsibility**: Enrutamiento para operaciones por unidad de flota: edición de especificaciones técnicas y tablero dedicado de disponibilidad y mantenimiento.
 **Architectural Layer**: Presentation / Admin Routing Layer

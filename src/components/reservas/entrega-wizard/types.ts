@@ -1,8 +1,18 @@
-import type { PuntoInspeccionR2, CategoriaVehiculo } from '@/lib/flota';
+import type { CategoriaVehiculo } from '@/lib/flota';
 import type {
   EstadoGeneralInspeccion,
   RespuestaItemChecklistInspeccion,
 } from '@/db/schema/inspecciones';
+import type { ZonaEvidenciaVehiculo } from '@/db/schema';
+
+export interface FotoEntregaCapturada {
+  id: string;
+  zonaEvidencia: ZonaEvidenciaVehiculo;
+  url: string;
+  capturadoEnISO: string;
+  subidaEnR2: boolean;
+  dataUrlFallback?: string | undefined;
+}
 
 export type EntregaStepId = 1 | 2 | 3 | 4 | 5;
 
@@ -37,8 +47,8 @@ export interface EntregaWizardData {
   nivelEnergiaEntregaPct: number;
   respuestasChecklist: RespuestaItemChecklistInspeccion[];
 
-  // Paso 3: Peritaje R2 de Salida
-  puntosR2: PuntoInspeccionR2[];
+  // Paso 3: Fotografías de Entrega (6 zonas clave)
+  fotosEntrega: FotoEntregaCapturada[];
   estadoGeneralEntrega: EstadoGeneralInspeccion;
   observacionesEntrega: string;
 

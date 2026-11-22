@@ -1,4 +1,4 @@
-# Index: `src/lib/ubicacion`
+# Index: `src\lib\ubicacion`
 
 **Responsibility**: Dominio geoespacial, evaluación de cobertura y recargos por distancia de entregas a domicilio, generación de enlaces externos de navegación (Google Maps / Waze) y cliente perimetral de Mapbox Geocoding v6 con control de cuota diaria en Cloudflare KV.
 **Architectural Layer**: Domain / Infrastructure Layer
@@ -13,8 +13,7 @@
 
 ## Invariants & Directory Rules
 
-- Nunca exponer `MAPBOX_SECRET_TOKEN` ni tokens `sk.*` hacia el cliente; usar exclusivamente `resolverTokenMapboxPublico()` para la UI.
-- Toda evaluación definitiva de cobertura y recargo de domicilio se ejecuta con las funciones puras de `cobertura.ts` en servidor.
-- El autocompletado Mapbox solo se invoca cuando la modalidad es `DOMICILIO_MEDELLIN`, nunca en `PATIO_PRINCIPAL`.
+- All additions, deletions, or public API modifications must be reflected in this index.
+- Maintain strict boundary encapsulation and domain layer separation.
 
 <!-- Reconciled by codebase-index -->

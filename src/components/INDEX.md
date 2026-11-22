@@ -1,4 +1,4 @@
-# Index: `src/components`
+# Index: `src\components`
 
 **Responsibility**: Componentes UI reutilizables y modulares de la aplicación.
 **Architectural Layer**: Presentation Layer

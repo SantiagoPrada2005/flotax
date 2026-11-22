@@ -1,4 +1,4 @@
-# Index: `src/lib/i18n`
+# Index: `src\lib\i18n`
 
 **Responsibility**: Motor de internacionalización y formatos regionales para FlotaX (Español / English, Colombia / US).
 **Architectural Layer**: Presentation / Shared Layer

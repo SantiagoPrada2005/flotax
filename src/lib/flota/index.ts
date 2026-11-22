@@ -5,5 +5,6 @@ export * from './reservas-cliente';
 export * from './repositorio';
 export * from './repositorio-reservas';
 export * from './locales-captacion';
+export * from './liquidacion-cierre';
 
 

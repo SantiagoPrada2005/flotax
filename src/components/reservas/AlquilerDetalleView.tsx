@@ -11,7 +11,12 @@ import {
   type ReservaClienteItem,
 } from '@/lib/flota';
 import type { CapacidadesOperacionAlquiler } from '@/lib/auth/capacidades-alquiler';
-import type { DetalleReservaAdminContext } from '@/lib/flota/detalle-reserva-admin';
+import {
+  crearDetalleReservaAdminVacio,
+  type DetalleCompletoAlquilerResponse,
+  type DetalleReservaAdminContext,
+  type FotoInspeccionItem,
+} from '@/lib/flota/detalle-reserva-admin';
 import SemaforoDocumentalPanel from './SemaforoDocumentalPanel';
 import DeliveryPointCard from './DeliveryPointCard';
 import { AdminControlCenterPanel } from './AdminControlCenterPanel';
@@ -59,6 +64,22 @@ const formatCop = (val: number): string =>
     maximumFractionDigits: 0,
   }).format(val);
 
+const esDetalleCompletoResponse = (
+  val: unknown
+): val is DetalleCompletoAlquilerResponse => {
+  if (typeof val !== 'object' || val === null) return false;
+  return (
+    'ok' in val &&
+    val.ok === true &&
+    'reserva' in val &&
+    typeof val.reserva === 'object' &&
+    val.reserva !== null &&
+    'detalleAdmin' in val &&
+    typeof val.detalleAdmin === 'object' &&
+    val.detalleAdmin !== null
+  );
+};
+
 export default function AlquilerDetalleView({
   codigo: _codigo,
   reservaInicial,
@@ -74,17 +95,7 @@ export default function AlquilerDetalleView({
 
   const [reserva, setReserva] = useState<ReservaClienteItem>(reservaInicial);
   const [detalleAdmin, setDetalleAdmin] = useState<DetalleReservaAdminContext>(
-    () =>
-      detalleAdminInicial ?? {
-        fotosEntrega: [],
-        fotosDevolucion: [],
-        pagosHistorial: [],
-        contrato: null,
-        garantia: null,
-        eventos: [],
-        inspeccionEntregaFechaISO: null,
-        inspeccionDevolucionFechaISO: null,
-      }
+    () => detalleAdminInicial ?? crearDetalleReservaAdminVacio()
   );
   const [modalFinalizarAbierto, setModalFinalizarAbierto] = useState<boolean>(false);
   const [modalFacturaAbierto, setModalFacturaAbierto] = useState<boolean>(false);
@@ -201,6 +212,53 @@ export default function AlquilerDetalleView({
 
   const guardarCambioReserva = (actualizada: ReservaClienteItem) => {
     setReserva(actualizada);
+  };
+
+  /**
+   * Consulta el endpoint único consolidado `GET /api/alquileres/[codigo]`
+   * para mantener sincronizados fotos, pagos, fechas reales y estado sin recargar.
+   */
+  const refrescarDetalleUnificado = async (codigoTarget = reserva.codigo) => {
+    if (!esAdmin || typeof fetch === 'undefined') return;
+    try {
+      const resp = await fetch(
+        `/api/alquileres/${encodeURIComponent(codigoTarget)}`,
+        {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+          cache: 'no-store',
+        }
+      );
+      if (!resp.ok) return;
+      const json: unknown = await resp.json();
+      if (esDetalleCompletoResponse(json)) {
+        setReserva(json.reserva);
+        setDetalleAdmin(json.detalleAdmin);
+      }
+    } catch {
+      // Tolerante ante fallo transitorio de red
+    }
+  };
+
+  const agregarFotoEntregaLocal = (foto: FotoInspeccionItem) => {
+    setDetalleAdmin((prev) => ({
+      ...prev,
+      fotosEntrega: [
+        foto,
+        ...prev.fotosEntrega.filter((f) => f.id !== foto.id),
+      ],
+    }));
+    mostrarAviso('Fotografía de entrega guardada');
+  };
+
+  const agregarFotoDevolucionLocal = (foto: FotoInspeccionItem) => {
+    setDetalleAdmin((prev) => ({
+      ...prev,
+      fotosDevolucion: [
+        foto,
+        ...prev.fotosDevolucion.filter((f) => f.id !== foto.id),
+      ],
+    }));
   };
 
   // --- Acciones Operativas Estación 1: Inspección R2 ---
@@ -392,6 +450,7 @@ export default function AlquilerDetalleView({
           ...reserva,
           estado: 'CONFIRMADA',
         });
+        void refrescarDetalleUnificado();
         mostrarAviso(`Reserva #${reserva.codigo} confirmada exitosamente`);
       }
     } catch (err: unknown) {
@@ -421,6 +480,7 @@ export default function AlquilerDetalleView({
           ...reserva,
           estado: 'EN_CURSO',
         });
+        void refrescarDetalleUnificado();
         mostrarAviso('Alquiler reanudado · Unidad de nuevo en curso');
       }
     } catch (err: unknown) {
@@ -451,6 +511,7 @@ export default function AlquilerDetalleView({
           ...reserva,
           estado: 'PENDIENTE',
         });
+        void refrescarDetalleUnificado();
         mostrarAviso(`Reserva #${reserva.codigo} reabierta para revisión`);
       }
     } catch (err: unknown) {
@@ -483,59 +544,55 @@ export default function AlquilerDetalleView({
           {/* =====================================================================
               ZONA 1: CABECERA EDITORIAL Y PÍLDORAS DIRECTAS SOBRE EL LIENZO MÓVIL
               ===================================================================== */}
-          <header className="space-y-3">
-        <div className="flex items-start justify-between gap-2">
-          <h1 className="font-display text-[28px] sm:text-[32px] font-extrabold tracking-tight text-[#111827] leading-[1.08]">
-            {vehiculo.marca}
-            <span className="block font-bold text-[#1F2937]">
-              {vehiculo.modelo}
-            </span>
-          </h1>
+          <header className="space-y-3 text-center">
+            {esAdmin && (
+              <div className="flex justify-center">
+                <span
+                  className={`inline-flex items-center rounded-full px-3.5 py-1 text-[11px] font-bold ${
+                    reserva.estado === 'PENDIENTE'
+                      ? 'bg-[#111827] text-white dark:bg-[#EDEDED] dark:text-[#111827]'
+                      : reserva.estado === 'EN_CURSO'
+                        ? 'bg-[#1F2937] text-white dark:bg-[#EDEDED] dark:text-[#111827]'
+                        : 'bg-white text-[#111827] dark:bg-[#111827] dark:text-[#EDEDED] border border-[#9CA3AF]/30 dark:border-white/10'
+                  }`}
+                >
+                  {ETIQUETA_ESTADO_CABECERA[reserva.estado]}
+                </span>
+              </div>
+            )}
 
-          {esAdmin && (
-            <span
-              className={`shrink-0 rounded-full px-3 py-1.5 text-[11px] font-bold ${
-                reserva.estado === 'PENDIENTE'
-                  ? 'bg-[#111827] text-white'
-                  : reserva.estado === 'EN_CURSO'
-                    ? 'bg-[#1F2937] text-white'
-                    : 'bg-white text-[#111827]'
-              }`}
-            >
-              {ETIQUETA_ESTADO_CABECERA[reserva.estado]}
-            </span>
-          )}
-        </div>
+            <h1 className="font-display text-[26px] sm:text-[32px] font-extrabold tracking-tight text-[#111827] dark:text-[#EDEDED] leading-tight">
+              <span className="inline-block">{vehiculo.marca}</span>{' '}
+              <span className="block font-bold text-[#1F2937] dark:text-[#9CA3AF] text-[20px] sm:text-[24px] mt-0.5">
+                {vehiculo.modelo}
+              </span>
+            </h1>
 
-        {/* Píldoras Suaves sin Bordes sobre el Lienzo #EDEDED */}
-        <div className="flex flex-wrap items-center gap-1.5">
-          {esAdmin && (
-            <button
-              type="button"
-              onClick={() => setTabActiva('HIGHLIGHTS')}
-              className="ios-press-bounce rounded-full bg-[#111827] px-3 py-1 text-[11px] font-semibold text-white cursor-pointer"
-            >
-              {reserva.conductor.nombreCompleto} · Lic.{' '}
-              {reserva.conductor.categoriaLicencia}
-            </button>
-          )}
-          <span className="rounded-full bg-white/75 px-3 py-1 text-[11px] font-medium text-[#111827]">
-            {reserva.sedeNombre}
-          </span>
-          <span className="rounded-full bg-white/75 px-3 py-1 text-[11px] font-medium text-[#111827]">
-            {vehiculo.combustible} · {vehiculo.autonomiaOdo}
-          </span>
-          <span className="rounded-full bg-white/75 px-3 py-1 text-[11px] font-semibold text-[#111827] tabular-nums">
-            {formatCop(reserva.totalAlquiler)} Total
-          </span>
-          <span className="rounded-full bg-white/75 px-3 py-1 text-[11px] font-medium text-[#4B5563] tabular-nums">
-            {formatCop(vehiculo.depositoGarantia)} Garantía
-          </span>
-          <span className="rounded-full bg-white/75 px-3 py-1 font-mono text-[11px] font-semibold text-[#111827]">
-            #{reserva.codigo}
-          </span>
-        </div>
-      </header>
+            {/* Píldoras Suaves sobre el Lienzo */}
+            <div className="flex flex-wrap items-center justify-center gap-1.5 pt-0.5">
+              {esAdmin && (
+                <span className="rounded-full bg-[#111827] dark:bg-[#EDEDED] px-3 py-1 text-[11px] font-semibold text-white dark:text-[#111827]">
+                  {reserva.conductor.nombreCompleto} · Lic.{' '}
+                  {reserva.conductor.categoriaLicencia}
+                </span>
+              )}
+              <span className="rounded-full bg-white/75 dark:bg-[#1F2937] border border-[#9CA3AF]/20 dark:border-white/10 px-3 py-1 text-[11px] font-medium text-[#111827] dark:text-[#EDEDED]">
+                {reserva.sedeNombre}
+              </span>
+              <span className="rounded-full bg-white/75 dark:bg-[#1F2937] border border-[#9CA3AF]/20 dark:border-white/10 px-3 py-1 text-[11px] font-medium text-[#111827] dark:text-[#EDEDED]">
+                {vehiculo.combustible} · {vehiculo.autonomiaOdo}
+              </span>
+              <span className="rounded-full bg-white/75 dark:bg-[#1F2937] border border-[#9CA3AF]/20 dark:border-white/10 px-3 py-1 text-[11px] font-semibold text-[#111827] dark:text-[#EDEDED] tabular-nums">
+                {formatCop(reserva.totalAlquiler)} Total
+              </span>
+              <span className="rounded-full bg-white/75 dark:bg-[#1F2937] border border-[#9CA3AF]/20 dark:border-white/10 px-3 py-1 text-[11px] font-medium text-[#4B5563] dark:text-[#9CA3AF] tabular-nums">
+                {formatCop(vehiculo.depositoGarantia)} Garantía
+              </span>
+              <span className="rounded-full bg-white/75 dark:bg-[#1F2937] border border-[#9CA3AF]/20 dark:border-white/10 px-3 py-1 font-mono text-[11px] font-semibold text-[#111827] dark:text-[#EDEDED]">
+                #{reserva.codigo}
+              </span>
+            </div>
+          </header>
 
       {/* =====================================================================
           ZONA 2: ESCENARIO ABIERTO DEL VEHÍCULO + CÁPSULA VERTICAL EN CRISTAL
@@ -655,26 +712,28 @@ export default function AlquilerDetalleView({
           </div>
         )}
       </section>
+
+      {esAdmin && (
+        <DeliveryPointCard
+          modalidadEntrega={reserva.modalidadEntrega}
+          sedeNombre={reserva.sedeNombre}
+          direccionEntrega={reserva.direccionEntrega}
+          entregaLatitud={reserva.entregaLatitud}
+          entregaLongitud={reserva.entregaLongitud}
+          entregaReferencia={reserva.entregaReferencia}
+          distanciaEntregaKm={reserva.distanciaEntregaKm}
+          recargoEntregaDomicilio={reserva.recargoEntregaDomicilio}
+          mapboxPublicToken={mapboxPublicToken}
+          vista="admin"
+          onAviso={mostrarAviso}
+        />
+      )}
     </div>
 
     {/* Columna Derecha (En PC): Centro de Control Admin o Lámina Cliente */}
-    <div className="w-full lg:w-5/12 xl:w-2/5 space-y-3.5">
+    <div className="w-full lg:w-5/12 xl:w-2/5">
       {esAdmin ? (
-        <>
-          <DeliveryPointCard
-            modalidadEntrega={reserva.modalidadEntrega}
-            sedeNombre={reserva.sedeNombre}
-            direccionEntrega={reserva.direccionEntrega}
-            entregaLatitud={reserva.entregaLatitud}
-            entregaLongitud={reserva.entregaLongitud}
-            entregaReferencia={reserva.entregaReferencia}
-            distanciaEntregaKm={reserva.distanciaEntregaKm}
-            recargoEntregaDomicilio={reserva.recargoEntregaDomicilio}
-            mapboxPublicToken={mapboxPublicToken}
-            vista="admin"
-            onAviso={mostrarAviso}
-          />
-          <AdminControlCenterPanel
+        <AdminControlCenterPanel
           reserva={reserva}
           detalleAdmin={detalleAdmin}
           capacidades={capacidades}
@@ -693,8 +752,10 @@ export default function AlquilerDetalleView({
                 },
               });
             }
+            void refrescarDetalleUnificado();
             mostrarAviso('Expediente documental del cliente actualizado');
           }}
+          onFotoEntregaRegistrada={agregarFotoEntregaLocal}
           operacionCargando={operacionCargando}
           errorOperacion={errorOperacion}
           onClearError={() => setErrorOperacion(null)}
@@ -718,7 +779,6 @@ export default function AlquilerDetalleView({
           onReabrirReserva={reabrirReservaOperativa}
           onAbrirFactura={() => setModalFacturaAbierto(true)}
         />
-        </>
       ) : (
         <>
           {/* =====================================================================
@@ -1731,6 +1791,7 @@ export default function AlquilerDetalleView({
         reserva={reserva}
         onExito={(actualizada, msg) => {
           guardarCambioReserva(actualizada);
+          void refrescarDetalleUnificado();
           if (msg) mostrarAviso(msg);
         }}
       />
@@ -1742,6 +1803,7 @@ export default function AlquilerDetalleView({
         capacidades={capacidades}
         onExito={(actualizada, msg) => {
           guardarCambioReserva(actualizada);
+          void refrescarDetalleUnificado();
           if (msg) mostrarAviso(msg);
         }}
       />
@@ -1755,6 +1817,7 @@ export default function AlquilerDetalleView({
         cuentasFinancieras={cuentasFinancieras}
         onExito={(actualizada, msg) => {
           guardarCambioReserva(actualizada);
+          void refrescarDetalleUnificado();
           if (msg) mostrarAviso(msg);
         }}
       />
@@ -1768,6 +1831,7 @@ export default function AlquilerDetalleView({
         tokenAccesoPublico={tokenAccesoPublico}
         onExito={(actualizada, msg) => {
           guardarCambioReserva(actualizada);
+          void refrescarDetalleUnificado();
           if (msg) mostrarAviso(msg);
         }}
       />
@@ -1782,10 +1846,13 @@ export default function AlquilerDetalleView({
             hoyISO={_hoyISO}
             capacidades={capacidades}
             cuentasFinancieras={cuentasFinancieras}
+            onFotoDevolucionRegistrada={agregarFotoDevolucionLocal}
             onExito={(actualizada, detalleActualizado, msg) => {
               guardarCambioReserva(actualizada);
               if (detalleActualizado) {
                 setDetalleAdmin(detalleActualizado);
+              } else {
+                void refrescarDetalleUnificado();
               }
               if (msg) mostrarAviso(msg);
             }}

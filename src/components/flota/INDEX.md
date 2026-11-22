@@ -1,4 +1,4 @@
-# Index: `src/components/flota`
+# Index: `src\components\flota`
 
 **Responsibility**: Componentes interactivos del dominio de Flota: Catálogo Exclusivo iOS Editorial Showcase por Local, Ficha 360° de Estudio, Centro de Compartición con Progressive Disclosure y Gestor de Inventario.
 **Architectural Layer**: Presentation Layer (Tier 2 Domain Modules)

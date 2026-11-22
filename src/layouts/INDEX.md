@@ -1,4 +1,4 @@
-# Index: `src/layouts`
+# Index: `src\layouts`
 
 **Responsibility**: Layouts estructurales compartidos para la interfaz de usuario en Astro.
 **Architectural Layer**: Presentation Layer

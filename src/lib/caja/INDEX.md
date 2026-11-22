@@ -1,4 +1,4 @@
-# Index: `src/lib/caja`
+# Index: `src\lib\caja`
 
 **Responsibility**: Dominio financiero y de caja operativa: cálculos de balance, liquidación de depósitos de garantía, repositorio transaccional D1 y exportación de reportes.
 **Architectural Layer**: Domain & Infrastructure Layer

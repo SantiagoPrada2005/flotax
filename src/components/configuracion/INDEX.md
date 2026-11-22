@@ -1,4 +1,4 @@
-# Index: `src/components/configuracion`
+# Index: `src\components\configuracion`
 
 **Responsibility**: Componentes visuales e interactivos para la configuración de usuario, gestión de apariencia (modo claro, modo oscuro, sistema) e internacionalización (lenguaje y formatos regionales).
 **Architectural Layer**: Presentation / Settings Components

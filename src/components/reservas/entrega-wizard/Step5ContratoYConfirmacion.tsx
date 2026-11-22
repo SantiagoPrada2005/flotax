@@ -1,5 +1,5 @@
+import { ZONAS_FOTOS_ALQUILER, type ReservaClienteItem } from '@/lib/flota';
 import type { EntregaStepId, EntregaWizardData, EntregaWizardErrors } from './types';
-import type { ReservaClienteItem } from '@/lib/flota';
 
 export interface Step5ContratoYConfirmacionProps {
   reserva: ReservaClienteItem;
@@ -16,6 +16,12 @@ const formatCop = (val: number): string =>
     maximumFractionDigits: 0,
   }).format(val);
 
+const ETIQUETA_ESTADO_GENERAL: Readonly<Record<string, string>> = {
+  IMPECABLE: 'Impecable',
+  OPTIMO: 'Óptimo',
+  CON_NOVEDAD: 'Con observación previa',
+};
+
 export default function Step5ContratoYConfirmacion({
   reserva,
   data,
@@ -23,7 +29,7 @@ export default function Step5ContratoYConfirmacion({
   onEditPaso,
   onChange,
 }: Step5ContratoYConfirmacionProps) {
-  const novedadesR2 = data.puntosR2.filter((p) => p.estado === 'NOVEDAD').length;
+  const fotosRegistradas = data.fotosEntrega.length;
   const itemsOk = data.respuestasChecklist.filter(
     (i) => i.estado === 'BIEN'
   ).length;
@@ -98,26 +104,28 @@ export default function Step5ContratoYConfirmacion({
           </p>
         </div>
 
-        {/* Tarjeta 3: Peritaje R2 */}
+        {/* Tarjeta 3: Fotografías de entrega */}
         <div className="rounded-[22px] border border-[#9CA3AF]/40 dark:border-white/15 bg-white dark:bg-[#1F2937] p-4 space-y-2 shadow-xs">
           <div className="flex items-center justify-between border-b border-[#EDEDED] dark:border-white/10 pb-1.5">
             <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
-              03 · Peritaje R2 de Salida
+              03 · Fotografías de entrega
             </span>
             <button
               type="button"
               onClick={() => onEditPaso(3)}
-              className="min-h-[40px] px-2 font-mono text-xs font-bold text-[#111827] dark:text-[#EDEDED] hover:underline cursor-pointer"
+              className="min-h-[44px] px-2 font-mono text-xs font-bold text-[#111827] dark:text-[#EDEDED] hover:underline cursor-pointer"
             >
               Editar
             </button>
           </div>
           <p className="font-display text-sm font-bold text-[#111827] dark:text-[#EDEDED]">
-            Estado general: {data.estadoGeneralEntrega}
+            Estado general:{' '}
+            {ETIQUETA_ESTADO_GENERAL[data.estadoGeneralEntrega] ??
+              data.estadoGeneralEntrega}
           </p>
           <p className="text-xs text-[#4B5563] dark:text-[#9CA3AF]">
-            {data.puntosR2.length} zonas verificadas · {novedadesR2}{' '}
-            {novedadesR2 === 1 ? 'novedad previa' : 'novedades previas'}
+            {fotosRegistradas} de {ZONAS_FOTOS_ALQUILER.length}{' '}
+            {fotosRegistradas === 1 ? 'fotografía registrada' : 'fotografías registradas'}
           </p>
         </div>
 

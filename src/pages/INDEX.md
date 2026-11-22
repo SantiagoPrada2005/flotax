@@ -1,4 +1,4 @@
-# Index: `src/pages`
+# Index: `src\pages`
 
 **Responsibility**: Enrutamiento basado en archivos de Astro para páginas visuales públicas, portal de clientes y endpoints API REST.
 **Architectural Layer**: Presentation / Client Routing Layer

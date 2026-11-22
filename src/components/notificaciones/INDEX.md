@@ -1,4 +1,4 @@
-# Index: `src/components/notificaciones`
+# Index: `src\components\notificaciones`
 
 **Responsibility**: Componentes interactivos de UI para el sistema de notificaciones in-app y gestión del ciclo de vida Web Push en cliente.
 **Architectural Layer**: Presentation Layer (Tier 2 Domain Modules)

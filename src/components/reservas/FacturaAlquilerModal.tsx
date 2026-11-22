@@ -1,4 +1,8 @@
-import type { ReservaClienteItem } from '@/lib/flota';
+import {
+  etiquetaEstadoGarantia,
+  etiquetaMetodoPago,
+  type ReservaClienteItem,
+} from '@/lib/flota';
 import type { DetalleReservaAdminContext } from '@/lib/flota/detalle-reserva-admin';
 
 export interface FacturaAlquilerModalProps {
@@ -35,7 +39,10 @@ export function FacturaAlquilerModal({
 
   const { contrato, garantia, pagosHistorial } = detalleAdmin;
   const cobrosAdicionales = contrato?.cobrosAdicionalesLineas ?? [];
-  const totalCobrosAdicionales = cobrosAdicionales.reduce((acc, l) => acc + l.valor, 0);
+  const totalCobrosAdicionales = cobrosAdicionales.reduce(
+    (acc, l) => acc + l.valor,
+    0
+  );
   const valorOriginalAlquiler = contrato
     ? contrato.subtotalCanon + contrato.coberturaPericial + contrato.cargosMora
     : Math.max(0, reserva.totalAlquiler - totalCobrosAdicionales);
@@ -73,7 +80,8 @@ export function FacturaAlquilerModal({
               Comprobante de Liquidación y Factura
             </span>
             <h2 className="font-display text-xl font-extrabold text-[#111827] dark:text-[#EDEDED]">
-              {contrato?.numeroContrato ?? `CTR-${reserva.codigo.replace('FLX-', '')}`}
+              {contrato?.numeroContrato ??
+                `CTR-${reserva.codigo.replace('FLX-', '')}`}
             </h2>
             <p className="text-xs text-[#4B5563] dark:text-[#9CA3AF] mt-0.5">
               Reserva #{reserva.codigo} · {reserva.sedeNombre}
@@ -99,10 +107,13 @@ export function FacturaAlquilerModal({
               {reserva.conductor.nombreCompleto}
             </p>
             <p className="text-[#4B5563] dark:text-[#9CA3AF]">
-              {reserva.conductor.tipoDocumento} {reserva.conductor.numeroDocumento} · Lic.{' '}
+              {reserva.conductor.tipoDocumento}{' '}
+              {reserva.conductor.numeroDocumento} · Lic.{' '}
               {reserva.conductor.categoriaLicencia}
             </p>
-            <p className="text-[#4B5563] dark:text-[#9CA3AF]">{reserva.conductor.telefono}</p>
+            <p className="text-[#4B5563] dark:text-[#9CA3AF]">
+              {reserva.conductor.telefono}
+            </p>
           </div>
 
           <div className="rounded-[18px] bg-[#EDEDED]/65 dark:bg-[#111827] border border-[#9CA3AF]/25 dark:border-white/10 p-3.5 space-y-1">
@@ -110,13 +121,16 @@ export function FacturaAlquilerModal({
               Unidad Arrendada
             </span>
             <p className="font-display text-sm font-bold text-[#111827] dark:text-[#EDEDED]">
-              {reserva.vehiculo.marca} {reserva.vehiculo.modelo} ({reserva.vehiculo.anio})
+              {reserva.vehiculo.marca} {reserva.vehiculo.modelo} (
+              {reserva.vehiculo.anio})
             </p>
             <p className="font-mono text-[#111827] dark:text-[#EDEDED] font-semibold">
               Placa: {reserva.vehiculo.placa}
             </p>
             <p className="text-[#4B5563] dark:text-[#9CA3AF]">
-              Período: {reserva.fechaInicio} → {reserva.fechaFin} ({reserva.diasAlquiler} días)
+              Período: {reserva.fechaInicio} → {reserva.fechaFin} (
+              {reserva.diasAlquiler}{' '}
+              {reserva.diasAlquiler === 1 ? 'día' : 'días'})
             </p>
           </div>
         </div>
@@ -135,7 +149,7 @@ export function FacturaAlquilerModal({
                   {reserva.diasAlquiler === 1 ? 'día' : 'días'})
                 </p>
                 <p className="text-[11px] text-[#4B5563] dark:text-[#9CA3AF]">
-                  Tarifa base y cobertura pericial R2 del contrato original
+                  Tarifa base y cobertura del contrato original
                 </p>
               </div>
               <span className="font-mono font-bold text-[#111827] dark:text-[#EDEDED] tabular-nums shrink-0">
@@ -144,21 +158,44 @@ export function FacturaAlquilerModal({
             </div>
 
             {cobrosAdicionales.map((linea) => (
-              <div key={linea.id} className="px-4 py-3 flex items-start justify-between gap-3 text-xs">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-bold text-[#111827] dark:text-[#EDEDED]">
-                      {linea.concepto}
-                    </span>
-                    <span className="rounded-full bg-[#EDEDED] dark:bg-[#111827] border border-[#9CA3AF]/35 dark:border-white/15 px-2 py-0.5 text-[10px] font-semibold text-[#4B5563] dark:text-[#9CA3AF]">
-                      Cobro adicional · {linea.zona}
-                    </span>
-                  </div>
-                  {linea.nota && (
-                    <p className="text-[11px] text-[#4B5563] dark:text-[#9CA3AF] mt-0.5">
-                      {linea.nota}
-                    </p>
+              <div
+                key={linea.id}
+                className="px-4 py-3 flex items-start justify-between gap-3 text-xs"
+              >
+                <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                  {linea.evidenciaUrl && (
+                    <img
+                      src={linea.evidenciaUrl}
+                      alt={`Evidencia · ${linea.concepto}`}
+                      className="h-11 w-14 rounded-[10px] object-cover shrink-0 border border-[#9CA3AF]/30 dark:border-white/15"
+                    />
                   )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-[#111827] dark:text-[#EDEDED]">
+                        {linea.concepto}
+                      </span>
+                      <span className="rounded-full bg-[#EDEDED] dark:bg-[#111827] border border-[#9CA3AF]/35 dark:border-white/15 px-2 py-0.5 text-[10px] font-semibold text-[#4B5563] dark:text-[#9CA3AF]">
+                        Cobro adicional · {linea.zona}
+                      </span>
+                    </div>
+                    {linea.nota && (
+                      <p className="text-[11px] text-[#4B5563] dark:text-[#9CA3AF] mt-0.5">
+                        {linea.nota}
+                      </p>
+                    )}
+                    {(linea.registradoPorNombre ||
+                      linea.registradoPorId ||
+                      linea.registradoEnISO) && (
+                      <p className="text-[10px] text-[#4B5563] dark:text-[#9CA3AF] mt-1 font-mono">
+                        Agregado por:{' '}
+                        {linea.registradoPorNombre ?? 'Operador de patio'}
+                        {linea.registradoEnISO
+                          ? ` · ${formatFechaHora(linea.registradoEnISO)}`
+                          : ''}
+                      </p>
+                    )}
+                  </div>
                 </div>
                 <span className="font-mono font-bold text-[#111827] dark:text-[#EDEDED] tabular-nums shrink-0">
                   {formatCop(linea.valor)}
@@ -166,18 +203,19 @@ export function FacturaAlquilerModal({
               </div>
             ))}
 
-            {(contrato?.cargosOtrosLocal ?? 0) > 0 && cobrosAdicionales.length === 0 && (
-              <div className="px-4 py-3 flex items-start justify-between gap-3 text-xs">
-                <div>
-                  <p className="font-bold text-[#111827] dark:text-[#EDEDED]">
-                    Otros cargos operativos
-                  </p>
+            {(contrato?.cargosOtrosLocal ?? 0) > 0 &&
+              cobrosAdicionales.length === 0 && (
+                <div className="px-4 py-3 flex items-start justify-between gap-3 text-xs">
+                  <div>
+                    <p className="font-bold text-[#111827] dark:text-[#EDEDED]">
+                      Otros cargos operativos
+                    </p>
+                  </div>
+                  <span className="font-mono font-bold text-[#111827] dark:text-[#EDEDED] tabular-nums shrink-0">
+                    {formatCop(contrato?.cargosOtrosLocal ?? 0)}
+                  </span>
                 </div>
-                <span className="font-mono font-bold text-[#111827] dark:text-[#EDEDED] tabular-nums shrink-0">
-                  {formatCop(contrato?.cargosOtrosLocal ?? 0)}
-                </span>
-              </div>
-            )}
+              )}
 
             {descuento > 0 && (
               <div className="px-4 py-3 flex items-start justify-between gap-3 text-xs">
@@ -194,17 +232,23 @@ export function FacturaAlquilerModal({
           {/* Totales */}
           <div className="bg-[#EDEDED]/55 dark:bg-[#111827] px-4 py-3.5 space-y-1.5 border-t border-[#9CA3AF]/25 dark:border-white/10 text-xs">
             <div className="flex items-center justify-between">
-              <span className="font-bold text-[#111827] dark:text-[#EDEDED]">Total facturado</span>
+              <span className="font-bold text-[#111827] dark:text-[#EDEDED]">
+                Total facturado
+              </span>
               <span className="font-display text-base font-black text-[#111827] dark:text-[#EDEDED] tabular-nums">
                 {formatCop(totalFacturado)}
               </span>
             </div>
             <div className="flex items-center justify-between text-[#4B5563] dark:text-[#9CA3AF]">
-              <span>Pagos aplicados al alquiler</span>
-              <span className="font-mono font-semibold tabular-nums">{formatCop(totalPagado)}</span>
+              <span>Pagos y garantía aplicados</span>
+              <span className="font-mono font-semibold tabular-nums">
+                {formatCop(totalPagado)}
+              </span>
             </div>
             <div className="flex items-center justify-between pt-1 border-t border-[#9CA3AF]/20 dark:border-white/10">
-              <span className="font-bold text-[#111827] dark:text-[#EDEDED]">Saldo pendiente</span>
+              <span className="font-bold text-[#111827] dark:text-[#EDEDED]">
+                Saldo pendiente por cobrar
+              </span>
               <span className="font-mono font-extrabold text-[#111827] dark:text-[#EDEDED] tabular-nums">
                 {formatCop(saldoPendiente)}
               </span>
@@ -221,9 +265,13 @@ export function FacturaAlquilerModal({
             {pagosAlquiler.length > 0 ? (
               <ul className="space-y-1.5">
                 {pagosAlquiler.map((p) => (
-                  <li key={p.id} className="flex items-center justify-between gap-2">
+                  <li
+                    key={p.id}
+                    className="flex items-center justify-between gap-2"
+                  >
                     <span className="text-[#4B5563] dark:text-[#9CA3AF] truncate">
-                      {formatFechaHora(p.fechaISO)} · {p.metodoPago}
+                      {formatFechaHora(p.fechaISO)} ·{' '}
+                      {etiquetaMetodoPago(p.metodoPago)}
                     </span>
                     <span className="font-mono font-bold text-[#111827] dark:text-[#EDEDED] tabular-nums shrink-0">
                       {p.tipo === 'EGRESO' ? '-' : ''}
@@ -234,29 +282,42 @@ export function FacturaAlquilerModal({
               </ul>
             ) : (
               <p className="text-[#4B5563] dark:text-[#9CA3AF]">
-                Abono inicial registrado: {formatCop(reserva.montoReportado)}
+                Abono inicial reportado: {formatCop(reserva.montoReportado)}
               </p>
             )}
           </div>
 
           <div className="rounded-[18px] bg-[#EDEDED]/55 dark:bg-[#111827] border border-[#9CA3AF]/25 dark:border-white/10 p-3.5 space-y-1.5">
-            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
-              Tratamiento de Garantía
-            </span>
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
+                Liquidación de Garantía
+              </span>
+              {garantia && (
+                <span className="rounded-full bg-white dark:bg-[#1F2937] border border-[#9CA3AF]/30 dark:border-white/15 px-2 py-0.5 text-[10px] font-bold text-[#111827] dark:text-[#EDEDED]">
+                  {etiquetaEstadoGarantia(garantia.estado)}
+                </span>
+              )}
+            </div>
             <div className="flex items-center justify-between">
-              <span className="text-[#4B5563] dark:text-[#9CA3AF]">Recibida:</span>
+              <span className="text-[#4B5563] dark:text-[#9CA3AF]">
+                Recibida:
+              </span>
               <span className="font-mono font-bold text-[#111827] dark:text-[#EDEDED] tabular-nums">
                 {formatCop(garantia?.montoRecibido ?? 0)}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[#4B5563] dark:text-[#9CA3AF]">Retenida:</span>
+              <span className="text-[#4B5563] dark:text-[#9CA3AF]">
+                Descontada por cobros:
+              </span>
               <span className="font-mono font-bold text-[#111827] dark:text-[#EDEDED] tabular-nums">
                 {formatCop(garantia?.montoRetenido ?? 0)}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[#4B5563] dark:text-[#9CA3AF]">Devuelta:</span>
+              <span className="text-[#4B5563] dark:text-[#9CA3AF]">
+                Devuelta al cliente:
+              </span>
               <span className="font-mono font-bold text-[#111827] dark:text-[#EDEDED] tabular-nums">
                 {formatCop(garantia?.montoDevuelto ?? 0)}
               </span>
@@ -274,14 +335,14 @@ export function FacturaAlquilerModal({
           <button
             type="button"
             onClick={() => window.print()}
-            className="fx-press min-h-[44px] rounded-full border border-[#9CA3AF]/45 dark:border-white/15 bg-white dark:bg-[#111827] px-5 py-2.5 text-xs font-bold text-[#111827] dark:text-[#EDEDED] hover:bg-[#EDEDED] dark:hover:bg-[#1F2937] cursor-pointer"
+            className="fx-press min-h-[44px] rounded-full border border-[#9CA3AF]/45 dark:border-white/15 bg-white dark:bg-[#111827] px-5 py-2.5 text-xs font-bold text-[#111827] dark:text-[#EDEDED] hover:bg-[#EDEDED] dark:hover:bg-[#1F2937] transition-colors cursor-pointer"
           >
             Imprimir / Guardar PDF
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="fx-press min-h-[44px] rounded-full bg-[#111827] dark:bg-[#EDEDED] px-5 py-2.5 text-xs font-bold text-white dark:text-[#111827] hover:bg-[#1F2937] dark:hover:bg-white cursor-pointer"
+            className="fx-press min-h-[44px] rounded-full bg-[#111827] dark:bg-[#EDEDED] px-5 py-2.5 text-xs font-bold text-white dark:text-[#111827] hover:bg-[#1F2937] dark:hover:bg-white transition-colors cursor-pointer"
           >
             Cerrar
           </button>

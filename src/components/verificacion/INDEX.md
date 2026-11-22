@@ -1,4 +1,4 @@
-# Index: `src/components/verificacion`
+# Index: `src\components\verificacion`
 
 **Responsibility**: Componentes interactivos y presentación para el flujo multi-paso de verificación pericial KYC de identidad y licencias de conducir con integración directa a Cloudflare R2 y D1.
 **Architectural Layer**: Presentation Layer (React 19 Interactive Island)

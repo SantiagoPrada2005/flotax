@@ -1,4 +1,4 @@
-# Index: `src/lib/db`
+# Index: `src\lib\db`
 
 **Responsibility**: Bootstrap defensivo de esquemas D1, diagnósticos de persistencia y seed idempotente de demostración para entornos local, preview y producción.
 **Architectural Layer**: Infrastructure / Data Layer

@@ -1,4 +1,4 @@
-# Index: `src/lib`
+# Index: `src\lib`
 
 **Responsibility**: Módulos de soporte técnico transversal, factories de infraestructura (Base de Datos D1, Autenticación Better Auth) y utilidades.
 **Architectural Layer**: Infrastructure / Shared Layer
@@ -13,7 +13,7 @@
 | [`db/`](./db/) | Bootstrap defensivo de esquemas D1, diagnósticos de persistencia y seed idempotente de demostración para entornos local, preview y producción. | [INDEX.md](./db/INDEX.md) |
 | [`email/`](./email/) | Módulo de envío de correos electrónicos transaccionales para FlotaX sobre Cloudflare Workers (API `send_email`) y dominio `flotax.innovaweb.pro`. | [INDEX.md](./email/INDEX.md) |
 | [`flota/`](./flota/) | Dominio de catálogo, especificaciones técnicas, buscador evaluativo de unidades, motor de franjas de disponibilidad, calendario suizo de reservas e inspección R2/waybill de cliente y administración. | [INDEX.md](./flota/INDEX.md) |
-| [`geo/`](./geo/) | Catálogo geográfico oficial de Colombia (DANE DIVIPOLA: 32 departamentos + Bogotá D.C. y municipios) y utilidades de búsqueda. | [INDEX.md](./geo/INDEX.md) |
+| [`geo/`](./geo/) | Catálogo geográfico oficial de Colombia (DANE DIVIPOLA: 32 departamentos + Bogotá D.C. y sus 1,122 municipios) y utilidades de búsqueda normalizada. | [INDEX.md](./geo/INDEX.md) |
 | [`i18n/`](./i18n/) | Motor de internacionalización y formatos regionales para FlotaX (Español / English, Colombia / US). | [INDEX.md](./i18n/INDEX.md) |
 | [`logger/`](./logger/) | Módulo de logging centralizado, sanitización de datos sensibles (PII/Secretos), gobernanza de errores y alertas tempranas con prevención de tormentas por correo para desarrolladores en Cloudflare Workers y D1. | [INDEX.md](./logger/INDEX.md) |
 | [`mantenimientos/`](./mantenimientos/) | Dominio de gestión de mantenimiento, órdenes técnicas de taller, alistamiento de patio, bloqueos operativos y resolución del estado de disponibilidad de la flota en Cloudflare D1. | [INDEX.md](./mantenimientos/INDEX.md) |
@@ -24,7 +24,7 @@
 | [`seo/`](./seo/) | Biblioteca de generación de esquemas Schema.org JSON-LD para entidades de negocio, vehículos y migas de pan. | [INDEX.md](./seo/INDEX.md) |
 | [`theme/`](./theme/) | Motor de temas visuales (Claro, Oscuro, Preferencia del Sistema) y persistencia cross-page sin FOUC. | [INDEX.md](./theme/INDEX.md) |
 | [`time/`](./time/) | Funciones y utilidades de cliente para manipulación y visualización de fechas y zonas horarias. | [INDEX.md](./time/INDEX.md) |
-| [`ubicacion/`](./ubicacion/) | Dominio geoespacial, cobertura y recargos por distancia de entregas a domicilio, enlaces externos de navegación (Google Maps / Waze) y cliente Mapbox Geocoding v6 con control de cuota diaria en KV. | [INDEX.md](./ubicacion/INDEX.md) |
+| [`ubicacion/`](./ubicacion/) | Dominio geoespacial, evaluación de cobertura y recargos por distancia de entregas a domicilio, generación de enlaces externos de navegación (Google Maps / Waze) y cliente perimetral de Mapbox Geocoding v6 con control de cuota diaria en Cloudflare KV. | [INDEX.md](./ubicacion/INDEX.md) |
 
 ## File Manifest
 

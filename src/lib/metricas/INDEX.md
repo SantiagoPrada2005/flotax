@@ -1,4 +1,4 @@
-# Index: `src/lib/metricas`
+# Index: `src\lib\metricas`
 
 **Responsibility**: Dominio de métricas y telemetría operativa de flota: ganancia diaria con vehículos, ocupación mensual (reservas y ganancias por mes), automóviles alquilados y movimientos diarios en COP.
 **Architectural Layer**: Application / Domain Layer

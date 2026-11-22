@@ -1,4 +1,4 @@
-# Index: `src/lib/email`
+# Index: `src\lib\email`
 
 **Responsibility**: Módulo de envío de correos electrónicos transaccionales para FlotaX sobre Cloudflare Workers (API `send_email`) y dominio `flotax.innovaweb.pro`.
 **Architectural Layer**: Application / Infrastructure Port & Adapter

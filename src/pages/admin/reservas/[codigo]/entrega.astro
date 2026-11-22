@@ -2,6 +2,7 @@
 import LayoutAdmin from '@/layouts/LayoutAdmin.astro';
 import EntregaVehiculoWizardIsland from '@/components/reservas/entrega-wizard/EntregaVehiculoWizardIsland';
 import { obtenerReservaPorCodigoD1 } from '@/lib/flota/repositorio-reservas';
+import { obtenerDetalleReservaAdminD1 } from '@/lib/flota/detalle-reserva-admin';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
 import {
@@ -68,6 +69,11 @@ const cuentasLocal =
         )
         .all()
     : [];
+const detalleAdminEntrega = await obtenerDetalleReservaAdminD1(
+  db,
+  codigoNorm,
+  usuario.localActivo.id
+);
 ---
 
 <LayoutAdmin
@@ -79,5 +85,6 @@ const cuentasLocal =
     client:load
     reservaInicial={reservaInicial}
     cuentasFinancieras={cuentasLocal}
+    fotosEntregaIniciales={detalleAdminEntrega.fotosEntrega}
   />
 </LayoutAdmin>

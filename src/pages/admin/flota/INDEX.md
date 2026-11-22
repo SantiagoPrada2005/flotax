@@ -1,4 +1,4 @@
-# Index: `src/pages/admin/flota`
+# Index: `src\pages\admin\flota`
 
 **Responsibility**: Enrutamiento para la gestión perimetral e inventario de la flota (listado, alta de nuevas unidades, edición y disponibilidad).
 **Architectural Layer**: Presentation / Admin Routing Layer

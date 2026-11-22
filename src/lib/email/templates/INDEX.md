@@ -1,4 +1,4 @@
-# Index: `src/lib/email/templates`
+# Index: `src\lib\email\templates`
 
 **Responsibility**: Plantillas HTML de correos electrónicos transaccionales con diseño responsive y tokens canónicos de FlotaX.
 **Architectural Layer**: Presentation / Email Layer

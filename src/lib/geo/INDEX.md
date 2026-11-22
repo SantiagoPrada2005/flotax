@@ -1,4 +1,4 @@
-# Index: `src/lib/geo`
+# Index: `src\lib\geo`
 
 **Responsibility**: Catálogo geográfico oficial de Colombia (DANE DIVIPOLA: 32 departamentos + Bogotá D.C. y sus 1,122 municipios) y utilidades de búsqueda normalizada.
 **Architectural Layer**: Domain Data / Shared Utilities

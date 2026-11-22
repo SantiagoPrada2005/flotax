@@ -1,4 +1,4 @@
-# Index: `src/components/seo`
+# Index: `src\components\seo`
 
 **Responsibility**: Componentes transversales para inyección de metadatos SEO, Open Graph, Twitter Cards y Schema.org JSON-LD.
 **Architectural Layer**: Presentation / SEO Foundation Components

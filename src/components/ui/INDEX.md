@@ -1,4 +1,4 @@
-# Index: `src/components/ui`
+# Index: `src\components\ui`
 
 **Responsibility**: Primitivas y componentes visuales agnósticos Tier 1 del sistema de diseño FlotaX.
 **Architectural Layer**: Presentation Layer / UI Primitives

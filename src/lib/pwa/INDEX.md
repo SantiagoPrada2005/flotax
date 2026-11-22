@@ -1,4 +1,4 @@
-# Index: `src/lib/pwa`
+# Index: `src\lib\pwa`
 
 **Responsibility**: Utilidades de dominio para ejecución como Progressive Web App (PWA) en modo standalone, instalación adaptativa (Android `beforeinstallprompt` e iOS Safari/Chrome), validación de rutas SPA, registro del Service Worker perimetral, caché HTTP privada de navegación y calentamiento de rutas.
 **Architectural Layer**: Infrastructure / Client PWA Runtime Layer
