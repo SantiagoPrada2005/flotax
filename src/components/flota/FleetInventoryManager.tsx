@@ -1,9 +1,11 @@
 import { useState, useTransition } from 'react';
 import { actions } from 'astro:actions';
 import type { VehiculoItem, CategoriaVehiculo, EstadoVehiculo } from '@/lib/flota/types';
+import type { ResumenDocumentalVehiculo } from '@/lib/documentos-vehiculo';
 
 export interface FleetInventoryManagerProps {
   initialVehiculos: VehiculoItem[];
+  resumenesDocumentos?: Record<string, ResumenDocumentalVehiculo> | undefined;
   nuevaUnidadHref?: string | undefined;
 }
 
@@ -49,11 +51,13 @@ const ESTADOS_INFO: Record<
 
 export default function FleetInventoryManager({
   initialVehiculos,
+  resumenesDocumentos = {},
   nuevaUnidadHref = '/admin/flota/nuevo',
 }: FleetInventoryManagerProps) {
   const [vehiculos, setVehiculos] = useState<VehiculoItem[]>(initialVehiculos);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<CategoriaVehiculo | 'TODAS'>('TODAS');
   const [estadoSeleccionado, setEstadoSeleccionado] = useState<EstadoVehiculo | 'TODOS'>('TODOS');
+  const [soloAlertaDocs, setSoloAlertaDocs] = useState(false);
   const [busqueda, setBusqueda] = useState('');
   const [filtrosAbiertos, setFiltrosAbiertos] = useState(false);
   const [vistaModo, setVistaModo] = useState<'grid' | 'lista'>('grid');
@@ -77,11 +81,18 @@ export default function FleetInventoryManager({
     fueraServicio: vehiculos.filter((v) => v.estado === 'FUERA_SERVICIO' || v.estado === 'NO_DISPONIBLE').length,
   };
 
-  const hayFiltroCategoriaActivo = categoriaSeleccionada !== 'TODAS';
+  const totalAlertaDocs = vehiculos.filter(
+    (v) => resumenesDocumentos[v.id]?.bloqueadoPorDocumentos
+  ).length;
+
+  const hayFiltroCategoriaActivo = categoriaSeleccionada !== 'TODAS' || soloAlertaDocs;
   const mostrarPanelCategorias = filtrosAbiertos || hayFiltroCategoriaActivo;
 
   // Filtrado reactivo de unidades
   const vehiculosFiltrados = vehiculos.filter((v) => {
+    if (soloAlertaDocs && !resumenesDocumentos[v.id]?.bloqueadoPorDocumentos) {
+      return false;
+    }
     if (categoriaSeleccionada !== 'TODAS' && v.categoria !== categoriaSeleccionada) {
       return false;
     }
@@ -419,6 +430,19 @@ export default function FleetInventoryManager({
         {/* NIVEL 2 (Progressive Disclosure): Carrusel de Categorías Bajo Demanda */}
         {mostrarPanelCategorias && (
           <div className="flex items-center gap-2 overflow-x-auto border-t border-[#EDEDED] pt-2.5 pb-0.5 no-scrollbar">
+            {totalAlertaDocs > 0 && (
+              <button
+                type="button"
+                onClick={() => setSoloAlertaDocs((prev) => !prev)}
+                className={`fx-press min-h-[44px] whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-bold border cursor-pointer ${
+                  soloAlertaDocs
+                    ? 'bg-status-danger text-white border-status-danger shadow-xs'
+                    : 'bg-status-danger/10 text-status-danger border-status-danger/40 hover:bg-status-danger/20'
+                }`}
+              >
+                Docs pendientes ({totalAlertaDocs})
+              </button>
+            )}
             {CATEGORIAS.map((cat) => (
               <button
                 key={cat.id}
@@ -459,6 +483,7 @@ export default function FleetInventoryManager({
               setBusqueda('');
               setCategoriaSeleccionada('TODAS');
               setEstadoSeleccionado('TODOS');
+              setSoloAlertaDocs(false);
               setFiltrosAbiertos(false);
             }}
             className="fx-press inline-flex min-h-[44px] items-center rounded-full bg-[#111827] px-6 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#1F2937] cursor-pointer"
@@ -470,14 +495,18 @@ export default function FleetInventoryManager({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
           {vehiculosFiltrados.map((vehiculo) => {
             const estadoInfo = ESTADOS_INFO[vehiculo.estado];
+            const resumenDoc = resumenesDocumentos[vehiculo.id];
+            const bloqueadoPorDocs = Boolean(resumenDoc?.bloqueadoPorDocumentos);
 
             return (
               <div
                 key={vehiculo.id}
                 className={`relative rounded-[28px] border bg-white dark:bg-[#1F2937] shadow-xs transition-colors duration-150 flex flex-col justify-between overflow-hidden ${
-                  vehiculo.estado === 'MANTENIMIENTO'
-                    ? 'border-status-warning/70 ring-1 ring-status-warning/30 hover:border-status-warning'
-                    : 'border-[#9CA3AF]/40 hover:border-[#111827] dark:border-white/10 dark:hover:border-white/30'
+                  bloqueadoPorDocs
+                    ? 'border-status-danger/70 ring-1 ring-status-danger/25 hover:border-status-danger'
+                    : vehiculo.estado === 'MANTENIMIENTO'
+                      ? 'border-status-warning/70 ring-1 ring-status-warning/30 hover:border-status-warning'
+                      : 'border-[#9CA3AF]/40 hover:border-[#111827] dark:border-white/10 dark:hover:border-white/30'
                 }`}
               >
                 <div className="relative w-full aspect-video rounded-t-[27px] overflow-hidden">
@@ -560,6 +589,18 @@ export default function FleetInventoryManager({
                   </div>
 
                   <div className="mt-4 pt-3 border-t border-[#EDEDED] dark:border-white/10 space-y-3">
+                    {bloqueadoPorDocs && resumenDoc?.motivoBloqueo && (
+                      <a
+                        href={`/admin/flota/${vehiculo.id}#documentos`}
+                        className="flex items-center justify-between gap-2 rounded-2xl border border-status-danger/50 bg-status-danger/10 px-3 py-2 text-xs font-bold text-status-danger hover:bg-status-danger/15"
+                      >
+                        <span className="truncate">
+                          ⚠ {resumenDoc.motivoBloqueo}
+                        </span>
+                        <span className="shrink-0 underline">Regularizar</span>
+                      </a>
+                    )}
+
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#D1D5DB]">
                         Estado Patio:
@@ -630,6 +671,14 @@ export default function FleetInventoryManager({
 
                     <div className="flex items-center gap-2">
                       <a
+                        href={`/admin/flota/${vehiculo.id}`}
+                        title="Abrir ficha técnica y documentos"
+                        className="fx-press flex-1 min-h-[44px] px-3.5 flex items-center justify-center gap-1.5 rounded-full border border-[#9CA3AF]/40 bg-white hover:bg-[#EDEDED] text-[#111827] dark:border-white/15 dark:bg-white/10 dark:hover:bg-white/20 dark:text-[#EDEDED] text-xs font-bold cursor-pointer"
+                      >
+                        <span className="truncate">Ficha y Docs</span>
+                      </a>
+
+                      <a
                         href={`/vehiculos/${vehiculo.id}`}
                         title="Ver ficha pública del vehículo"
                         className="fx-press min-h-[44px] px-3.5 flex items-center justify-center gap-1.5 rounded-full border border-[#9CA3AF]/40 bg-white hover:bg-[#EDEDED] text-[#111827] dark:border-white/15 dark:bg-white/10 dark:hover:bg-white/20 dark:text-[#EDEDED] shrink-0 cursor-pointer"
@@ -676,14 +725,18 @@ export default function FleetInventoryManager({
         <div className="space-y-3">
           {vehiculosFiltrados.map((vehiculo) => {
             const estadoInfo = ESTADOS_INFO[vehiculo.estado];
+            const resumenDoc = resumenesDocumentos[vehiculo.id];
+            const bloqueadoPorDocs = Boolean(resumenDoc?.bloqueadoPorDocumentos);
 
             return (
               <div
                 key={vehiculo.id}
                 className={`rounded-[24px] border bg-white dark:bg-[#1F2937] shadow-xs transition-colors duration-150 flex flex-col sm:flex-row sm:items-stretch overflow-hidden ${
-                  vehiculo.estado === 'MANTENIMIENTO'
-                    ? 'border-status-warning/70 ring-1 ring-status-warning/30 hover:border-status-warning'
-                    : 'border-[#9CA3AF]/40 hover:border-[#111827] dark:border-white/10 dark:hover:border-white/30'
+                  bloqueadoPorDocs
+                    ? 'border-status-danger/70 ring-1 ring-status-danger/25 hover:border-status-danger'
+                    : vehiculo.estado === 'MANTENIMIENTO'
+                      ? 'border-status-warning/70 ring-1 ring-status-warning/30 hover:border-status-warning'
+                      : 'border-[#9CA3AF]/40 hover:border-[#111827] dark:border-white/10 dark:hover:border-white/30'
                 }`}
               >
                 <div className="relative w-full aspect-video sm:w-52 md:w-60 sm:aspect-[16/10] sm:self-stretch shrink-0 overflow-hidden">
@@ -724,6 +777,14 @@ export default function FleetInventoryManager({
                     <p className="font-mono text-xs font-medium text-[#4B5563] dark:text-[#D1D5DB]">
                       {vehiculo.anio} · {vehiculo.transmision} · {formatPrecio(vehiculo.precioDia)}/día
                     </p>
+                    {bloqueadoPorDocs && resumenDoc?.motivoBloqueo && (
+                      <a
+                        href={`/admin/flota/${vehiculo.id}#documentos`}
+                        className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-status-danger/50 bg-status-danger/10 px-2.5 py-0.5 text-[11px] font-bold text-status-danger hover:bg-status-danger/15"
+                      >
+                        <span>⚠ {resumenDoc.motivoBloqueo}</span>
+                      </a>
+                    )}
                   </div>
 
                   <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#EDEDED] dark:border-white/10">
@@ -790,6 +851,12 @@ export default function FleetInventoryManager({
                   </a>
 
                   <div className="flex items-center gap-1.5">
+                    <a
+                      href={`/admin/flota/${vehiculo.id}`}
+                      className="fx-press min-h-[44px] px-3.5 rounded-full border border-[#9CA3AF]/40 bg-white hover:bg-[#EDEDED] text-[#111827] dark:border-white/15 dark:bg-white/10 dark:hover:bg-white/20 dark:text-[#EDEDED] text-xs font-bold flex items-center justify-center cursor-pointer"
+                    >
+                      Ficha y Docs
+                    </a>
                     <a
                       href={`/vehiculos/${vehiculo.id}`}
                       className="fx-press min-h-[44px] px-3.5 rounded-full border border-[#9CA3AF]/40 bg-white hover:bg-[#EDEDED] text-[#111827] dark:border-white/15 dark:bg-white/10 dark:hover:bg-white/20 dark:text-[#EDEDED] text-xs font-bold flex items-center justify-center cursor-pointer"

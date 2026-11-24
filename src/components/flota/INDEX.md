@@ -1,4 +1,4 @@
-# Index: `src\components\flota`
+# Index: `src/components/flota`
 
 **Responsibility**: Componentes interactivos del dominio de Flota: Catálogo Exclusivo iOS Editorial Showcase por Local, Ficha 360° de Estudio, Centro de Compartición con Progressive Disclosure y Gestor de Inventario.
 **Architectural Layer**: Presentation Layer (Tier 2 Domain Modules)
@@ -8,6 +8,7 @@
 | Subdirectory | Responsibility | Index |
 | :--- | :--- | :--- |
 | [`disponibilidad/`](./disponibilidad/) | Componentes React 19 para la gestión visual de disponibilidad, cabecera de unidad, órdenes activas de taller, wizard typeform de mantenimiento, modal de egreso de taller e isla coordinadora. | [INDEX.md](./disponibilidad/INDEX.md) |
+| [`documentos/`](./documentos/) | Directory `documentos` | *(No index)* |
 | [`wizard/`](./wizard/) | Experiencia inmersiva de pantalla completa («Una pantalla, una tarea», máx. 4 entradas) inspirada en Apple/iOS para el registro y edición de unidades vehiculares en FlotaX. | [INDEX.md](./wizard/INDEX.md) |
 
 ## File Manifest

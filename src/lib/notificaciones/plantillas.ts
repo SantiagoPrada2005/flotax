@@ -48,12 +48,40 @@ const PLANTILLAS: Plantillas = {
     href: `/reservas/${encodeURIComponent(p.reservaCodigo)}`,
     prioridad: 'URGENTE',
   }),
-  DOCUMENTO_POR_VENCER: (p) => ({
-    titulo: 'Un documento está por vencer',
-    detalle: `${p.documento} de ${p.vehiculo} vence el ${p.vence}`,
-    href: '/admin/flota',
-    prioridad: 'URGENTE',
-  }),
+  DOCUMENTO_POR_VENCER: (p) => {
+    const href = p.vehiculoId
+      ? `/admin/flota/${encodeURIComponent(p.vehiculoId)}#documentos`
+      : '/admin/flota';
+
+    if (p.estado === 'HOY_FECHA_PAGO') {
+      return {
+        titulo: 'Hoy es la fecha de pago',
+        detalle: `${p.documento} de ${p.vehiculo} · Vence el ${p.vence}`,
+        href,
+        prioridad: 'URGENTE',
+      };
+    }
+
+    if (p.estado === 'CUENTA_REGRESIVA' && typeof p.diasRestantes === 'number') {
+      const titulo =
+        p.diasRestantes === 1
+          ? 'Falta 1 día para pagar'
+          : `Faltan ${p.diasRestantes} días para pagar`;
+      return {
+        titulo,
+        detalle: `${p.documento} de ${p.vehiculo} · Fecha de pago: ${p.fechaPago ?? p.vence}`,
+        href,
+        prioridad: 'URGENTE',
+      };
+    }
+
+    return {
+      titulo: 'Un documento está por vencer',
+      detalle: `${p.documento} de ${p.vehiculo} · Fecha de pago: ${p.fechaPago ?? p.vence}`,
+      href,
+      prioridad: 'URGENTE',
+    };
+  },
   INVITACION_RECIBIDA: (p) => ({
     titulo: 'Te invitaron a un patio',
     detalle: `${p.localNombre} te invitó como ${p.rol}`,

@@ -1,0 +1,126 @@
+---
+import LayoutAdmin from '@/layouts/LayoutAdmin.astro';
+import VehicleDocumentsSection from '@/components/flota/documentos/VehicleDocumentsSection';
+import { PERMISOS, requireLocalAuth, tienePermiso } from '@/lib/auth';
+import { obtenerVehiculoAsync } from '@/lib/flota';
+import {
+  evaluarResumenDocumentalVehiculo,
+  obtenerResumenDocumentalVehiculoD1,
+} from '@/lib/documentos-vehiculo';
+import { resolveClientTimeContext } from '@/lib/time/client-time';
+import { getDb } from '@/lib/db';
+import { env } from 'cloudflare:workers';
+
+let usuario;
+try {
+  usuario = requireLocalAuth(Astro, PERMISOS.FLOTA_LEER);
+} catch {
+  return Astro.redirect('/admin/flota');
+}
+
+const { id } = Astro.params;
+const db = env.DB ? getDb(env.DB) : undefined;
+const vehiculo = id ? await obtenerVehiculoAsync(id, db) : undefined;
+
+if (!vehiculo) {
+  return Astro.redirect('/admin/flota');
+}
+
+if (!usuario.esSuperAdmin && vehiculo.localId && vehiculo.localId !== usuario.localActivo.id) {
+  return Astro.redirect('/admin/flota');
+}
+
+const { dateString: hoyISO } = resolveClientTimeContext(Astro.request);
+const resumenDocumentos = db
+  ? await obtenerResumenDocumentalVehiculoD1(db, vehiculo.id, vehiculo.categoria, hoyISO)
+  : evaluarResumenDocumentalVehiculo({ categoria: vehiculo.categoria, documentos: [], hoyISO });
+
+const sujeto = {
+  rol: usuario.localActivo.rol,
+  esSuperAdmin: usuario.esSuperAdmin,
+  permisosConcedidos: usuario.localActivo.permisosConcedidos,
+  permisosRevocados: usuario.localActivo.permisosRevocados,
+};
+
+const puedeLeerDocs = tienePermiso(sujeto, PERMISOS.FLOTA_DOCUMENTOS_LEER);
+const puedeGestionarDocs = tienePermiso(sujeto, PERMISOS.FLOTA_DOCUMENTOS_GESTIONAR);
+const tarifaFormato = new Intl.NumberFormat('es-CO', {
+  style: 'currency',
+  currency: 'COP',
+  maximumFractionDigits: 0,
+}).format(vehiculo.precioDia);
+---
+
+<LayoutAdmin
+  title={`Ficha técnica — ${vehiculo.placa} ${vehiculo.marca} ${vehiculo.modelo}`}
+  activeTab="fleet"
+  showBack={true}
+  backHref="/admin/flota"
+>
+  <main class="mx-auto w-full max-w-5xl px-4 sm:px-6 py-4 pb-24 space-y-6">
+    <section
+      aria-label="Resumen técnico del vehículo"
+      class="rounded-[28px] border border-[#9CA3AF]/40 bg-white dark:bg-[#1F2937] dark:border-white/10 p-4 sm:p-6 shadow-xs"
+    >
+      <div class="flex flex-col md:flex-row gap-5 items-start">
+        <div class="w-full md:w-64 aspect-video rounded-2xl overflow-hidden bg-[#EDEDED] dark:bg-[#111827] shrink-0">
+          <img
+            src={vehiculo.imagenUrl}
+            alt={`${vehiculo.marca} ${vehiculo.modelo}`}
+            class="h-full w-full object-cover"
+          />
+        </div>
+
+        <div class="flex-1 min-w-0 space-y-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="font-mono text-xs font-bold tracking-wider text-[#111827] bg-[#EDEDED] dark:bg-[#111827] dark:text-[#EDEDED] px-3 py-1 rounded-lg border border-[#9CA3AF]/50 dark:border-white/15">
+              {vehiculo.placa}
+            </span>
+            <span class="font-mono text-[11px] font-bold text-[#4B5563] dark:text-[#D1D5DB] bg-[#EDEDED]/70 dark:bg-[#111827] px-2.5 py-1 rounded-full border border-[#9CA3AF]/35 dark:border-white/10">
+              {vehiculo.categoriaEtiqueta}
+            </span>
+          </div>
+
+          <div>
+            <h1 class="font-display text-xl sm:text-2xl font-bold text-[#111827] dark:text-white">
+              {vehiculo.marca} {vehiculo.modelo}
+            </h1>
+            <p class="font-mono text-xs text-[#4B5563] dark:text-[#D1D5DB] mt-0.5">
+              {vehiculo.anio} · {vehiculo.transmision} · {vehiculo.combustible} · {vehiculo.kilometraje.toLocaleString('es-CO')} km · {tarifaFormato}/día
+            </p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 pt-1">
+            <a
+              href={`/admin/flota/${vehiculo.id}/disponibilidad`}
+              class="fx-press min-h-[44px] inline-flex items-center justify-center rounded-full border border-[#9CA3AF]/45 bg-white hover:bg-[#EDEDED] text-[#111827] dark:bg-white/10 dark:border-white/15 dark:text-[#EDEDED] dark:hover:bg-white/20 px-4 text-xs font-bold"
+            >
+              Disponibilidad & Taller
+            </a>
+            <a
+              href={`/admin/flota/${vehiculo.id}/editar`}
+              class="fx-press min-h-[44px] inline-flex items-center justify-center rounded-full bg-[#111827] hover:bg-[#1F2937] text-white dark:bg-[#EDEDED] dark:hover:bg-white dark:text-[#111827] px-4 text-xs font-bold"
+            >
+              Modificar ficha
+            </a>
+            <a
+              href={`/vehiculos/${vehiculo.id}`}
+              class="fx-press min-h-[44px] inline-flex items-center justify-center rounded-full border border-[#9CA3AF]/45 bg-[#EDEDED]/70 hover:bg-[#EDEDED] text-[#111827] dark:bg-[#111827] dark:border-white/15 dark:text-[#EDEDED] px-4 text-xs font-bold"
+            >
+              Ver en catálogo
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <VehicleDocumentsSection
+      client:load
+      vehiculoId={vehiculo.id}
+      placa={vehiculo.placa}
+      resumenInicial={resumenDocumentos}
+      puedeLeer={puedeLeerDocs}
+      puedeGestionar={puedeGestionarDocs}
+    />
+  </main>
+</LayoutAdmin>

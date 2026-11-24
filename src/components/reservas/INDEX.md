@@ -1,4 +1,4 @@
-# Index: `src\components\reservas`
+# Index: `src/components/reservas`
 
 **Responsibility**: Componentes interactivos unificados de reservas (`modo="cliente" | "admin"`) para `/reservas`, `/reservas/[codigo]`, `/admin/reservas` y `/admin/reservas/[codigo]`, incluyendo el Calendario Editorial Suizo + Agenda con Triage Operativo y la Vista Dedicada de Inspección R2, Waybill, Expediente del Conductor y Máquina de Estados.
 **Architectural Layer**: Presentation / Domain Components (Tier 2)

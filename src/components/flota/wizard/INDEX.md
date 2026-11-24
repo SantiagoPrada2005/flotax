@@ -1,4 +1,4 @@
-# Index: `src\components\flota\wizard`
+# Index: `src/components/flota/wizard`
 
 **Responsibility**: Experiencia inmersiva de pantalla completa («Una pantalla, una tarea», máx. 4 entradas) inspirada en Apple/iOS para el registro y edición de unidades vehiculares en FlotaX.
 **Architectural Layer**: Presentation / React 19 Islands

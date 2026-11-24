@@ -614,42 +614,60 @@ export async function ejecutarSeedDemostracionD1(
     await db.insert(vehiculos).values(veh).onConflictDoNothing();
   }
 
-  // 5. Documentos legales vigentes por vehículo
+  // 5. Documentos legales vigentes por vehículo (PATINETA exenta de SOAT y RTM según Ley 2486 de 2025)
   const vencimientoAnual = sumarDiasISO(hoyISO, 280);
-  const documentosSemilla: DocumentoVehiculoInsert[] = vehiculosSemilla.flatMap((v) => [
-    {
-      id: `doc-soat-${v.id}`,
-      vehiculoId: v.id,
-      localId: SEED_LOCAL_PATIO_NORTE_ID,
-      tipoDocumento: 'SOAT',
-      numeroReferencia: `SOAT-2026-${v.placa}`,
-      entidadEmisora: 'Seguros Sura Colombia',
-      fechaExpedicion: sumarDiasISO(hoyISO, -85),
-      fechaVencimiento: vencimientoAnual,
-      vigente: true,
-      archivoR2Key: `locales/${SEED_LOCAL_PATIO_NORTE_ID}/vehiculos/${v.id}/documentos/SOAT-2026.pdf`,
-      observaciones: 'Póliza SOAT verificada en RUNT',
-      verificadoPorId: duenoId,
-      creadoEn: ahora,
-      actualizadoEn: ahora,
-    },
-    {
-      id: `doc-poliza-${v.id}`,
-      vehiculoId: v.id,
-      localId: SEED_LOCAL_PATIO_NORTE_ID,
-      tipoDocumento: 'POLIZA_TODO_RIESGO',
-      numeroReferencia: `PTR-880-${v.placa}`,
-      entidadEmisora: 'Allianz Seguros Flotas',
-      fechaExpedicion: sumarDiasISO(hoyISO, -85),
-      fechaVencimiento: vencimientoAnual,
-      vigente: true,
-      archivoR2Key: `locales/${SEED_LOCAL_PATIO_NORTE_ID}/vehiculos/${v.id}/documentos/POLIZA-2026.pdf`,
-      observaciones: 'Póliza todo riesgo corporativa vigente',
-      verificadoPorId: duenoId,
-      creadoEn: ahora,
-      actualizadoEn: ahora,
-    },
-  ]);
+  const documentosSemilla: DocumentoVehiculoInsert[] = vehiculosSemilla
+    .filter((v) => v.categoria !== 'PATINETA')
+    .flatMap((v) => [
+      {
+        id: `doc-soat-${v.id}`,
+        vehiculoId: v.id,
+        localId: SEED_LOCAL_PATIO_NORTE_ID,
+        tipoDocumento: 'SOAT',
+        numeroReferencia: `SOAT-2026-${v.placa}`,
+        entidadEmisora: 'Seguros Sura Colombia',
+        fechaExpedicion: sumarDiasISO(hoyISO, -85),
+        fechaVencimiento: vencimientoAnual,
+        vigente: true,
+        archivoR2Key: null,
+        observaciones: 'Póliza SOAT verificada en RUNT',
+        verificadoPorId: duenoId,
+        creadoEn: ahora,
+        actualizadoEn: ahora,
+      },
+      {
+        id: `doc-rtm-${v.id}`,
+        vehiculoId: v.id,
+        localId: SEED_LOCAL_PATIO_NORTE_ID,
+        tipoDocumento: 'TECNICO_MECANICA',
+        numeroReferencia: `RTM-2026-${v.placa}`,
+        entidadEmisora: 'CDA Automotriz del Valle',
+        fechaExpedicion: sumarDiasISO(hoyISO, -85),
+        fechaVencimiento: vencimientoAnual,
+        vigente: true,
+        archivoR2Key: null,
+        observaciones: 'Revisión Técnico-Mecánica y de gases vigente',
+        verificadoPorId: duenoId,
+        creadoEn: ahora,
+        actualizadoEn: ahora,
+      },
+      {
+        id: `doc-poliza-${v.id}`,
+        vehiculoId: v.id,
+        localId: SEED_LOCAL_PATIO_NORTE_ID,
+        tipoDocumento: 'POLIZA_TODO_RIESGO',
+        numeroReferencia: `PTR-880-${v.placa}`,
+        entidadEmisora: 'Allianz Seguros Flotas',
+        fechaExpedicion: sumarDiasISO(hoyISO, -85),
+        fechaVencimiento: vencimientoAnual,
+        vigente: true,
+        archivoR2Key: `locales/${SEED_LOCAL_PATIO_NORTE_ID}/vehiculos/${v.id}/documentos/POLIZA-2026.pdf`,
+        observaciones: 'Póliza todo riesgo corporativa vigente',
+        verificadoPorId: duenoId,
+        creadoEn: ahora,
+        actualizadoEn: ahora,
+      },
+    ]);
 
   for (const doc of documentosSemilla) {
     await db.insert(documentosVehiculo).values(doc).onConflictDoNothing();

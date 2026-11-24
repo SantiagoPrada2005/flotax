@@ -6,6 +6,11 @@ import {
   obtenerLocalPorSlugOId,
   LOCAL_CANONICO_DEFECTO,
 } from '@/lib/flota';
+import {
+  asegurarAlertasDiariasLocal,
+  listarResumenesDocumentalesFlotaD1,
+} from '@/lib/documentos-vehiculo';
+import { resolveClientTimeContext } from '@/lib/time/client-time';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
 
@@ -26,7 +31,13 @@ const localContexto =
       }
     : LOCAL_CANONICO_DEFECTO);
 
-const vehiculos = await listarVehiculos(db, { localId: localContexto.id });
+const { dateString: hoyISO } = resolveClientTimeContext(Astro.request);
+const vehiculos = await listarVehiculos(db, { localId: localContexto.id, hoyISO });
+const resumenesDocumentos = await listarResumenesDocumentalesFlotaD1(db, vehiculos, hoyISO);
+
+if (localActivoSesion) {
+  await asegurarAlertasDiariasLocal(env, localContexto.id, hoyISO);
+}
 ---
 
 <LayoutAdmin title="FlotaX — Flota" activeTab="fleet">
@@ -35,6 +46,7 @@ const vehiculos = await listarVehiculos(db, { localId: localContexto.id });
 
     <FleetInventoryManager
       initialVehiculos={vehiculos}
+      resumenesDocumentos={resumenesDocumentos}
       nuevaUnidadHref="/admin/flota/nuevo"
       client:load
     />

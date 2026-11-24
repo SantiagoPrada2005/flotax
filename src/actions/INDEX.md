@@ -1,4 +1,4 @@
-# Index: `src\actions`
+# Index: `src/actions`
 
 **Responsibility**: Capa de aplicación y casos de uso del servidor (Astro Server Actions) con validación estricta de esquemas Zod y control RBAC multi-tenant.
 **Architectural Layer**: Application Layer / Server Actions
@@ -8,6 +8,7 @@
 | File | Role / Pattern | Public Exports / API | Key Dependencies |
 | :--- | :--- | :--- | :--- |
 | [`caja.ts`](./caja.ts) | Server Action / Caso de Uso | `registrarAbono` | `astro:actions`, `zod`, `@/lib/auth` |
+| [`documentos.ts`](./documentos.ts) | TypeScript / JavaScript Module | - | - |
 | [`flota.ts`](./flota.ts) | Server Action / Flota y Unidades | `guardarVehiculoAction`, `cambiarEstadoVehiculoAction`, `eliminarVehiculoAction`, `obtenerVehiculoDetalleAction`, `consultarDisponibilidadVehiculoAction` | `astro:actions`, `zod`, `cloudflare:workers`, `@/lib/flota/repositorio`, `@/lib/flota/disponibilidad` |
 | [`index.ts`](./index.ts) | Barrel Export / Server Actions Root | `server` | `./caja`, `./portal`, `./flota`, `./reservas`, `./notificaciones`, `./mantenimientos`, `./ubicacion` |
 | [`mantenimientos.ts`](./mantenimientos.ts) | Server Action / Mantenimiento y Disponibilidad | `crearMantenimiento`, `cambiarEstadoMantenimiento` | `astro:actions`, `zod`, `cloudflare:workers`, `@/lib/auth`, `@/lib/mantenimientos/repositorio` |

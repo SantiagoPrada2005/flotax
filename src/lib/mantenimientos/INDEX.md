@@ -1,4 +1,4 @@
-# Index: `src\lib\mantenimientos`
+# Index: `src/lib/mantenimientos`
 
 **Responsibility**: Dominio de gestión de mantenimiento, órdenes técnicas de taller, alistamiento de patio, bloqueos operativos y resolución del estado de disponibilidad de la flota en Cloudflare D1.
 **Architectural Layer**: Shared / Domain Repository Layer

@@ -4,6 +4,10 @@ import { logFalloD1 } from '@/lib/db/diagnostics';
 import { documentosVehiculo, mantenimientosVehiculo, reservas, vehiculos } from '@/db/schema';
 import { and, desc, eq, gte, inArray, lte, ne } from 'drizzle-orm';
 import { toClientISODate } from '@/lib/time/client-time';
+import {
+  esCategoriaExentaDocumentosLegales,
+  evaluarResumenDocumentalVehiculo,
+} from '@/lib/documentos-vehiculo';
 import type {
   BloqueNoDisponible,
   CotizacionAlquiler,
@@ -488,10 +492,9 @@ export function calcularCotizacionAlquiler(
 
 /**
  * Evalúa el estado documental legal de un vehículo en Cloudflare D1:
- * - SOAT aplica a todas las categorías de vehículos.
- * - TECNICO_MECANICA aplica a todas las categorías excepto 'PATINETA'.
- * - Solo vigente === false o fechaVencimiento < fechaReferenciaISO marca tieneVencidos = true.
- * - Ausencia de filas registradas en documentos_vehiculo se reporta en faltantesSinCarga con tieneVencidos = false.
+ * - Las patinetas eléctricas livianas (`PATINETA`) están exentas de SOAT y Tecnomecánica (Ley 2486 de 2025).
+ * - Para el resto de categorías, tanto el estado `SIN_REALIZAR` (vencido/inactivo) como `SIN_REGISTRAR`
+ *   bloquean la disponibilidad, reserva y entrega del vehículo.
  */
 export async function obtenerEstadoDocumentalVehiculoD1(
   db: DrizzleD1Database | AppDb,
@@ -499,74 +502,75 @@ export async function obtenerEstadoDocumentalVehiculoD1(
   categoria?: string,
   fechaReferenciaISO: string = toClientISODate()
 ): Promise<EstadoDocumentalVehiculo> {
-  const cat = categoria?.toUpperCase() ?? '';
-  const requiereRtm = cat !== 'PATINETA';
+  if (esCategoriaExentaDocumentosLegales(categoria)) {
+    return {
+      tieneVencidos: false,
+      faltantesSinCarga: [],
+      vencidos: [],
+      requiereRtm: false,
+      exentoPorLey2486: true,
+      bloqueadoPorDocumentos: false,
+      motivoBloqueo: null,
+    };
+  }
 
   if (!db || !vehiculoId) {
     return {
       tieneVencidos: false,
-      faltantesSinCarga: requiereRtm ? ['SOAT', 'TECNICO_MECANICA'] : ['SOAT'],
+      faltantesSinCarga: ['SOAT', 'TECNICO_MECANICA'],
       vencidos: [],
-      requiereRtm,
+      requiereRtm: true,
+      exentoPorLey2486: false,
+      bloqueadoPorDocumentos: true,
+      motivoBloqueo: 'SOAT sin registrar · Tecnomecánica sin registrar',
     };
   }
 
   try {
     const rawRows = await db
       .select({
+        id: documentosVehiculo.id,
         tipoDocumento: documentosVehiculo.tipoDocumento,
+        numeroReferencia: documentosVehiculo.numeroReferencia,
+        fechaExpedicion: documentosVehiculo.fechaExpedicion,
         fechaVencimiento: documentosVehiculo.fechaVencimiento,
         vigente: documentosVehiculo.vigente,
+        archivoR2Key: documentosVehiculo.archivoR2Key,
+        archivoReversoR2Key: documentosVehiculo.archivoReversoR2Key,
+        actualizadoEn: documentosVehiculo.actualizadoEn,
       })
       .from(documentosVehiculo)
       .where(eq(documentosVehiculo.vehiculoId, vehiculoId))
       .orderBy(desc(documentosVehiculo.fechaVencimiento));
 
-    // Ordenar de forma determinista por fecha de vencimiento descendente
-    // para garantizar que siempre se evalúe el documento más reciente de cada tipo
-    const rows = [...(rawRows ?? [])].sort((a, b) => {
-      const fechaA = a.fechaVencimiento ?? '';
-      const fechaB = b.fechaVencimiento ?? '';
-      if (fechaA !== fechaB) {
-        return fechaB.localeCompare(fechaA);
-      }
-      return (b.vigente ? 1 : 0) - (a.vigente ? 1 : 0);
+    const resumen = evaluarResumenDocumentalVehiculo({
+      categoria,
+      documentos: rawRows ?? [],
+      hoyISO: fechaReferenciaISO,
     });
 
     const faltantesSinCarga: Array<'SOAT' | 'TECNICO_MECANICA'> = [];
     const vencidos: Array<{ tipo: string; fechaVencimiento: string }> = [];
 
-    // Validar SOAT
-    const docSoat = rows?.find((r) => r.tipoDocumento === 'SOAT');
-    if (!docSoat) {
-      faltantesSinCarga.push('SOAT');
-    } else {
-      const estaVencido =
-        docSoat.vigente === false ||
-        (Boolean(docSoat.fechaVencimiento) && docSoat.fechaVencimiento! < fechaReferenciaISO);
-      if (estaVencido) {
+    if (resumen.soat) {
+      if (resumen.soat.estado === 'SIN_REGISTRAR') {
+        faltantesSinCarga.push('SOAT');
+      } else if (resumen.soat.estado === 'SIN_REALIZAR') {
         vencidos.push({
           tipo: 'SOAT',
-          fechaVencimiento: docSoat.fechaVencimiento ?? '',
+          fechaVencimiento: resumen.soat.fechaVencimiento ?? '',
         });
       }
     }
 
-    // Validar TECNICO_MECANICA
-    if (requiereRtm) {
-      const docRtm = rows?.find((r) => r.tipoDocumento === 'TECNICO_MECANICA');
-      if (!docRtm) {
+    if (resumen.tecnomecanica) {
+      if (resumen.tecnomecanica.estado === 'SIN_REGISTRAR') {
         faltantesSinCarga.push('TECNICO_MECANICA');
-      } else {
-        const estaVencido =
-          docRtm.vigente === false ||
-          (Boolean(docRtm.fechaVencimiento) && docRtm.fechaVencimiento! < fechaReferenciaISO);
-        if (estaVencido) {
-          vencidos.push({
-            tipo: 'TECNICO_MECANICA',
-            fechaVencimiento: docRtm.fechaVencimiento ?? '',
-          });
-        }
+      } else if (resumen.tecnomecanica.estado === 'SIN_REALIZAR') {
+        vencidos.push({
+          tipo: 'TECNICO_MECANICA',
+          fechaVencimiento: resumen.tecnomecanica.fechaVencimiento ?? '',
+        });
       }
     }
 
@@ -574,7 +578,10 @@ export async function obtenerEstadoDocumentalVehiculoD1(
       tieneVencidos: vencidos.length > 0,
       faltantesSinCarga,
       vencidos,
-      requiereRtm,
+      requiereRtm: true,
+      exentoPorLey2486: false,
+      bloqueadoPorDocumentos: resumen.bloqueadoPorDocumentos,
+      motivoBloqueo: resumen.motivoBloqueo,
     };
   } catch (error) {
     logFalloD1('disponibilidad.obtenerEstadoDocumentalVehiculoD1', error, {
@@ -584,9 +591,12 @@ export async function obtenerEstadoDocumentalVehiculoD1(
     });
     return {
       tieneVencidos: false,
-      faltantesSinCarga: requiereRtm ? ['SOAT', 'TECNICO_MECANICA'] : ['SOAT'],
+      faltantesSinCarga: ['SOAT', 'TECNICO_MECANICA'],
       vencidos: [],
-      requiereRtm,
+      requiereRtm: true,
+      exentoPorLey2486: false,
+      bloqueadoPorDocumentos: true,
+      motivoBloqueo: 'SOAT sin registrar · Tecnomecánica sin registrar',
     };
   }
 }
@@ -665,7 +675,7 @@ export async function verificarDisponibilidadVehiculo(
       };
     }
 
-    // 2. Validar estado documental legal (bloquea solo si tiene vencidos)
+    // 2. Validar estado documental legal (bloquea por vencidos o sin registrar)
     const estadoDocumental = await obtenerEstadoDocumentalVehiculoD1(
       db,
       vehiculoId,
@@ -673,15 +683,20 @@ export async function verificarDisponibilidadVehiculo(
       hoyISO
     );
 
-    if (estadoDocumental.tieneVencidos) {
-      const docsVencidosStr = estadoDocumental.vencidos.map((d) => d.tipo).join(', ');
+    if (
+      estadoDocumental.bloqueadoPorDocumentos ||
+      estadoDocumental.tieneVencidos ||
+      estadoDocumental.faltantesSinCarga.length > 0
+    ) {
       return {
         disponible: false,
         usable: false,
         ocupado: false,
         estadoSugerido: 'NO_DISPONIBLE',
         motivoBloqueo: 'NO_DISPONIBLE',
-        etiqueta: `Documentación legal vencida (${docsVencidosStr})`,
+        etiqueta: estadoDocumental.motivoBloqueo
+          ? `Documentos pendientes (${estadoDocumental.motivoBloqueo})`
+          : 'Documentación legal vencida o sin registrar',
         fechaInicioEvaluada: inicio,
         fechaFinEvaluada: fin,
         estadoDocumental,

@@ -1,4 +1,4 @@
-# Index: `src\lib`
+# Index: `src/lib`
 
 **Responsibility**: Módulos de soporte técnico transversal, factories de infraestructura (Base de Datos D1, Autenticación Better Auth) y utilidades.
 **Architectural Layer**: Infrastructure / Shared Layer
@@ -11,6 +11,7 @@
 | [`caja/`](./caja/) | Dominio financiero y de caja operativa: cálculos de balance, liquidación de depósitos de garantía, repositorio transaccional D1 y exportación de reportes. | [INDEX.md](./caja/INDEX.md) |
 | [`dashboard/`](./dashboard/) | Directory `dashboard` | *(No index)* |
 | [`db/`](./db/) | Bootstrap defensivo de esquemas D1, diagnósticos de persistencia y seed idempotente de demostración para entornos local, preview y producción. | [INDEX.md](./db/INDEX.md) |
+| [`documentos-vehiculo/`](./documentos-vehiculo/) | Directory `documentos-vehiculo` | *(No index)* |
 | [`email/`](./email/) | Módulo de envío de correos electrónicos transaccionales para FlotaX sobre Cloudflare Workers (API `send_email`) y dominio `flotax.innovaweb.pro`. | [INDEX.md](./email/INDEX.md) |
 | [`flota/`](./flota/) | Dominio de catálogo, especificaciones técnicas, buscador evaluativo de unidades, motor de franjas de disponibilidad, calendario suizo de reservas e inspección R2/waybill de cliente y administración. | [INDEX.md](./flota/INDEX.md) |
 | [`geo/`](./geo/) | Catálogo geográfico oficial de Colombia (DANE DIVIPOLA: 32 departamentos + Bogotá D.C. y sus 1,122 municipios) y utilidades de búsqueda normalizada. | [INDEX.md](./geo/INDEX.md) |

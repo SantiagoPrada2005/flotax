@@ -1,4 +1,4 @@
-# Index: `src\components\landing`
+# Index: `src/components/landing`
 
 **Responsibility**: Componentes visuales y secciones promocionales de la landing page principal de FlotaX.
 **Architectural Layer**: Presentation Layer / Landing Domain

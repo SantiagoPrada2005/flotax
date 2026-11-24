@@ -328,7 +328,8 @@ Control de vigencias normativas y pólizas por unidad (SOAT, Técnico-Mecánica,
 | `fecha_expedicion` | TEXT | NULLABLE | Fecha de emisión (`YYYY-MM-DD`). |
 | `fecha_vencimiento` | TEXT | NULLABLE | Fecha de expiración (`YYYY-MM-DD`). |
 | `vigente` | INTEGER (boolean) | NOT NULL, DEFAULT true | Estado de vigencia verificado. |
-| `archivo_r2_key` | TEXT | NULLABLE | Clave del PDF o imagen en Cloudflare R2 (`BUCKET_MULTIMEDIA`). |
+| `archivo_r2_key` | TEXT | NULLABLE | Clave del PDF o imagen principal en Cloudflare R2 (`BUCKET_MULTIMEDIA`; cara delantera para `TARJETA_PROPIEDAD`). |
+| `archivo_reverso_r2_key` | TEXT | NULLABLE | Clave de la imagen trasera/reverso en Cloudflare R2 (`BUCKET_MULTIMEDIA`; usada en Licencia de tránsito `TARJETA_PROPIEDAD`). |
 | `observaciones` | TEXT | NULLABLE | Notas de auditoría documental. |
 | `verificado_por_id` | TEXT | NULLABLE, FK `user.id` | Usuario que validó el documento. |
 | `creado_en` | TIMESTAMP | NOT NULL | Creación. |
@@ -1071,6 +1072,7 @@ erDiagram
         string fecha_vencimiento
         boolean vigente
         string archivo_r2_key
+        string archivo_reverso_r2_key
         string verificado_por_id FK
         timestamp creado_en
         timestamp actualizado_en

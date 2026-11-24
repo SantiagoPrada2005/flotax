@@ -110,6 +110,9 @@ export interface EstadoDocumentalVehiculo {
   faltantesSinCarga: Array<'SOAT' | 'TECNICO_MECANICA'>;
   vencidos: Array<{ tipo: string; fechaVencimiento: string }>;
   requiereRtm: boolean;
+  bloqueadoPorDocumentos?: boolean | undefined;
+  exentoPorLey2486?: boolean | undefined;
+  motivoBloqueo?: string | null | undefined;
 }
 
 export interface DiaCalendarioItem {

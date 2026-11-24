@@ -56,11 +56,14 @@ export default function SemaforoDocumentalPanel({
   const tieneDocsVehiculoVencidos = Boolean(estadoDocVehiculo?.tieneVencidos);
   const docsVehiculoVencidos = estadoDocVehiculo?.vencidos ?? [];
   const docsVehiculoSinCarga = estadoDocVehiculo?.faltantesSinCarga ?? [];
+  const vehiculoBloqueadoPorDocs = Boolean(
+    estadoDocVehiculo?.bloqueadoPorDocumentos ||
+      tieneDocsVehiculoVencidos ||
+      docsVehiculoSinCarga.length > 0
+  );
 
-  const hayAlertas =
-    faltaDocCliente ||
-    tieneDocsVehiculoVencidos ||
-    docsVehiculoSinCarga.length > 0;
+  // La autorización excepcional del local aplica únicamente a documentos del cliente
+  const hayAlertas = faltaDocCliente;
 
   const manejarGuardarRapido = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -117,9 +120,9 @@ export default function SemaforoDocumentalPanel({
         <div className="flex items-center gap-2 min-w-0">
           <span
             className={`h-3 w-3 rounded-full shrink-0 ${
-              tieneDocsVehiculoVencidos
-                ? 'bg-[#111827]'
-                : faltaDocCliente || docsVehiculoSinCarga.length > 0
+              vehiculoBloqueadoPorDocs
+                ? 'bg-status-danger'
+                : faltaDocCliente
                   ? 'bg-[#4B5563]'
                   : 'bg-[#9CA3AF]'
             }`}
@@ -136,7 +139,7 @@ export default function SemaforoDocumentalPanel({
               {faltaLicencia
                 ? 'Lic. pendiente'
                 : `Lic. ${reserva.conductor.categoriaLicencia}`}{' '}
-              · SOAT/RTM {tieneDocsVehiculoVencidos ? 'Vencido' : 'OK'}
+              · SOAT/RTM {vehiculoBloqueadoPorDocs ? 'Bloqueado' : 'OK'}
             </p>
           </div>
         </div>
@@ -144,7 +147,7 @@ export default function SemaforoDocumentalPanel({
         <div className="flex items-center gap-1.5">
           <span
             className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${
-              tieneDocsVehiculoVencidos
+              vehiculoBloqueadoPorDocs
                 ? 'bg-[#111827] text-white'
                 : faltaDocCliente
                   ? 'bg-[#EDEDED] text-[#111827] border border-[#9CA3AF]/50'
@@ -153,9 +156,11 @@ export default function SemaforoDocumentalPanel({
           >
             {tieneDocsVehiculoVencidos
               ? 'Doc. Vencido'
-              : faltaDocCliente
-                ? 'Incompleto'
-                : 'Al día ✓'}
+              : docsVehiculoSinCarga.length > 0
+                ? 'Sin registrar'
+                : faltaDocCliente
+                  ? 'Incompleto'
+                  : 'Al día ✓'}
           </span>
 
           <button
@@ -237,26 +242,30 @@ export default function SemaforoDocumentalPanel({
 
             {tieneDocsVehiculoVencidos && (
               <div className="rounded-[12px] bg-[#111827] text-white p-2.5 text-xs space-y-1">
-                <p className="font-bold">Alerta: Documento legal vencido en flota</p>
+                <p className="font-bold">Bloqueo: Documento legal sin realizar / vencido</p>
                 {docsVehiculoVencidos.map((d) => (
                   <p key={d.tipo} className="text-[11px] text-[#EDEDED]/90">
-                    · {d.tipo}: Vencido ({d.fechaVencimiento || 'Sin fecha'})
+                    · {d.tipo === 'SOAT' ? 'Sin SOAT vigente' : 'Sin realizar tecnomecánica'} ({d.fechaVencimiento || 'Sin fecha'})
                   </p>
                 ))}
               </div>
             )}
 
-            {docsVehiculoSinCarga.length > 0 && !tieneDocsVehiculoVencidos && (
-              <div className="rounded-[12px] bg-white p-2.5 text-xs text-[#4B5563] border border-[#9CA3AF]/30">
-                <span className="font-semibold text-[#111827]">Docs sin registro en D1: </span>
-                {docsVehiculoSinCarga.join(', ')}. No bloquea la operación si el local cuenta con comprobante físico.
+            {docsVehiculoSinCarga.length > 0 && (
+              <div className="rounded-[12px] bg-[#111827] text-white p-2.5 text-xs space-y-1">
+                <p className="font-bold">Bloqueo: Documentos sin registrar</p>
+                <p className="text-[11px] text-[#EDEDED]/90">
+                  Falta registrar: {docsVehiculoSinCarga.join(', ')}. Regulariza los documentos en la ficha del vehículo antes de confirmar o entregar.
+                </p>
               </div>
             )}
 
             {!tieneDocsVehiculoVencidos && docsVehiculoSinCarga.length === 0 && (
               <div className="rounded-[12px] bg-white p-2 text-xs text-[#111827] font-medium border border-[#9CA3AF]/30 flex items-center justify-between">
-                <span>SOAT y Tecnicomecánica</span>
-                <span className="font-bold text-[#111827]">Vigentes</span>
+                <span>{estadoDocVehiculo?.exentoPorLey2486 ? 'Exento (Ley 2486 de 2025)' : 'SOAT y Tecnicomecánica'}</span>
+                <span className="font-bold text-[#111827]">
+                  {estadoDocVehiculo?.exentoPorLey2486 ? 'No aplica' : 'Vigentes'}
+                </span>
               </div>
             )}
           </div>

@@ -1,4 +1,4 @@
-# Index: `src\lib\ubicacion`
+# Index: `src/lib/ubicacion`
 
 **Responsibility**: Dominio geoespacial, evaluación de cobertura y recargos por distancia de entregas a domicilio, generación de enlaces externos de navegación (Google Maps / Waze) y cliente perimetral de Mapbox Geocoding v6 con control de cuota diaria en Cloudflare KV.
 **Architectural Layer**: Domain / Infrastructure Layer

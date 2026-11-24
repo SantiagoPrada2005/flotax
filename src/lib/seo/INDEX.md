@@ -1,4 +1,4 @@
-# Index: `src\lib\seo`
+# Index: `src/lib/seo`
 
 **Responsibility**: Biblioteca de generación de esquemas Schema.org JSON-LD para entidades de negocio, vehículos y migas de pan.
 **Architectural Layer**: Domain & Infrastructure Utilities

@@ -34,7 +34,8 @@ export const documentosVehiculo = sqliteTable(
     fechaExpedicion: text('fecha_expedicion'), // YYYY-MM-DD
     fechaVencimiento: text('fecha_vencimiento'), // YYYY-MM-DD (NULL para ítems físicos como KIT_CARRETERA)
     vigente: integer('vigente', { mode: 'boolean' }).notNull().default(true),
-    archivoR2Key: text('archivo_r2_key'), // Soporte digital en BUCKET_MULTIMEDIA
+    archivoR2Key: text('archivo_r2_key'), // Soporte digital en BUCKET_MULTIMEDIA (frente para Licencia de tránsito)
+    archivoReversoR2Key: text('archivo_reverso_r2_key'), // Soporte digital reverso en BUCKET_MULTIMEDIA (trasera para Licencia de tránsito)
     observaciones: text('observaciones'),
     verificadoPorId: text('verificado_por_id').references(() => user.id),
     creadoEn: integer('creado_en', { mode: 'timestamp' }).notNull(),

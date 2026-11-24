@@ -1,4 +1,4 @@
-# Index: `src\pages\admin`
+# Index: `src/pages/admin`
 
 **Responsibility**: Enrutamiento de páginas del entorno operativo y administración de FlotaX (Dashboard de patio, control de flota, operaciones, reservas y caja).
 **Architectural Layer**: Presentation / Admin Routing Layer

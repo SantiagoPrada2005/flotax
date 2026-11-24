@@ -1,4 +1,4 @@
-# Index: `src\lib\media`
+# Index: `src/lib/media`
 
 **Responsibility**: Utilidades perimetrales de procesamiento multimedia, compresión de imágenes en el cliente, construcción determinista de claves jerárquicas y streaming con soporte HTTP Range para fotos y videos en Cloudflare R2 (`BUCKET_MULTIMEDIA`).
 **Architectural Layer**: Infrastructure / Shared Layer

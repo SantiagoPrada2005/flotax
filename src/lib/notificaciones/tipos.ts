@@ -24,7 +24,15 @@ export interface PayloadPorTipo {
   ABONO_REGISTRADO: { contratoId: string; montoFormateado: string; metodoPago: string };
   ENTREGA_PROGRAMADA: { reservaCodigo: string; vehiculo: string; cuando: string };
   DEVOLUCION_PROXIMA: { reservaCodigo: string; vehiculo: string; cuando: string };
-  DOCUMENTO_POR_VENCER: { vehiculo: string; documento: string; vence: string };
+  DOCUMENTO_POR_VENCER: {
+    vehiculo: string;
+    vehiculoId?: string | undefined;
+    documento: string;
+    vence: string;
+    estado?: 'PROXIMO_A_VENCER' | 'CUENTA_REGRESIVA' | 'HOY_FECHA_PAGO' | undefined;
+    fechaPago?: string | undefined;
+    diasRestantes?: number | undefined;
+  };
   INVITACION_RECIBIDA: { localNombre: string; rol: string };
   ANUNCIO_PLATAFORMA: { titulo: string; mensaje: string };
 }

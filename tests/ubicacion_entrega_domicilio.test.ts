@@ -23,6 +23,7 @@ import {
 } from '../src/lib/flota/ciclo-alquiler.ts';
 import type { AppDb } from '../src/lib/db.ts';
 import {
+  documentosVehiculo,
   localesAlquiler,
   politicasLocal,
   reservas,
@@ -289,6 +290,24 @@ describe('Dominio Ubicación, Cobertura y Mapbox - FlotaX', () => {
           if (tabla === vehiculos) return crearMockQuery([vehiculoMock]);
           if (tabla === politicasLocal) return crearMockQuery([politicaMock]);
           if (tabla === localesAlquiler) return crearMockQuery([localMock]);
+          if (tabla === documentosVehiculo) {
+            return crearMockQuery([
+              {
+                id: 'doc-soat-cx30',
+                vehiculoId,
+                tipoDocumento: 'SOAT',
+                fechaVencimiento: '2027-12-31',
+                vigente: true,
+              },
+              {
+                id: 'doc-rtm-cx30',
+                vehiculoId,
+                tipoDocumento: 'TECNICO_MECANICA',
+                fechaVencimiento: '2027-12-31',
+                vigente: true,
+              },
+            ]);
+          }
           if (tabla === reservas) {
             return filaInsertada
               ? crearMockQuery([filaInsertada], [{ reserva: filaInsertada, vehiculo: vehiculoMock }])

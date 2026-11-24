@@ -65,14 +65,16 @@ export function construirClaveR2DocumentoVehiculo(params: {
   vehiculoId: string;
   tipoDocumento: TipoDocumentoVehiculo;
   extension: 'pdf' | 'webp' | 'jpg' | 'png';
+  sufijo?: string | undefined;
   timestampMs?: number | undefined;
 }): string {
   const ts = params.timestampMs ?? Date.now();
   const localSeg = limpiarSegmento(params.localId) || 'local-general';
   const vehSeg = limpiarSegmento(params.vehiculoId) || 'vehiculo';
   const docSeg = limpiarSegmento(params.tipoDocumento);
+  const sufijoSeg = params.sufijo ? `_${limpiarSegmento(params.sufijo)}` : '';
 
-  return `locales/${localSeg}/vehiculos/${vehSeg}/documentos/${docSeg}_${ts}.${params.extension}`;
+  return `locales/${localSeg}/vehiculos/${vehSeg}/documentos/${docSeg}${sufijoSeg}_${ts}.${params.extension}`;
 }
 
 /**

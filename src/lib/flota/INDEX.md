@@ -1,4 +1,4 @@
-# Index: `src\lib\flota`
+# Index: `src/lib/flota`
 
 **Responsibility**: Dominio de catálogo, especificaciones técnicas, buscador evaluativo de unidades, motor de franjas de disponibilidad, calendario suizo de reservas e inspección R2/waybill de cliente y administración.
 **Architectural Layer**: Domain / Application Layer

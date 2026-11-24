@@ -14,6 +14,7 @@
 | [`ciclo_alquiler_transiciones.test.ts`](./ciclo_alquiler_transiciones.test.ts) | Test Suite | Validación de transiciones de estado, máquina de estados y cálculo de penalidades | `node:test`, `src/lib/flota/ciclo-alquiler-transiciones.ts` |
 | [`dashboard_proceso_y_guest.test.ts`](./dashboard_proceso_y_guest.test.ts) | Test Suite | Validación de visualización de reservas en proceso y modo invitado | `node:test`, `src/lib/flota` |
 | [`disponibilidad_vehiculo.test.ts`](./disponibilidad_vehiculo.test.ts) | Test Suite | Validación de consulta de disponibilidad, detección de colisiones, franjas y preselección inteligente | `node:test`, `src/lib/flota/disponibilidad.ts` |
+| [`documentos-vehiculo.test.ts`](./documentos-vehiculo.test.ts) | Test Suite | - | - |
 | [`flota-formato-campos.test.ts`](./flota-formato-campos.test.ts) | Test Suite | - | - |
 | [`geo-colombia.test.ts`](./geo-colombia.test.ts) | Test Suite | - | - |
 | [`liquid-notch.test.ts`](./liquid-notch.test.ts) | Test Suite | Validación de comportamiento y estados visuales del Liquid Notch | `node:test` |

@@ -1,0 +1,1 @@
+ALTER TABLE `documentos_vehiculo` ADD `archivo_reverso_r2_key` text;

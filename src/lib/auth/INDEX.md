@@ -1,4 +1,4 @@
-# Index: `src\lib\auth`
+# Index: `src/lib/auth`
 
 **Responsibility**: Sistema central de autenticación y autorización (Better Auth, RBAC multi-tenant con soporte de permisos individuales por miembro, sesiones y guards).
 **Architectural Layer**: Application / Infrastructure (Cross-cutting Auth)

@@ -1,4 +1,4 @@
-# Index: `src\components\alquiler`
+# Index: `src/components/alquiler`
 
 **Responsibility**: Componentes interactivos para el embudo multi-paso de alquiler de vehículos y calendario editorial de franjas de disponibilidad.
 **Architectural Layer**: Presentation / Domain Components (Tier 2)

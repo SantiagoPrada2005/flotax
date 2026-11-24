@@ -1,4 +1,4 @@
-# Index: `src\components\dashboard`
+# Index: `src/components/dashboard`
 
 **Responsibility**: Componentes modulares del panel de control y del módulo de Métricas y Telemetría en grilla Bento no lineal con Progressive Disclosure de 3 niveles y alto contraste canónico (azul oscuro `#111827` / `#1F2937` + blanco `#FFFFFF`).
 **Architectural Layer**: Presentation Layer (Tier 2: Domain Modules)

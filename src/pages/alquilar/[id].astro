@@ -47,6 +47,9 @@ const estadoDocumental = db
       faltantesSinCarga: [],
       vencidos: [],
       requiereRtm: vehiculo.categoria !== 'PATINETA',
+      exentoPorLey2486: vehiculo.categoria === 'PATINETA',
+      bloqueadoPorDocumentos: false,
+      motivoBloqueo: null,
     };
 
 const desdeParam = Astro.url.searchParams.get('desde') ?? undefined;

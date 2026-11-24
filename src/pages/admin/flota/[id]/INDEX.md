@@ -1,4 +1,4 @@
-# Index: `src\pages\admin\flota\[id]`
+# Index: `src/pages/admin/flota/[id]`
 
 **Responsibility**: Enrutamiento para operaciones por unidad de flota: edición de especificaciones técnicas y tablero dedicado de disponibilidad y mantenimiento.
 **Architectural Layer**: Presentation / Admin Routing Layer
@@ -9,6 +9,7 @@
 | :--- | :--- | :--- | :--- |
 | [`disponibilidad.astro`](./disponibilidad.astro) | Página SSR `/admin/flota/[id]/disponibilidad` | Tablero de disponibilidad mensual, calendario de franjas y órdenes de mantenimiento | `@/layouts/LayoutAdmin`, `@/components/flota/disponibilidad/VehicleAvailabilityIsland`, `@/lib/flota`, `@/lib/mantenimientos` |
 | [`editar.astro`](./editar.astro) | Página SSR `/admin/flota/[id]/editar` | Formulario de edición de especificaciones y datos del vehículo | `@/layouts/LayoutAdmin`, `@/components/flota/VehicleFormIsland`, `@/lib/flota` |
+| [`index.astro`](./index.astro) | Page / Navigation Route | Astro Template | - |
 
 ## Invariants & Directory Rules
 

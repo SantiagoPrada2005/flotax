@@ -1,4 +1,4 @@
-# Index: `src\components\auth`
+# Index: `src/components/auth`
 
 **Responsibility**: Componentes de autenticación, flujos de acceso OTP, fondos vectoriales automotrices y wizards de inducción de personal operativo.
 **Architectural Layer**: Presentation / Auth Domain Components

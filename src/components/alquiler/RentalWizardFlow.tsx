@@ -260,13 +260,21 @@ export default function RentalWizardFlow({
     setFechaFin(fin);
   };
 
+  const vehiculoBloqueadoPorDocs = Boolean(
+    estadoDocumental?.bloqueadoPorDocumentos ||
+      estadoDocumental?.tieneVencidos ||
+      (estadoDocumental?.faltantesSinCarga?.length ?? 0) > 0
+  );
+
   const avanzarPaso = () => {
     setErrorValidacion(null);
 
     if (paso === 1) {
-      if (estadoDocumental?.tieneVencidos) {
+      if (vehiculoBloqueadoPorDocs) {
         setErrorValidacion(
-          'Esta unidad se encuentra temporalmente en actualización de documentos legales (SOAT / Tecnomecánica). No es posible avanzar con la reserva.'
+          estadoDocumental?.motivoBloqueo
+            ? `Esta unidad no puede reservarse hasta regularizar sus documentos (${estadoDocumental.motivoBloqueo}).`
+            : 'Esta unidad se encuentra temporalmente en actualización de documentos legales (SOAT / Tecnomecánica). No es posible avanzar con la reserva.'
         );
         return;
       }
@@ -680,13 +688,15 @@ export default function RentalWizardFlow({
             {/* SLIDE 1: Vehículo protagonista + Fechas */}
             {paso === 1 && (
               <div className="animate-fade-up space-y-3">
-                {estadoDocumental?.tieneVencidos && (
+                {vehiculoBloqueadoPorDocs && (
                   <div className="rounded-[20px] bg-[#111827] border border-[#9CA3AF]/40 p-4 text-white space-y-1.5">
                     <span className="inline-flex items-center rounded-full bg-[#EDEDED] px-2.5 py-0.5 text-[11px] font-bold text-[#111827]">
-                      En actualización de documentos
+                      Documentos pendientes
                     </span>
                     <p className="text-xs text-[#EDEDED]/90 leading-relaxed">
-                      Esta unidad está actualizando documentos legales (SOAT / Tecnomecánica). No es posible reservarla en este momento.
+                      {estadoDocumental?.motivoBloqueo
+                        ? `Esta unidad presenta documentos pendientes (${estadoDocumental.motivoBloqueo}) y no puede reservarse hasta regularizarlos.`
+                        : 'Esta unidad está actualizando documentos legales (SOAT / Tecnomecánica). No es posible reservarla en este momento.'}
                     </p>
                   </div>
                 )}
@@ -1220,7 +1230,7 @@ export default function RentalWizardFlow({
                     {paso < 5 &&
                       (() => {
                         const estaBloqueadoPorDocs = Boolean(
-                          paso === 1 && estadoDocumental?.tieneVencidos
+                          paso === 1 && vehiculoBloqueadoPorDocs
                         );
                         return (
                           <button

@@ -44,6 +44,7 @@ import {
 } from '@/lib/ubicacion';
 import { eq, and, or, isNull, sql } from 'drizzle-orm';
 import type { RolUsuario, RolSistema } from '@/lib/auth/rbac';
+import { toClientISODate } from '@/lib/time/client-time';
 
 import {
   ErrorCicloAlquiler,
@@ -415,7 +416,7 @@ export async function crearReservaConValidaciones(
     );
   }
 
-  // 3. Validar documentación del vehículo
+  // 3. Validar documentación del vehículo (bloqueo estricto si está Sin realizar o Sin registrar)
   const estadoDocVeh = await obtenerEstadoDocumentalVehiculoD1(
     db,
     input.vehiculoId,
@@ -423,16 +424,21 @@ export async function crearReservaConValidaciones(
     input.fechaInicio
   );
 
-  const esFlujoWeb = contexto.origen === 'CLIENTE_WEB' || contexto.origen === 'WEB';
-
-  if (esFlujoWeb && estadoDocVeh.tieneVencidos) {
+  if (
+    estadoDocVeh.bloqueadoPorDocumentos ||
+    estadoDocVeh.tieneVencidos ||
+    estadoDocVeh.faltantesSinCarga.length > 0
+  ) {
     throw new ErrorCicloAlquiler(
       'CONFLICT',
-      'El vehículo presenta documentación legal vencida (SOAT / RTM)'
+      estadoDocVeh.motivoBloqueo
+        ? `No se puede reservar el vehículo hasta regularizar sus documentos: ${estadoDocVeh.motivoBloqueo}.`
+        : 'El vehículo presenta documentación legal vencida o sin registrar (SOAT / Tecnomecánica).'
     );
   }
 
   // 4. Recalcular precios estrictamente contra D1
+  const esFlujoWeb = contexto.origen === 'CLIENTE_WEB' || contexto.origen === 'WEB';
   const diasAlquiler = calcularDiasInclusivos(input.fechaInicio, input.fechaFin);
   const precioDia = vehiculo.precioDia;
   const subtotalTarifaCotizado = diasAlquiler * precioDia;
@@ -977,6 +983,19 @@ export async function confirmarReservaD1(
     reserva.fechaInicio
   );
 
+  if (
+    estadoDocVeh.bloqueadoPorDocumentos ||
+    estadoDocVeh.tieneVencidos ||
+    estadoDocVeh.faltantesSinCarga.length > 0
+  ) {
+    throw new ErrorCicloAlquiler(
+      'CONFLICT',
+      estadoDocVeh.motivoBloqueo
+        ? `No se puede confirmar la reserva hasta regularizar los documentos del vehículo: ${estadoDocVeh.motivoBloqueo}.`
+        : 'El vehículo presenta documentación legal vencida o sin registrar (SOAT / Tecnomecánica).'
+    );
+  }
+
   const advertencias = construirAdvertenciasDocumentales(
     {
       contactoTipoDocumento: reserva.contactoTipoDocumento,
@@ -1295,6 +1314,27 @@ export async function entregarVehiculoConContratoD1(
       ? cv.domicilio?.trim() || null
       : contrato?.arrendatarioDomicilio ?? null;
 
+  // Validar documentación legal del vehículo antes de cualquier entrega (no omitible)
+  const estadoDocVeh = await obtenerEstadoDocumentalVehiculoD1(
+    db,
+    reserva.vehiculoId,
+    vehiculo.categoria,
+    toClientISODate()
+  );
+
+  if (
+    estadoDocVeh.bloqueadoPorDocumentos ||
+    estadoDocVeh.tieneVencidos ||
+    estadoDocVeh.faltantesSinCarga.length > 0
+  ) {
+    throw new ErrorCicloAlquiler(
+      'CONFLICT',
+      estadoDocVeh.motivoBloqueo
+        ? `No se puede entregar el vehículo hasta regularizar sus documentos: ${estadoDocVeh.motivoBloqueo}.`
+        : 'El vehículo presenta documentación legal vencida o sin registrar (SOAT / Tecnomecánica).'
+    );
+  }
+
   // Validar documentos del conductor cuando se diligencia el formulario de entrega
   if (cv) {
     const kycRows = reserva.clienteId
@@ -1305,12 +1345,6 @@ export async function entregarVehiculoConContratoD1(
           .limit(1)
       : [];
     const kycEstadoActual = kycRows[0]?.estado ?? null;
-    const estadoDocVeh = await obtenerEstadoDocumentalVehiculoD1(
-      db,
-      reserva.vehiculoId,
-      vehiculo.categoria,
-      reserva.fechaInicio
-    );
     const kycEfectivo =
       tipoDocEfectivo && numDocEfectivo
         ? 'APROBADO'

@@ -8,6 +8,7 @@
 | Subdirectory | Responsibility | Index |
 | :--- | :--- | :--- |
 | [`plans/`](./plans/) | Directory `plans` | *(No index)* |
+| [`requirements/`](./requirements/) | Directory `requirements` | *(No index)* |
 | [`superpowers/`](./superpowers/) | Directory `superpowers` | *(No index)* |
 
 ## File Manifest

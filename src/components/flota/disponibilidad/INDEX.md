@@ -1,4 +1,4 @@
-# Index: `src\components\flota\disponibilidad`
+# Index: `src/components/flota/disponibilidad`
 
 **Responsibility**: Componentes React 19 para la gestión visual de disponibilidad, cabecera de unidad, órdenes activas de taller, wizard typeform de mantenimiento, modal de egreso de taller e isla coordinadora.
 **Architectural Layer**: Presentation Layer (Tier 2 Domain Modules)

@@ -24,6 +24,7 @@ import {
   mantenimientosVehiculo,
   evaluacionesEntregaCliente,
   vehiculos,
+  documentosVehiculo,
   movimientosCaja,
   cuentasFinancieras,
   auditoriaFinanciera,
@@ -31,6 +32,25 @@ import {
 
 class MockD1Session {
   readonly active = true;
+}
+
+function crearDocsVigentesMock(vehiculoId: string) {
+  return [
+    {
+      id: `doc-soat-${vehiculoId}`,
+      vehiculoId,
+      tipoDocumento: 'SOAT',
+      fechaVencimiento: '2027-12-31',
+      vigente: true,
+    },
+    {
+      id: `doc-rtm-${vehiculoId}`,
+      vehiculoId,
+      tipoDocumento: 'TECNICO_MECANICA',
+      fechaVencimiento: '2027-12-31',
+      vigente: true,
+    },
+  ];
 }
 
 function crearMockBatch() {
@@ -172,6 +192,7 @@ describe('Ciclo de Alquiler - Transiciones, Cierre, Evaluación y Anulación', (
             if (table === vehiculos) return crearMockQuery(vehiculosStore);
             if (table === eventosAlquiler) return crearMockQuery(eventosStore);
             if (table === mantenimientosVehiculo) return crearMockQuery([]);
+            if (table === documentosVehiculo) return crearMockQuery(crearDocsVigentesMock(vehiculoId));
             return crearMockQuery([]);
           },
           limit: (n?: number) => {
@@ -382,6 +403,7 @@ describe('Ciclo de Alquiler - Transiciones, Cierre, Evaluación y Anulación', (
             if (table === vehiculos) return crearMockQuery([vehiculo]);
             if (table === eventosAlquiler) return crearMockQuery(eventosStore);
             if (table === mantenimientosVehiculo) return crearMockQuery([]);
+            if (table === documentosVehiculo) return crearMockQuery(crearDocsVigentesMock(vehiculoId));
             return crearMockQuery([]);
           },
           limit: (n?: number) => {
@@ -899,6 +921,7 @@ describe('Ciclo de Alquiler - Transiciones, Cierre, Evaluación y Anulación', (
             if (table === contratosAlquiler) return crearMockQuery(filtrarContratos(contratosStore, clause));
             if (table === vehiculos) return crearMockQuery([vehiculo]);
             if (table === mantenimientosVehiculo) return crearMockQuery([]);
+            if (table === documentosVehiculo) return crearMockQuery(crearDocsVigentesMock(vehiculoId));
             if (table === cuentasFinancieras) return crearMockQuery([{ id: 'cta-1', tipo: 'CAJA_EFECTIVO', activo: true }]);
             return crearMockQuery([]);
           },
@@ -1038,6 +1061,7 @@ describe('Ciclo de Alquiler - Transiciones, Cierre, Evaluación y Anulación', (
               return crearMockQuery(filtrarReservas(conflictoStore, clause));
             }
             if (table === vehiculos) return crearMockQuery([vehiculo]);
+            if (table === documentosVehiculo) return crearMockQuery(crearDocsVigentesMock(vehiculoId));
             return crearMockQuery([]);
           },
           limit: () => Promise.resolve(reservasStore),

@@ -1,4 +1,4 @@
-# Index: `src\components\navigation`
+# Index: `src/components/navigation`
 
 **Responsibility**: Componentes atómicos y estructurales de navegación (Bottom Navigation Bar, Minimalist Top App Bar con Menú Desplegable de Usuario, Desktop Sidebar).
 **Architectural Layer**: Presentation / Navigation Components

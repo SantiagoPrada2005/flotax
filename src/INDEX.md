@@ -21,6 +21,7 @@
 | :--- | :--- | :--- | :--- |
 | [`env.d.ts`](./env.d.ts) | Tipado Global | Declaraciones de tipos para variables de entorno y Cloudflare D1 | `astro/client` |
 | [`middleware.ts`](./middleware.ts) | Middleware de Astro | `onRequest` (Inyección de sesión, RBAC y contexto de local) | `astro:middleware`, `@/lib/auth` |
+| [`worker.ts`](./worker.ts) | TypeScript / JavaScript Module | - | - |
 
 ## Invariants & Directory Rules
 

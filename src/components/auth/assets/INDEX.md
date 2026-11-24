@@ -1,4 +1,4 @@
-# Index: `src\components\auth\assets`
+# Index: `src/components/auth/assets`
 
 **Responsibility**: Biblioteca de primitivas vectoriales SVG nativas para fondos automotrices del flujo de autenticación FlotaX.
 **Architectural Layer**: Presentation / Auth Vector Assets (Tier 1/2)

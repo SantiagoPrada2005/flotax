@@ -58,7 +58,22 @@ describe('Disponibilidad de Vehículos - FlotaX', () => {
           } else if (table === reservas) {
             datos = config.reservas ?? [];
           } else if (table === documentosVehiculo) {
-            datos = config.documentos ?? [];
+            datos = config.documentos ?? [
+              {
+                id: 'doc-soat-default',
+                vehiculoId: vehiculoIdPrueba,
+                tipoDocumento: 'SOAT',
+                fechaVencimiento: '2027-12-31',
+                vigente: true,
+              },
+              {
+                id: 'doc-rtm-default',
+                vehiculoId: vehiculoIdPrueba,
+                tipoDocumento: 'TECNICO_MECANICA',
+                fechaVencimiento: '2027-12-31',
+                vigente: true,
+              },
+            ];
           }
 
           const crearQueryResult = (items: unknown[]) => ({
@@ -440,8 +455,8 @@ describe('Disponibilidad de Vehículos - FlotaX', () => {
     assert.equal(estadoLibre, 'DISPONIBLE');
   });
 
-  test('12. obtenerEstadoDocumentalVehiculoD1: bloquea por SOAT/RTM vencido, exceptúa RTM en PATINETA y no bloquea sin filas', async () => {
-    // Subcaso A: Sin filas aún en documentos_vehiculo -> no bloquea, reporta faltantes
+  test('12. obtenerEstadoDocumentalVehiculoD1: bloquea por SOAT/RTM vencido o sin registrar y exime PATINETA (Ley 2486 de 2025)', async () => {
+    // Subcaso A: Sin filas aún en documentos_vehiculo -> bloquea por SIN_REGISTRAR y reporta faltantes
     const dbVacio = crearMockDb({
       documentos: [],
     });
@@ -452,6 +467,7 @@ describe('Disponibilidad de Vehículos - FlotaX', () => {
       hoyPrueba
     );
     assert.equal(docVacioSedan.tieneVencidos, false);
+    assert.equal(docVacioSedan.bloqueadoPorDocumentos, true);
     assert.equal(docVacioSedan.requiereRtm, true);
     assert.deepEqual(docVacioSedan.faltantesSinCarga, ['SOAT', 'TECNICO_MECANICA']);
     assert.deepEqual(docVacioSedan.vencidos, []);
@@ -513,16 +529,9 @@ describe('Disponibilidad de Vehículos - FlotaX', () => {
     assert.equal(docRtmInvalido.tieneVencidos, true);
     assert.equal(docRtmInvalido.vencidos[0]?.tipo, 'TECNICO_MECANICA');
 
-    // Subcaso D: PATINETA no requiere TECNICO_MECANICA aunque esté vencida o ausente
+    // Subcaso D: PATINETA está exenta de SOAT y TECNICO_MECANICA por Ley 2486 de 2025
     const dbPatineta = crearMockDb({
       documentos: [
-        {
-          id: 'doc-1',
-          vehiculoId: vehiculoIdPrueba,
-          tipoDocumento: 'SOAT',
-          fechaVencimiento: '2027-01-01',
-          vigente: true,
-        },
         {
           id: 'doc-2',
           vehiculoId: vehiculoIdPrueba,
@@ -539,7 +548,10 @@ describe('Disponibilidad de Vehículos - FlotaX', () => {
       hoyPrueba
     );
     assert.equal(docPatineta.requiereRtm, false);
+    assert.equal(docPatineta.exentoPorLey2486, true);
+    assert.equal(docPatineta.bloqueadoPorDocumentos, false);
     assert.equal(docPatineta.tieneVencidos, false);
+    assert.deepEqual(docPatineta.faltantesSinCarga, []);
     assert.deepEqual(docPatineta.vencidos, []);
   });
 

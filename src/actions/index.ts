@@ -68,6 +68,10 @@ import {
   geocodificarInversaAction,
   validarCoberturaDomicilioAction,
 } from './ubicacion';
+import {
+  guardarDocumentoLegalAction,
+  obtenerResumenDocumentosAction,
+} from './documentos';
 
 export const server = {
   perfil: {
@@ -142,6 +146,10 @@ export const server = {
     buscarDirecciones: buscarDireccionesAction,
     geocodificarInversa: geocodificarInversaAction,
     validarCobertura: validarCoberturaDomicilioAction,
+  },
+  documentos: {
+    guardarLegal: guardarDocumentoLegalAction,
+    obtenerResumen: obtenerResumenDocumentosAction,
   },
 };
 
