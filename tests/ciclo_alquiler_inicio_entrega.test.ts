@@ -1363,4 +1363,107 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
       'Debe rechazar entrega si el vehículo tiene documentos SIN_REGISTRAR'
     );
   });
+
+  it('13. crearReservaConValidaciones (web): acepta rangos continuos de 1, 2 o 3 días y rechaza huecos intermedios', async () => {
+    const vehiculoValido = {
+      id: vehiculoId,
+      localId,
+      marca: 'Mazda',
+      modelo: 'CX-30',
+      placa: 'FLX-123',
+      precioDia: 180_000,
+      depositoGarantia: 600_000,
+      estado: 'DISPONIBLE',
+      activo: true,
+      categoria: 'SUV',
+      kilometraje: 15_000,
+    };
+
+    let reservaInsertada: Record<string, unknown> | null = null;
+
+    const mockDb = {
+      session: new MockD1Session(),
+      batch: crearMockBatch(),
+      select: () => ({
+        from: (table: unknown) => {
+          if (table === vehiculos) return crearMockQuery([vehiculoValido]);
+          if (table === politicasLocal) return crearMockQuery([{ id: 'pol-1', localId, abonoMinimoPct: 30, coberturaPericialPct: 10 }]);
+          if (table === documentosVehiculo) return crearMockQuery(crearDocsVigentesMock(vehiculoId));
+          if (table === reservas) {
+            return crearMockQuery(
+              reservaInsertada ? [reservaInsertada] : [],
+              reservaInsertada ? [{ reserva: reservaInsertada, vehiculo: vehiculoValido }] : []
+            );
+          }
+          return crearMockQuery([]);
+        },
+      }),
+      insert: (table: unknown) => ({
+        values: (vals: Record<string, unknown>) => {
+          if (table === reservas) reservaInsertada = vals;
+          return { onConflictDoNothing: async () => [vals] };
+        },
+      }),
+      update: () => ({
+        set: () => ({ where: async () => [] }),
+      }),
+    } as unknown as AppDb;
+
+    // Rechaza rangos no continuos (con huecos)
+    await assert.rejects(
+      async () => {
+        await crearReservaConValidaciones(
+          mockDb,
+          {
+            vehiculoId,
+            localId,
+            fechaInicio: '2026-12-27',
+            fechaFin: '2026-12-29',
+            fechasSeleccionadas: ['2026-12-27', '2026-12-29'],
+            contactoNombre: 'Cliente Web',
+            contactoTelefono: '3001234567',
+            contactoCorreo: 'cliente@flotax.co',
+          },
+          { origen: 'CLIENTE_WEB', localId }
+        );
+      },
+      (err: unknown) => err instanceof ErrorCicloAlquiler && err.code === 'BAD_REQUEST',
+      'Debe rechazar reserva con fechas no consecutivas'
+    );
+
+    // Acepta recorte continuo de 2 días (ej. 27-28 tras bajar desde 27-29)
+    const resDosDias = await crearReservaConValidaciones(
+      mockDb,
+      {
+        vehiculoId,
+        localId,
+        fechaInicio: '2026-12-27',
+        fechaFin: '2026-12-28',
+        fechasSeleccionadas: ['2026-12-27', '2026-12-28'],
+        contactoNombre: 'Cliente Web',
+        contactoTelefono: '3001234567',
+        contactoCorreo: 'cliente@flotax.co',
+      },
+      { origen: 'CLIENTE_WEB', localId }
+    );
+    assert.equal(resDosDias.reserva.diasAlquiler, 2);
+
+    // Acepta reserva de 1 día
+    reservaInsertada = null;
+    const resUnDia = await crearReservaConValidaciones(
+      mockDb,
+      {
+        vehiculoId,
+        localId,
+        fechaInicio: '2026-12-27',
+        fechaFin: '2026-12-27',
+        fechasSeleccionadas: ['2026-12-27'],
+        contactoNombre: 'Cliente Web',
+        contactoTelefono: '3001234567',
+        contactoCorreo: 'cliente@flotax.co',
+      },
+      { origen: 'CLIENTE_WEB', localId }
+    );
+    assert.equal(resUnDia.reserva.diasAlquiler, 1);
+  });
 });

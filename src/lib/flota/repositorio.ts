@@ -174,8 +174,45 @@ export async function listarVehiculos(
       reservasOcupadas.filter((r) => r.estado !== 'PAUSADA').map((r) => r.vehiculoId)
     );
 
+    const galeriaPorVehiculo = new Map<string, VehiculoGaleriaFoto[]>();
+    try {
+      const mediaRows = await db
+        .select()
+        .from(multimediaVehiculo)
+        .where(
+          and(
+            inArray(multimediaVehiculo.vehiculoId, ids),
+            eq(multimediaVehiculo.etapaOperativa, 'CATALOGO_ESTUDIO'),
+            eq(multimediaVehiculo.tipoMedio, 'IMAGEN')
+          )
+        )
+        .orderBy(
+          desc(multimediaVehiculo.esPortadaCatalogo),
+          asc(multimediaVehiculo.ordenVisual)
+        );
+
+      for (const m of mediaRows) {
+        const lista = galeriaPorVehiculo.get(m.vehiculoId) ?? [];
+        lista.push({
+          id: m.id,
+          url: resolverUrlMultimediaR2(m.r2Key),
+          categoria: zonaACategoriaGaleria(m.zonaEvidencia),
+          zona: m.zonaEvidencia,
+          esPrincipal: m.esPortadaCatalogo,
+          orden: m.ordenVisual,
+        });
+        galeriaPorVehiculo.set(m.vehiculoId, lista);
+      }
+    } catch {
+      // No bloquear el listado si aún no hay registros multimedia o en mocks
+    }
+
     const items = rows.map((row) => {
       const item = mapD1ToVehiculoItem(row);
+      const galeriaItem = galeriaPorVehiculo.get(item.id);
+      if (galeriaItem && galeriaItem.length > 0) {
+        item.galeria = galeriaItem;
+      }
 
       // Si el vehículo está fuera de servicio permanentemente o administrativamente no disponible, se respeta
       if (item.estado === 'FUERA_SERVICIO' || item.estado === 'NO_DISPONIBLE') {
@@ -271,6 +308,7 @@ export async function obtenerVehiculoAsync(
             id: m.id,
             url: resolverUrlMultimediaR2(m.r2Key),
             categoria: zonaACategoriaGaleria(m.zonaEvidencia),
+            zona: m.zonaEvidencia,
             esPrincipal: m.esPortadaCatalogo,
             orden: m.ordenVisual,
           })
@@ -284,6 +322,69 @@ export async function obtenerVehiculoAsync(
   } catch (error) {
     logFalloD1('vehiculos.obtener', error, { vehiculoId: id });
     return undefined;
+  }
+}
+
+/**
+ * Sincroniza en D1 la galería pública (`CATALOGO_ESTUDIO`) de un vehículo sin afectar actas ni mantenimientos.
+ */
+async function sincronizarGaleriaEstudioD1(
+  db: AppDb,
+  params: {
+    vehiculoId: string;
+    localId: string;
+    galeria: readonly VehiculoGaleriaFoto[];
+    ahora?: Date;
+  }
+): Promise<void> {
+  const ahora = params.ahora ?? new Date();
+  await db
+    .delete(multimediaVehiculo)
+    .where(
+      and(
+        eq(multimediaVehiculo.vehiculoId, params.vehiculoId),
+        eq(multimediaVehiculo.etapaOperativa, 'CATALOGO_ESTUDIO')
+      )
+    );
+
+  const vistas = new Set<string>();
+  const filasGaleria = params.galeria
+    .filter((foto) => {
+      const clave = foto.url.startsWith('/api/multimedia/')
+        ? foto.url.slice('/api/multimedia/'.length)
+        : foto.url;
+      if (!clave || vistas.has(clave)) return false;
+      vistas.add(clave);
+      return true;
+    })
+    .map((foto, idx) => {
+      const r2Key = foto.url.startsWith('/api/multimedia/')
+        ? foto.url.slice('/api/multimedia/'.length)
+        : foto.url;
+      const zonaEvidencia =
+        foto.zona ??
+        (foto.esPrincipal
+          ? 'EXTERIOR_LATERAL_IZQ'
+          : categoriaAZonaEvidencia(foto.categoria));
+      return {
+        id: foto.id || crypto.randomUUID(),
+        localId: params.localId,
+        vehiculoId: params.vehiculoId,
+        tipoMedio: 'IMAGEN' as const,
+        etapaOperativa: 'CATALOGO_ESTUDIO' as const,
+        zonaEvidencia,
+        esPortadaCatalogo: foto.esPrincipal,
+        ordenVisual: idx,
+        r2Key,
+        mimeType: 'image/jpeg',
+        tamanoBytes: 0,
+        capturadoEn: ahora,
+        creadoEn: ahora,
+      };
+    });
+
+  if (filasGaleria.length > 0) {
+    await db.insert(multimediaVehiculo).values(filasGaleria);
   }
 }
 
@@ -376,51 +477,13 @@ export async function guardarVehiculo(
         },
       });
 
-    // Sincronizar galería pública de catálogo sin afectar actas ni mantenimientos
     if (Array.isArray(itemConLocal.galeria) && itemConLocal.galeria.length > 0) {
-      await db
-        .delete(multimediaVehiculo)
-        .where(
-          and(
-            eq(multimediaVehiculo.vehiculoId, itemConLocal.id),
-            eq(multimediaVehiculo.etapaOperativa, 'CATALOGO_ESTUDIO')
-          )
-        );
-
-      const vistas = new Set<string>();
-      const filasGaleria = itemConLocal.galeria
-        .filter((foto) => {
-          const clave = foto.url.startsWith('/api/multimedia/')
-            ? foto.url.slice('/api/multimedia/'.length)
-            : foto.url;
-          if (!clave || vistas.has(clave)) return false;
-          vistas.add(clave);
-          return true;
-        })
-        .map((foto, idx) => {
-          const r2Key = foto.url.startsWith('/api/multimedia/')
-            ? foto.url.slice('/api/multimedia/'.length)
-            : foto.url;
-          return {
-            id: foto.id || crypto.randomUUID(),
-            localId: itemConLocal.localId!,
-            vehiculoId: itemConLocal.id,
-            tipoMedio: 'IMAGEN' as const,
-            etapaOperativa: 'CATALOGO_ESTUDIO' as const,
-            zonaEvidencia: categoriaAZonaEvidencia(foto.categoria),
-            esPortadaCatalogo: foto.esPrincipal,
-            ordenVisual: idx,
-            r2Key,
-            mimeType: 'image/jpeg',
-            tamanoBytes: 0,
-            capturadoEn: ahora,
-            creadoEn: ahora,
-          };
-        });
-
-      if (filasGaleria.length > 0) {
-        await db.insert(multimediaVehiculo).values(filasGaleria);
-      }
+      await sincronizarGaleriaEstudioD1(db, {
+        vehiculoId: itemConLocal.id,
+        localId: itemConLocal.localId!,
+        galeria: itemConLocal.galeria,
+        ahora,
+      });
     }
   } catch (error) {
     logFalloD1('vehiculos.guardar', error, { vehiculoId: item.id, localId });
@@ -428,6 +491,37 @@ export async function guardarVehiculo(
   }
 
   return itemConLocal;
+}
+
+/**
+ * Actualiza exclusivamente la galería fotográfica y la imagen principal de un vehículo en D1.
+ */
+export async function actualizarGaleriaVehiculoD1(
+  db: AppDb,
+  params: {
+    vehiculoId: string;
+    localId: string;
+    galeria: VehiculoGaleriaFoto[];
+    imagenUrlPrincipal: string;
+  }
+): Promise<VehiculoGaleriaFoto[]> {
+  const ahora = new Date();
+  await db
+    .update(vehiculos)
+    .set({
+      imagenUrl: params.imagenUrlPrincipal,
+      actualizadoEn: ahora,
+    })
+    .where(eq(vehiculos.id, params.vehiculoId));
+
+  await sincronizarGaleriaEstudioD1(db, {
+    vehiculoId: params.vehiculoId,
+    localId: params.localId,
+    galeria: params.galeria,
+    ahora,
+  });
+
+  return params.galeria;
 }
 
 /**

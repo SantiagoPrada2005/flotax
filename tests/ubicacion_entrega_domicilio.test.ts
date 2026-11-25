@@ -342,7 +342,7 @@ describe('Dominio Ubicación, Cobertura y Mapbox - FlotaX', () => {
         vehiculoId,
         localId,
         fechaInicio: '2026-12-01',
-        fechaFin: '2026-12-02',
+        fechaFin: '2026-12-03',
         modalidadEntrega: 'PATIO_PRINCIPAL',
         direccionEntrega: 'Dirección que no debe persistirse',
         entregaLatitud: 6.2442,
@@ -360,8 +360,8 @@ describe('Dominio Ubicación, Cobertura y Mapbox - FlotaX', () => {
     assert.equal(resPatio.reserva.entregaLatitud, null);
     assert.equal(resPatio.reserva.entregaLongitud, null);
     assert.equal(resPatio.reserva.recargoEntregaDomicilio, 0);
-    // 2 días * 200.000 = 400.000 + 10% cobertura (40.000) = 440.000
-    assert.equal(resPatio.reserva.totalAlquiler, 440_000);
+    // 3 días * 200.000 = 600.000 + 10% cobertura (60.000) = 660.000
+    assert.equal(resPatio.reserva.totalAlquiler, 660_000);
 
     // B) Domicilio fuera de cobertura (Rionegro) rechazado por servidor
     filaInsertada = null;
@@ -373,7 +373,7 @@ describe('Dominio Ubicación, Cobertura y Mapbox - FlotaX', () => {
             vehiculoId,
             localId,
             fechaInicio: '2026-12-05',
-            fechaFin: '2026-12-06',
+            fechaFin: '2026-12-07',
             modalidadEntrega: 'DOMICILIO_MEDELLIN',
             direccionEntrega: 'Aeropuerto José María Córdova, Rionegro',
             entregaLatitud: 6.1645,
@@ -401,7 +401,7 @@ describe('Dominio Ubicación, Cobertura y Mapbox - FlotaX', () => {
         vehiculoId,
         localId,
         fechaInicio: '2026-12-10',
-        fechaFin: '2026-12-11',
+        fechaFin: '2026-12-12',
         modalidadEntrega: 'DOMICILIO_MEDELLIN',
         direccionEntrega: 'Circular 73B #39B-20, Laureles, Medellín',
         entregaLatitud: 6.2442,
@@ -427,7 +427,7 @@ describe('Dominio Ubicación, Cobertura y Mapbox - FlotaX', () => {
     assert.ok((resDomicilio.reserva.recargoEntregaDomicilio ?? 0) > 15_000);
     assert.equal(
       resDomicilio.reserva.totalAlquiler,
-      440_000 + (resDomicilio.reserva.recargoEntregaDomicilio ?? 0)
+      660_000 + (resDomicilio.reserva.recargoEntregaDomicilio ?? 0)
     );
   });
 });

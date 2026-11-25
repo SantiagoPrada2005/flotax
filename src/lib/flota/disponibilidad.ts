@@ -426,6 +426,164 @@ export function esRangoDisponibleValido(
 }
 
 /**
+ * Calcula la fecha de fin mínima permitida dada una fecha de inicio.
+ * Por defecto excluye el mismo día y el día siguiente inmediato (ej. inicio 27 -> fin mínimo 29).
+ * Cuando `permitirAlquilerUnDia` está habilitado explícitamente, permite finalizar desde el mismo día.
+ */
+export function obtenerFechaFinMinimaAlquiler(
+  fechaInicio: string,
+  permitirAlquilerUnDia: boolean = false
+): string {
+  return permitirAlquilerUnDia ? fechaInicio : sumarDiasISO(fechaInicio, 2);
+}
+
+/**
+ * Determina el último día contiguo libre a partir de `fechaInicio` antes del próximo bloque ocupado.
+ * Retorna `null` si no existe ningún bloque posterior a `fechaInicio`.
+ */
+export function obtenerUltimoDiaContiguoLibre(
+  fechaInicio: string,
+  bloques: readonly BloqueNoDisponible[] = []
+): string | null {
+  let masTemprano: string | null = null;
+  for (const b of bloques) {
+    if (b.fechaInicio > fechaInicio) {
+      if (!masTemprano || b.fechaInicio < masTemprano) {
+        masTemprano = b.fechaInicio;
+      }
+    }
+  }
+  return masTemprano ? sumarDiasISO(masTemprano, -1) : null;
+}
+
+/**
+ * Calcula el nuevo rango continuo al tocar `fechaTocada` sobre una selección existente:
+ * - Sin selección: inicia en `[fechaTocada, fechaTocada]` (1 día).
+ * - Con 1 día `[A, A]`: tocar `A` limpia; tocar otra fecha `B` libre contigua amplía `[min(A,B), max(A,B)]`.
+ * - Con rango múltiple `[A, B]` (ej. `20-21-22`):
+ *   - Tocar el extremo final `B` recorta a `[A, B - 1]`.
+ *   - Tocar el extremo inicial `A` recorta a `[A + 1, B]`.
+ *   - Tocar un día intermedio `T` (`A < T < B`, ej. `21`) recorta hasta `T` -> `[A, T]` (`20-21`), eliminando solo los días posteriores (`22`).
+ *   - Tocar un día inmediatamente adyacente libre (`B + 1` o `A - 1`) amplía el rango en 1 día.
+ *   - Tocar un día lejano inicia una nueva selección `[T, T]`.
+ */
+export function actualizarRangoAlquilerPorToque(params: {
+  fechaInicio: string | null;
+  fechaFin: string | null;
+  fechaTocada: string;
+  vehiculoId: string;
+  hoyISO: string;
+  bloques?: readonly BloqueNoDisponible[] | undefined;
+}): {
+  fechaInicio: string | null;
+  fechaFin: string | null;
+  aviso?: string;
+} {
+  const { fechaInicio, fechaFin, fechaTocada, vehiculoId, hoyISO, bloques } = params;
+  const bloquesLista = bloques ? [...bloques] : undefined;
+
+  if (!fechaInicio) {
+    return { fechaInicio: fechaTocada, fechaFin: fechaTocada };
+  }
+
+  const finActual = fechaFin && fechaFin >= fechaInicio ? fechaFin : fechaInicio;
+
+  // 1. Toque dentro del rango seleccionado -> recorte sin borrar todo el tramo
+  if (fechaTocada >= fechaInicio && fechaTocada <= finActual) {
+    if (fechaInicio === finActual) {
+      return { fechaInicio: null, fechaFin: null };
+    }
+    if (fechaTocada === finActual) {
+      return { fechaInicio, fechaFin: sumarDiasISO(finActual, -1) };
+    }
+    if (fechaTocada === fechaInicio) {
+      return { fechaInicio: sumarDiasISO(fechaInicio, 1), fechaFin: finActual };
+    }
+    return { fechaInicio, fechaFin: fechaTocada };
+  }
+
+  // 2. Si solo hay 1 día elegido, permitir expandir a varios días a la vez si es contiguo y libre
+  if (fechaInicio === finActual) {
+    const nuevoInicio = fechaTocada < fechaInicio ? fechaTocada : fechaInicio;
+    const nuevoFin = fechaTocada < fechaInicio ? fechaInicio : fechaTocada;
+
+    if (esRangoDisponibleValido(vehiculoId, nuevoInicio, nuevoFin, hoyISO, bloquesLista)) {
+      return { fechaInicio: nuevoInicio, fechaFin: nuevoFin };
+    }
+    return {
+      fechaInicio: fechaTocada,
+      fechaFin: fechaTocada,
+      aviso: 'Nueva franja iniciada (había días reservados en medio).',
+    };
+  }
+
+  // 3. Con rango múltiple, permitir ampliar día por día en los extremos
+  if (fechaTocada === sumarDiasISO(finActual, 1)) {
+    if (esRangoDisponibleValido(vehiculoId, fechaInicio, fechaTocada, hoyISO, bloquesLista)) {
+      return { fechaInicio, fechaFin: fechaTocada };
+    }
+  }
+  if (fechaTocada === sumarDiasISO(fechaInicio, -1)) {
+    if (esRangoDisponibleValido(vehiculoId, fechaTocada, finActual, hoyISO, bloquesLista)) {
+      return { fechaInicio: fechaTocada, fechaFin: finActual };
+    }
+  }
+
+  // 4. Toque fuera de los extremos adyacentes -> iniciar nueva franja desde ese día
+  return { fechaInicio: fechaTocada, fechaFin: fechaTocada };
+}
+
+/**
+ * Valida las reglas de negocio del rango de fechas de un alquiler:
+ * 1. `fechaInicio` <= `fechaFin`.
+ * 2. Si se envían `fechasSeleccionadas`, deben formar un único rango continuo sin huecos.
+ * 3. Por defecto (`permitirAlquilerUnDia = true`) acepta rangos continuos desde 1 día en adelante;
+ *    si `permitirAlquilerUnDia = false`, exige devolución mínima desde `sumarDiasISO(fechaInicio, 2)`.
+ */
+export function validarReglasRangoAlquiler(params: {
+  fechaInicio: string;
+  fechaFin: string;
+  fechasSeleccionadas?: readonly string[] | null | undefined;
+  permitirAlquilerUnDia?: boolean | undefined;
+}): { valido: boolean; mensaje?: string } {
+  const { fechaInicio, fechaFin, fechasSeleccionadas, permitirAlquilerUnDia = true } = params;
+
+  if (!REGEX_FECHA_ISO.test(fechaInicio) || !REGEX_FECHA_ISO.test(fechaFin)) {
+    return {
+      valido: false,
+      mensaje: 'Las fechas de inicio y devolución deben tener un formato válido (YYYY-MM-DD).',
+    };
+  }
+
+  if (fechaInicio > fechaFin) {
+    return {
+      valido: false,
+      mensaje: 'La fecha de inicio debe ser anterior o igual a la fecha de fin.',
+    };
+  }
+
+  if (fechasSeleccionadas && fechasSeleccionadas.length > 0) {
+    const tramos = agruparFechasEnTramos(fechasSeleccionadas);
+    if (tramos.length !== 1) {
+      return {
+        valido: false,
+        mensaje: 'Debes seleccionar un rango continuo de fechas consecutivas sin días intermedios vacíos.',
+      };
+    }
+  }
+
+  const fechaFinMinima = obtenerFechaFinMinimaAlquiler(fechaInicio, permitirAlquilerUnDia);
+  if (fechaFin < fechaFinMinima) {
+    return {
+      valido: false,
+      mensaje: `El día siguiente inmediato (${formatearFechaCorta(sumarDiasISO(fechaInicio, 1))}) no está disponible como fecha de devolución. Selecciona desde el ${formatearFechaCorta(fechaFinMinima)}.`,
+    };
+  }
+
+  return { valido: true };
+}
+
+/**
  * Encuentra la primera ventana de `duracionDias` consecutivos libres a partir de `hoyISO`,
  * considerando los bloques reales de indisponibilidad (reservas y mantenimientos en D1).
  */

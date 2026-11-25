@@ -13,10 +13,17 @@ import {
   agruparFechasEnTramos,
   sonFechasDisponiblesValidas,
   calcularCotizacionPorFechas,
+  obtenerFechaFinMinimaAlquiler,
+  obtenerUltimoDiaContiguoLibre,
+  validarReglasRangoAlquiler,
+  actualizarRangoAlquilerPorToque,
 } from '../src/lib/flota/disponibilidad.ts';
+import {
+  obtenerEtiquetaPerspectivaGaleria,
+  type BloqueNoDisponible,
+} from '../src/lib/flota/types.ts';
 import { listarVehiculos } from '../src/lib/flota/repositorio.ts';
 import { resolverEstadoActualVehiculo } from '../src/lib/mantenimientos/repositorio.ts';
-import type { BloqueNoDisponible } from '../src/lib/flota/types.ts';
 import {
   vehiculos,
   mantenimientosVehiculo,
@@ -892,5 +899,181 @@ describe('Disponibilidad de Vehículos - FlotaX', () => {
     assert.equal(cot2Dias.subtotalTarifa, 300000);
     assert.equal(cot2Dias.coberturaPericial, 24000);
     assert.equal(cot2Dias.totalAlquiler, 324000);
+  });
+
+  test('23. validarReglasRangoAlquiler permite rangos continuos desde 1 día y rechaza huecos o reglas estrictas opcionales', () => {
+    assert.equal(obtenerFechaFinMinimaAlquiler('2026-11-27'), '2026-11-29');
+    assert.equal(obtenerFechaFinMinimaAlquiler('2026-11-27', true), '2026-11-27');
+
+    const bloques: BloqueNoDisponible[] = [
+      {
+        id: 'b-futuro',
+        vehiculoId: vehiculoIdPrueba,
+        fechaInicio: '2026-12-03',
+        fechaFin: '2026-12-05',
+        motivo: 'RESERVADO',
+        etiqueta: 'Reserva futura',
+      },
+    ];
+    assert.equal(obtenerUltimoDiaContiguoLibre('2026-11-27', bloques), '2026-12-02');
+    assert.equal(obtenerUltimoDiaContiguoLibre('2026-12-06', bloques), null);
+
+    // Por defecto permite 1 día y rangos continuos de 2+ días (ej. 20-21)
+    assert.equal(
+      validarReglasRangoAlquiler({ fechaInicio: '2026-11-27', fechaFin: '2026-11-27' }).valido,
+      true
+    );
+    assert.equal(
+      validarReglasRangoAlquiler({ fechaInicio: '2026-11-27', fechaFin: '2026-11-28' }).valido,
+      true
+    );
+
+    // Modo estricto explícito excluye el día siguiente inmediato
+    assert.equal(
+      validarReglasRangoAlquiler({
+        fechaInicio: '2026-11-27',
+        fechaFin: '2026-11-28',
+        permitirAlquilerUnDia: false,
+      }).valido,
+      false
+    );
+
+    // Rechaza fechas con huecos intermedios
+    assert.equal(
+      validarReglasRangoAlquiler({
+        fechaInicio: '2026-11-27',
+        fechaFin: '2026-11-30',
+        fechasSeleccionadas: ['2026-11-27', '2026-11-30'],
+      }).valido,
+      false
+    );
+  });
+
+  test('25. actualizarRangoAlquilerPorToque selecciona 1 a 1 o varios días y recorta sin borrar todo el tramo (20-21-22 -> 20-21)', () => {
+    // 1. Desde 20-21-22, tocar 21 elimina únicamente el 22 y deja 20-21
+    assert.deepEqual(
+      actualizarRangoAlquilerPorToque({
+        fechaInicio: '2026-11-20',
+        fechaFin: '2026-11-22',
+        fechaTocada: '2026-11-21',
+        vehiculoId: vehiculoIdPrueba,
+        hoyISO: hoyPrueba,
+      }),
+      { fechaInicio: '2026-11-20', fechaFin: '2026-11-21' }
+    );
+
+    // 2. Tocar el extremo final (22 en 20-21-22) baja 1 día a 20-21
+    assert.deepEqual(
+      actualizarRangoAlquilerPorToque({
+        fechaInicio: '2026-11-20',
+        fechaFin: '2026-11-22',
+        fechaTocada: '2026-11-22',
+        vehiculoId: vehiculoIdPrueba,
+        hoyISO: hoyPrueba,
+      }),
+      { fechaInicio: '2026-11-20', fechaFin: '2026-11-21' }
+    );
+
+    // 3. Tocar el extremo inicial (20 en 20-21-22) recorta a 21-22
+    assert.deepEqual(
+      actualizarRangoAlquilerPorToque({
+        fechaInicio: '2026-11-20',
+        fechaFin: '2026-11-22',
+        fechaTocada: '2026-11-20',
+        vehiculoId: vehiculoIdPrueba,
+        hoyISO: hoyPrueba,
+      }),
+      { fechaInicio: '2026-11-21', fechaFin: '2026-11-22' }
+    );
+
+    // 4. Selección 1 por 1 o varios a la vez desde selección vacía
+    const primero = actualizarRangoAlquilerPorToque({
+      fechaInicio: null,
+      fechaFin: null,
+      fechaTocada: '2026-11-20',
+      vehiculoId: vehiculoIdPrueba,
+      hoyISO: hoyPrueba,
+    });
+    assert.deepEqual(primero, { fechaInicio: '2026-11-20', fechaFin: '2026-11-20' });
+
+    const variosALaVez = actualizarRangoAlquilerPorToque({
+      fechaInicio: primero.fechaInicio,
+      fechaFin: primero.fechaFin,
+      fechaTocada: '2026-11-24',
+      vehiculoId: vehiculoIdPrueba,
+      hoyISO: hoyPrueba,
+    });
+    assert.deepEqual(variosALaVez, { fechaInicio: '2026-11-20', fechaFin: '2026-11-24' });
+
+    // 5. Extender día siguiente inmediato en rango múltiple
+    assert.deepEqual(
+      actualizarRangoAlquilerPorToque({
+        fechaInicio: '2026-11-20',
+        fechaFin: '2026-11-21',
+        fechaTocada: '2026-11-22',
+        vehiculoId: vehiculoIdPrueba,
+        hoyISO: hoyPrueba,
+      }),
+      { fechaInicio: '2026-11-20', fechaFin: '2026-11-22' }
+    );
+  });
+
+  test('24. obtenerEtiquetaPerspectivaGaleria identifica correctamente la lateral principal y perspectivas adicionales', () => {
+    assert.equal(
+      obtenerEtiquetaPerspectivaGaleria({
+        categoria: 'EXTERIOR',
+        zona: 'EXTERIOR_LATERAL_IZQ',
+        esPrincipal: true,
+      }),
+      'Fotografía lateral (Principal)'
+    );
+    assert.equal(
+      obtenerEtiquetaPerspectivaGaleria({
+        categoria: 'EXTERIOR',
+        zona: 'EXTERIOR_FRONTAL',
+        esPrincipal: false,
+      }),
+      'Fotografía frontal'
+    );
+    assert.equal(
+      obtenerEtiquetaPerspectivaGaleria({
+        categoria: 'EXTERIOR',
+        zona: 'EXTERIOR_TRASERO',
+        esPrincipal: false,
+      }),
+      'Fotografía trasera'
+    );
+    assert.equal(
+      obtenerEtiquetaPerspectivaGaleria({
+        categoria: 'EXTERIOR',
+        zona: 'EXTERIOR_LATERAL_DER',
+        esPrincipal: false,
+      }),
+      'Fotografía lateral opuesta'
+    );
+    assert.equal(
+      obtenerEtiquetaPerspectivaGaleria({
+        categoria: 'INTERIOR',
+        zona: 'INTERIOR_ASIENTOS',
+        esPrincipal: false,
+      }),
+      'Cojinería y asientos'
+    );
+    assert.equal(
+      obtenerEtiquetaPerspectivaGaleria({
+        categoria: 'ESTADO',
+        zona: 'PANTALLA_TABLERO_ODOMETRO',
+        esPrincipal: false,
+      }),
+      'Tablero y condiciones'
+    );
+    assert.equal(
+      obtenerEtiquetaPerspectivaGaleria({
+        categoria: 'INTERIOR',
+        zona: 'INTERIOR_CABINA',
+        esPrincipal: false,
+      }),
+      'Interior adicional'
+    );
   });
 });

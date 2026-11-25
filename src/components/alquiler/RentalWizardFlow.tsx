@@ -8,8 +8,8 @@ import {
   esRangoDisponibleValido,
   expandirRangoAFechas,
   formatearResumenFechasSeleccionadas,
-  normalizarFechasSeleccionadas,
   sonFechasDisponiblesValidas,
+  validarReglasRangoAlquiler,
   type BloqueNoDisponible,
   type VehiculoItem,
 } from '@/lib/flota';
@@ -158,7 +158,7 @@ export default function RentalWizardFlow({
   const [paso, setPaso] = useState<PasoWizard>(pasoInicial);
   const [bloques, setBloques] = useState<BloqueNoDisponible[]>(bloquesIniciales ?? []);
 
-  // Rango inicial inteligente: respeta parámetros si son válidos, o calcula la primera franja libre contigua
+  // Rango inicial inteligente: respeta parámetros si cumplen las reglas del calendario, o calcula la primera franja libre contigua
   const rangoInicialCalculado = useMemo(() => {
     if (
       fechaInicioInicial &&
@@ -168,7 +168,11 @@ export default function RentalWizardFlow({
         fechaFinInicial ?? fechaInicioInicial,
         hoyISO,
         bloques
-      )
+      ) &&
+      validarReglasRangoAlquiler({
+        fechaInicio: fechaInicioInicial,
+        fechaFin: fechaFinInicial ?? fechaInicioInicial,
+      }).valido
     ) {
       return {
         fechaInicio: fechaInicioInicial,
@@ -178,14 +182,22 @@ export default function RentalWizardFlow({
     return encontrarPrimerRangoDisponible(vehiculo.id, hoyISO, bloques, 3);
   }, [fechaInicioInicial, fechaFinInicial, vehiculo.id, hoyISO, bloques]);
 
-  const [fechasSeleccionadas, setFechasSeleccionadas] = useState<string[]>(() =>
-    expandirRangoAFechas(
-      rangoInicialCalculado.fechaInicio,
-      rangoInicialCalculado.fechaFin
-    )
+  const [fechaInicio, setFechaInicio] = useState<string | null>(
+    rangoInicialCalculado.fechaInicio
   );
-  const fechaInicio = fechasSeleccionadas[0] ?? null;
-  const fechaFin = fechasSeleccionadas[fechasSeleccionadas.length - 1] ?? fechaInicio;
+  const [fechaFin, setFechaFin] = useState<string | null>(
+    rangoInicialCalculado.fechaFin
+  );
+
+  const fechasSeleccionadas = useMemo(() => {
+    if (fechaInicio && fechaFin && fechaInicio <= fechaFin) {
+      return expandirRangoAFechas(fechaInicio, fechaFin);
+    }
+    if (fechaInicio) {
+      return [fechaInicio];
+    }
+    return [];
+  }, [fechaInicio, fechaFin]);
 
   const [conductor, setConductor] = useState<DatosConductorState>({
     nombreCompleto: usuarioActual?.nombre ?? '',
@@ -288,10 +300,27 @@ export default function RentalWizardFlow({
     return `/login?redirect=${encodeURIComponent(destino)}`;
   }, [vehiculo.id, fechaInicio, fechaFin]);
 
-  const manejarCambioFechas = (fechas: string[]) => {
+  const manejarCambioRango = (inicio: string | null, fin: string | null) => {
     setErrorValidacion(null);
-    setFechasSeleccionadas(normalizarFechasSeleccionadas(fechas));
+    setFechaInicio(inicio);
+    setFechaFin(fin);
   };
+
+  const validacionRango = useMemo(() => {
+    if (!fechaInicio || !fechaFin) {
+      return {
+        valido: false,
+        mensaje: fechaInicio
+          ? 'Selecciona también la fecha de devolución para completar el rango.'
+          : 'Selecciona las fechas de inicio y devolución en el calendario.',
+      };
+    }
+    return validarReglasRangoAlquiler({
+      fechaInicio,
+      fechaFin,
+      fechasSeleccionadas,
+    });
+  }, [fechaFin, fechaInicio, fechasSeleccionadas]);
 
   const vehiculoBloqueadoPorDocs = Boolean(
     estadoDocumental?.bloqueadoPorDocumentos ||
@@ -317,8 +346,18 @@ export default function RentalWizardFlow({
         }
         return;
       }
-      if (fechasSeleccionadas.length === 0) {
-        setErrorValidacion('Selecciona al menos un día disponible en el calendario.');
+      if (!fechaInicio || !fechaFin) {
+        setErrorValidacion(
+          fechaInicio
+            ? 'Selecciona también la fecha de devolución en el calendario.'
+            : 'Selecciona el rango de fechas disponibles en el calendario.'
+        );
+        return;
+      }
+      if (!validacionRango.valido) {
+        setErrorValidacion(
+          validacionRango.mensaje ?? 'El rango de fechas seleccionado no es válido.'
+        );
         return;
       }
       if (!sonFechasDisponiblesValidas(vehiculo.id, fechasSeleccionadas, hoyISO, bloques)) {
@@ -821,9 +860,11 @@ export default function RentalWizardFlow({
             <EditorialAvailabilityCalendar
               vehiculo={vehiculo}
               hoyISO={hoyISO}
-              fechasSeleccionadas={fechasSeleccionadas}
-              onChangeFechas={manejarCambioFechas}
+              fechaInicio={fechaInicio}
+              fechaFin={fechaFin}
+              onChangeRango={manejarCambioRango}
               bloquesPrecalculados={bloques}
+              excluirDiaSiguiente={false}
             />
           </div>
         )}
@@ -1351,12 +1392,15 @@ export default function RentalWizardFlow({
                     const estaBloqueadoPorDocs = Boolean(
                       paso === 1 && vehiculoBloqueadoPorDocs
                     );
+                    const faltaCompletarRango =
+                      paso === 1 && (!fechaInicio || !fechaFin || !validacionRango.valido);
+                    const deshabilitado = estaBloqueadoPorDocs || faltaCompletarRango;
                     return (
                       <button
                         type="button"
-                        disabled={estaBloqueadoPorDocs}
+                        disabled={deshabilitado}
                         onClick={avanzarPaso}
-                        className={`fx-press min-h-[46px] rounded-full px-5 sm:px-6 py-2.5 text-xs sm:text-sm font-bold shadow-fab inline-flex items-center gap-2 ${estaBloqueadoPorDocs
+                        className={`fx-press min-h-[46px] rounded-full px-5 sm:px-6 py-2.5 text-xs sm:text-sm font-bold shadow-fab inline-flex items-center gap-2 ${deshabilitado
                           ? 'bg-[#4B5563] text-[#EDEDED] opacity-60 cursor-not-allowed'
                           : 'bg-[#111827] hover:bg-[#1F2937] text-white cursor-pointer dark:bg-[#EDEDED] dark:hover:bg-white dark:text-[#111827]'
                           }`}
@@ -1367,7 +1411,11 @@ export default function RentalWizardFlow({
                               ? esAdminOperador
                                 ? 'En actualización de docs'
                                 : 'No disponible'
-                              : 'Confirmar fechas')}
+                              : faltaCompletarRango
+                                ? fechaInicio && !fechaFin
+                                  ? 'Elige devolución'
+                                  : 'Elige fechas'
+                                : 'Confirmar fechas')}
                           {paso === 2 && 'Elegir entrega'}
                           {paso === 3 && 'Ver resumen'}
                           {paso === 4 && 'Ir a confirmar'}

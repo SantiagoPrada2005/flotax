@@ -1,13 +1,23 @@
 import { useEffect, useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react';
-import type { CategoriaGaleriaVehiculo, VehiculoItem } from '@/lib/flota/types';
+import { ChevronLeft, ChevronRight, Image as ImageIcon, X, ZoomIn } from 'lucide-react';
+import {
+  obtenerEtiquetaPerspectivaGaleria,
+  type VehiculoGaleriaFoto,
+  type VehiculoItem,
+  type ZonaEvidenciaVehiculo,
+} from '@/lib/flota/types';
 import type { LocalPublicoContexto } from '@/lib/flota/locales-captacion';
 
-const ETIQUETA_CATEGORIA_GALERIA: Record<CategoriaGaleriaVehiculo, string> = {
-  EXTERIOR: 'Exterior',
-  INTERIOR: 'Interior',
-  ESTADO: 'Estado',
-};
+const RANURAS_FICHA_PUBLICA: ReadonlyArray<{
+  zona: ZonaEvidenciaVehiculo;
+  etiqueta: string;
+}> = [
+  { zona: 'EXTERIOR_LATERAL_IZQ', etiqueta: 'Lateral (Principal)' },
+  { zona: 'EXTERIOR_FRONTAL', etiqueta: 'Frontal' },
+  { zona: 'EXTERIOR_TRASERO', etiqueta: 'Trasera' },
+  { zona: 'INTERIOR_ASIENTOS', etiqueta: 'Cojinería y asientos' },
+  { zona: 'PANTALLA_TABLERO_ODOMETRO', etiqueta: 'Tablero y condiciones' },
+];
 
 export interface VehicleStudioShowcaseProps {
   vehiculoInicial: VehiculoItem;
@@ -32,7 +42,17 @@ export default function VehicleStudioShowcase({
   const listaUnidades = useMemo(() => {
     if (flotaLocal.length === 0) return [vehiculoInicial];
     const existe = flotaLocal.some((v) => v.id === vehiculoInicial.id);
-    return existe ? flotaLocal : [vehiculoInicial, ...flotaLocal];
+    if (!existe) return [vehiculoInicial, ...flotaLocal];
+    return flotaLocal.map((v) =>
+      v.id === vehiculoInicial.id
+        ? {
+            ...v,
+            galeria: vehiculoInicial.galeria?.length
+              ? vehiculoInicial.galeria
+              : v.galeria,
+          }
+        : v
+    );
   }, [flotaLocal, vehiculoInicial]);
 
   const indiceInicial = Math.max(
@@ -59,6 +79,7 @@ export default function VehicleStudioShowcase({
           id: `principal-${vehiculo.id}`,
           url: vehiculo.imagenUrl,
           categoria: 'EXTERIOR' as const,
+          zona: 'EXTERIOR_LATERAL_IZQ' as const,
           esPrincipal: true,
           orden: 0,
         },
@@ -67,6 +88,61 @@ export default function VehicleStudioShowcase({
     return [];
   }, [vehiculo.galeria, vehiculo.id, vehiculo.imagenUrl]);
   const fotoActualGaleria = galeriaPublica[galeriaIndex] ?? galeriaPublica[0];
+
+  const recuadrosPerspectivas = useMemo(() => {
+    const usados = new Set<string>();
+    const items: Array<{
+      clave: string;
+      etiqueta: string;
+      foto: VehiculoGaleriaFoto | null;
+      indiceGaleria: number;
+    }> = [];
+
+    for (const ranura of RANURAS_FICHA_PUBLICA) {
+      let indice = -1;
+      if (ranura.zona === 'EXTERIOR_LATERAL_IZQ') {
+        indice = galeriaPublica.findIndex(
+          (f) => f.esPrincipal || f.zona === 'EXTERIOR_LATERAL_IZQ'
+        );
+      } else {
+        indice = galeriaPublica.findIndex(
+          (f) => !f.esPrincipal && !usados.has(f.id) && f.zona === ranura.zona
+        );
+      }
+
+      const foto = indice >= 0 ? (galeriaPublica[indice] ?? null) : null;
+      if (foto) usados.add(foto.id);
+
+      items.push({
+        clave: ranura.zona,
+        etiqueta: ranura.etiqueta,
+        foto,
+        indiceGaleria: indice,
+      });
+    }
+
+    const extras = galeriaPublica
+      .map((foto, indice) => ({ foto, indice }))
+      .filter(({ foto }) => !usados.has(foto.id));
+
+    if (extras.length > 0) {
+      extras.forEach(({ foto, indice }, idxExtra) => {
+        items.push({
+          clave: `extra-${foto.id}`,
+          etiqueta:
+            foto.zona && foto.zona !== 'INTERIOR_CABINA'
+              ? obtenerEtiquetaPerspectivaGaleria(foto)
+              : extras.length === 1
+                ? 'Adicional'
+                : `Adicional ${idxExtra + 1}`,
+          foto,
+          indiceGaleria: indice,
+        });
+      });
+    }
+
+    return items;
+  }, [galeriaPublica]);
 
   useEffect(() => {
     setGaleriaIndex(0);
@@ -124,23 +200,17 @@ export default function VehicleStudioShowcase({
               >
                 <img
                   src={fotoActualGaleria.url}
-                  alt={`${vehiculo.marca} ${vehiculo.modelo} - ${
-                    fotoActualGaleria.esPrincipal
-                      ? 'Principal'
-                      : ETIQUETA_CATEGORIA_GALERIA[fotoActualGaleria.categoria]
-                  }`}
+                  alt={`${vehiculo.marca} ${vehiculo.modelo} - ${obtenerEtiquetaPerspectivaGaleria(fotoActualGaleria)}`}
                   className="h-full w-full object-cover object-center block select-none"
                 />
               </button>
 
-              <span className="absolute left-3.5 top-3.5 inline-flex items-center gap-1.5 rounded-full bg-[#111827]/75 backdrop-blur-md border border-white/20 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
-                <span>
-                  {fotoActualGaleria.esPrincipal
-                    ? 'Principal'
-                    : ETIQUETA_CATEGORIA_GALERIA[fotoActualGaleria.categoria]}
+              <span className="absolute left-3.5 top-3.5 inline-flex items-center gap-1.5 rounded-full bg-[#111827]/75 backdrop-blur-md border border-white/20 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white max-w-[calc(100%-5rem)]">
+                <span className="truncate">
+                  {obtenerEtiquetaPerspectivaGaleria(fotoActualGaleria)}
                 </span>
-                <span>•</span>
-                <span className="font-mono tabular-nums">
+                <span className="shrink-0">•</span>
+                <span className="shrink-0 font-mono tabular-nums">
                   {galeriaIndex + 1}/{galeriaPublica.length}
                 </span>
               </span>
@@ -185,46 +255,70 @@ export default function VehicleStudioShowcase({
         </div>
 
         <div className="p-4 sm:p-6 space-y-5">
-          {/* Tira de Miniaturas Reales */}
-          {galeriaPublica.length > 1 && (
-            <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-1">
-              {galeriaPublica.map((foto, idx) => {
-                const isSelected = idx === galeriaIndex;
+          {/* Recuadros de Perspectivas y Fotografías Adicionales */}
+          <div
+            className={`grid grid-cols-3 gap-2 ${
+              recuadrosPerspectivas.length <= 5 ? 'sm:grid-cols-5' : 'sm:grid-cols-6'
+            }`}
+          >
+            {recuadrosPerspectivas.map((item) => {
+              const foto = item.foto;
+              if (!foto) {
                 return (
-                  <button
-                    key={foto.id}
-                    type="button"
-                    onClick={() => {
-                      triggerHaptic(8);
-                      setGaleriaIndex(idx);
-                    }}
-                    className={`fx-press shrink-0 w-24 rounded-[18px] overflow-hidden pb-1.5 flex flex-col items-center justify-center gap-1 transition-colors cursor-pointer border ${
-                      isSelected
-                        ? 'bg-[#1F2937] text-[#EDEDED] border-[#111827] shadow-md dark:bg-[#EDEDED] dark:text-[#111827] dark:border-[#EDEDED]'
-                        : 'bg-[#EDEDED]/55 text-[#111827] border-[#9CA3AF]/25 hover:bg-[#EDEDED] dark:bg-[#111827] dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/10'
-                    }`}
+                  <div
+                    key={item.clave}
+                    aria-label={`${item.etiqueta}: sin fotografía`}
+                    className="rounded-[16px] border border-dashed border-[#9CA3AF]/45 bg-[#EDEDED]/40 pb-1.5 flex flex-col items-center justify-between gap-1 dark:border-white/15 dark:bg-[#111827]/55"
                   >
-                    <div className="w-full aspect-video overflow-hidden">
-                      <img
-                        src={foto.url}
-                        alt={ETIQUETA_CATEGORIA_GALERIA[foto.categoria]}
-                        className="h-full w-full object-cover object-center block"
-                      />
+                    <div className="w-full aspect-video flex items-center justify-center text-[#9CA3AF] dark:text-[#9CA3AF]/70">
+                      <ImageIcon className="h-4 w-4" aria-hidden="true" />
                     </div>
                     <span
-                      className={`px-1 text-[10px] font-bold truncate max-w-full ${
-                        isSelected
-                          ? 'text-[#EDEDED] dark:text-[#111827]'
-                          : 'text-[#4B5563] dark:text-[#D1D5DB]'
-                      }`}
+                      title={item.etiqueta}
+                      className="px-1.5 text-[10px] font-semibold text-[#4B5563]/80 truncate max-w-full dark:text-[#9CA3AF]"
                     >
-                      {foto.esPrincipal ? 'Principal' : ETIQUETA_CATEGORIA_GALERIA[foto.categoria]}
+                      {item.etiqueta}
                     </span>
-                  </button>
+                  </div>
                 );
-              })}
-            </div>
-          )}
+              }
+
+              const isSelected = item.indiceGaleria === galeriaIndex;
+              return (
+                <button
+                  key={item.clave}
+                  type="button"
+                  onClick={() => {
+                    triggerHaptic(8);
+                    setGaleriaIndex(item.indiceGaleria);
+                  }}
+                  className={`fx-press rounded-[16px] overflow-hidden pb-1.5 flex flex-col items-center justify-center gap-1 transition-colors cursor-pointer border ${
+                    isSelected
+                      ? 'bg-[#1F2937] text-[#EDEDED] border-[#111827] shadow-md dark:bg-[#EDEDED] dark:text-[#111827] dark:border-[#EDEDED]'
+                      : 'bg-[#EDEDED]/55 text-[#111827] border-[#9CA3AF]/25 hover:bg-[#EDEDED] dark:bg-[#111827] dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/10'
+                  }`}
+                >
+                  <div className="w-full aspect-video overflow-hidden">
+                    <img
+                      src={foto.url}
+                      alt={item.etiqueta}
+                      className="h-full w-full object-cover object-center block"
+                    />
+                  </div>
+                  <span
+                    title={item.etiqueta}
+                    className={`px-1.5 text-[10px] font-bold truncate max-w-full ${
+                      isSelected
+                        ? 'text-[#EDEDED] dark:text-[#111827]'
+                        : 'text-[#4B5563] dark:text-[#D1D5DB]'
+                    }`}
+                  >
+                    {item.etiqueta}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         {/* ===================================================================
             2. INFORMACIÓN PRINCIPAL: FICHA TÉCNICA Y TARIFA DIARIA
            =================================================================== */}
@@ -348,7 +442,7 @@ export default function VehicleStudioShowcase({
                     setUnidadIndex(idx);
                   }}
                   aria-label={`Ver ${item.marca} ${item.modelo}`}
-                  className={`rounded-full transition-all cursor-pointer ${active
+                  className={`rounded-full transition-colors cursor-pointer ${active
                     ? 'h-2 w-5 bg-[#EDEDED]'
                     : 'h-2 w-2 bg-[#9CA3AF]/45 hover:bg-[#9CA3AF]'
                     }`}
@@ -387,9 +481,7 @@ export default function VehicleStudioShowcase({
           <div className="relative z-10 flex w-full max-w-2xl flex-col overflow-hidden rounded-[28px] border border-white/15 bg-[#111827] text-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-white/10 px-5 py-3.5">
               <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#EDEDED]">
-                {fotoActualGaleria.esPrincipal
-                  ? 'Principal'
-                  : ETIQUETA_CATEGORIA_GALERIA[fotoActualGaleria.categoria]}{' '}
+                {obtenerEtiquetaPerspectivaGaleria(fotoActualGaleria)}{' '}
                 · {galeriaIndex + 1}/{galeriaPublica.length}
               </span>
               <button

@@ -1,13 +1,17 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ENCABEZADOS_SEMANA_EDITORIAL,
+  actualizarRangoAlquilerPorToque,
   alternarFechaEnSeleccion,
   construirCalendarioMes,
   esRangoDisponibleValido,
   expandirRangoAFechas,
+  formatearFechaCorta,
   formatearResumenFechasSeleccionadas,
   normalizarFechasSeleccionadas,
   obtenerDiaSemanaEditorial,
+  obtenerFechaFinMinimaAlquiler,
+  obtenerUltimoDiaContiguoLibre,
   sumarDiasISO,
   type BloqueNoDisponible,
   type DiaCalendarioItem,
@@ -24,6 +28,7 @@ export interface EditorialAvailabilityCalendarProps {
   fechaFin?: string | null | undefined;
   onChangeRango?: ((inicio: string | null, fin: string | null) => void) | undefined;
   bloquesPrecalculados?: BloqueNoDisponible[] | undefined;
+  excluirDiaSiguiente?: boolean | undefined;
 }
 
 export default function EditorialAvailabilityCalendar({
@@ -35,6 +40,7 @@ export default function EditorialAvailabilityCalendar({
   fechaFin = null,
   onChangeRango,
   bloquesPrecalculados,
+  excluirDiaSiguiente = false,
 }: EditorialAvailabilityCalendarProps) {
   const [anioInicial = 2026, mesInicialUno = 10] = hoyISO.split('-').map(Number);
 
@@ -43,13 +49,32 @@ export default function EditorialAvailabilityCalendar({
     mesIndexCero: mesInicialUno - 1,
   });
 
-  const [faseSeleccion, setFaseSeleccion] = useState<'ELIGIENDO_FIN' | 'COMPLETO'>(
-    fechaInicio && fechaFin && fechaInicio !== fechaFin ? 'COMPLETO' : 'ELIGIENDO_FIN'
-  );
+  const [faseSeleccion, setFaseSeleccion] = useState<'ELIGIENDO_FIN' | 'COMPLETO'>(() => {
+    if (!fechaInicio || !fechaFin) return 'ELIGIENDO_FIN';
+    if (excluirDiaSiguiente) {
+      return fechaFin >= obtenerFechaFinMinimaAlquiler(fechaInicio, false)
+        ? 'COMPLETO'
+        : 'ELIGIENDO_FIN';
+    }
+    return 'COMPLETO';
+  });
+
+  useEffect(() => {
+    if (fechaInicio && !fechaFin) {
+      setFaseSeleccion('ELIGIENDO_FIN');
+    } else if (
+      fechaInicio &&
+      fechaFin &&
+      (!excluirDiaSiguiente ||
+        fechaFin >= obtenerFechaFinMinimaAlquiler(fechaInicio, false))
+    ) {
+      setFaseSeleccion('COMPLETO');
+    }
+  }, [excluirDiaSiguiente, fechaFin, fechaInicio]);
 
   const [avisoFranja, setAvisoFranja] = useState<string | null>(null);
 
-  const esModoPorDia = Boolean(onChangeFechas);
+  const esModoPorDia = Boolean(onChangeFechas) && !onChangeRango;
 
   const fechasActivas = useMemo(() => {
     if (fechasSeleccionadas !== undefined) {
@@ -66,6 +91,29 @@ export default function EditorialAvailabilityCalendar({
     [fechasActivas]
   );
 
+  const esperandoFinRango =
+    !esModoPorDia &&
+    Boolean(onChangeRango) &&
+    Boolean(fechaInicio) &&
+    (faseSeleccion === 'ELIGIENDO_FIN' || !fechaFin);
+
+  const diaSiguienteExcluidoISO = useMemo(() => {
+    if (!excluirDiaSiguiente || !esperandoFinRango || !fechaInicio) {
+      return null;
+    }
+    return sumarDiasISO(fechaInicio, 1);
+  }, [excluirDiaSiguiente, esperandoFinRango, fechaInicio]);
+
+  const fechaFinMinimaISO = useMemo(() => {
+    if (!fechaInicio) return null;
+    return obtenerFechaFinMinimaAlquiler(fechaInicio, !excluirDiaSiguiente);
+  }, [excluirDiaSiguiente, fechaInicio]);
+
+  const ultimoDiaContiguoISO = useMemo(() => {
+    if (!esperandoFinRango || !fechaInicio) return null;
+    return obtenerUltimoDiaContiguoLibre(fechaInicio, bloquesPrecalculados);
+  }, [bloquesPrecalculados, esperandoFinRango, fechaInicio]);
+
   const calendarioMes = useMemo(
     () =>
       construirCalendarioMes(
@@ -77,6 +125,13 @@ export default function EditorialAvailabilityCalendar({
       ),
     [vehiculo.id, mesCursor.anio, mesCursor.mesIndexCero, hoyISO, bloquesPrecalculados]
   );
+
+  const franjasVisibles = useMemo(() => {
+    if (!excluirDiaSiguiente) return calendarioMes.franjasMes;
+    return calendarioMes.franjasMes.filter(
+      (f) => f.fechaFin >= obtenerFechaFinMinimaAlquiler(f.fechaInicio, false)
+    );
+  }, [calendarioMes.franjasMes, excluirDiaSiguiente]);
 
   const diasSeleccionados = fechasActivas.length;
 
@@ -113,6 +168,18 @@ export default function EditorialAvailabilityCalendar({
     mesCursor.anio > anioInicial ||
     (mesCursor.anio === anioInicial && mesCursor.mesIndexCero > mesInicialUno - 1);
 
+  const validarInicioPosible = (inicioISO: string): boolean => {
+    if (!excluirDiaSiguiente) return true;
+    const minFin = obtenerFechaFinMinimaAlquiler(inicioISO, false);
+    if (!esRangoDisponibleValido(vehiculo.id, inicioISO, minFin, hoyISO, bloquesPrecalculados)) {
+      setAvisoFranja(
+        `Desde el ${formatearFechaCorta(inicioISO)} no alcanza hasta el ${formatearFechaCorta(minFin)} sin cruzarse con un bloqueo cercano.`
+      );
+      return false;
+    }
+    return true;
+  };
+
   const manejarToqueDia = (dia: DiaCalendarioItem) => {
     if (dia.estado !== 'DISPONIBLE') {
       if (dia.etiquetaBloqueo) {
@@ -137,14 +204,56 @@ export default function EditorialAvailabilityCalendar({
 
     if (!onChangeRango) return;
 
+    if (!excluirDiaSiguiente) {
+      const resultado = actualizarRangoAlquilerPorToque({
+        fechaInicio,
+        fechaFin,
+        fechaTocada: dia.fechaISO,
+        vehiculoId: vehiculo.id,
+        hoyISO,
+        bloques: bloquesPrecalculados,
+      });
+      if (resultado.aviso) {
+        setAvisoFranja(resultado.aviso);
+      }
+      onChangeRango(resultado.fechaInicio, resultado.fechaFin);
+      setFaseSeleccion('COMPLETO');
+      return;
+    }
+
     if (!fechaInicio || faseSeleccion === 'COMPLETO') {
-      onChangeRango(dia.fechaISO, dia.fechaISO);
+      if (!validarInicioPosible(dia.fechaISO)) {
+        return;
+      }
+      onChangeRango(dia.fechaISO, excluirDiaSiguiente ? null : dia.fechaISO);
       setFaseSeleccion('ELIGIENDO_FIN');
       return;
     }
 
+    if (excluirDiaSiguiente && diaSiguienteExcluidoISO === dia.fechaISO) {
+      setAvisoFranja(
+        `El ${formatearFechaCorta(dia.fechaISO)} queda excluido por defecto. Elige devolución desde el ${formatearFechaCorta(fechaFinMinimaISO ?? sumarDiasISO(fechaInicio, 2))}.`
+      );
+      return;
+    }
+
+    if (dia.fechaISO === fechaInicio) {
+      if (!excluirDiaSiguiente) {
+        onChangeRango(fechaInicio, dia.fechaISO);
+        setFaseSeleccion('COMPLETO');
+      } else {
+        setAvisoFranja(
+          `Inicio fijado el ${formatearFechaCorta(fechaInicio)}. Elige la devolución desde el ${formatearFechaCorta(fechaFinMinimaISO ?? sumarDiasISO(fechaInicio, 2))}.`
+        );
+      }
+      return;
+    }
+
     if (dia.fechaISO < fechaInicio) {
-      onChangeRango(dia.fechaISO, dia.fechaISO);
+      if (!validarInicioPosible(dia.fechaISO)) {
+        return;
+      }
+      onChangeRango(dia.fechaISO, excluirDiaSiguiente ? null : dia.fechaISO);
       setFaseSeleccion('ELIGIENDO_FIN');
       return;
     }
@@ -158,7 +267,10 @@ export default function EditorialAvailabilityCalendar({
     );
 
     if (!esContiguo) {
-      onChangeRango(dia.fechaISO, dia.fechaISO);
+      if (!validarInicioPosible(dia.fechaISO)) {
+        return;
+      }
+      onChangeRango(dia.fechaISO, excluirDiaSiguiente ? null : dia.fechaISO);
       setFaseSeleccion('ELIGIENDO_FIN');
       setAvisoFranja('Nueva franja iniciada (había días reservados en medio).');
       return;
@@ -206,7 +318,7 @@ export default function EditorialAvailabilityCalendar({
               </span>
             ) : (
               <span className="mt-0.5 text-[11px] font-medium text-[#4B5563] dark:text-[#D1D5DB]">
-                Toca los días libres que necesites
+                Elige la fecha de inicio disponible
               </span>
             )}
           </div>
@@ -276,13 +388,43 @@ export default function EditorialAvailabilityCalendar({
         </div>
       </div>
 
+      {/* Guía de selección activa cuando se está eligiendo la fecha de fin */}
+      {esperandoFinRango && fechaInicio && (
+        <div
+          role="status"
+          className="mt-2.5 flex items-center justify-between gap-2 rounded-2xl border border-[#4B5563]/45 bg-[#EDEDED]/70 px-3 py-2 text-[11px] font-semibold text-[#111827] dark:border-white/20 dark:bg-[#111827] dark:text-[#EDEDED]"
+        >
+          <span>
+            Inicio: <strong>{formatearFechaCorta(fechaInicio)}</strong>.{' '}
+            {excluirDiaSiguiente && fechaFinMinimaISO
+              ? `Elige devolución desde el ${formatearFechaCorta(fechaFinMinimaISO)}${
+                  ultimoDiaContiguoISO ? ` hasta el ${formatearFechaCorta(ultimoDiaContiguoISO)}` : ''
+                }.`
+              : 'Toca la fecha de cierre del rango.'}
+          </span>
+          {onChangeRango && (
+            <button
+              type="button"
+              onClick={() => {
+                setAvisoFranja(null);
+                onChangeRango(null, null);
+                setFaseSeleccion('ELIGIENDO_FIN');
+              }}
+              className="shrink-0 font-mono text-[10px] font-bold uppercase tracking-wide text-[#111827] hover:underline cursor-pointer dark:text-[#EDEDED]"
+            >
+              Reiniciar
+            </button>
+          )}
+        </div>
+      )}
+
       {/* 3. Píldoras de Franjas Disponibles */}
-      {calendarioMes.franjasMes.length > 0 && (
+      {franjasVisibles.length > 0 && (
         <div className="mt-2.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
           <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#D1D5DB] mr-1">
             Franjas:
           </span>
-          {calendarioMes.franjasMes.map((franja) => {
+          {franjasVisibles.map((franja) => {
             const fechasFranja = expandirRangoAFechas(franja.fechaInicio, franja.fechaFin);
             const franjaSeleccionada =
               fechasFranja.length > 0 &&
@@ -293,17 +435,17 @@ export default function EditorialAvailabilityCalendar({
                 key={franja.id}
                 type="button"
                 onClick={() => aplicarFranjaRapida(franja)}
-                className={`fx-press shrink-0 min-h-[32px] rounded-full px-3 py-1 text-[11px] font-bold cursor-pointer border ${
+                className={`fx-press shrink-0 min-h-[32px] rounded-full px-3 py-1 text-[11px] font-bold cursor-pointer border transition-colors duration-150 ${
                   franjaSeleccionada
-                    ? 'bg-[#111827] text-white border-[#111827] shadow-2xs dark:bg-[#EDEDED] dark:text-[#111827] dark:border-[#EDEDED]'
-                    : 'bg-[#EDEDED] text-[#111827] border-[#9CA3AF]/45 hover:border-[#111827] dark:bg-[#111827] dark:text-[#EDEDED] dark:border-white/15 dark:hover:border-white/40'
+                    ? 'bg-[#111827] text-[#EDEDED] border-[#111827] shadow-[0_0_12px_rgba(31,41,55,0.4)] dark:bg-[#EDEDED] dark:text-[#111827] dark:border-[#EDEDED] dark:shadow-[0_0_12px_rgba(237,237,237,0.35)]'
+                    : 'bg-[#EDEDED] text-[#111827] border-[#9CA3AF]/45 hover:border-[#111827] dark:bg-[#111827] dark:text-[#EDEDED] dark:border-white/15 dark:hover:border-[#EDEDED]/60'
                 }`}
               >
                 <span>{franja.etiquetaCorta}</span>
                 <span
                   className={`ml-1 text-[10px] ${
                     franjaSeleccionada
-                      ? 'text-[#EDEDED] dark:text-[#4B5563]'
+                      ? 'text-[#EDEDED]/85 dark:text-[#4B5563]'
                       : 'text-[#4B5563] dark:text-[#D1D5DB]'
                   }`}
                 >
@@ -315,8 +457,8 @@ export default function EditorialAvailabilityCalendar({
         </div>
       )}
 
-      {/* 4. Encabezados de Semana + Matriz Circular de 7 Columnas */}
-      <div className="mt-2 grid grid-cols-7 gap-1 text-center">
+      {/* 4. Encabezados de Semana + Matriz Circular de 7 Columnas (sin franja rectangular trasera) */}
+      <div className="mt-2.5 grid grid-cols-7 gap-1 text-center">
         {ENCABEZADOS_SEMANA_EDITORIAL.map((dia) => (
           <div
             key={dia.corto}
@@ -329,7 +471,7 @@ export default function EditorialAvailabilityCalendar({
 
       <div
         key={`${calendarioMes.anio}-${calendarioMes.mesIndexCero}`}
-        className="mt-1 grid grid-cols-7 gap-y-1.5 gap-x-1.5 sm:gap-2 animate-fade-in"
+        className="mt-1.5 grid grid-cols-7 gap-y-2 gap-x-1.5 sm:gap-2 animate-fade-in"
       >
         {Array.from({ length: calendarioMes.celdasVaciasInicio }).map((_, idx) => (
           <div key={`empty-${idx}`} className="h-10 sm:h-11 w-full" aria-hidden="true" />
@@ -348,23 +490,41 @@ export default function EditorialAvailabilityCalendar({
           const esIntermedioTramo = estaSeleccionado && prevSeleccionado && nextSeleccionado;
           const esHoy = dia.fechaISO === hoyISO;
 
+          const esDiaSiguienteExcluido =
+            Boolean(diaSiguienteExcluidoISO) &&
+            dia.fechaISO === diaSiguienteExcluidoISO &&
+            dia.estado === 'DISPONIBLE';
+
+          const fueraDeVentanaCierre =
+            esperandoFinRango &&
+            excluirDiaSiguiente &&
+            Boolean(fechaInicio) &&
+            dia.estado === 'DISPONIBLE' &&
+            !estaSeleccionado &&
+            !esDiaSiguienteExcluido &&
+            (dia.fechaISO < fechaInicio! ||
+              (ultimoDiaContiguoISO !== null && dia.fechaISO > ultimoDiaContiguoISO));
+
+          const esDeshabilitado = dia.estado === 'PASADO' || esDiaSiguienteExcluido;
+
           let clasesCirculo = '';
           if (esIndividual || esInicioTramo || esFinTramo) {
             clasesCirculo =
-              'bg-[#111827] text-[#EDEDED] font-black shadow-md ring-2 ring-[#111827]/35 ring-offset-2 ring-offset-white hover:bg-[#1F2937] dark:bg-[#EDEDED] dark:text-[#111827] dark:ring-[#EDEDED]/45 dark:ring-offset-[#1F2937] dark:hover:bg-white z-10';
+              'bg-[#111827] text-[#EDEDED] font-bold shadow-[0_0_0_2px_rgba(17,24,39,0.85),0_0_14px_rgba(31,41,55,0.45)] dark:bg-[#EDEDED] dark:text-[#111827] dark:shadow-[0_0_0_2px_rgba(237,237,237,0.9),0_0_18px_rgba(237,237,237,0.45)] z-10';
           } else if (esIntermedioTramo) {
             clasesCirculo =
-              'bg-[#1F2937] text-[#EDEDED] font-bold hover:bg-[#111827] dark:bg-[#4B5563] dark:text-[#EDEDED] dark:hover:bg-[#9CA3AF] dark:hover:text-[#111827] z-10';
+              'bg-[#4B5563]/28 text-[#111827] font-bold ring-1 ring-[#4B5563]/70 shadow-[0_0_10px_rgba(75,85,99,0.28)] dark:bg-[#4B5563]/65 dark:text-[#EDEDED] dark:ring-[#9CA3AF]/80 dark:shadow-[0_0_12px_rgba(156,163,175,0.35)] z-10';
+          } else if (esDiaSiguienteExcluido) {
+            clasesCirculo =
+              'bg-transparent text-[#9CA3AF] font-medium border border-dashed border-[#9CA3AF]/60 opacity-60 cursor-not-allowed dark:text-[#9CA3AF]/65 dark:border-white/25';
           } else if (dia.estado === 'DISPONIBLE') {
+            const atenuado = fueraDeVentanaCierre ? 'opacity-45' : '';
             clasesCirculo = esHoy
-              ? 'bg-[#EDEDED] text-[#111827] font-bold border-2 border-[#111827] hover:bg-[#111827]/12 dark:bg-[#111827] dark:text-[#EDEDED] dark:border-[#EDEDED] dark:hover:bg-[#EDEDED]/15'
-              : 'bg-[#EDEDED]/80 text-[#111827] font-semibold border border-[#9CA3AF]/55 hover:bg-[#111827]/10 hover:border-[#111827] dark:bg-[#111827] dark:text-[#EDEDED] dark:border-white/20 dark:hover:bg-[#EDEDED]/15 dark:hover:border-[#EDEDED]/60';
+              ? `bg-[#EDEDED] text-[#111827] font-bold border-2 border-[#111827] hover:border-[#4B5563] dark:bg-[#111827] dark:text-[#EDEDED] dark:border-[#EDEDED] dark:hover:border-[#9CA3AF] ${atenuado}`
+              : `bg-[#EDEDED]/80 text-[#111827] font-semibold border border-[#9CA3AF]/55 hover:border-[#111827] hover:bg-[#111827]/10 dark:bg-[#111827] dark:text-[#EDEDED] dark:border-white/20 dark:hover:border-[#EDEDED]/60 dark:hover:bg-[#EDEDED]/12 ${atenuado}`;
           } else if (dia.estado === 'PASADO') {
             clasesCirculo =
               'bg-transparent text-[#9CA3AF]/70 font-normal cursor-not-allowed dark:bg-transparent dark:text-[#4B5563]';
-          } else if (dia.estado === 'NO_DISPONIBLE') {
-            clasesCirculo =
-              'bg-[#9CA3AF]/20 text-[#4B5563] font-medium border border-[#9CA3AF]/45 cursor-not-allowed dark:bg-[#111827]/45 dark:text-[#9CA3AF]/60 dark:border-white/10';
           } else {
             clasesCirculo =
               'bg-[#9CA3AF]/20 text-[#4B5563] font-medium border border-[#9CA3AF]/45 cursor-not-allowed dark:bg-[#111827]/45 dark:text-[#9CA3AF]/60 dark:border-white/10';
@@ -375,42 +535,37 @@ export default function EditorialAvailabilityCalendar({
               key={dia.fechaISO}
               className="relative flex items-center justify-center h-10 sm:h-11 w-full"
             >
-              {estaSeleccionado && (prevSeleccionado || nextSeleccionado) && (
-                <div
-                  aria-hidden="true"
-                  className={`absolute inset-y-1 bg-[#111827]/15 dark:bg-[#EDEDED]/20 ${
-                    esInicioTramo
-                      ? 'left-1/2 right-0 rounded-l-full'
-                      : esFinTramo
-                        ? 'left-0 right-1/2 rounded-r-full'
-                        : 'inset-x-0'
-                  }`}
-                />
-              )}
-
               <button
                 type="button"
-                disabled={dia.estado === 'PASADO'}
+                disabled={esDeshabilitado}
                 onClick={() => manejarToqueDia(dia)}
                 aria-label={`${dia.numeroDia} de ${calendarioMes.nombreMes.toLowerCase()}${
                   esHoy ? ', hoy' : ''
                 }, ${
                   estaSeleccionado
-                    ? 'seleccionado'
-                    : dia.estado === 'DISPONIBLE'
-                      ? 'disponible'
-                      : dia.etiquetaBloqueo ?? (dia.estado === 'NO_DISPONIBLE' ? 'no disponible' : 'ocupado')
+                    ? esInicioTramo
+                      ? 'fecha de inicio seleccionada'
+                      : esFinTramo
+                        ? 'fecha de devolución seleccionada'
+                        : 'día seleccionado'
+                    : esDiaSiguienteExcluido
+                      ? 'día siguiente excluido por mínimo de reserva'
+                      : dia.estado === 'DISPONIBLE'
+                        ? 'disponible'
+                        : dia.etiquetaBloqueo ??
+                          (dia.estado === 'NO_DISPONIBLE' ? 'no disponible' : 'ocupado')
                 }`}
                 aria-pressed={estaSeleccionado}
-                className={`fx-press relative flex h-10 w-10 sm:h-11 sm:w-11 flex-col items-center justify-center rounded-full text-xs tabular-nums select-none transition-colors ${
-                  dia.estado === 'PASADO' ? 'cursor-not-allowed' : 'cursor-pointer'
+                className={`fx-press relative flex h-10 w-10 sm:h-11 sm:w-11 flex-col items-center justify-center rounded-full text-xs tabular-nums select-none transition-colors duration-150 ${
+                  esDeshabilitado ? 'cursor-not-allowed' : 'cursor-pointer'
                 } ${clasesCirculo}`}
               >
                 <span
                   className={
                     dia.estado === 'RESERVADO' ||
                     dia.estado === 'MANTENIMIENTO' ||
-                    dia.estado === 'NO_DISPONIBLE'
+                    dia.estado === 'NO_DISPONIBLE' ||
+                    esDiaSiguienteExcluido
                       ? 'line-through decoration-[#4B5563]/75 dark:decoration-[#9CA3AF]/65'
                       : ''
                   }
@@ -421,7 +576,7 @@ export default function EditorialAvailabilityCalendar({
                 {(esIndividual || esInicioTramo || esFinTramo) && (
                   <span className="h-1 w-1 rounded-full bg-[#EDEDED] dark:bg-[#111827]" />
                 )}
-                {!estaSeleccionado && esHoy && (
+                {!estaSeleccionado && !esDiaSiguienteExcluido && esHoy && (
                   <span className="h-1 w-1 rounded-full bg-[#111827] dark:bg-[#EDEDED]" />
                 )}
               </button>
@@ -454,11 +609,11 @@ export default function EditorialAvailabilityCalendar({
               Libre
             </span>
             <span className="inline-flex items-center gap-1">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#111827] dark:bg-[#EDEDED]" />
-              Elegido
+              <span className="h-2.5 w-2.5 rounded-full bg-[#111827] shadow-[0_0_6px_rgba(31,41,55,0.65)] dark:bg-[#EDEDED] dark:shadow-[0_0_6px_rgba(237,237,237,0.65)]" />
+              Inicio / Fin
             </span>
             <span className="inline-flex items-center gap-1">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#1F2937] dark:bg-[#4B5563]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#4B5563]/35 border border-[#4B5563]/75 dark:bg-[#4B5563]/70 dark:border-[#9CA3AF]/80" />
               Intermedio
             </span>
             <span className="inline-flex items-center gap-1">
@@ -468,12 +623,12 @@ export default function EditorialAvailabilityCalendar({
           </div>
           <span className="font-semibold text-[#111827] dark:text-[#EDEDED]">
             {diasSeleccionados === 0
-              ? 'Toca cualquier día libre'
+              ? 'Toca fecha de inicio'
               : esModoPorDia
                 ? 'Toca para agregar o quitar'
-                : faseSeleccion === 'ELIGIENDO_FIN'
-                  ? 'Toca día final'
-                  : 'Rango listo'}
+                : excluirDiaSiguiente && esperandoFinRango
+                  ? 'Elige fecha de devolución'
+                  : 'Toca días para ampliar o recortar'}
           </span>
         </div>
       )}

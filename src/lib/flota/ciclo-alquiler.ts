@@ -33,6 +33,7 @@ import {
   agruparFechasEnTramos,
   calcularDiasInclusivos,
   normalizarFechasSeleccionadas,
+  validarReglasRangoAlquiler,
   verificarDisponibilidadVehiculo,
   obtenerEstadoDocumentalVehiculoD1,
 } from './disponibilidad';
@@ -77,6 +78,7 @@ export interface CrearReservaCicloInput {
   fechaInicio: string; // YYYY-MM-DD
   fechaFin: string;    // YYYY-MM-DD
   fechasSeleccionadas?: string[] | undefined;
+  permitirAlquilerUnDia?: boolean | undefined;
   modalidadEntrega?: ModalidadEntregaReservaSchema | undefined;
   direccionEntrega?: string | null | undefined;
   entregaLatitud?: number | null | undefined;
@@ -375,6 +377,20 @@ export async function crearReservaConValidaciones(
     throw new ErrorCicloAlquiler(
       'BAD_REQUEST',
       'La fecha de inicio debe ser anterior o igual a la fecha de fin'
+    );
+  }
+
+  const validacionRango = validarReglasRangoAlquiler({
+    fechaInicio: fechaInicioEfectiva,
+    fechaFin: fechaFinEfectiva,
+    fechasSeleccionadas: fechasNorm,
+    permitirAlquilerUnDia: input.permitirAlquilerUnDia ?? true,
+  });
+
+  if (!validacionRango.valido) {
+    throw new ErrorCicloAlquiler(
+      'BAD_REQUEST',
+      validacionRango.mensaje ?? 'Rango de fechas no válido para el alquiler'
     );
   }
 

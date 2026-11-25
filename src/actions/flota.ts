@@ -8,20 +8,23 @@ import {
   actualizarEstadoVehiculo,
   darDeBajaVehiculo,
   obtenerVehiculoAsync,
+  actualizarGaleriaVehiculoD1,
 } from '@/lib/flota/repositorio';
 import { obtenerBloquesNoDisponiblesD1 } from '@/lib/flota/disponibilidad';
 import { resolveClientTimeContext } from '@/lib/time/client-time';
-import type {
-  VehiculoItem,
-  CategoriaVehiculo,
-  VehiculoGaleriaFoto,
+import {
+  obtenerCategoriaPorZona,
+  type VehiculoItem,
+  type CategoriaVehiculo,
+  type VehiculoGaleriaFoto,
 } from '@/lib/flota/types';
 import {
   construirClaveR2MultimediaVehiculo,
   resolverUrlMultimediaR2,
 } from '@/lib/media/r2-vehiculo-keys';
-import type { ZonaEvidenciaVehiculo } from '@/db/schema';
 import {
+  zonasEvidenciaVehiculo,
+  type ZonaEvidenciaVehiculo,
   categoriasVehiculo,
   estadosVehiculo,
   transmisionesVehiculo,
@@ -46,6 +49,23 @@ function slugify(text: string): string {
     .replace(/(^-|-$)+/g, '');
 }
 
+const galeriaFotoSchema = z.object({
+  id: z.string().min(1),
+  url: z.string().min(1),
+  categoria: z.enum(['EXTERIOR', 'INTERIOR', 'ESTADO']),
+  zona: z.enum(zonasEvidenciaVehiculo).optional(),
+  esPrincipal: z.boolean(),
+  orden: z.number().int().min(0),
+});
+
+const galeriaArraySchema = z
+  .array(galeriaFotoSchema)
+  .min(1, { error: 'Debes agregar al menos una fotografía del vehículo.' })
+  .max(24, { error: 'Se permiten máximo 24 fotografías por vehículo.' })
+  .refine((fotos) => fotos.some((f) => f.esPrincipal), {
+    error: 'Debes marcar una fotografía como imagen principal.',
+  });
+
 const vehiculoFormSchema = z.object({
   id: z.string().optional(),
   marca: z.string().min(1, { error: 'La marca es obligatoria' }),
@@ -63,21 +83,7 @@ const vehiculoFormSchema = z.object({
   autonomiaKm: z.number().optional(),
   kilometraje: z.number().min(0),
   imagenUrl: z.string().min(1, { error: 'Debes seleccionar una imagen principal para el vehículo.' }),
-  galeria: z
-    .array(
-      z.object({
-        id: z.string().min(1),
-        url: z.string().min(1),
-        categoria: z.enum(['EXTERIOR', 'INTERIOR', 'ESTADO']),
-        esPrincipal: z.boolean(),
-        orden: z.number().int().min(0),
-      })
-    )
-    .min(1, { error: 'Debes agregar al menos una fotografía del vehículo.' })
-    .max(24, { error: 'Se permiten máximo 24 fotografías por vehículo.' })
-    .refine((fotos) => fotos.some((f) => f.esPrincipal), {
-      error: 'Debes marcar una fotografía como imagen principal.',
-    }),
+  galeria: galeriaArraySchema,
   destacado: z.boolean().optional(),
   descripcion: z.string().min(1, { error: 'La descripción es obligatoria' }),
   aceleracion: z.string().optional(),
@@ -85,6 +91,89 @@ const vehiculoFormSchema = z.object({
   rating: z.number().optional(),
   autonomiaOdo: z.string().optional(),
 });
+
+async function subirDataUrlAR2(params: {
+  bucket: typeof env.BUCKET_MULTIMEDIA | undefined;
+  localId: string;
+  vehiculoId: string;
+  dataUrl: string;
+  zona: ZonaEvidenciaVehiculo;
+  indice: number;
+}): Promise<string> {
+  const { bucket, localId, vehiculoId, dataUrl, zona, indice } = params;
+  if (!bucket || !dataUrl.startsWith('data:image/')) {
+    return dataUrl;
+  }
+  const match = /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/.exec(dataUrl);
+  if (!match || !match[1] || !match[2]) {
+    return dataUrl;
+  }
+  const mimeType = match[1];
+  const base64Data = match[2];
+  const ext =
+    mimeType === 'image/webp'
+      ? 'webp'
+      : mimeType === 'image/png'
+        ? 'png'
+        : 'jpg';
+  const binaryStr = atob(base64Data);
+  const bytes = new Uint8Array(binaryStr.length);
+  for (let i = 0; i < binaryStr.length; i++) {
+    bytes[i] = binaryStr.charCodeAt(i);
+  }
+  const r2Key = construirClaveR2MultimediaVehiculo({
+    localId,
+    vehiculoId,
+    etapaOperativa: 'CATALOGO_ESTUDIO',
+    zonaEvidencia: zona,
+    extension: ext,
+    timestampMs: Date.now() + indice,
+  });
+  await bucket.put(r2Key, bytes.buffer, {
+    httpMetadata: { contentType: mimeType },
+  });
+  return resolverUrlMultimediaR2(r2Key);
+}
+
+function zonaPorFoto(foto: {
+  zona?: ZonaEvidenciaVehiculo | undefined;
+  esPrincipal: boolean;
+  categoria: 'EXTERIOR' | 'INTERIOR' | 'ESTADO';
+}): ZonaEvidenciaVehiculo {
+  if (foto.zona) return foto.zona;
+  if (foto.esPrincipal) return 'EXTERIOR_LATERAL_IZQ';
+  if (foto.categoria === 'INTERIOR') return 'INTERIOR_CABINA';
+  if (foto.categoria === 'ESTADO') return 'PANTALLA_TABLERO_ODOMETRO';
+  return 'EXTERIOR_FRONTAL';
+}
+
+async function resolverGaleriaParaR2(params: {
+  bucket: typeof env.BUCKET_MULTIMEDIA | undefined;
+  localId: string;
+  vehiculoId: string;
+  galeria: Array<z.infer<typeof galeriaFotoSchema>>;
+}): Promise<VehiculoGaleriaFoto[]> {
+  return Promise.all(
+    params.galeria.map(async (foto, idx) => {
+      const zona = zonaPorFoto(foto);
+      return {
+        id: foto.id,
+        url: await subirDataUrlAR2({
+          bucket: params.bucket,
+          localId: params.localId,
+          vehiculoId: params.vehiculoId,
+          dataUrl: foto.url.trim(),
+          zona,
+          indice: idx,
+        }),
+        categoria: foto.zona ? obtenerCategoriaPorZona(foto.zona) : foto.categoria,
+        zona,
+        esPrincipal: foto.esPrincipal,
+        orden: idx,
+      };
+    })
+  );
+}
 
 /**
  * Crea una nueva unidad en la flota o actualiza una existente.
@@ -116,77 +205,27 @@ export const guardarVehiculoAction = defineAction({
 
     const bucket = env.BUCKET_MULTIMEDIA;
 
-    const subirDataUrlAR2 = async (
-      dataUrl: string,
-      zona: ZonaEvidenciaVehiculo,
-      indice: number
-    ): Promise<string> => {
-      if (!bucket || !dataUrl.startsWith('data:image/')) {
-        return dataUrl;
-      }
-      const match = /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/.exec(dataUrl);
-      if (!match || !match[1] || !match[2]) {
-        return dataUrl;
-      }
-      const mimeType = match[1];
-      const base64Data = match[2];
-      const ext =
-        mimeType === 'image/webp'
-          ? 'webp'
-          : mimeType === 'image/png'
-            ? 'png'
-            : 'jpg';
-      const binaryStr = atob(base64Data);
-      const bytes = new Uint8Array(binaryStr.length);
-      for (let i = 0; i < binaryStr.length; i++) {
-        bytes[i] = binaryStr.charCodeAt(i);
-      }
-      const r2Key = construirClaveR2MultimediaVehiculo({
-        localId,
-        vehiculoId: id,
-        etapaOperativa: 'CATALOGO_ESTUDIO',
-        zonaEvidencia: zona,
-        extension: ext,
-        timestampMs: Date.now() + indice,
-      });
-      await bucket.put(r2Key, bytes.buffer, {
-        httpMetadata: { contentType: mimeType },
-      });
-      return resolverUrlMultimediaR2(r2Key);
-    };
-
-    const zonaPorCategoria = (
-      cat: 'EXTERIOR' | 'INTERIOR' | 'ESTADO'
-    ): ZonaEvidenciaVehiculo => {
-      if (cat === 'INTERIOR') return 'INTERIOR_CABINA';
-      if (cat === 'ESTADO') return 'LLANTAS_RINES';
-      return 'EXTERIOR_FRONTAL';
-    };
-
-    let galeriaResuelta: VehiculoGaleriaFoto[] | undefined;
-    if (input.galeria && input.galeria.length > 0) {
-      galeriaResuelta = await Promise.all(
-        input.galeria.map(async (foto, idx) => ({
-          id: foto.id,
-          url: await subirDataUrlAR2(
-            foto.url.trim(),
-            zonaPorCategoria(foto.categoria),
-            idx
-          ),
-          categoria: foto.categoria,
-          esPrincipal: foto.esPrincipal,
-          orden: idx,
-        }))
-      );
-    }
+    const galeriaResuelta = await resolverGaleriaParaR2({
+      bucket,
+      localId,
+      vehiculoId: id,
+      galeria: input.galeria,
+    });
 
     const portadaGaleria =
-      galeriaResuelta?.find((f) => f.esPrincipal)?.url ??
-      galeriaResuelta?.[0]?.url;
+      galeriaResuelta.find((f) => f.esPrincipal)?.url ??
+      galeriaResuelta[0]?.url;
 
     const imagenPrincipalResuelta =
       portadaGaleria ??
-      (await subirDataUrlAR2(input.imagenUrl.trim(), 'EXTERIOR_FRONTAL', 0));
+      (await subirDataUrlAR2({
+        bucket,
+        localId,
+        vehiculoId: id,
+        dataUrl: input.imagenUrl.trim(),
+        zona: 'EXTERIOR_LATERAL_IZQ',
+        indice: 0,
+      }));
 
     const vehiculoItem: VehiculoItem = {
       id,
@@ -351,5 +390,74 @@ export const consultarDisponibilidadVehiculoAction = defineAction({
       hoyISO,
       bloques,
     };
+  },
+});
+
+/**
+ * Actualiza las fotografías por perspectiva de la ficha técnica de un vehículo sin modificar otros datos.
+ */
+export const actualizarGaleriaVehiculoAction = defineAction({
+  input: z.object({
+    vehiculoId: z.string().min(1, { error: 'ID de vehículo requerido' }),
+    galeria: galeriaArraySchema,
+  }),
+  handler: async (input, context) => {
+    marcarRevisionNavegacion(context.cookies);
+    const usuario = requireLocalAuth(context, PERMISOS.FLOTA_ACTUALIZAR);
+    if (!env.DB) {
+      throw new ActionError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Base de datos no disponible.',
+      });
+    }
+
+    const db = getDb(env.DB);
+    const vehiculo = await obtenerVehiculoAsync(
+      input.vehiculoId,
+      db,
+      usuario.esSuperAdmin ? undefined : usuario.localActivo.id
+    );
+
+    if (!vehiculo) {
+      throw new ActionError({
+        code: 'NOT_FOUND',
+        message: 'Vehículo no encontrado en tu local operativo.',
+      });
+    }
+
+    const localId = vehiculo.localId ?? usuario.localActivo.id;
+    const galeriaResuelta = await resolverGaleriaParaR2({
+      bucket: env.BUCKET_MULTIMEDIA,
+      localId,
+      vehiculoId: vehiculo.id,
+      galeria: input.galeria,
+    });
+
+    const imagenPrincipal =
+      galeriaResuelta.find((f) => f.esPrincipal)?.url ??
+      galeriaResuelta[0]?.url ??
+      vehiculo.imagenUrl;
+
+    try {
+      await actualizarGaleriaVehiculoD1(db, {
+        vehiculoId: vehiculo.id,
+        localId,
+        galeria: galeriaResuelta,
+        imagenUrlPrincipal: imagenPrincipal,
+      });
+
+      return {
+        ok: true,
+        vehiculoId: vehiculo.id,
+        imagenUrl: imagenPrincipal,
+        galeria: galeriaResuelta,
+        mensaje: 'Galería fotográfica actualizada con éxito.',
+      };
+    } catch {
+      throw new ActionError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'No fue posible guardar las fotografías en la ficha técnica.',
+      });
+    }
   },
 });

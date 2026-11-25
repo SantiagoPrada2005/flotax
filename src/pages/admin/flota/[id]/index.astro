@@ -1,5 +1,6 @@
 ---
 import LayoutAdmin from '@/layouts/LayoutAdmin.astro';
+import VehicleGalleryManager from '@/components/flota/VehicleGalleryManager';
 import VehicleDocumentsSection from '@/components/flota/documentos/VehicleDocumentsSection';
 import { PERMISOS, requireLocalAuth, tienePermiso } from '@/lib/auth';
 import { obtenerVehiculoAsync } from '@/lib/flota';
@@ -44,6 +45,7 @@ const sujeto = {
 
 const puedeLeerDocs = tienePermiso(sujeto, PERMISOS.FLOTA_DOCUMENTOS_LEER);
 const puedeGestionarDocs = tienePermiso(sujeto, PERMISOS.FLOTA_DOCUMENTOS_GESTIONAR);
+const puedeGestionarGaleria = tienePermiso(sujeto, PERMISOS.FLOTA_ACTUALIZAR);
 const tarifaFormato = new Intl.NumberFormat('es-CO', {
   style: 'currency',
   currency: 'COP',
@@ -113,6 +115,16 @@ const tarifaFormato = new Intl.NumberFormat('es-CO', {
         </div>
       </div>
     </section>
+
+    <VehicleGalleryManager
+      client:load
+      vehiculoId={vehiculo.id}
+      placa={vehiculo.placa}
+      marcaModelo={`${vehiculo.marca} ${vehiculo.modelo}`}
+      imagenUrlInicial={vehiculo.imagenUrl}
+      galeriaInicial={vehiculo.galeria ?? []}
+      puedeGestionar={puedeGestionarGaleria}
+    />
 
     <VehicleDocumentsSection
       client:load

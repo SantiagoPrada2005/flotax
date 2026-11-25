@@ -105,6 +105,7 @@ export const crearReservaAction = defineAction({
       .min(1, { error: 'Debes seleccionar al menos un día' })
       .optional(),
     diasAlquiler: z.number().int().positive({ error: 'Días deben ser mayores a 0' }).optional(),
+    permitirAlquilerUnDia: z.boolean().optional(),
     precioDiaCotizado: z.number().positive().optional(),
     subtotalTarifaCotizado: z.number().positive().optional(),
     coberturaPericialCotizada: z.number().nonnegative().optional(),
@@ -174,6 +175,7 @@ export const crearReservaAction = defineAction({
         db,
         {
           ...input,
+          permitirAlquilerUnDia: input.permitirAlquilerUnDia ?? true,
           localId,
           clienteId: contextoOrigen.clienteId,
         },
