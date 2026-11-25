@@ -19,7 +19,7 @@ const rolOperador = localActivo?.rol ?? 'DUENO';
 ---
 
 <LayoutApp title="FlotaX — Alquila tus Vehículos" hideNav={true} navVariant="admin">
-  <main class="min-h-screen flex items-center justify-center bg-[#EDEDED]/40 py-6">
+  <main class="min-h-screen flex items-center justify-center overflow-x-hidden bg-surface-canvas px-0 py-6 dark:bg-[radial-gradient(ellipse_at_top,_#1F2937_0%,_#111827_54%,_#090D16_100%)]">
     <OperatorOnboardingWizard
       client:load
       nombreOperador={nombreOperador}

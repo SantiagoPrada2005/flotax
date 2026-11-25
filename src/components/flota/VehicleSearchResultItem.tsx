@@ -68,10 +68,10 @@ export default function VehicleSearchResultItem({
       className="group ios-press-bounce flex items-center justify-between gap-3 rounded-2xl border border-[#9CA3AF]/30 bg-white p-3.5 shadow-xs transition hover:border-[#4B5563]/60 hover:shadow-sm"
     >
       <div className="flex items-center gap-3 min-w-0">
-        {/* Thumbnail con Foto de Estudio de Vehículo */}
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#EDEDED] border border-[#9CA3AF]/30 overflow-hidden transition group-hover:scale-105">
+        {/* Thumbnail con Fotografía Borde a Borde */}
+        <div className="flex h-12 w-16 shrink-0 items-center justify-center rounded-xl bg-[#EDEDED] border border-[#9CA3AF]/30 overflow-hidden">
           {vehiculo.imagenUrl ? (
-            <img src={vehiculo.imagenUrl} alt="" className="h-full w-full object-contain p-0.5" />
+            <img src={vehiculo.imagenUrl} alt="" className="h-full w-full object-cover object-center block" />
           ) : (
             getCategoriaIcon(vehiculo.categoria)
           )}

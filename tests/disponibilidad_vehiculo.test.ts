@@ -9,10 +9,21 @@ import {
   verificarDisponibilidadVehiculo,
   obtenerBloquesNoDisponiblesD1,
   obtenerEstadoDocumentalVehiculoD1,
+  alternarFechaEnSeleccion,
+  agruparFechasEnTramos,
+  sonFechasDisponiblesValidas,
+  calcularCotizacionPorFechas,
+  obtenerFechaFinMinimaAlquiler,
+  obtenerUltimoDiaContiguoLibre,
+  validarReglasRangoAlquiler,
+  actualizarRangoAlquilerPorToque,
 } from '../src/lib/flota/disponibilidad.ts';
+import {
+  obtenerEtiquetaPerspectivaGaleria,
+  type BloqueNoDisponible,
+} from '../src/lib/flota/types.ts';
 import { listarVehiculos } from '../src/lib/flota/repositorio.ts';
 import { resolverEstadoActualVehiculo } from '../src/lib/mantenimientos/repositorio.ts';
-import type { BloqueNoDisponible } from '../src/lib/flota/types.ts';
 import {
   vehiculos,
   mantenimientosVehiculo,
@@ -58,7 +69,22 @@ describe('Disponibilidad de Vehículos - FlotaX', () => {
           } else if (table === reservas) {
             datos = config.reservas ?? [];
           } else if (table === documentosVehiculo) {
-            datos = config.documentos ?? [];
+            datos = config.documentos ?? [
+              {
+                id: 'doc-soat-default',
+                vehiculoId: vehiculoIdPrueba,
+                tipoDocumento: 'SOAT',
+                fechaVencimiento: '2027-12-31',
+                vigente: true,
+              },
+              {
+                id: 'doc-rtm-default',
+                vehiculoId: vehiculoIdPrueba,
+                tipoDocumento: 'TECNICO_MECANICA',
+                fechaVencimiento: '2027-12-31',
+                vigente: true,
+              },
+            ];
           }
 
           const crearQueryResult = (items: unknown[]) => ({
@@ -440,8 +466,8 @@ describe('Disponibilidad de Vehículos - FlotaX', () => {
     assert.equal(estadoLibre, 'DISPONIBLE');
   });
 
-  test('12. obtenerEstadoDocumentalVehiculoD1: bloquea por SOAT/RTM vencido, exceptúa RTM en PATINETA y no bloquea sin filas', async () => {
-    // Subcaso A: Sin filas aún en documentos_vehiculo -> no bloquea, reporta faltantes
+  test('12. obtenerEstadoDocumentalVehiculoD1: bloquea por SOAT/RTM vencido o sin registrar y exime PATINETA (Ley 2486 de 2025)', async () => {
+    // Subcaso A: Sin filas aún en documentos_vehiculo -> bloquea por SIN_REGISTRAR y reporta faltantes
     const dbVacio = crearMockDb({
       documentos: [],
     });
@@ -452,6 +478,7 @@ describe('Disponibilidad de Vehículos - FlotaX', () => {
       hoyPrueba
     );
     assert.equal(docVacioSedan.tieneVencidos, false);
+    assert.equal(docVacioSedan.bloqueadoPorDocumentos, true);
     assert.equal(docVacioSedan.requiereRtm, true);
     assert.deepEqual(docVacioSedan.faltantesSinCarga, ['SOAT', 'TECNICO_MECANICA']);
     assert.deepEqual(docVacioSedan.vencidos, []);
@@ -513,16 +540,9 @@ describe('Disponibilidad de Vehículos - FlotaX', () => {
     assert.equal(docRtmInvalido.tieneVencidos, true);
     assert.equal(docRtmInvalido.vencidos[0]?.tipo, 'TECNICO_MECANICA');
 
-    // Subcaso D: PATINETA no requiere TECNICO_MECANICA aunque esté vencida o ausente
+    // Subcaso D: PATINETA está exenta de SOAT y TECNICO_MECANICA por Ley 2486 de 2025
     const dbPatineta = crearMockDb({
       documentos: [
-        {
-          id: 'doc-1',
-          vehiculoId: vehiculoIdPrueba,
-          tipoDocumento: 'SOAT',
-          fechaVencimiento: '2027-01-01',
-          vigente: true,
-        },
         {
           id: 'doc-2',
           vehiculoId: vehiculoIdPrueba,
@@ -539,7 +559,10 @@ describe('Disponibilidad de Vehículos - FlotaX', () => {
       hoyPrueba
     );
     assert.equal(docPatineta.requiereRtm, false);
+    assert.equal(docPatineta.exentoPorLey2486, true);
+    assert.equal(docPatineta.bloqueadoPorDocumentos, false);
     assert.equal(docPatineta.tieneVencidos, false);
+    assert.deepEqual(docPatineta.faltantesSinCarga, []);
     assert.deepEqual(docPatineta.vencidos, []);
   });
 
@@ -734,5 +757,323 @@ describe('Disponibilidad de Vehículos - FlotaX', () => {
     );
     assert.equal(listaSoloDisponibles[0]?.id, 'veh-disponible-2');
     assert.equal(listaSoloDisponibles[0]?.estado, 'DISPONIBLE');
+  });
+
+  test('19. listarVehiculos preserva RESERVADO y MANTENIMIENTO manuales en D1 sin bloqueos solapados', async () => {
+    const vehiculoReservado = {
+      id: 'veh-reservado-manual',
+      localId: 'local-test',
+      marca: 'Mazda',
+      modelo: '3',
+      anio: 2024,
+      categoria: 'SEDAN',
+      categoriaEtiqueta: 'Sedán Ejecutivo',
+      placa: 'RES123',
+      estado: 'RESERVADO',
+      precioDia: 180000,
+      depositoGarantia: 400000,
+      transmision: 'Automática',
+      combustible: 'Gasolina',
+      capacidadPasajeros: 5,
+      kilometraje: 5000,
+      imagenUrl: '/img/mazda3.png',
+      destacado: false,
+      descripcion: 'Reservado manualmente',
+      activo: true,
+    };
+
+    const vehiculoMantenimiento = {
+      ...vehiculoReservado,
+      id: 'veh-mant-manual',
+      placa: 'MNT456',
+      estado: 'MANTENIMIENTO',
+    };
+
+    const mockDbFlota = crearMockDb({
+      vehiculosLista: [vehiculoReservado, vehiculoMantenimiento],
+      reservas: [],
+      mantenimientos: [],
+    });
+
+    const lista = await listarVehiculos(mockDbFlota, {
+      soloDisponibles: false,
+      hoyISO: hoyPrueba,
+    });
+    assert.equal(lista.find((v) => v.id === 'veh-reservado-manual')?.estado, 'RESERVADO');
+    assert.equal(lista.find((v) => v.id === 'veh-mant-manual')?.estado, 'MANTENIMIENTO');
+  });
+
+  test('20. alternarFechaEnSeleccion elimina únicamente el día tocado sin reiniciar los demás', () => {
+    const inicialTres = ['2026-11-20', '2026-11-21', '2026-11-22'];
+    assert.deepEqual(alternarFechaEnSeleccion(inicialTres, '2026-11-21'), [
+      '2026-11-20',
+      '2026-11-22',
+    ]);
+
+    const inicialCuatro = ['2026-11-20', '2026-11-21', '2026-11-22', '2026-11-23'];
+    assert.deepEqual(alternarFechaEnSeleccion(inicialCuatro, '2026-11-22'), [
+      '2026-11-20',
+      '2026-11-21',
+      '2026-11-23',
+    ]);
+
+    // Agregar un día nuevo conserva los existentes y ordena ascendentemente
+    assert.deepEqual(
+      alternarFechaEnSeleccion(['2026-11-20', '2026-11-22'], '2026-11-21'),
+      ['2026-11-20', '2026-11-21', '2026-11-22']
+    );
+  });
+
+  test('21. sonFechasDisponiblesValidas y agruparFechasEnTramos respetan días individuales no contiguos', () => {
+    const bloques: BloqueNoDisponible[] = [
+      {
+        id: 'b-21',
+        vehiculoId: vehiculoIdPrueba,
+        fechaInicio: '2026-11-21',
+        fechaFin: '2026-11-21',
+        motivo: 'RESERVADO',
+        etiqueta: 'Ocupado día 21',
+      },
+    ];
+
+    assert.equal(
+      sonFechasDisponiblesValidas(
+        vehiculoIdPrueba,
+        ['2026-11-20', '2026-11-22'],
+        hoyPrueba,
+        bloques
+      ),
+      true
+    );
+    assert.equal(
+      sonFechasDisponiblesValidas(
+        vehiculoIdPrueba,
+        ['2026-11-20', '2026-11-21', '2026-11-22'],
+        hoyPrueba,
+        bloques
+      ),
+      false
+    );
+
+    const tramos = agruparFechasEnTramos([
+      '2026-11-20',
+      '2026-11-22',
+      '2026-11-23',
+    ]);
+    assert.deepEqual(tramos, [
+      { inicio: '2026-11-20', fin: '2026-11-20', dias: 1 },
+      { inicio: '2026-11-22', fin: '2026-11-23', dias: 2 },
+    ]);
+  });
+
+  test('22. calcularCotizacionPorFechas recalcula días reales y precio total según los días elegidos', () => {
+    const vehiculoMock = {
+      id: vehiculoIdPrueba,
+      marca: 'Mazda',
+      modelo: 'CX-30',
+      anio: 2025,
+      categoria: 'SUV' as const,
+      categoriaEtiqueta: 'SUV',
+      placa: 'FLX-100',
+      estado: 'DISPONIBLE' as const,
+      precioDia: 150000,
+      depositoGarantia: 500000,
+      transmision: 'Automática' as const,
+      combustible: 'Gasolina' as const,
+      capacidadPasajeros: 5,
+      kilometraje: 12000,
+      imagenUrl: '/img/cx30.webp',
+      descripcion: 'SUV',
+      aceleracion: '7.5 s',
+      velocidadMaxima: '190 km/h',
+      rating: 4.9,
+      autonomiaOdo: '12.000 km',
+    };
+
+    const cot2Dias = calcularCotizacionPorFechas(
+      vehiculoMock,
+      ['2026-11-20', '2026-11-22'],
+      0
+    );
+    assert.equal(cot2Dias.diasAlquiler, 2);
+    assert.equal(cot2Dias.subtotalTarifa, 300000);
+    assert.equal(cot2Dias.coberturaPericial, 24000);
+    assert.equal(cot2Dias.totalAlquiler, 324000);
+  });
+
+  test('23. validarReglasRangoAlquiler permite rangos continuos desde 1 día y rechaza huecos o reglas estrictas opcionales', () => {
+    assert.equal(obtenerFechaFinMinimaAlquiler('2026-11-27'), '2026-11-29');
+    assert.equal(obtenerFechaFinMinimaAlquiler('2026-11-27', true), '2026-11-27');
+
+    const bloques: BloqueNoDisponible[] = [
+      {
+        id: 'b-futuro',
+        vehiculoId: vehiculoIdPrueba,
+        fechaInicio: '2026-12-03',
+        fechaFin: '2026-12-05',
+        motivo: 'RESERVADO',
+        etiqueta: 'Reserva futura',
+      },
+    ];
+    assert.equal(obtenerUltimoDiaContiguoLibre('2026-11-27', bloques), '2026-12-02');
+    assert.equal(obtenerUltimoDiaContiguoLibre('2026-12-06', bloques), null);
+
+    // Por defecto permite 1 día y rangos continuos de 2+ días (ej. 20-21)
+    assert.equal(
+      validarReglasRangoAlquiler({ fechaInicio: '2026-11-27', fechaFin: '2026-11-27' }).valido,
+      true
+    );
+    assert.equal(
+      validarReglasRangoAlquiler({ fechaInicio: '2026-11-27', fechaFin: '2026-11-28' }).valido,
+      true
+    );
+
+    // Modo estricto explícito excluye el día siguiente inmediato
+    assert.equal(
+      validarReglasRangoAlquiler({
+        fechaInicio: '2026-11-27',
+        fechaFin: '2026-11-28',
+        permitirAlquilerUnDia: false,
+      }).valido,
+      false
+    );
+
+    // Rechaza fechas con huecos intermedios
+    assert.equal(
+      validarReglasRangoAlquiler({
+        fechaInicio: '2026-11-27',
+        fechaFin: '2026-11-30',
+        fechasSeleccionadas: ['2026-11-27', '2026-11-30'],
+      }).valido,
+      false
+    );
+  });
+
+  test('25. actualizarRangoAlquilerPorToque selecciona 1 a 1 o varios días y recorta sin borrar todo el tramo (20-21-22 -> 20-21)', () => {
+    // 1. Desde 20-21-22, tocar 21 elimina únicamente el 22 y deja 20-21
+    assert.deepEqual(
+      actualizarRangoAlquilerPorToque({
+        fechaInicio: '2026-11-20',
+        fechaFin: '2026-11-22',
+        fechaTocada: '2026-11-21',
+        vehiculoId: vehiculoIdPrueba,
+        hoyISO: hoyPrueba,
+      }),
+      { fechaInicio: '2026-11-20', fechaFin: '2026-11-21' }
+    );
+
+    // 2. Tocar el extremo final (22 en 20-21-22) baja 1 día a 20-21
+    assert.deepEqual(
+      actualizarRangoAlquilerPorToque({
+        fechaInicio: '2026-11-20',
+        fechaFin: '2026-11-22',
+        fechaTocada: '2026-11-22',
+        vehiculoId: vehiculoIdPrueba,
+        hoyISO: hoyPrueba,
+      }),
+      { fechaInicio: '2026-11-20', fechaFin: '2026-11-21' }
+    );
+
+    // 3. Tocar el extremo inicial (20 en 20-21-22) recorta a 21-22
+    assert.deepEqual(
+      actualizarRangoAlquilerPorToque({
+        fechaInicio: '2026-11-20',
+        fechaFin: '2026-11-22',
+        fechaTocada: '2026-11-20',
+        vehiculoId: vehiculoIdPrueba,
+        hoyISO: hoyPrueba,
+      }),
+      { fechaInicio: '2026-11-21', fechaFin: '2026-11-22' }
+    );
+
+    // 4. Selección 1 por 1 o varios a la vez desde selección vacía
+    const primero = actualizarRangoAlquilerPorToque({
+      fechaInicio: null,
+      fechaFin: null,
+      fechaTocada: '2026-11-20',
+      vehiculoId: vehiculoIdPrueba,
+      hoyISO: hoyPrueba,
+    });
+    assert.deepEqual(primero, { fechaInicio: '2026-11-20', fechaFin: '2026-11-20' });
+
+    const variosALaVez = actualizarRangoAlquilerPorToque({
+      fechaInicio: primero.fechaInicio,
+      fechaFin: primero.fechaFin,
+      fechaTocada: '2026-11-24',
+      vehiculoId: vehiculoIdPrueba,
+      hoyISO: hoyPrueba,
+    });
+    assert.deepEqual(variosALaVez, { fechaInicio: '2026-11-20', fechaFin: '2026-11-24' });
+
+    // 5. Extender día siguiente inmediato en rango múltiple
+    assert.deepEqual(
+      actualizarRangoAlquilerPorToque({
+        fechaInicio: '2026-11-20',
+        fechaFin: '2026-11-21',
+        fechaTocada: '2026-11-22',
+        vehiculoId: vehiculoIdPrueba,
+        hoyISO: hoyPrueba,
+      }),
+      { fechaInicio: '2026-11-20', fechaFin: '2026-11-22' }
+    );
+  });
+
+  test('24. obtenerEtiquetaPerspectivaGaleria identifica correctamente la lateral principal y perspectivas adicionales', () => {
+    assert.equal(
+      obtenerEtiquetaPerspectivaGaleria({
+        categoria: 'EXTERIOR',
+        zona: 'EXTERIOR_LATERAL_IZQ',
+        esPrincipal: true,
+      }),
+      'Fotografía lateral (Principal)'
+    );
+    assert.equal(
+      obtenerEtiquetaPerspectivaGaleria({
+        categoria: 'EXTERIOR',
+        zona: 'EXTERIOR_FRONTAL',
+        esPrincipal: false,
+      }),
+      'Fotografía frontal'
+    );
+    assert.equal(
+      obtenerEtiquetaPerspectivaGaleria({
+        categoria: 'EXTERIOR',
+        zona: 'EXTERIOR_TRASERO',
+        esPrincipal: false,
+      }),
+      'Fotografía trasera'
+    );
+    assert.equal(
+      obtenerEtiquetaPerspectivaGaleria({
+        categoria: 'EXTERIOR',
+        zona: 'EXTERIOR_LATERAL_DER',
+        esPrincipal: false,
+      }),
+      'Fotografía lateral opuesta'
+    );
+    assert.equal(
+      obtenerEtiquetaPerspectivaGaleria({
+        categoria: 'INTERIOR',
+        zona: 'INTERIOR_ASIENTOS',
+        esPrincipal: false,
+      }),
+      'Cojinería y asientos'
+    );
+    assert.equal(
+      obtenerEtiquetaPerspectivaGaleria({
+        categoria: 'ESTADO',
+        zona: 'PANTALLA_TABLERO_ODOMETRO',
+        esPrincipal: false,
+      }),
+      'Tablero y condiciones'
+    );
+    assert.equal(
+      obtenerEtiquetaPerspectivaGaleria({
+        categoria: 'INTERIOR',
+        zona: 'INTERIOR_CABINA',
+        esPrincipal: false,
+      }),
+      'Interior adicional'
+    );
   });
 });

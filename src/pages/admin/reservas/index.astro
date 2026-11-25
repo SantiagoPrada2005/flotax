@@ -30,16 +30,16 @@ const localContexto =
       }
     : LOCAL_CANONICO_DEFECTO);
 
-const initialReservas = await listarReservasD1(db, {
-  localId: localContexto.id,
-});
-const vehiculosDisponibles = await listarVehiculos(db, {
-  localId: localContexto.id,
-});
-
-const cuentasLocal =
+const [initialReservas, vehiculosDisponibles, cuentasLocal] = await Promise.all([
+  listarReservasD1(db, {
+    localId: localContexto.id,
+  }),
+  listarVehiculos(db, {
+    localId: localContexto.id,
+    hoyISO,
+  }),
   db && usuario?.localActivo
-    ? await db
+    ? db
         .select({
           id: cuentasFinancieras.id,
           nombre: cuentasFinancieras.nombre,
@@ -52,7 +52,8 @@ const cuentasLocal =
             eq(cuentasFinancieras.activo, true)
           )
         )
-    : [];
+    : Promise.resolve([]),
+]);
 ---
 
 <LayoutAdmin title="FlotaX — Reservas de Patio" activeTab="search">

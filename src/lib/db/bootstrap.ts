@@ -66,6 +66,8 @@ CREATE TABLE IF NOT EXISTS locales_alquiler (
 	slug text NOT NULL,
 	ciudad text,
 	direccion text,
+	latitud real,
+	longitud real,
 	telefono text,
 	dueno_id text NOT NULL,
 	activo integer DEFAULT true NOT NULL,

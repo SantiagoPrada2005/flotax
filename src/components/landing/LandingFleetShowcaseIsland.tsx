@@ -73,14 +73,14 @@ export default function LandingFleetShowcaseIsland({
       : DEFAULT_PREVIEW_VEHICLES;
   }, [initialVehiculos]);
 
-  // Filtrado reactivo por categoría
+  // Filtrado reactivo por categoría (vista general Todos sin filtrar por destacados)
   const filteredVehicles = useMemo(() => {
     if (selectedCategory === 'TODOS') {
-      const destacados = pool.filter((v) => v.destacado);
-      return (destacados.length >= 3 ? destacados : pool).slice(0, 3);
+      return pool;
     }
-    const matching = pool.filter((v) => v.categoria === selectedCategory);
-    return matching.slice(0, 3);
+    return pool.filter(
+      (v) => (v.categoria || '').trim().toUpperCase() === selectedCategory
+    );
   }, [pool, selectedCategory]);
 
   const formatCop = (val: number) =>
@@ -178,12 +178,12 @@ export default function LandingFleetShowcaseIsland({
                   key={v.id}
                   className="relative bg-white dark:bg-[#1F2937] dark:border dark:border-white/10 rounded-[42px] overflow-hidden transition-colors flex flex-col justify-between"
                 >
-                  {/* Visual Central: Foto con Fondo Limpio */}
-                  <div className="relative w-full aspect-[16/10] bg-white dark:bg-[#18202F] rounded-t-[42px] overflow-hidden flex items-center justify-center">
+                  {/* Visual Central: Fotografía 16:9 de borde a borde */}
+                  <div className="relative w-full aspect-video rounded-t-[42px] overflow-hidden">
                     <img
                       src={v.imagenUrl}
                       alt={`${v.marca} ${v.modelo}`}
-                      className="w-full h-full object-contain"
+                      className="w-full h-full object-cover object-center block"
                       loading="lazy"
                       decoding="async"
                     />
@@ -198,12 +198,12 @@ export default function LandingFleetShowcaseIsland({
                           type="button"
                           onClick={() => setSelectedCategory(v.categoria)}
                           title={`Filtrar por ${v.categoriaEtiqueta}`}
-                          className="relative px-2.5 py-0.5 rounded-full bg-[#111827]/5 hover:bg-[#111827]/10 dark:bg-white/10 dark:hover:bg-white/20 fx-press text-[11px] font-semibold text-[#111827] dark:text-[#EDEDED] cursor-pointer after:absolute after:-top-4 after:-bottom-2 after:inset-x-0 after:content-['']"
+                          className="relative px-2.5 py-0.5 rounded-full bg-[#EDEDED] hover:bg-[#9CA3AF]/30 border border-[#9CA3AF]/40 dark:bg-[#111827] dark:hover:bg-white/15 dark:border-white/15 fx-press text-[11px] font-bold text-[#111827] dark:text-[#EDEDED] cursor-pointer after:absolute after:-top-4 after:-bottom-2 after:inset-x-0 after:content-['']"
                         >
                           {v.categoriaEtiqueta}
                         </button>
-                        <span className="text-xs text-[#D1D5DB] dark:text-gray-600">•</span>
-                        <span className="text-xs text-[#6B7280] dark:text-[#9CA3AF] font-medium">
+                        <span className="text-xs text-[#9CA3AF] dark:text-[#9CA3AF]">•</span>
+                        <span className="text-xs text-[#4B5563] dark:text-[#D1D5DB] font-medium">
                           Modelo {v.anio}
                         </span>
                       </div>

@@ -1,6 +1,7 @@
 import { useState, useTransition, type SyntheticEvent } from 'react';
 import { actions } from 'astro:actions';
 import { navigate } from 'astro:transitions/client';
+import { Select } from '@/components/ui/Select';
 import {
   activarFlotaxLoading,
   desactivarFlotaxLoading,
@@ -609,17 +610,19 @@ export default function PerfilEditorCard({
                   <label htmlFor="modal-tipo-doc" className="block text-xs font-semibold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF] mb-1">
                     Tipo de Documento
                   </label>
-                  <select
+                  <Select
                     id="modal-tipo-doc"
+                    ariaLabel="Tipo de Documento"
+                    variant="subtle"
                     value={tipoDocumento}
-                    onChange={(e) => setTipoDocumento(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 dark:border-white/15 bg-gray-50/50 dark:bg-[#111827] px-3.5 py-2.5 text-base text-[#111827] dark:text-[#EDEDED] focus:border-[#111827] dark:focus:border-white focus:bg-white dark:focus:bg-[#111827] transition-colors min-h-[44px]"
-                  >
-                    <option value="CC">Cédula de Ciudadanía (CC)</option>
-                    <option value="CE">Cédula de Extranjería (CE)</option>
-                    <option value="PASAPORTE">Pasaporte</option>
-                    <option value="NIT">NIT</option>
-                  </select>
+                    onChange={(val) => setTipoDocumento(val)}
+                    options={[
+                      { value: 'CC', label: 'Cédula de Ciudadanía (CC)' },
+                      { value: 'CE', label: 'Cédula de Extranjería (CE)' },
+                      { value: 'PASAPORTE', label: 'Pasaporte' },
+                      { value: 'NIT', label: 'NIT' },
+                    ]}
+                  />
                 </div>
 
                 {/* Número de Documento */}

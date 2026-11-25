@@ -10,10 +10,12 @@ import {
   cuentasFinancieras,
   depositosGarantia,
   auditoriaFinanciera,
+  verificacionesIdentidad,
   type ReservaSelect,
   type VehiculoSelect,
   type ContratoAlquilerSelect,
   type EvaluacionEntregaClienteSelect,
+  type VerificacionIdentidad,
   type EstadoReserva,
   type ModalidadEntregaReservaSchema,
   type ModalidadPagoInicial,
@@ -122,7 +124,11 @@ export function mapRowToReservaItem(
   evaluacionRow?: EvaluacionEntregaClienteSelect | null,
   puntosR2Rows?: PuntoInspeccionR2[],
   garantiaRow?: { estado: string } | null,
-  eventosRows?: unknown[]
+  eventosRows?: unknown[],
+  verificacionRow?: Pick<
+    VerificacionIdentidad,
+    'tipoDocumento' | 'numeroDocumento' | 'licenciaNumero' | 'licenciaCategoria' | 'licenciaVencimiento'
+  > | null
 ): ReservaClienteItem {
   const vehiculo = vehiculoRow
     ? mapD1ToVehiculoItem(vehiculoRow)
@@ -185,18 +191,70 @@ export function mapRowToReservaItem(
     montoReportado: reservaRow.montoAbonoReportado,
     estado: estadoVisual,
     modalidadEntrega: reservaRow.modalidadEntrega as ModalidadEntregaReserva,
+    direccionEntrega:
+      reservaRow.modalidadEntrega === 'DOMICILIO_MEDELLIN'
+        ? reservaRow.direccionEntrega ?? null
+        : null,
+    entregaLatitud:
+      reservaRow.modalidadEntrega === 'DOMICILIO_MEDELLIN'
+        ? reservaRow.entregaLatitud ?? null
+        : null,
+    entregaLongitud:
+      reservaRow.modalidadEntrega === 'DOMICILIO_MEDELLIN'
+        ? reservaRow.entregaLongitud ?? null
+        : null,
+    entregaReferencia:
+      reservaRow.modalidadEntrega === 'DOMICILIO_MEDELLIN'
+        ? reservaRow.entregaReferencia ?? null
+        : null,
+    distanciaEntregaKm:
+      reservaRow.modalidadEntrega === 'DOMICILIO_MEDELLIN'
+        ? reservaRow.distanciaEntregaKm ?? null
+        : null,
+    recargoEntregaDomicilio:
+      reservaRow.modalidadEntrega === 'DOMICILIO_MEDELLIN'
+        ? reservaRow.recargoEntregaDomicilio ?? 0
+        : 0,
     sedeNombre: reservaRow.sedeNombre,
     creadaEn: new Date(reservaRow.creadoEn).toISOString(),
     specsBento:
       (vehiculoRow?.specsBento as ReturnType<typeof obtenerSpecsBentoPorVehiculo>) ||
       obtenerSpecsBentoPorVehiculo(vehiculo.id),
     conductor: {
-      nombreCompleto: reservaRow.contactoNombre,
-      tipoDocumento: (reservaRow.contactoTipoDocumento as 'CC' | 'CE' | 'PASAPORTE' | 'NIT' | null) ?? null,
-      numeroDocumento: reservaRow.contactoNumeroDocumento ?? null,
-      categoriaLicencia: (reservaRow.contactoCategoriaLicencia as 'B1' | 'B2' | 'A2' | 'C1' | null) ?? null,
-      telefono: reservaRow.contactoTelefono,
-      correo: reservaRow.contactoCorreo ?? null,
+      nombreCompleto: contratoRow?.arrendatarioNombre ?? reservaRow.contactoNombre,
+      tipoDocumento:
+        ((reservaRow.contactoTipoDocumento ??
+          contratoRow?.arrendatarioTipoDocumento ??
+          verificacionRow?.tipoDocumento) as
+          | 'CC'
+          | 'CE'
+          | 'PASAPORTE'
+          | 'NIT'
+          | null) ?? null,
+      numeroDocumento:
+        reservaRow.contactoNumeroDocumento ??
+        contratoRow?.arrendatarioNumeroDocumento ??
+        verificacionRow?.numeroDocumento ??
+        null,
+      categoriaLicencia:
+        ((reservaRow.contactoCategoriaLicencia ??
+          contratoRow?.arrendatarioLicenciaCategoria ??
+          verificacionRow?.licenciaCategoria) as
+          | 'A1'
+          | 'A2'
+          | 'B1'
+          | 'B2'
+          | 'C1'
+          | null) ?? null,
+      licenciaNumero:
+        contratoRow?.arrendatarioLicenciaNumero ??
+        verificacionRow?.licenciaNumero ??
+        null,
+      licenciaVencimiento: verificacionRow?.licenciaVencimiento ?? null,
+      ciudadExpedicion: contratoRow?.arrendatarioCiudadExpedicion ?? null,
+      domicilio: contratoRow?.arrendatarioDomicilio ?? null,
+      telefono: contratoRow?.arrendatarioTelefono ?? reservaRow.contactoTelefono,
+      correo: reservaRow.contactoCorreo ?? contratoRow?.arrendatarioCorreo ?? null,
       ley1581Aceptada: Boolean(reservaRow.ley1581Aceptada),
     },
     estadoGarantia: resolverEstadoGarantia(reservaRow.estado, garantiaRow),
@@ -293,17 +351,38 @@ export async function obtenerReservaPorCodigoD1(
     const puntosRows = await db
       .select()
       .from(puntosInspeccionR2)
-      .where(eq(puntosInspeccionR2.reservaId, match.reserva.id));
+      .where(eq(puntosInspeccionR2.reservaId, match.reserva.id))
+      .orderBy(desc(puntosInspeccionR2.actualizadoEn));
 
-    const puntosR2Custom: PuntoInspeccionR2[] = puntosRows.map((p) => ({
-      id: p.id,
-      zona: p.zona,
-      etiqueta: p.etiqueta,
-      dictamen: p.dictamen,
-      estado: p.estado as 'ORIGINAL' | 'VERIFICADO' | 'PROTEGIDO' | 'NOVEDAD',
-      coordX: p.coordX,
-      coordY: p.coordY,
-    }));
+    const puntosPorZona = new Map<string, PuntoInspeccionR2>();
+    for (const p of puntosRows) {
+      if (!puntosPorZona.has(p.zona)) {
+        puntosPorZona.set(p.zona, {
+          id: p.id,
+          zona: p.zona,
+          etiqueta: p.etiqueta,
+          dictamen: p.dictamen,
+          estado: p.estado as 'ORIGINAL' | 'VERIFICADO' | 'PROTEGIDO' | 'NOVEDAD',
+          coordX: p.coordX,
+          coordY: p.coordY,
+        });
+      }
+    }
+    const puntosR2Custom: PuntoInspeccionR2[] = Array.from(puntosPorZona.values());
+
+    const verificacionRows = match.reserva.clienteId
+      ? await db
+          .select({
+            tipoDocumento: verificacionesIdentidad.tipoDocumento,
+            numeroDocumento: verificacionesIdentidad.numeroDocumento,
+            licenciaNumero: verificacionesIdentidad.licenciaNumero,
+            licenciaCategoria: verificacionesIdentidad.licenciaCategoria,
+            licenciaVencimiento: verificacionesIdentidad.licenciaVencimiento,
+          })
+          .from(verificacionesIdentidad)
+          .where(eq(verificacionesIdentidad.usuarioId, match.reserva.clienteId))
+          .limit(1)
+      : [];
 
     const garantiaRows = await db
       .select()
@@ -322,7 +401,9 @@ export async function obtenerReservaPorCodigoD1(
       contratoRows[0] ?? null,
       evaluacionRows[0] ?? null,
       puntosR2Custom.length > 0 ? puntosR2Custom : undefined,
-      garantiaRows[0] ?? null
+      garantiaRows[0] ?? null,
+      undefined,
+      verificacionRows[0] ?? null
     );
   } catch (error) {
     logFalloD1('reservas.obtenerPorCodigo', error, { codigo: normalizado });

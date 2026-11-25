@@ -31,6 +31,7 @@ import {
   eliminarVehiculoAction,
   obtenerVehiculoDetalleAction,
   consultarDisponibilidadVehiculoAction,
+  actualizarGaleriaVehiculoAction,
 } from './flota';
 import {
   crearReservaAction,
@@ -50,6 +51,8 @@ import {
   registrarOActualizarDocumentosRapidoAction,
   buscarClientesLocalAction,
   cambiarEstadoReservaAction,
+  obtenerDetalleAdminAction,
+  registrarFotoAlquilerAction,
 } from './reservas';
 import { actualizarPerfilAction } from './perfil';
 import {
@@ -61,6 +64,15 @@ import {
   crearMantenimiento,
   cambiarEstadoMantenimiento,
 } from './mantenimientos';
+import {
+  buscarDireccionesAction,
+  geocodificarInversaAction,
+  validarCoberturaDomicilioAction,
+} from './ubicacion';
+import {
+  guardarDocumentoLegalAction,
+  obtenerResumenDocumentosAction,
+} from './documentos';
 
 export const server = {
   perfil: {
@@ -104,6 +116,7 @@ export const server = {
     eliminarVehiculo: eliminarVehiculoAction,
     obtenerVehiculoDetalle: obtenerVehiculoDetalleAction,
     consultarDisponibilidad: consultarDisponibilidadVehiculoAction,
+    actualizarGaleriaVehiculo: actualizarGaleriaVehiculoAction,
   },
   reservas: {
     crearReserva: crearReservaAction,
@@ -124,10 +137,21 @@ export const server = {
       registrarOActualizarDocumentosRapidoAction,
     buscarClientesLocal: buscarClientesLocalAction,
     cambiarEstado: cambiarEstadoReservaAction,
+    obtenerDetalleAdmin: obtenerDetalleAdminAction,
+    registrarFotoAlquiler: registrarFotoAlquilerAction,
   },
   mantenimientos: {
     crearMantenimiento,
     cambiarEstadoMantenimiento,
+  },
+  ubicacion: {
+    buscarDirecciones: buscarDireccionesAction,
+    geocodificarInversa: geocodificarInversaAction,
+    validarCobertura: validarCoberturaDomicilioAction,
+  },
+  documentos: {
+    guardarLegal: guardarDocumentoLegalAction,
+    obtenerResumen: obtenerResumenDocumentosAction,
   },
 };
 

@@ -8,6 +8,7 @@
 | Subdirectory | Responsibility | Index |
 | :--- | :--- | :--- |
 | [`disponibilidad/`](./disponibilidad/) | Componentes React 19 para la gestión visual de disponibilidad, cabecera de unidad, órdenes activas de taller, wizard typeform de mantenimiento, modal de egreso de taller e isla coordinadora. | [INDEX.md](./disponibilidad/INDEX.md) |
+| [`documentos/`](./documentos/) | Directory `documentos` | *(No index)* |
 | [`wizard/`](./wizard/) | Experiencia inmersiva de pantalla completa («Una pantalla, una tarea», máx. 4 entradas) inspirada en Apple/iOS para el registro y edición de unidades vehiculares en FlotaX. | [INDEX.md](./wizard/INDEX.md) |
 
 ## File Manifest
@@ -19,7 +20,7 @@
 | [`FleetCatalogList.tsx`](./FleetCatalogList.tsx) | Isla React 19: Catálogo con filtro de marcas y grid PC | Componente `<FleetCatalogList ... />` | [`BrandFilterBar.tsx`](./BrandFilterBar.tsx), [`VehicleCatalogCard.tsx`](./VehicleCatalogCard.tsx) |
 | [`FleetInventoryManager.tsx`](./FleetInventoryManager.tsx) | Isla React 19: Gestor de Inventario en Patio con Filtros Progresivos | `FleetInventoryManager`, `FleetInventoryManagerProps` | `astro:actions`, `@/lib/flota/types` |
 | [`LocalCatalogShareCard.tsx`](./LocalCatalogShareCard.tsx) | Isla React 19: Enlace del Catálogo del Local con Progressive Disclosure (3 niveles) | `LocalCatalogShareCard`, `LocalCatalogShareCardProps` | `astro:actions`, `@/lib/flota/locales-captacion` |
-| [`LocalCatalogShowcase.tsx`](./LocalCatalogShowcase.tsx) | Isla React 19: Catálogo Exclusivo del Local (Pantallas 1 y 2 iOS Editorial Bento + Hero Spotlight) | `LocalCatalogShowcase` | `@/lib/flota/types`, `@/lib/flota/locales-captacion` |
+| [`LocalCatalogShowcase.tsx`](./LocalCatalogShowcase.tsx) | Isla React 19: Catálogo Exclusivo del Local (Pantallas 1 y 2 iOS Editorial Bento + Hero Spotlight) | `LocalCatalogShowcase`, `FiltroCategoriaCircular`, `coincideCategoriaShowcase` | `@/lib/flota/types`, `@/lib/flota/locales-captacion` |
 | [`VehicleCatalogCard.tsx`](./VehicleCatalogCard.tsx) | Isla React 19: Tarjeta de Catálogo | `VehicleCatalogCard` | `@/lib/flota/types` |
 | [`VehicleFormIsland.tsx`](./VehicleFormIsland.tsx) | Wrapper Isla React 19: Asistente guiado paso a paso para flota | `VehicleFormIsland`, `VehicleFormIslandProps` | [`./wizard/VehicleWizardIsland.tsx`](./wizard/VehicleWizardIsland.tsx) |
 | [`VehicleSearchResultItem.tsx`](./VehicleSearchResultItem.tsx) | Componente Resultado Spotlight | `VehicleSearchResultItem` | `@/lib/flota/types` |

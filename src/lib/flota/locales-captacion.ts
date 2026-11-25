@@ -15,7 +15,7 @@ export const COOKIE_LOCAL_CAPTACION = 'movix_local_captacion';
 /** Proyección pública del tenant: subconjunto de `locales_alquiler` visible al cliente. */
 export type LocalPublicoContexto = Pick<
   LocalAlquilerSelect,
-  'id' | 'nombre' | 'slug' | 'ciudad' | 'direccion' | 'telefono'
+  'id' | 'nombre' | 'slug' | 'ciudad' | 'direccion' | 'latitud' | 'longitud' | 'telefono'
 >;
 
 export const LOCAL_CANONICO_DEFECTO: LocalPublicoContexto = {
@@ -24,6 +24,8 @@ export const LOCAL_CANONICO_DEFECTO: LocalPublicoContexto = {
   slug: 'patio-norte',
   ciudad: 'Medellín',
   direccion: 'Av. El Poblado #10-45, Sede Principal',
+  latitud: 6.2088,
+  longitud: -75.5697,
   telefono: '+57 300 450 8890',
 };
 
@@ -68,6 +70,8 @@ export async function obtenerLocalPorSlugOId(
           slug: localesAlquiler.slug,
           ciudad: localesAlquiler.ciudad,
           direccion: localesAlquiler.direccion,
+          latitud: localesAlquiler.latitud,
+          longitud: localesAlquiler.longitud,
           telefono: localesAlquiler.telefono,
           activo: localesAlquiler.activo,
         })
@@ -92,6 +96,8 @@ export async function obtenerLocalPorSlugOId(
           slug: encontrado.slug,
           ciudad: encontrado.ciudad ?? 'Medellín',
           direccion: encontrado.direccion ?? null,
+          latitud: encontrado.latitud ?? LOCAL_CANONICO_DEFECTO.latitud,
+          longitud: encontrado.longitud ?? LOCAL_CANONICO_DEFECTO.longitud,
           telefono: encontrado.telefono ?? null,
         };
         registroLocalesMemoria.set(ctx.id, ctx);
@@ -131,6 +137,8 @@ export async function obtenerLocalCatalogoPorDefecto(
           slug: localesAlquiler.slug,
           ciudad: localesAlquiler.ciudad,
           direccion: localesAlquiler.direccion,
+          latitud: localesAlquiler.latitud,
+          longitud: localesAlquiler.longitud,
           telefono: localesAlquiler.telefono,
         })
         .from(localesAlquiler)
@@ -145,6 +153,8 @@ export async function obtenerLocalCatalogoPorDefecto(
           slug: primero.slug,
           ciudad: primero.ciudad ?? 'Medellín',
           direccion: primero.direccion ?? null,
+          latitud: primero.latitud ?? LOCAL_CANONICO_DEFECTO.latitud,
+          longitud: primero.longitud ?? LOCAL_CANONICO_DEFECTO.longitud,
           telefono: primero.telefono ?? null,
         };
         registroLocalesMemoria.set(ctx.id, ctx);
@@ -302,6 +312,8 @@ export async function actualizarConfigCatalogoLocal(
     slug: slugLimpio,
     ciudad: datos.ciudad?.trim() ?? previo.ciudad ?? 'Medellín',
     direccion: datos.direccion?.trim() ?? previo.direccion,
+    latitud: previo.latitud ?? LOCAL_CANONICO_DEFECTO.latitud,
+    longitud: previo.longitud ?? LOCAL_CANONICO_DEFECTO.longitud,
     telefono: datos.telefono?.trim() ?? previo.telefono,
   };
 

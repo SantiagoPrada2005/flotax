@@ -189,7 +189,10 @@ export function buscarVehiculos(
       return false;
     }
 
-    if (categoria !== 'TODOS' && vehiculo.categoria !== categoria) {
+    if (
+      categoria !== 'TODOS' &&
+      (vehiculo.categoria || '').trim().toUpperCase() !== categoria
+    ) {
       return false;
     }
 

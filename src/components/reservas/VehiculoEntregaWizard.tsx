@@ -397,7 +397,7 @@ export default function VehiculoEntregaWizard({
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onWheel={handleWheel}
-      className="relative h-dvh w-full overflow-hidden bg-[#EDEDED] text-[#111827] select-none"
+      className="relative h-dvh w-full overflow-hidden bg-[#EDEDED] dark:bg-[#111827] text-[#111827] dark:text-[#EDEDED] select-none"
     >
       {/* =====================================================================
           HUD SUPERIOR PERSISTENTE (STORY SEGMENTED BAR + CONTROLES DE PASO)
@@ -503,7 +503,7 @@ export default function VehiculoEntregaWizard({
             =================================================================== */}
         <section
           aria-label="Paso 1: Bienvenida de entrega del vehículo"
-          className="relative flex h-dvh w-full flex-col justify-between overflow-hidden bg-white px-6 pt-24 pb-8 safe-bottom"
+          className="relative flex h-dvh w-full flex-col justify-between overflow-hidden bg-white dark:bg-[#111827] px-6 pt-24 pb-8 safe-bottom"
         >
           {/* Retícula milimétrica CAD superior + Horizonte Shader Monocromo inferior */}
           <div
@@ -512,7 +512,7 @@ export default function VehiculoEntregaWizard({
           />
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-[58%] bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(237,237,237,0.85)_26%,rgba(156,163,175,0.75)_54%,rgba(31,41,55,0.94)_80%,#111827_100%)]"
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-[58%] bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(237,237,237,0.85)_26%,rgba(156,163,175,0.75)_54%,rgba(31,41,55,0.94)_80%,#111827_100%)] dark:bg-[linear-gradient(180deg,rgba(17,24,39,0)_0%,rgba(17,24,39,0.7)_40%,#111827_100%)]"
           />
           <div
             aria-hidden="true"
@@ -557,7 +557,7 @@ export default function VehiculoEntregaWizard({
 
           {/* Contenido Central Editorial (Welcome, Conductor) */}
           <div className="relative z-10 mx-auto my-auto w-full max-w-[412px] space-y-5">
-            <div className="inline-flex items-center gap-2 rounded-full bg-[#111827] px-3.5 py-1.5 text-white shadow-sm">
+            <div className="inline-flex items-center gap-2 rounded-full bg-[#111827] dark:bg-[#1F2937] dark:border dark:border-white/15 px-3.5 py-1.5 text-white shadow-sm">
               <span className="h-2 w-2 rounded-full bg-[#EDEDED]" />
               <span className="font-mono text-[10px] font-bold tracking-wider uppercase">
                 {reserva.vehiculo.placa} · {reserva.vehiculo.marca}{' '}
@@ -565,21 +565,21 @@ export default function VehiculoEntregaWizard({
               </span>
             </div>
 
-            <h1 className="font-display text-[44px] sm:text-[52px] font-bold tracking-tight text-[#111827] leading-[1.03]">
+            <h1 className="font-display text-[44px] sm:text-[52px] font-bold tracking-tight text-[#111827] dark:text-[#EDEDED] leading-[1.03]">
               Bienvenido,
-              <span className="block text-[#1F2937]">
+              <span className="block text-[#1F2937] dark:text-[#D1D5DB]">
                 {primerNombreConductor}
               </span>
             </h1>
 
-            <p className="max-w-[36ch] text-[15px] font-medium leading-relaxed text-[#1F2937]">
+            <p className="max-w-[36ch] text-[15px] font-medium leading-relaxed text-[#1F2937] dark:text-[#D1D5DB]">
               Vamos a recibir tu vehículo y conocer cómo estuvo el servicio
               prestado en menos de 45 segundos. Una pregunta a la vez, sin
               formularios extensos.
             </p>
 
             {/* Tarjeta Flotante con Vehículo y Garantía en Custodia */}
-            <div className="rounded-[24px] border border-[#9CA3AF]/50 bg-white/95 p-4 shadow-[0_18px_38px_-12px_rgba(17,24,39,0.18)] backdrop-blur-md">
+            <div className="rounded-[24px] border border-[#9CA3AF]/50 dark:border-white/15 bg-white/95 dark:bg-[#1F2937]/95 p-4 shadow-[0_18px_38px_-12px_rgba(17,24,39,0.18)] backdrop-blur-md">
               <div className="flex items-center gap-3.5">
                 <img
                   src={reserva.vehiculo.imagenUrl}
@@ -587,17 +587,17 @@ export default function VehiculoEntregaWizard({
                   className="h-14 w-24 object-contain shrink-0"
                 />
                 <div className="min-w-0 flex-1">
-                  <span className="block font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
+                  <span className="block font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
                     {reserva.sedeNombre} · #{reserva.codigo}
                   </span>
-                  <p className="font-display text-sm font-bold text-[#111827] truncate">
+                  <p className="font-display text-sm font-bold text-[#111827] dark:text-[#EDEDED] truncate">
                     {formatearRangoReservaHumano(
                       reserva.fechaInicio,
                       reserva.fechaFin
                     )}{' '}
                     ({reserva.diasAlquiler} días)
                   </p>
-                  <span className="mt-1 inline-block rounded-full bg-[#EDEDED] px-2.5 py-0.5 font-mono text-[10px] font-bold text-[#111827]">
+                  <span className="mt-1 inline-block rounded-full bg-[#EDEDED] dark:bg-[#111827] dark:border dark:border-white/15 px-2.5 py-0.5 font-mono text-[10px] font-bold text-[#111827] dark:text-[#EDEDED]">
                     {formatCop(reserva.vehiculo.depositoGarantia)} en custodia R2
                   </span>
                 </div>
@@ -652,7 +652,7 @@ export default function VehiculoEntregaWizard({
             =================================================================== */}
         <section
           aria-label="Paso 2: Llave de entrega R2 y verificación de unidad"
-          className="relative flex h-dvh w-full flex-col justify-between overflow-hidden bg-white px-5 pt-3 pb-6 safe-bottom"
+          className="relative flex h-dvh w-full flex-col justify-between overflow-hidden bg-white dark:bg-[#111827] px-5 pt-3 pb-6 safe-bottom"
         >
           <div className="mx-auto flex h-full w-full max-w-[420px] flex-col justify-between">
             {/* Cúpula Atmosférica Superior con Radar Pericial (Ref 03 Top Stage) */}
@@ -744,14 +744,14 @@ export default function VehiculoEntregaWizard({
             {/* Cuerpo Inferior: Device Key / Llave de Entrega R2 + 3 Puntos Interactivos */}
             <div className="my-auto space-y-3.5 py-2">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border-[1.5px] border-[#111827] bg-[#EDEDED] font-mono text-lg font-bold text-[#111827]">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border-[1.5px] border-[#111827] dark:border-white/20 bg-[#EDEDED] dark:bg-[#1F2937] font-mono text-lg font-bold text-[#111827] dark:text-[#EDEDED]">
                   ⛶
                 </div>
                 <div>
-                  <h3 className="font-display text-2xl font-bold tracking-tight text-[#111827]">
+                  <h3 className="font-display text-2xl font-bold tracking-tight text-[#111827] dark:text-[#EDEDED]">
                     Llave de Entrega R2
                   </h3>
-                  <p className="text-xs font-medium text-[#4B5563]">
+                  <p className="text-xs font-medium text-[#4B5563] dark:text-[#9CA3AF]">
                     Confirma con un toque los 3 puntos de cierre de tu unidad:
                   </p>
                 </div>
@@ -786,23 +786,23 @@ export default function VehiculoEntregaWizard({
                     onClick={() => toggleItemChecklist(item.key)}
                     className={`ios-press-bounce flex w-full items-center justify-between gap-3 rounded-[20px] border p-3.5 text-left transition cursor-pointer ${
                       item.activo
-                        ? 'border-[#111827] bg-[#EDEDED]/80 shadow-xs'
-                        : 'border-[#9CA3AF]/50 bg-white'
+                        ? 'border-[#111827] dark:border-white/30 bg-[#EDEDED]/80 dark:bg-[#1F2937] shadow-xs'
+                        : 'border-[#9CA3AF]/50 dark:border-white/15 bg-white dark:bg-[#1F2937]/60'
                     }`}
                   >
                     <div className="min-w-0">
-                      <span className="block font-display text-[13px] font-bold text-[#111827]">
+                      <span className="block font-display text-[13px] font-bold text-[#111827] dark:text-[#EDEDED]">
                         {item.titulo}
                       </span>
-                      <span className="block text-[11px] font-medium text-[#4B5563]">
+                      <span className="block text-[11px] font-medium text-[#4B5563] dark:text-[#9CA3AF]">
                         {item.subtitulo}
                       </span>
                     </div>
                     <span
                       className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold transition ${
                         item.activo
-                          ? 'bg-[#111827] text-white'
-                          : 'border border-[#9CA3AF] bg-white text-transparent'
+                          ? 'bg-[#111827] dark:bg-[#EDEDED] text-white dark:text-[#111827]'
+                          : 'border border-[#9CA3AF] dark:border-white/25 bg-white dark:bg-[#111827] text-transparent'
                       }`}
                     >
                       ✓
@@ -817,7 +817,7 @@ export default function VehiculoEntregaWizard({
               type="button"
               disabled={!checklistCompleto}
               onClick={() => irAPaso(2)}
-              className="ios-press-bounce flex min-h-[54px] w-full items-center justify-center gap-2 rounded-full bg-[#1F2937] px-6 py-3.5 font-display text-sm font-bold text-white shadow-md transition hover:bg-[#111827] disabled:opacity-45 cursor-pointer disabled:cursor-not-allowed"
+              className="ios-press-bounce flex min-h-[54px] w-full items-center justify-center gap-2 rounded-full bg-[#1F2937] dark:bg-[#EDEDED] px-6 py-3.5 font-display text-sm font-bold text-white dark:text-[#111827] shadow-md transition hover:bg-[#111827] dark:hover:bg-white disabled:opacity-45 cursor-pointer disabled:cursor-not-allowed"
             >
               <span>⛶</span>
               <span>Confirmar entrega y evaluar servicio</span>
@@ -831,26 +831,26 @@ export default function VehiculoEntregaWizard({
             =================================================================== */}
         <section
           aria-label="Paso 3: Evaluación interactiva del servicio prestado"
-          className="relative flex h-dvh w-full flex-col justify-between overflow-hidden bg-[#EDEDED] px-5 pt-16 pb-6 safe-bottom"
+          className="relative flex h-dvh w-full flex-col justify-between overflow-hidden bg-[#EDEDED] dark:bg-[#111827] px-5 pt-16 pb-6 safe-bottom"
         >
           <div className="mx-auto flex h-full w-full max-w-[420px] flex-col justify-between">
             {/* Pregunta Conversacional Única (Typeform Focus) */}
             <div className="space-y-1.5 pt-2">
               <div className="flex items-center justify-between">
-                <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
+                <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
                   EXPERIENCIA DEL SERVICIO PRESTADO
                 </span>
                 {autoAdvanceNotice && (
-                  <span className="rounded-full bg-[#111827] px-2.5 py-0.5 font-mono text-[9px] font-bold text-white animate-fade-in">
+                  <span className="rounded-full bg-[#111827] dark:bg-[#EDEDED] px-2.5 py-0.5 font-mono text-[9px] font-bold text-white dark:text-[#111827] animate-fade-in">
                     SELECCIÓN GUARDADA ✓
                   </span>
                 )}
               </div>
-              <h2 className="font-display text-[24px] sm:text-[26px] font-bold tracking-tight text-[#111827] leading-[1.12]">
+              <h2 className="font-display text-[24px] sm:text-[26px] font-bold tracking-tight text-[#111827] dark:text-[#EDEDED] leading-[1.12]">
                 ¿Cómo estuvo tu experiencia con el vehículo y la atención en
                 patio?
               </h2>
-              <p className="text-xs font-medium text-[#4B5563]">
+              <p className="text-xs font-medium text-[#4B5563] dark:text-[#9CA3AF]">
                 Elige una tarjeta Bento y marca qué fue lo mejor de tu alquiler:
               </p>
             </div>
@@ -873,14 +873,16 @@ export default function VehiculoEntregaWizard({
                       onClick={() => seleccionarBentoCalificacion(opcion.id)}
                       className={`ios-press-bounce flex flex-col justify-between rounded-[22px] border p-3.5 text-left transition cursor-pointer ${
                         activa
-                          ? 'border-[#111827] bg-[#111827] text-white shadow-[0_14px_28px_-8px_rgba(17,24,39,0.35)]'
-                          : 'border-[#9CA3AF]/50 bg-white text-[#111827] hover:border-[#4B5563]'
+                          ? 'border-[#111827] bg-[#111827] text-white dark:border-[#EDEDED] dark:bg-[#EDEDED] dark:text-[#111827] shadow-[0_14px_28px_-8px_rgba(17,24,39,0.35)]'
+                          : 'border-[#9CA3AF]/50 dark:border-white/15 bg-white dark:bg-[#1F2937] text-[#111827] dark:text-[#EDEDED] hover:border-[#4B5563]'
                       }`}
                     >
                       <div className="flex w-full items-center justify-between gap-1">
                         <span
                           className={`font-mono text-[11px] font-bold ${
-                            activa ? 'text-white' : 'text-[#4B5563]'
+                            activa
+                              ? 'text-white dark:text-[#111827]'
+                              : 'text-[#4B5563] dark:text-[#9CA3AF]'
                           }`}
                         >
                           {opcion.badge}
@@ -888,8 +890,8 @@ export default function VehiculoEntregaWizard({
                         <span
                           className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold ${
                             activa
-                              ? 'bg-white text-[#111827]'
-                              : 'border border-[#9CA3AF] bg-[#EDEDED]/60 text-transparent'
+                              ? 'bg-white text-[#111827] dark:bg-[#111827] dark:text-[#EDEDED]'
+                              : 'border border-[#9CA3AF] dark:border-white/25 bg-[#EDEDED]/60 dark:bg-[#111827] text-transparent'
                           }`}
                         >
                           ✓
@@ -902,7 +904,9 @@ export default function VehiculoEntregaWizard({
                         </span>
                         <span
                           className={`mt-0.5 block text-[11px] leading-snug ${
-                            activa ? 'text-[#EDEDED]/85' : 'text-[#4B5563]'
+                            activa
+                              ? 'text-[#EDEDED]/85 dark:text-[#1F2937]'
+                              : 'text-[#4B5563] dark:text-[#D1D5DB]'
                           }`}
                         >
                           {opcion.descripcion}
@@ -914,9 +918,9 @@ export default function VehiculoEntregaWizard({
               </div>
 
               {/* Píldoras Interactivas de Aspectos Destacados + Observación Opcional */}
-              <div className="rounded-[22px] border border-[#9CA3AF]/45 bg-white p-3.5 space-y-2.5">
+              <div className="rounded-[22px] border border-[#9CA3AF]/45 dark:border-white/15 bg-white dark:bg-[#1F2937] p-3.5 space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-[9px] font-bold uppercase tracking-wider text-[#4B5563]">
+                  <span className="font-mono text-[9px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
                     ¿QUÉ DESTACAS DEL SERVICIO? (MULTI-SELECCIÓN)
                   </span>
                   <button
@@ -924,7 +928,7 @@ export default function VehiculoEntregaWizard({
                     onClick={() =>
                       setMostrarInputComentario((prev) => !prev)
                     }
-                    className="font-mono text-[10px] font-bold text-[#111827] underline cursor-pointer"
+                    className="font-mono text-[10px] font-bold text-[#111827] dark:text-[#EDEDED] underline cursor-pointer"
                   >
                     {mostrarInputComentario ? 'Ocultar nota' : '+ Añadir nota'}
                   </button>
@@ -940,8 +944,8 @@ export default function VehiculoEntregaWizard({
                         onClick={() => toggleTagServicio(tag)}
                         className={`ios-press-bounce rounded-full px-3 py-1.5 text-[11px] font-bold transition cursor-pointer ${
                           seleccionado
-                            ? 'bg-[#111827] text-white'
-                            : 'bg-[#EDEDED] text-[#111827] hover:bg-[#9CA3AF]/35'
+                            ? 'bg-[#111827] text-white dark:bg-[#EDEDED] dark:text-[#111827]'
+                            : 'bg-[#EDEDED] dark:bg-[#111827] dark:border dark:border-white/15 text-[#111827] dark:text-[#EDEDED] hover:bg-[#9CA3AF]/35'
                         }`}
                       >
                         {seleccionado ? `✓ ${tag}` : tag}
@@ -958,7 +962,7 @@ export default function VehiculoEntregaWizard({
                       onChange={(e) => setComentario(e.target.value)}
                       placeholder="Escribe una observación breve del servicio o vehículo..."
                       aria-label="Observación opcional sobre el servicio prestado"
-                      className="w-full rounded-[12px] border border-[#9CA3AF] bg-[#EDEDED] px-3.5 py-2.5 text-base font-medium text-[#111827] placeholder:text-[#4B5563] outline-none focus:border-[#111827]"
+                      className="w-full rounded-[12px] border border-[#9CA3AF] dark:border-white/15 bg-[#EDEDED] dark:bg-[#111827] px-3.5 py-2.5 text-base font-medium text-[#111827] dark:text-[#EDEDED] placeholder:text-[#4B5563] dark:placeholder:text-[#9CA3AF] outline-none focus:border-[#111827] dark:focus:border-[#EDEDED]"
                     />
                   </div>
                 )}
@@ -969,7 +973,7 @@ export default function VehiculoEntregaWizard({
             <button
               type="button"
               onClick={() => irAPaso(3)}
-              className="ios-press-bounce flex min-h-[54px] w-full items-center justify-center gap-2 rounded-full bg-[#111827] px-6 py-3.5 font-display text-sm font-bold text-white shadow-lg transition hover:bg-[#1F2937] cursor-pointer"
+              className="ios-press-bounce flex min-h-[54px] w-full items-center justify-center gap-2 rounded-full bg-[#111827] dark:bg-[#EDEDED] px-6 py-3.5 font-display text-sm font-bold text-white dark:text-[#111827] shadow-lg transition hover:bg-[#1F2937] dark:hover:bg-white cursor-pointer"
             >
               <span>Enviar reporte y evaluación de retorno</span>
               <span>→</span>
@@ -982,19 +986,19 @@ export default function VehiculoEntregaWizard({
             =================================================================== */}
         <section
           aria-label="Paso 4: Síntesis de evaluación y reporte de retorno"
-          className="relative flex h-dvh w-full flex-col justify-between overflow-hidden bg-white px-6 pt-16 pb-6 safe-bottom"
+          className="relative flex h-dvh w-full flex-col justify-between overflow-hidden bg-white dark:bg-[#111827] px-6 pt-16 pb-6 safe-bottom"
         >
           <div className="mx-auto flex h-full w-full max-w-[420px] flex-col justify-between">
             {/* Bloque Central Monumental: Contador Porcentual + Barra Achurada */}
             <div className="mt-4 flex flex-col items-center text-center space-y-3">
               <span
                 aria-live="polite"
-                className="font-display text-[68px] sm:text-[76px] font-bold tracking-tight text-[#111827] leading-none tabular-nums"
+                className="font-display text-[68px] sm:text-[76px] font-bold tracking-tight text-[#111827] dark:text-[#EDEDED] leading-none tabular-nums"
               >
                 {porcentajeSintesis}%
               </span>
 
-              <h2 className="font-display text-[22px] sm:text-[24px] font-bold tracking-tight text-[#111827] leading-snug">
+              <h2 className="font-display text-[22px] sm:text-[24px] font-bold tracking-tight text-[#111827] dark:text-[#EDEDED] leading-snug">
                 {sintesisCompletada
                   ? '¡Evaluación de retorno enviada!'
                   : 'Registrando evaluación y reporte de retorno...'}
@@ -1002,13 +1006,13 @@ export default function VehiculoEntregaWizard({
 
               {/* Barra de Progreso Horizontal con Achurado +62.3° */}
               <div className="w-full max-w-[360px] pt-1">
-                <div className="h-3 w-full overflow-hidden rounded-full bg-[#EDEDED] p-0.5">
+                <div className="h-3 w-full overflow-hidden rounded-full bg-[#EDEDED] dark:bg-[#1F2937] p-0.5">
                   <div
                     style={{ width: `${porcentajeSintesis}%` }}
-                    className="h-full rounded-full bg-[#111827] bg-hatch-diagonal-dark transition-all duration-150"
+                    className="h-full rounded-full bg-[#111827] dark:bg-[#EDEDED] bg-hatch-diagonal-dark transition-all duration-150"
                   />
                 </div>
-                <p className="mt-2 font-mono text-[11px] font-semibold text-[#4B5563]">
+                <p className="mt-2 font-mono text-[11px] font-semibold text-[#4B5563] dark:text-[#9CA3AF]">
                   {sintesisCompletada
                     ? `Reporte previo #${reserva.codigo} enviado. El local validará la recepción física de la unidad, liquidación y liberación de la fianza en patio.`
                     : 'Consolidando evaluación y checklist previo de retorno...'}
@@ -1017,12 +1021,12 @@ export default function VehiculoEntregaWizard({
             </div>
 
             {/* Tarjeta Checklist Secuencial en Vivo */}
-            <div className="my-auto rounded-[26px] border border-[#9CA3AF]/45 bg-[#EDEDED]/85 p-5 space-y-3.5">
-              <div className="flex items-center justify-between border-b border-[#9CA3AF]/30 pb-2.5">
-                <span className="font-display text-xs font-bold text-[#111827]">
+            <div className="my-auto rounded-[26px] border border-[#9CA3AF]/45 dark:border-white/15 bg-[#EDEDED]/85 dark:bg-[#1F2937] p-5 space-y-3.5">
+              <div className="flex items-center justify-between border-b border-[#9CA3AF]/30 dark:border-white/10 pb-2.5">
+                <span className="font-display text-xs font-bold text-[#111827] dark:text-[#EDEDED]">
                   Resumen de entrega para #{reserva.codigo}
                 </span>
-                <span className="font-mono text-[10px] font-bold text-[#4B5563]">
+                <span className="font-mono text-[10px] font-bold text-[#4B5563] dark:text-[#9CA3AF]">
                   {reserva.vehiculo.placa}
                 </span>
               </div>
@@ -1038,8 +1042,8 @@ export default function VehiculoEntregaWizard({
                       <span
                         className={`text-[13px] transition-colors ${
                           verificado
-                            ? 'font-semibold text-[#111827]'
-                            : 'font-medium text-[#4B5563]'
+                            ? 'font-semibold text-[#111827] dark:text-[#EDEDED]'
+                            : 'font-medium text-[#4B5563] dark:text-[#9CA3AF]'
                         }`}
                       >
                         · {item.etiqueta}
@@ -1047,8 +1051,8 @@ export default function VehiculoEntregaWizard({
                       <span
                         className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all duration-300 ${
                           verificado
-                            ? 'scale-100 bg-[#111827] text-white'
-                            : 'scale-90 border border-[#9CA3AF] bg-white text-[#9CA3AF]'
+                            ? 'scale-100 bg-[#111827] dark:bg-[#EDEDED] text-white dark:text-[#111827]'
+                            : 'scale-90 border border-[#9CA3AF] dark:border-white/25 bg-white dark:bg-[#111827] text-[#9CA3AF]'
                         }`}
                       >
                         {verificado ? '✓' : '·'}
@@ -1065,7 +1069,7 @@ export default function VehiculoEntregaWizard({
                 type="button"
                 disabled={!sintesisCompletada}
                 onClick={() => navigate(destinoVolver)}
-                className="ios-press-bounce flex min-h-[54px] w-full items-center justify-center gap-2 rounded-full bg-[#111827] px-6 py-3.5 font-display text-sm font-bold text-white shadow-lg transition hover:bg-[#1F2937] disabled:opacity-50 cursor-pointer disabled:cursor-wait"
+                className="ios-press-bounce flex min-h-[54px] w-full items-center justify-center gap-2 rounded-full bg-[#111827] dark:bg-[#EDEDED] px-6 py-3.5 font-display text-sm font-bold text-white dark:text-[#111827] shadow-lg transition hover:bg-[#1F2937] dark:hover:bg-white disabled:opacity-50 cursor-pointer disabled:cursor-wait"
               >
                 <span>
                   {sintesisCompletada

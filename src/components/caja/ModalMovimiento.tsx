@@ -193,22 +193,22 @@ export function ModalMovimiento({
   const montoNumerico = parseFloat(monto.replace(/[^\d.-]/g, '')) || 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-xs overflow-y-auto">
-      <div className="relative w-full max-w-lg rounded-[28px] sm:rounded-[32px] border border-[#9CA3AF]/30 bg-white p-5 sm:p-7 shadow-2xl my-auto max-h-[92vh] overflow-y-auto space-y-5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#111827]/65 backdrop-blur-xs overflow-y-auto">
+      <div className="relative w-full max-w-lg rounded-[28px] sm:rounded-[32px] border border-[#9CA3AF]/30 dark:border-white/15 bg-white dark:bg-[#1F2937] p-5 sm:p-7 shadow-2xl my-auto max-h-[92vh] overflow-y-auto space-y-5">
         {/* Cabecera iOS con jerarquía clara */}
         <div className="flex items-start justify-between">
           <div className="space-y-1">
-            <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#4B5563] block">
+            <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF] block">
               {bloquearTipo ? 'Cuentas por Cobrar · Abono a Cartera' : 'Caja Operativa · Registro Rápido'}
             </span>
-            <h2 className="font-display text-xl sm:text-2xl font-bold tracking-tight text-[#111827]">
+            <h2 className="font-display text-xl sm:text-2xl font-bold tracking-tight text-[#111827] dark:text-[#EDEDED]">
               {bloquearTipo
                 ? 'Registrar abono de contrato'
                 : tipo === 'INGRESO'
                   ? 'Registrar nuevo ingreso'
                   : 'Registrar nuevo gasto'}
             </h2>
-            <p className="text-xs text-[#4B5563]">
+            <p className="text-xs text-[#4B5563] dark:text-[#D1D5DB]">
               {bloquearTipo
                 ? 'Registra el dinero que entra para abonar al saldo pendiente del contrato de alquiler.'
                 : tipo === 'INGRESO'
@@ -219,7 +219,7 @@ export function ModalMovimiento({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#EDEDED] text-[#4B5563] transition hover:bg-[#9CA3AF]/30 cursor-pointer"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#EDEDED] dark:bg-[#111827] dark:border dark:border-white/15 text-[#4B5563] dark:text-[#EDEDED] transition-colors hover:bg-[#9CA3AF]/30 dark:hover:bg-white/10 cursor-pointer"
             aria-label="Cerrar ventana"
           >
             ✕
@@ -228,21 +228,21 @@ export function ModalMovimiento({
 
         {/* Selector de Tipo (Pills Suaves) */}
         {bloquearTipo ? (
-          <div className="flex rounded-2xl bg-[#EDEDED] p-1">
+          <div className="flex rounded-2xl bg-[#EDEDED] dark:bg-[#111827] p-1">
             <div className="flex-1 min-h-[44px] rounded-xl text-xs sm:text-sm font-bold bg-emerald-600 text-white shadow-xs flex items-center justify-center gap-2">
               <span className="text-sm font-black">+</span>
               <span>Dinero que entra (Ingreso)</span>
             </div>
           </div>
         ) : (
-          <div className="flex rounded-2xl bg-[#EDEDED] p-1 gap-1">
+          <div className="flex rounded-2xl bg-[#EDEDED] dark:bg-[#111827] p-1 gap-1 border border-transparent dark:border-white/10">
             <button
               type="button"
               onClick={() => handleTipoChange('INGRESO')}
-              className={`flex-1 min-h-[44px] rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              className={`flex-1 min-h-[44px] rounded-xl text-xs sm:text-sm font-bold transition-colors cursor-pointer ${
                 tipo === 'INGRESO'
                   ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-[#4B5563] hover:text-[#111827]'
+                  : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
               }`}
             >
               + Dinero que entra (Ingreso)
@@ -250,10 +250,10 @@ export function ModalMovimiento({
             <button
               type="button"
               onClick={() => handleTipoChange('EGRESO')}
-              className={`flex-1 min-h-[44px] rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              className={`flex-1 min-h-[44px] rounded-xl text-xs sm:text-sm font-bold transition-colors cursor-pointer ${
                 tipo === 'EGRESO'
-                  ? 'bg-[#111827] text-white shadow-xs'
-                  : 'text-[#4B5563] hover:text-[#111827]'
+                  ? 'bg-[#111827] text-white dark:bg-[#EDEDED] dark:text-[#111827] shadow-xs'
+                  : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
               }`}
             >
               − Dinero que sale (Gasto)
@@ -262,7 +262,7 @@ export function ModalMovimiento({
         )}
 
         {errorValidacion && (
-          <div className="rounded-2xl border border-rose-300 bg-rose-50/70 p-3.5 text-xs font-semibold text-rose-800 flex items-center gap-2">
+          <div className="rounded-2xl border border-rose-300 dark:border-rose-500/40 bg-rose-50/70 dark:bg-rose-950/40 p-3.5 text-xs font-semibold text-rose-800 dark:text-rose-200 flex items-center gap-2">
             <span>⚠</span>
             <span>{errorValidacion}</span>
           </div>
@@ -274,12 +274,12 @@ export function ModalMovimiento({
             <div className="flex items-center justify-between">
               <label
                 htmlFor={montoInputId}
-                className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827]"
+                className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]"
               >
                 ¿Cuánto dinero es? <span className="text-rose-600">*</span>
               </label>
               {montoNumerico > 0 && (
-                <span className="font-mono text-xs font-bold text-[#111827]">
+                <span className="font-mono text-xs font-bold text-[#111827] dark:text-[#EDEDED]">
                   $ {montoNumerico.toLocaleString('es-CO')} COP
                 </span>
               )}
@@ -298,7 +298,7 @@ export function ModalMovimiento({
                 value={monto}
                 onChange={(e) => setMonto(e.target.value)}
                 placeholder="0"
-                className="w-full rounded-2xl bg-[#EDEDED]/50 pl-11 sm:pl-12 pr-4 sm:pr-5 py-3.5 sm:py-4 font-mono text-2xl sm:text-3xl font-bold text-[#111827] placeholder-[#9CA3AF] border border-transparent focus:border-[#111827] focus:bg-white focus:outline-hidden transition-all"
+                className="w-full rounded-2xl bg-[#EDEDED]/50 dark:bg-[#111827] pl-11 sm:pl-12 pr-4 sm:pr-5 py-3.5 sm:py-4 font-mono text-2xl sm:text-3xl font-bold text-[#111827] dark:text-[#EDEDED] placeholder-[#9CA3AF] border border-transparent dark:border-white/15 focus:border-[#111827] dark:focus:border-[#EDEDED] focus:bg-white dark:focus:bg-[#111827] transition-colors"
                 required
               />
             </div>
@@ -308,7 +308,7 @@ export function ModalMovimiento({
           <div className="space-y-1.5">
             <label
               htmlFor={conceptoInputId}
-              className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827]"
+              className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]"
             >
               ¿Cuál es el motivo? <span className="text-rose-600">*</span>
             </label>
@@ -322,19 +322,19 @@ export function ModalMovimiento({
                   ? 'Ej. Pago de alquiler de vehículo, Abono...'
                   : 'Ej. Cambio de aceite, Combustible, Lavado...'
               }
-              className="w-full rounded-2xl bg-[#EDEDED]/50 px-4 py-3 text-base text-[#111827] placeholder-[#9CA3AF] border border-transparent focus:border-[#111827] focus:bg-white focus:outline-hidden transition-all"
+              className="w-full rounded-2xl bg-[#EDEDED]/50 dark:bg-[#111827] px-4 py-3 text-base text-[#111827] dark:text-[#EDEDED] placeholder-[#9CA3AF] border border-transparent dark:border-white/15 focus:border-[#111827] dark:focus:border-[#EDEDED] focus:bg-white dark:focus:bg-[#111827] transition-colors"
               required
             />
 
             {/* Atajos / Sugerencias rápidas con un clic */}
             <div className="flex flex-wrap items-center gap-1.5 pt-1">
-              <span className="text-[10px] text-[#4B5563] font-medium mr-1">Rápido:</span>
+              <span className="text-[10px] text-[#4B5563] dark:text-[#9CA3AF] font-medium mr-1">Rápido:</span>
               {(tipo === 'INGRESO' ? SUGERENCIAS_INGRESO : SUGERENCIAS_EGRESO).map((sug) => (
                 <button
                   key={sug.label}
                   type="button"
                   onClick={() => aplicarSugerencia(sug.texto, sug.categoria)}
-                  className="rounded-lg bg-[#EDEDED] px-2.5 py-1 text-[11px] font-semibold text-[#4B5563] hover:bg-[#9CA3AF]/30 hover:text-[#111827] transition cursor-pointer"
+                  className="rounded-lg bg-[#EDEDED] dark:bg-[#111827] dark:border dark:border-white/10 px-2.5 py-1 text-[11px] font-semibold text-[#4B5563] dark:text-[#D1D5DB] hover:bg-[#9CA3AF]/30 dark:hover:bg-white/10 hover:text-[#111827] dark:hover:text-white transition-colors cursor-pointer"
                 >
                   {sug.label}
                 </button>
@@ -347,7 +347,7 @@ export function ModalMovimiento({
             <div className="space-y-1">
               <label
                 htmlFor={cuentaInputId}
-                className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827]"
+                className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]"
               >
                 {tipo === 'INGRESO' ? '¿Dónde entra el dinero?' : '¿De dónde sale el dinero?'}
               </label>
@@ -372,7 +372,7 @@ export function ModalMovimiento({
             <div className="space-y-1">
               <label
                 htmlFor={metodoInputId}
-                className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827]"
+                className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]"
               >
                 Método de pago
               </label>
@@ -387,11 +387,11 @@ export function ModalMovimiento({
           </div>
 
           {/* Botón de Detalles Opcionales (Progressive Disclosure) */}
-          <div className="pt-2 border-t border-[#EDEDED]">
+          <div className="pt-2 border-t border-[#EDEDED] dark:border-white/10">
             <button
               type="button"
               onClick={() => setMostrarOpcionesAvanzadas(!mostrarOpcionesAvanzadas)}
-              className="flex items-center justify-between w-full py-1 text-xs font-bold text-[#4B5563] hover:text-[#111827] transition cursor-pointer"
+              className="flex items-center justify-between w-full py-1 text-xs font-bold text-[#4B5563] dark:text-[#D1D5DB] hover:text-[#111827] dark:hover:text-white transition-colors cursor-pointer"
             >
               <span>
                 {mostrarOpcionesAvanzadas ? '− Ocultar detalles adicionales' : '+ Agregar detalles opcionales (Contrato, Factura, Cliente)'}
@@ -400,10 +400,10 @@ export function ModalMovimiento({
             </button>
 
             {mostrarOpcionesAvanzadas && (
-              <div className="mt-3 space-y-3 rounded-2xl bg-[#EDEDED]/30 p-3.5 border border-[#9CA3AF]/20 animate-fade-in">
+              <div className="mt-3 space-y-3 rounded-2xl bg-[#EDEDED]/30 dark:bg-[#111827] p-3.5 border border-[#9CA3AF]/20 dark:border-white/12 animate-fade-in">
                 {/* Vincular Contrato */}
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[#4B5563] mb-1">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#D1D5DB] mb-1">
                     Vincular a Contrato Activo
                   </label>
                   <CajaCustomSelect
@@ -425,7 +425,7 @@ export function ModalMovimiento({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-[#4B5563] mb-1">
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#D1D5DB] mb-1">
                       {tipo === 'INGRESO' ? 'Nombre del Cliente' : 'Proveedor / Taller'}
                     </label>
                     <input
@@ -437,12 +437,12 @@ export function ModalMovimiento({
                           ? setClienteNombre(e.target.value)
                           : setProveedor(e.target.value)
                       }
-                      className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 bg-white px-3 py-2 text-base text-[#111827] focus:border-[#111827] focus:outline-hidden"
+                      className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 dark:border-white/15 bg-white dark:bg-[#1F2937] px-3 py-2 text-base text-[#111827] dark:text-[#EDEDED] focus:border-[#111827] dark:focus:border-[#EDEDED]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-[#4B5563] mb-1">
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#D1D5DB] mb-1">
                       N° Factura / Referencia
                     </label>
                     <input
@@ -450,14 +450,14 @@ export function ModalMovimiento({
                       placeholder="N° Comprobante / Recibo"
                       value={referencia}
                       onChange={(e) => setReferencia(e.target.value)}
-                      className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 bg-white px-3 py-2 text-base text-[#111827] focus:border-[#111827] focus:outline-hidden"
+                      className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 dark:border-white/15 bg-white dark:bg-[#1F2937] px-3 py-2 text-base text-[#111827] dark:text-[#EDEDED] focus:border-[#111827] dark:focus:border-[#EDEDED]"
                     />
                   </div>
                 </div>
 
                 {tipo === 'EGRESO' && (
                   <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-[#4B5563] mb-1">
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#D1D5DB] mb-1">
                       Placa del Vehículo Imputado
                     </label>
                     <input
@@ -465,13 +465,13 @@ export function ModalMovimiento({
                       placeholder="Ej. ABC-123"
                       value={vehiculoId}
                       onChange={(e) => setVehiculoId(e.target.value)}
-                      className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 bg-white px-3 py-2 text-base text-[#111827] focus:border-[#111827] focus:outline-hidden"
+                      className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 dark:border-white/15 bg-white dark:bg-[#1F2937] px-3 py-2 text-base text-[#111827] dark:text-[#EDEDED] focus:border-[#111827] dark:focus:border-[#EDEDED]"
                     />
                   </div>
                 )}
 
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[#4B5563] mb-1">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#D1D5DB] mb-1">
                     Notas adicionales
                   </label>
                   <textarea
@@ -479,7 +479,7 @@ export function ModalMovimiento({
                     placeholder="Detalles complementarios..."
                     value={observaciones}
                     onChange={(e) => setObservaciones(e.target.value)}
-                    className="w-full rounded-xl border border-[#9CA3AF]/40 bg-white px-3 py-2 text-base text-[#111827] focus:border-[#111827] focus:outline-hidden"
+                    className="w-full rounded-xl border border-[#9CA3AF]/40 dark:border-white/15 bg-white dark:bg-[#1F2937] px-3 py-2 text-base text-[#111827] dark:text-[#EDEDED] focus:border-[#111827] dark:focus:border-[#EDEDED]"
                   />
                 </div>
               </div>
@@ -487,27 +487,27 @@ export function ModalMovimiento({
           </div>
 
           {/* Botones de Acción (iOS Press Bounce & Thumb friendly) */}
-          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#EDEDED]">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#EDEDED] dark:border-white/10">
             <button
               type="button"
               onClick={onClose}
               disabled={guardando}
-              className="min-h-[44px] rounded-full border border-[#9CA3AF]/40 px-5 py-2 text-xs sm:text-sm font-semibold text-[#4B5563] transition hover:bg-[#EDEDED] cursor-pointer"
+              className="min-h-[44px] rounded-full border border-[#9CA3AF]/40 dark:border-white/15 px-5 py-2 text-xs sm:text-sm font-semibold text-[#4B5563] dark:text-[#D1D5DB] transition-colors hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={guardando}
-              className={`ios-press-bounce min-h-[44px] rounded-full px-6 py-2.5 text-xs sm:text-sm font-bold text-white shadow-sm transition active:scale-95 cursor-pointer flex items-center gap-2 ${
+              className={`ios-press-bounce min-h-[44px] rounded-full px-6 py-2.5 text-xs sm:text-sm font-bold shadow-sm transition-colors cursor-pointer flex items-center gap-2 ${
                 tipo === 'INGRESO'
-                  ? 'bg-emerald-600 hover:bg-emerald-700'
-                  : 'bg-[#111827] hover:bg-[#1F2937]'
+                  ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                  : 'bg-[#111827] text-white hover:bg-[#1F2937] dark:bg-[#EDEDED] dark:text-[#111827] dark:hover:bg-white'
               }`}
             >
               {guardando ? (
                 <>
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                   <span>Guardando...</span>
                 </>
               ) : (

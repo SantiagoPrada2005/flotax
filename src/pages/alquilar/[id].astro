@@ -1,9 +1,26 @@
 ---
 import LayoutApp from '@/layouts/LayoutApp.astro';
 import RentalWizardFlow from '@/components/alquiler/RentalWizardFlow';
-import { obtenerVehiculoAsync, obtenerBloquesNoDisponiblesD1 } from '@/lib/flota';
+import {
+  obtenerVehiculoAsync,
+  listarVehiculos,
+  obtenerBloquesNoDisponiblesD1,
+  obtenerLocalPorSlugOId,
+  obtenerLocalCatalogoPorDefecto,
+  type VehiculoItem,
+} from '@/lib/flota';
 import { obtenerEstadoDocumentalVehiculoD1 } from '@/lib/flota/disponibilidad';
+import { listarResumenesDocumentalesFlotaD1 } from '@/lib/documentos-vehiculo';
 import { resolveClientTimeContext } from '@/lib/time/client-time';
+import {
+  normalizarPoliticaDomicilio,
+  PATIO_COORDENADAS_DEFECTO,
+  resolverTokenMapboxPublico,
+  sonCoordenadasValidas,
+  type UbicacionPatio,
+} from '@/lib/ubicacion';
+import { politicasLocal } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
 
@@ -19,27 +36,40 @@ if (!vehiculo || vehiculo.estado === 'FUERA_SERVICIO') {
 }
 
 const { dateString: hoyISO } = resolveClientTimeContext(Astro.request);
+const localId = localCautivo?.id ?? vehiculo.localId ?? undefined;
 
-// Obtener bloques reales de indisponibilidad (reservas activas y órdenes de taller) desde D1
-const bloques = db
-  ? await obtenerBloquesNoDisponiblesD1(db, vehiculo.id, hoyISO, 180)
-  : [];
-
-// Evaluar documentos legales del vehículo (SOAT, RTM)
-const estadoDocumental = db
-  ? await obtenerEstadoDocumentalVehiculoD1(db, vehiculo.id, vehiculo.categoria, hoyISO)
-  : {
-      tieneVencidos: false,
-      faltantesSinCarga: [],
-      vencidos: [],
-      requiereRtm: vehiculo.categoria !== 'PATINETA',
-    };
+const [bloques, estadoDocumental, localInfo] = await Promise.all([
+  db ? obtenerBloquesNoDisponiblesD1(db, vehiculo.id, hoyISO, 180) : Promise.resolve([]),
+  db
+    ? obtenerEstadoDocumentalVehiculoD1(db, vehiculo.id, vehiculo.categoria, hoyISO)
+    : Promise.resolve({
+        tieneVencidos: false,
+        faltantesSinCarga: [],
+        vencidos: [],
+        requiereRtm: vehiculo.categoria !== 'PATINETA',
+        exentoPorLey2486: vehiculo.categoria === 'PATINETA',
+        bloqueadoPorDocumentos: false,
+        motivoBloqueo: null,
+      }),
+  (async () =>
+    localCautivo ??
+    (localId ? await obtenerLocalPorSlugOId(localId, db) : null) ??
+    (await obtenerLocalCatalogoPorDefecto(db)))(),
+]);
 
 const desdeParam = Astro.url.searchParams.get('desde') ?? undefined;
 const hastaParam = Astro.url.searchParams.get('hasta') ?? undefined;
 const stepParam = Astro.url.searchParams.get('step');
 const pasoInicial =
-  stepParam === '2' ? 2 : stepParam === '3' ? 3 : stepParam === '4' ? 4 : 1;
+  stepParam === '2'
+    ? 2
+    : stepParam === '3'
+      ? 3
+      : stepParam === '4'
+        ? 4
+        : stepParam === '5'
+          ? 5
+          : 1;
 
 const usuarioLocals = Astro.locals.usuario;
 const usuarioActual = usuarioLocals
@@ -53,8 +83,89 @@ const usuarioActual = usuarioLocals
     }
   : null;
 
-const localId = localCautivo?.id ?? vehiculo.localId ?? undefined;
-const sedeNombre = localCautivo?.nombre ?? undefined;
+const sedeNombre = localInfo.nombre;
+const patioUbicacion: UbicacionPatio = {
+  nombre: localInfo.nombre,
+  direccion: localInfo.direccion ?? null,
+  ciudad: localInfo.ciudad ?? 'Medellín',
+  lat:
+    typeof localInfo.latitud === 'number' &&
+    typeof localInfo.longitud === 'number' &&
+    sonCoordenadasValidas(localInfo.latitud, localInfo.longitud)
+      ? localInfo.latitud
+      : PATIO_COORDENADAS_DEFECTO.lat,
+  lng:
+    typeof localInfo.latitud === 'number' &&
+    typeof localInfo.longitud === 'number' &&
+    sonCoordenadasValidas(localInfo.latitud, localInfo.longitud)
+      ? localInfo.longitud
+      : PATIO_COORDENADAS_DEFECTO.lng,
+};
+
+let politicaRow = null;
+if (db && localInfo.id) {
+  try {
+    const rows = await db
+      .select()
+      .from(politicasLocal)
+      .where(eq(politicasLocal.localId, localInfo.id))
+      .limit(1);
+    politicaRow = rows[0] ?? null;
+  } catch {
+    politicaRow = null;
+  }
+}
+
+const politicaDomicilio = normalizarPoliticaDomicilio(politicaRow);
+const mapboxPublicToken = resolverTokenMapboxPublico(env);
+const esAdminOperador = Astro.locals.modoPortal === 'ADMIN';
+
+const vehiculoBloqueadoDocs = Boolean(
+  estadoDocumental.bloqueadoPorDocumentos ||
+    estadoDocumental.tieneVencidos ||
+    estadoDocumental.faltantesSinCarga.length > 0
+);
+
+let vehiculosSimilares: VehiculoItem[] = [];
+if (vehiculoBloqueadoDocs && !esAdminOperador) {
+  const fechaEvalInicio = desdeParam ?? hoyISO;
+  const fechaEvalFin = hastaParam ?? fechaEvalInicio;
+  const candidatos = await listarVehiculos(db, {
+    localId: localInfo.id,
+    soloDisponibles: true,
+    desde: fechaEvalInicio,
+    hasta: fechaEvalFin,
+    hoyISO,
+  });
+  const otros = candidatos.filter((v) => v.id !== vehiculo.id);
+  const resumenesDocs =
+    db && otros.length > 0
+      ? await listarResumenesDocumentalesFlotaD1(db, otros, hoyISO)
+      : {};
+  const habilitados = otros.filter(
+    (v) => !resumenesDocs[v.id]?.bloqueadoPorDocumentos
+  );
+  const mismaCategoria = habilitados.filter(
+    (v) => v.categoria === vehiculo.categoria
+  );
+  const otrasCategorias = habilitados.filter(
+    (v) => v.categoria !== vehiculo.categoria
+  );
+  vehiculosSimilares = [...mismaCategoria, ...otrasCategorias].slice(0, 3);
+}
+
+const estadoDocumentalSeguro =
+  esAdminOperador || !vehiculoBloqueadoDocs
+    ? estadoDocumental
+    : {
+        tieneVencidos: false,
+        faltantesSinCarga: [],
+        vencidos: [],
+        requiereRtm: false,
+        exentoPorLey2486: false,
+        bloqueadoPorDocumentos: true,
+        motivoBloqueo: null,
+      };
 ---
 
 <LayoutApp
@@ -73,9 +184,15 @@ const sedeNombre = localCautivo?.nombre ?? undefined;
       fechaInicioInicial={desdeParam}
       fechaFinInicial={hastaParam}
       pasoInicial={pasoInicial}
-      estadoDocumental={estadoDocumental}
-      localId={localId}
+      estadoDocumental={estadoDocumentalSeguro}
+      esAdminOperador={esAdminOperador}
+      telefonoEncargado={localInfo.telefono}
+      vehiculosSimilares={vehiculosSimilares}
+      localId={localInfo.id}
       sedeNombre={sedeNombre}
+      patioUbicacion={patioUbicacion}
+      politicaDomicilio={politicaDomicilio}
+      mapboxPublicToken={mapboxPublicToken}
     />
   </div>
 </LayoutApp>

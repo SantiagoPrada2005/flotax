@@ -1,11 +1,18 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ENCABEZADOS_SEMANA_EDITORIAL,
-  calcularDiasInclusivos,
+  actualizarRangoAlquilerPorToque,
+  alternarFechaEnSeleccion,
   construirCalendarioMes,
   esRangoDisponibleValido,
+  expandirRangoAFechas,
   formatearFechaCorta,
+  formatearResumenFechasSeleccionadas,
+  normalizarFechasSeleccionadas,
   obtenerDiaSemanaEditorial,
+  obtenerFechaFinMinimaAlquiler,
+  obtenerUltimoDiaContiguoLibre,
+  sumarDiasISO,
   type BloqueNoDisponible,
   type DiaCalendarioItem,
   type FranjaDisponible,
@@ -15,19 +22,25 @@ import {
 export interface EditorialAvailabilityCalendarProps {
   vehiculo: VehiculoItem;
   hoyISO: string;
-  fechaInicio: string | null;
-  fechaFin: string | null;
-  onChangeRango: (inicio: string | null, fin: string | null) => void;
+  fechasSeleccionadas?: readonly string[] | undefined;
+  onChangeFechas?: ((fechas: string[]) => void) | undefined;
+  fechaInicio?: string | null | undefined;
+  fechaFin?: string | null | undefined;
+  onChangeRango?: ((inicio: string | null, fin: string | null) => void) | undefined;
   bloquesPrecalculados?: BloqueNoDisponible[] | undefined;
+  excluirDiaSiguiente?: boolean | undefined;
 }
 
 export default function EditorialAvailabilityCalendar({
   vehiculo,
   hoyISO,
-  fechaInicio,
-  fechaFin,
+  fechasSeleccionadas,
+  onChangeFechas,
+  fechaInicio = null,
+  fechaFin = null,
   onChangeRango,
   bloquesPrecalculados,
+  excluirDiaSiguiente = false,
 }: EditorialAvailabilityCalendarProps) {
   const [anioInicial = 2026, mesInicialUno = 10] = hoyISO.split('-').map(Number);
 
@@ -36,11 +49,70 @@ export default function EditorialAvailabilityCalendar({
     mesIndexCero: mesInicialUno - 1,
   });
 
-  const [faseSeleccion, setFaseSeleccion] = useState<'ELIGIENDO_FIN' | 'COMPLETO'>(
-    fechaInicio && fechaFin && fechaInicio !== fechaFin ? 'COMPLETO' : 'ELIGIENDO_FIN'
-  );
+  const [faseSeleccion, setFaseSeleccion] = useState<'ELIGIENDO_FIN' | 'COMPLETO'>(() => {
+    if (!fechaInicio || !fechaFin) return 'ELIGIENDO_FIN';
+    if (excluirDiaSiguiente) {
+      return fechaFin >= obtenerFechaFinMinimaAlquiler(fechaInicio, false)
+        ? 'COMPLETO'
+        : 'ELIGIENDO_FIN';
+    }
+    return 'COMPLETO';
+  });
+
+  useEffect(() => {
+    if (fechaInicio && !fechaFin) {
+      setFaseSeleccion('ELIGIENDO_FIN');
+    } else if (
+      fechaInicio &&
+      fechaFin &&
+      (!excluirDiaSiguiente ||
+        fechaFin >= obtenerFechaFinMinimaAlquiler(fechaInicio, false))
+    ) {
+      setFaseSeleccion('COMPLETO');
+    }
+  }, [excluirDiaSiguiente, fechaFin, fechaInicio]);
 
   const [avisoFranja, setAvisoFranja] = useState<string | null>(null);
+
+  const esModoPorDia = Boolean(onChangeFechas) && !onChangeRango;
+
+  const fechasActivas = useMemo(() => {
+    if (fechasSeleccionadas !== undefined) {
+      return normalizarFechasSeleccionadas(fechasSeleccionadas);
+    }
+    if (fechaInicio) {
+      return expandirRangoAFechas(fechaInicio, fechaFin ?? fechaInicio);
+    }
+    return [];
+  }, [fechasSeleccionadas, fechaInicio, fechaFin]);
+
+  const conjuntoFechasActivas = useMemo(
+    () => new Set(fechasActivas),
+    [fechasActivas]
+  );
+
+  const esperandoFinRango =
+    !esModoPorDia &&
+    Boolean(onChangeRango) &&
+    Boolean(fechaInicio) &&
+    (faseSeleccion === 'ELIGIENDO_FIN' || !fechaFin);
+
+  const diaSiguienteExcluidoISO = useMemo(() => {
+    if (!excluirDiaSiguiente || !esperandoFinRango || !fechaInicio) {
+      return null;
+    }
+    return sumarDiasISO(fechaInicio, 1);
+  }, [excluirDiaSiguiente, esperandoFinRango, fechaInicio]);
+
+  const fechaFinMinimaISO = useMemo(() => {
+    if (!fechaInicio) return null;
+    return obtenerFechaFinMinimaAlquiler(fechaInicio, !excluirDiaSiguiente);
+  }, [excluirDiaSiguiente, fechaInicio]);
+
+  const ultimoDiaContiguoISO = useMemo(() => {
+    if (!esperandoFinRango || !fechaInicio) return null;
+    return obtenerUltimoDiaContiguoLibre(fechaInicio, bloquesPrecalculados);
+  }, [bloquesPrecalculados, esperandoFinRango, fechaInicio]);
 
   const calendarioMes = useMemo(
     () =>
@@ -54,33 +126,33 @@ export default function EditorialAvailabilityCalendar({
     [vehiculo.id, mesCursor.anio, mesCursor.mesIndexCero, hoyISO, bloquesPrecalculados]
   );
 
-  const franjaActivaId = useMemo(() => {
-    if (!fechaInicio) return undefined;
-    const diaEnMesActual = calendarioMes.dias.find((d) => d.fechaISO === fechaInicio);
-    if (diaEnMesActual?.franjaId) return diaEnMesActual.franjaId;
+  const franjasVisibles = useMemo(() => {
+    if (!excluirDiaSiguiente) return calendarioMes.franjasMes;
+    return calendarioMes.franjasMes.filter(
+      (f) => f.fechaFin >= obtenerFechaFinMinimaAlquiler(f.fechaInicio, false)
+    );
+  }, [calendarioMes.franjasMes, excluirDiaSiguiente]);
 
-    const [y = 2026, m = 10] = fechaInicio.split('-').map(Number);
-    const calInicio = construirCalendarioMes(vehiculo.id, y, m - 1, hoyISO, bloquesPrecalculados);
-    return calInicio.dias.find((d) => d.fechaISO === fechaInicio)?.franjaId;
-  }, [fechaInicio, calendarioMes.dias, vehiculo.id, hoyISO, bloquesPrecalculados]);
+  const diasSeleccionados = fechasActivas.length;
 
-  const diasSeleccionados = useMemo(() => {
-    if (!fechaInicio) return 0;
-    const fin = fechaFin ?? fechaInicio;
-    return calcularDiasInclusivos(fechaInicio, fin);
-  }, [fechaInicio, fechaFin]);
+  const resumenFechasTexto = useMemo(
+    () => formatearResumenFechasSeleccionadas(fechasActivas),
+    [fechasActivas]
+  );
 
   const codigoDiaEditorial = useMemo(() => {
-    if (!fechaInicio) {
+    if (fechasActivas.length === 0) {
       return obtenerDiaSemanaEditorial(hoyISO);
     }
-    const d1 = obtenerDiaSemanaEditorial(fechaInicio);
-    if (!fechaFin || fechaFin === fechaInicio) {
+    const primera = fechasActivas[0]!;
+    const ultima = fechasActivas[fechasActivas.length - 1]!;
+    const d1 = obtenerDiaSemanaEditorial(primera);
+    if (primera === ultima) {
       return d1;
     }
-    const d2 = obtenerDiaSemanaEditorial(fechaFin);
+    const d2 = obtenerDiaSemanaEditorial(ultima);
     return `${d1} — ${d2}`;
-  }, [fechaInicio, fechaFin, hoyISO]);
+  }, [fechasActivas, hoyISO]);
 
   const cambiarMes = (delta: number) => {
     setMesCursor((prev) => {
@@ -95,6 +167,18 @@ export default function EditorialAvailabilityCalendar({
   const puedeIrMesAnterior =
     mesCursor.anio > anioInicial ||
     (mesCursor.anio === anioInicial && mesCursor.mesIndexCero > mesInicialUno - 1);
+
+  const validarInicioPosible = (inicioISO: string): boolean => {
+    if (!excluirDiaSiguiente) return true;
+    const minFin = obtenerFechaFinMinimaAlquiler(inicioISO, false);
+    if (!esRangoDisponibleValido(vehiculo.id, inicioISO, minFin, hoyISO, bloquesPrecalculados)) {
+      setAvisoFranja(
+        `Desde el ${formatearFechaCorta(inicioISO)} no alcanza hasta el ${formatearFechaCorta(minFin)} sin cruzarse con un bloqueo cercano.`
+      );
+      return false;
+    }
+    return true;
+  };
 
   const manejarToqueDia = (dia: DiaCalendarioItem) => {
     if (dia.estado !== 'DISPONIBLE') {
@@ -112,14 +196,64 @@ export default function EditorialAvailabilityCalendar({
 
     setAvisoFranja(null);
 
+    if (esModoPorDia && onChangeFechas) {
+      const siguiente = alternarFechaEnSeleccion(fechasActivas, dia.fechaISO);
+      onChangeFechas(siguiente);
+      return;
+    }
+
+    if (!onChangeRango) return;
+
+    if (!excluirDiaSiguiente) {
+      const resultado = actualizarRangoAlquilerPorToque({
+        fechaInicio,
+        fechaFin,
+        fechaTocada: dia.fechaISO,
+        vehiculoId: vehiculo.id,
+        hoyISO,
+        bloques: bloquesPrecalculados,
+      });
+      if (resultado.aviso) {
+        setAvisoFranja(resultado.aviso);
+      }
+      onChangeRango(resultado.fechaInicio, resultado.fechaFin);
+      setFaseSeleccion('COMPLETO');
+      return;
+    }
+
     if (!fechaInicio || faseSeleccion === 'COMPLETO') {
-      onChangeRango(dia.fechaISO, dia.fechaISO);
+      if (!validarInicioPosible(dia.fechaISO)) {
+        return;
+      }
+      onChangeRango(dia.fechaISO, excluirDiaSiguiente ? null : dia.fechaISO);
       setFaseSeleccion('ELIGIENDO_FIN');
       return;
     }
 
+    if (excluirDiaSiguiente && diaSiguienteExcluidoISO === dia.fechaISO) {
+      setAvisoFranja(
+        `El ${formatearFechaCorta(dia.fechaISO)} queda excluido por defecto. Elige devolución desde el ${formatearFechaCorta(fechaFinMinimaISO ?? sumarDiasISO(fechaInicio, 2))}.`
+      );
+      return;
+    }
+
+    if (dia.fechaISO === fechaInicio) {
+      if (!excluirDiaSiguiente) {
+        onChangeRango(fechaInicio, dia.fechaISO);
+        setFaseSeleccion('COMPLETO');
+      } else {
+        setAvisoFranja(
+          `Inicio fijado el ${formatearFechaCorta(fechaInicio)}. Elige la devolución desde el ${formatearFechaCorta(fechaFinMinimaISO ?? sumarDiasISO(fechaInicio, 2))}.`
+        );
+      }
+      return;
+    }
+
     if (dia.fechaISO < fechaInicio) {
-      onChangeRango(dia.fechaISO, dia.fechaISO);
+      if (!validarInicioPosible(dia.fechaISO)) {
+        return;
+      }
+      onChangeRango(dia.fechaISO, excluirDiaSiguiente ? null : dia.fechaISO);
       setFaseSeleccion('ELIGIENDO_FIN');
       return;
     }
@@ -133,7 +267,10 @@ export default function EditorialAvailabilityCalendar({
     );
 
     if (!esContiguo) {
-      onChangeRango(dia.fechaISO, dia.fechaISO);
+      if (!validarInicioPosible(dia.fechaISO)) {
+        return;
+      }
+      onChangeRango(dia.fechaISO, excluirDiaSiguiente ? null : dia.fechaISO);
       setFaseSeleccion('ELIGIENDO_FIN');
       setAvisoFranja('Nueva franja iniciada (había días reservados en medio).');
       return;
@@ -145,95 +282,71 @@ export default function EditorialAvailabilityCalendar({
 
   const aplicarFranjaRapida = (franja: FranjaDisponible) => {
     setAvisoFranja(null);
-    onChangeRango(franja.fechaInicio, franja.fechaFin);
-    setFaseSeleccion('COMPLETO');
+    if (esModoPorDia && onChangeFechas) {
+      const fechasFranja = expandirRangoAFechas(franja.fechaInicio, franja.fechaFin);
+      onChangeFechas(fechasFranja);
+      return;
+    }
+    if (onChangeRango) {
+      onChangeRango(franja.fechaInicio, franja.fechaFin);
+      setFaseSeleccion('COMPLETO');
+    }
   };
 
   return (
     <section
       aria-label="Calendario de franjas disponibles"
-      className="relative overflow-hidden rounded-[32px] bg-white border border-[#9CA3AF]/45 px-4 pt-4 pb-3.5 sm:p-6 shadow-[0_20px_50px_-15px_rgba(17,24,39,0.12)]"
+      className="relative overflow-hidden rounded-[28px] bg-white border border-[#9CA3AF]/45 px-4 pt-4 pb-3.5 sm:p-6 shadow-xs dark:bg-[#1F2937] dark:border-white/12"
     >
-      {/* Halo Geométrico Arquitectónico de Fondo detrás del Vehículo */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -top-10 -right-10 h-56 w-56 rounded-full border border-[#9CA3AF]/25 bg-[radial-gradient(circle_at_center,_rgba(237,237,237,0.85)_0%,_transparent_72%)]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute top-2 right-2 h-36 w-36 rounded-full border border-[#9CA3AF]/20"
-      />
+      {/* 1. Cabecera del Selector de Fechas: Contador de Días + Selección */}
+      <div className="flex items-center justify-between gap-3 border-b border-[#9CA3AF]/30 pb-3.5 dark:border-white/12">
+        <div className="flex items-baseline gap-2.5 min-w-0">
+          <span
+            key={diasSeleccionados}
+            className="animate-zoom-in font-display text-[3.25rem] sm:text-[3.75rem] font-black leading-[0.84] tracking-tighter text-[#111827] dark:text-[#EDEDED] tabular-nums select-none shrink-0"
+          >
+            {diasSeleccionados > 0 ? diasSeleccionados : '—'}
+          </span>
 
-      {/* 1. Cabecera Unificada: Identidad del Vehículo + Contador Suizo + Imagen de Estudio */}
-      <div className="relative z-10 flex items-start justify-between gap-2">
-        {/* Columna Izquierda: Marca/Modelo + Contador Gigante */}
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
-            <span className="font-display text-base sm:text-lg font-black tracking-tight text-[#111827] truncate">
-              {vehiculo.marca}
+          <div className="flex flex-col min-w-0">
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#4B5563] dark:text-[#D1D5DB]">
+              {diasSeleccionados === 1 ? 'Día elegido' : 'Días de alquiler'}
             </span>
-            <span className="rounded-full bg-[#EDEDED] border border-[#9CA3AF]/40 px-2 py-0.5 text-[10px] font-bold text-[#4B5563]">
-              {vehiculo.placa}
-            </span>
-          </div>
-          <p className="text-[11px] font-medium text-[#4B5563] truncate">
-            {vehiculo.modelo}
-          </p>
-
-          {/* Contador Gigante SWA + Píldora de Rango */}
-          <div className="mt-2 flex items-baseline gap-2.5">
-            <span
-              key={diasSeleccionados}
-              className="animate-zoom-in font-display text-[3.75rem] sm:text-[4.5rem] font-black leading-[0.84] tracking-tighter text-[#111827] tabular-nums select-none"
-            >
-              {diasSeleccionados > 0 ? diasSeleccionados : '—'}
-            </span>
-
-            <div className="flex flex-col">
-              <span className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#4B5563]">
-                {diasSeleccionados === 1 ? 'Día elegido' : 'Días de alquiler'}
+            {diasSeleccionados > 0 ? (
+              <span className="mt-1 inline-flex max-w-full items-center gap-1 rounded-full bg-[#111827] px-2.5 py-0.5 text-[11px] font-bold text-[#EDEDED] shadow-2xs dark:bg-[#EDEDED] dark:text-[#111827] truncate">
+                <span className="truncate">{resumenFechasTexto}</span>
               </span>
-              {fechaInicio ? (
-                <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-[#111827] px-2.5 py-0.5 text-[11px] font-bold text-white shadow-2xs">
-                  <span>{formatearFechaCorta(fechaInicio)}</span>
-                  <span className="text-[#9CA3AF]">→</span>
-                  <span>{formatearFechaCorta(fechaFin ?? fechaInicio)}</span>
-                </span>
-              ) : (
-                <span className="mt-0.5 text-[11px] font-medium text-[#4B5563]">
-                  Toca un día libre
-                </span>
-              )}
-            </div>
+            ) : (
+              <span className="mt-0.5 text-[11px] font-medium text-[#4B5563] dark:text-[#D1D5DB]">
+                Elige la fecha de inicio disponible
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Columna Derecha: Imagen del Vehículo Integrada en el Calendario */}
-        <div className="relative w-38 sm:w-48 shrink-0 flex flex-col items-end">
-          <div className="relative w-full pt-1">
-            <img
-              src={vehiculo.imagenUrl}
-              alt={`${vehiculo.marca} ${vehiculo.modelo}`}
-              className="h-22 sm:h-26 w-full object-contain drop-shadow-[0_10px_14px_rgba(17,24,39,0.18)] animate-float"
-            />
-            <div className="mx-auto -mt-2 h-2.5 w-4/5 rounded-full bg-[radial-gradient(ellipse_at_center,_rgba(17,24,39,0.22)_0%,_transparent_75%)]" />
-          </div>
+        <div className="text-right shrink-0">
+          <span className="block text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#D1D5DB]">
+            Horario estándar
+          </span>
+          <span className="mt-0.5 block font-mono text-xs font-bold text-[#111827] dark:text-[#EDEDED]">
+            09:00 → 18:00
+          </span>
         </div>
       </div>
 
       {/* 2. Barra Editorial: MES / AÑO + Día Semana + Controles de Mes */}
-      <div className="relative z-10 mt-2 flex items-end justify-between border-b border-[#9CA3AF]/30 pb-2.5">
+      <div className="mt-3 flex items-end justify-between border-b border-[#9CA3AF]/25 pb-2.5 dark:border-white/10">
         <div className="flex items-baseline gap-2">
-          <h3 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-[#111827] leading-none">
+          <h3 className="font-display text-xl sm:text-2xl font-black tracking-tight text-[#111827] dark:text-[#EDEDED] leading-none">
             {calendarioMes.nombreMes}
           </h3>
-          <span className="font-display text-lg sm:text-xl font-medium tracking-tight text-[#4B5563] leading-none tabular-nums">
+          <span className="font-display text-base sm:text-lg font-medium tracking-tight text-[#4B5563] dark:text-[#D1D5DB] leading-none tabular-nums">
             {calendarioMes.anio}
           </span>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="font-display text-xs sm:text-sm font-extrabold tracking-tight text-[#4B5563] uppercase mr-1">
+          <span className="font-display text-xs sm:text-sm font-extrabold tracking-tight text-[#4B5563] dark:text-[#D1D5DB] uppercase mr-1">
             {codigoDiaEditorial}
           </span>
 
@@ -242,7 +355,7 @@ export default function EditorialAvailabilityCalendar({
             onClick={() => cambiarMes(-1)}
             disabled={!puedeIrMesAnterior}
             aria-label="Mes anterior"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#EDEDED] border border-[#9CA3AF]/45 text-[#111827] transition-transform active:scale-[0.96] disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+            className="fx-press flex h-9 w-9 items-center justify-center rounded-full bg-[#EDEDED] border border-[#9CA3AF]/45 text-[#111827] disabled:opacity-30 disabled:pointer-events-none cursor-pointer dark:bg-[#111827] dark:border-white/15 dark:text-[#EDEDED]"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -259,7 +372,7 @@ export default function EditorialAvailabilityCalendar({
             type="button"
             onClick={() => cambiarMes(1)}
             aria-label="Mes siguiente"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#EDEDED] border border-[#9CA3AF]/45 text-[#111827] transition-transform active:scale-[0.96] cursor-pointer"
+            className="fx-press flex h-9 w-9 items-center justify-center rounded-full bg-[#EDEDED] border border-[#9CA3AF]/45 text-[#111827] cursor-pointer dark:bg-[#111827] dark:border-white/15 dark:text-[#EDEDED]"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -275,31 +388,65 @@ export default function EditorialAvailabilityCalendar({
         </div>
       </div>
 
-      {/* 3. Píldoras de Franjas Disponibles (Estilo Segmented Pills de la Referencia) */}
-      {calendarioMes.franjasMes.length > 0 && (
-        <div className="relative z-10 mt-2.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
-          <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-[#4B5563] mr-1">
+      {/* Guía de selección activa cuando se está eligiendo la fecha de fin */}
+      {esperandoFinRango && fechaInicio && (
+        <div
+          role="status"
+          className="mt-2.5 flex items-center justify-between gap-2 rounded-2xl border border-[#4B5563]/45 bg-[#EDEDED]/70 px-3 py-2 text-[11px] font-semibold text-[#111827] dark:border-white/20 dark:bg-[#111827] dark:text-[#EDEDED]"
+        >
+          <span>
+            Inicio: <strong>{formatearFechaCorta(fechaInicio)}</strong>.{' '}
+            {excluirDiaSiguiente && fechaFinMinimaISO
+              ? `Elige devolución desde el ${formatearFechaCorta(fechaFinMinimaISO)}${
+                  ultimoDiaContiguoISO ? ` hasta el ${formatearFechaCorta(ultimoDiaContiguoISO)}` : ''
+                }.`
+              : 'Toca la fecha de cierre del rango.'}
+          </span>
+          {onChangeRango && (
+            <button
+              type="button"
+              onClick={() => {
+                setAvisoFranja(null);
+                onChangeRango(null, null);
+                setFaseSeleccion('ELIGIENDO_FIN');
+              }}
+              className="shrink-0 font-mono text-[10px] font-bold uppercase tracking-wide text-[#111827] hover:underline cursor-pointer dark:text-[#EDEDED]"
+            >
+              Reiniciar
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* 3. Píldoras de Franjas Disponibles */}
+      {franjasVisibles.length > 0 && (
+        <div className="mt-2.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+          <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#D1D5DB] mr-1">
             Franjas:
           </span>
-          {calendarioMes.franjasMes.map((franja) => {
+          {franjasVisibles.map((franja) => {
+            const fechasFranja = expandirRangoAFechas(franja.fechaInicio, franja.fechaFin);
             const franjaSeleccionada =
-              fechaInicio === franja.fechaInicio &&
-              (fechaFin ?? fechaInicio) === franja.fechaFin;
+              fechasFranja.length > 0 &&
+              fechasFranja.length === fechasActivas.length &&
+              fechasFranja.every((f, idx) => fechasActivas[idx] === f);
             return (
               <button
                 key={franja.id}
                 type="button"
                 onClick={() => aplicarFranjaRapida(franja)}
-                className={`shrink-0 min-h-[32px] rounded-full px-3 py-1 text-[11px] font-bold transition-transform active:scale-[0.96] cursor-pointer border ${
+                className={`fx-press shrink-0 min-h-[32px] rounded-full px-3 py-1 text-[11px] font-bold cursor-pointer border transition-colors duration-150 ${
                   franjaSeleccionada
-                    ? 'bg-[#111827] text-white border-[#111827] shadow-2xs'
-                    : 'bg-[#EDEDED] text-[#111827] border-[#9CA3AF]/45 hover:border-[#111827]'
+                    ? 'bg-[#111827] text-[#EDEDED] border-[#111827] shadow-[0_0_12px_rgba(31,41,55,0.4)] dark:bg-[#EDEDED] dark:text-[#111827] dark:border-[#EDEDED] dark:shadow-[0_0_12px_rgba(237,237,237,0.35)]'
+                    : 'bg-[#EDEDED] text-[#111827] border-[#9CA3AF]/45 hover:border-[#111827] dark:bg-[#111827] dark:text-[#EDEDED] dark:border-white/15 dark:hover:border-[#EDEDED]/60'
                 }`}
               >
                 <span>{franja.etiquetaCorta}</span>
                 <span
                   className={`ml-1 text-[10px] ${
-                    franjaSeleccionada ? 'text-[#EDEDED]' : 'text-[#4B5563]'
+                    franjaSeleccionada
+                      ? 'text-[#EDEDED]/85 dark:text-[#4B5563]'
+                      : 'text-[#4B5563] dark:text-[#D1D5DB]'
                   }`}
                 >
                   · {franja.diasDisponibles}d
@@ -310,12 +457,12 @@ export default function EditorialAvailabilityCalendar({
         </div>
       )}
 
-      {/* 4. Encabezados de Semana + Matriz Circular de 7 Columnas */}
-      <div className="relative z-10 mt-2 grid grid-cols-7 gap-1 text-center">
+      {/* 4. Encabezados de Semana + Matriz Circular de 7 Columnas (sin franja rectangular trasera) */}
+      <div className="mt-2.5 grid grid-cols-7 gap-1 text-center">
         {ENCABEZADOS_SEMANA_EDITORIAL.map((dia) => (
           <div
             key={dia.corto}
-            className="py-0.5 text-[10px] font-semibold tracking-tight text-[#4B5563]"
+            className="py-0.5 text-[10px] font-semibold tracking-tight text-[#4B5563] dark:text-[#D1D5DB]"
           >
             {dia.corto}
           </div>
@@ -324,51 +471,63 @@ export default function EditorialAvailabilityCalendar({
 
       <div
         key={`${calendarioMes.anio}-${calendarioMes.mesIndexCero}`}
-        className="relative z-10 mt-1 grid grid-cols-7 gap-y-1.5 gap-x-1.5 sm:gap-2 animate-fade-in"
+        className="mt-1.5 grid grid-cols-7 gap-y-2 gap-x-1.5 sm:gap-2 animate-fade-in"
       >
         {Array.from({ length: calendarioMes.celdasVaciasInicio }).map((_, idx) => (
           <div key={`empty-${idx}`} className="h-10 sm:h-11 w-full" aria-hidden="true" />
         ))}
 
         {calendarioMes.dias.map((dia) => {
-          const finEfectivo = fechaFin ?? fechaInicio;
-          const esInicio = Boolean(fechaInicio && dia.fechaISO === fechaInicio);
-          const esFin = Boolean(finEfectivo && dia.fechaISO === finEfectivo);
-          const enRango = Boolean(
-            fechaInicio &&
-              finEfectivo &&
-              dia.fechaISO >= fechaInicio &&
-              dia.fechaISO <= finEfectivo
-          );
-          const esIntermedio = enRango && !esInicio && !esFin;
+          const estaSeleccionado = conjuntoFechasActivas.has(dia.fechaISO);
+          const ayerISO = sumarDiasISO(dia.fechaISO, -1);
+          const mananaISO = sumarDiasISO(dia.fechaISO, 1);
+          const prevSeleccionado = estaSeleccionado && conjuntoFechasActivas.has(ayerISO);
+          const nextSeleccionado = estaSeleccionado && conjuntoFechasActivas.has(mananaISO);
 
-          const perteneceAFranjaActiva =
+          const esIndividual = estaSeleccionado && !prevSeleccionado && !nextSeleccionado;
+          const esInicioTramo = estaSeleccionado && !prevSeleccionado && nextSeleccionado;
+          const esFinTramo = estaSeleccionado && prevSeleccionado && !nextSeleccionado;
+          const esIntermedioTramo = estaSeleccionado && prevSeleccionado && nextSeleccionado;
+          const esHoy = dia.fechaISO === hoyISO;
+
+          const esDiaSiguienteExcluido =
+            Boolean(diaSiguienteExcluidoISO) &&
+            dia.fechaISO === diaSiguienteExcluidoISO &&
+            dia.estado === 'DISPONIBLE';
+
+          const fueraDeVentanaCierre =
+            esperandoFinRango &&
+            excluirDiaSiguiente &&
+            Boolean(fechaInicio) &&
             dia.estado === 'DISPONIBLE' &&
-            (!franjaActivaId || dia.franjaId === franjaActivaId);
+            !estaSeleccionado &&
+            !esDiaSiguienteExcluido &&
+            (dia.fechaISO < fechaInicio! ||
+              (ultimoDiaContiguoISO !== null && dia.fechaISO > ultimoDiaContiguoISO));
+
+          const esDeshabilitado = dia.estado === 'PASADO' || esDiaSiguienteExcluido;
 
           let clasesCirculo = '';
-          if (esInicio || esFin) {
+          if (esIndividual || esInicioTramo || esFinTramo) {
             clasesCirculo =
-              'bg-[#111827] text-white font-black shadow-md ring-2 ring-[#111827] ring-offset-1 ring-offset-white z-10';
-          } else if (esIntermedio) {
-            clasesCirculo = 'bg-[#1F2937] text-white font-bold z-10';
+              'bg-[#111827] text-[#EDEDED] font-bold shadow-[0_0_0_2px_rgba(17,24,39,0.85),0_0_14px_rgba(31,41,55,0.45)] dark:bg-[#EDEDED] dark:text-[#111827] dark:shadow-[0_0_0_2px_rgba(237,237,237,0.9),0_0_18px_rgba(237,237,237,0.45)] z-10';
+          } else if (esIntermedioTramo) {
+            clasesCirculo =
+              'bg-[#4B5563]/28 text-[#111827] font-bold ring-1 ring-[#4B5563]/70 shadow-[0_0_10px_rgba(75,85,99,0.28)] dark:bg-[#4B5563]/65 dark:text-[#EDEDED] dark:ring-[#9CA3AF]/80 dark:shadow-[0_0_12px_rgba(156,163,175,0.35)] z-10';
+          } else if (esDiaSiguienteExcluido) {
+            clasesCirculo =
+              'bg-transparent text-[#9CA3AF] font-medium border border-dashed border-[#9CA3AF]/60 opacity-60 cursor-not-allowed dark:text-[#9CA3AF]/65 dark:border-white/25';
           } else if (dia.estado === 'DISPONIBLE') {
-            if (perteneceAFranjaActiva) {
-              clasesCirculo =
-                'bg-[#EDEDED] text-[#111827] font-semibold border border-[#9CA3AF]/55 hover:border-[#111827]';
-            } else {
-              clasesCirculo =
-                'bg-[#EDEDED]/60 text-[#4B5563] font-medium border border-dashed border-[#9CA3AF]/55 hover:bg-[#EDEDED]';
-            }
+            const atenuado = fueraDeVentanaCierre ? 'opacity-45' : '';
+            clasesCirculo = esHoy
+              ? `bg-[#EDEDED] text-[#111827] font-bold border-2 border-[#111827] hover:border-[#4B5563] dark:bg-[#111827] dark:text-[#EDEDED] dark:border-[#EDEDED] dark:hover:border-[#9CA3AF] ${atenuado}`
+              : `bg-[#EDEDED]/80 text-[#111827] font-semibold border border-[#9CA3AF]/55 hover:border-[#111827] hover:bg-[#111827]/10 dark:bg-[#111827] dark:text-[#EDEDED] dark:border-white/20 dark:hover:border-[#EDEDED]/60 dark:hover:bg-[#EDEDED]/12 ${atenuado}`;
           } else if (dia.estado === 'PASADO') {
             clasesCirculo =
-              'bg-[#EDEDED]/40 text-[#9CA3AF] font-normal cursor-not-allowed opacity-55';
-          } else if (dia.estado === 'NO_DISPONIBLE') {
-            clasesCirculo =
-              'bg-[#1F2937]/15 text-[#4B5563] font-medium border border-[#4B5563]/50 cursor-not-allowed';
+              'bg-transparent text-[#9CA3AF]/70 font-normal cursor-not-allowed dark:bg-transparent dark:text-[#4B5563]';
           } else {
             clasesCirculo =
-              'bg-[#4B5563]/15 text-[#4B5563]/65 font-medium border border-[#9CA3AF]/35 cursor-not-allowed';
+              'bg-[#9CA3AF]/20 text-[#4B5563] font-medium border border-[#9CA3AF]/45 cursor-not-allowed dark:bg-[#111827]/45 dark:text-[#9CA3AF]/60 dark:border-white/10';
           }
 
           return (
@@ -376,45 +535,49 @@ export default function EditorialAvailabilityCalendar({
               key={dia.fechaISO}
               className="relative flex items-center justify-center h-10 sm:h-11 w-full"
             >
-              {enRango && fechaInicio !== finEfectivo && (
-                <div
-                  aria-hidden="true"
-                  className={`absolute inset-y-1 bg-[#111827]/12 ${
-                    esInicio
-                      ? 'left-1/2 right-0 rounded-l-full'
-                      : esFin
-                      ? 'left-0 right-1/2 rounded-r-full'
-                      : 'inset-x-0'
-                  }`}
-                />
-              )}
-
               <button
                 type="button"
-                disabled={dia.estado === 'PASADO'}
+                disabled={esDeshabilitado}
                 onClick={() => manejarToqueDia(dia)}
-                aria-label={`${dia.numeroDia} de ${calendarioMes.nombreMes.toLowerCase()}, ${
-                  dia.estado === 'DISPONIBLE'
-                    ? 'Disponible'
-                    : dia.etiquetaBloqueo ?? (dia.estado === 'NO_DISPONIBLE' ? 'No disponible' : 'Ocupado')
+                aria-label={`${dia.numeroDia} de ${calendarioMes.nombreMes.toLowerCase()}${
+                  esHoy ? ', hoy' : ''
+                }, ${
+                  estaSeleccionado
+                    ? esInicioTramo
+                      ? 'fecha de inicio seleccionada'
+                      : esFinTramo
+                        ? 'fecha de devolución seleccionada'
+                        : 'día seleccionado'
+                    : esDiaSiguienteExcluido
+                      ? 'día siguiente excluido por mínimo de reserva'
+                      : dia.estado === 'DISPONIBLE'
+                        ? 'disponible'
+                        : dia.etiquetaBloqueo ??
+                          (dia.estado === 'NO_DISPONIBLE' ? 'no disponible' : 'ocupado')
                 }`}
-                aria-pressed={enRango}
-                className={`ios-press-bounce relative flex h-10 w-10 sm:h-11 sm:w-11 flex-col items-center justify-center rounded-full text-xs tabular-nums select-none cursor-pointer ${clasesCirculo}`}
+                aria-pressed={estaSeleccionado}
+                className={`fx-press relative flex h-10 w-10 sm:h-11 sm:w-11 flex-col items-center justify-center rounded-full text-xs tabular-nums select-none transition-colors duration-150 ${
+                  esDeshabilitado ? 'cursor-not-allowed' : 'cursor-pointer'
+                } ${clasesCirculo}`}
               >
                 <span
                   className={
                     dia.estado === 'RESERVADO' ||
                     dia.estado === 'MANTENIMIENTO' ||
-                    dia.estado === 'NO_DISPONIBLE'
-                      ? 'line-through decoration-[#4B5563]/70'
+                    dia.estado === 'NO_DISPONIBLE' ||
+                    esDiaSiguienteExcluido
+                      ? 'line-through decoration-[#4B5563]/75 dark:decoration-[#9CA3AF]/65'
                       : ''
                   }
                 >
                   {dia.numeroDia}
                 </span>
 
-                {(esInicio || esFin) && (
-                  <span className="h-1 w-1 rounded-full bg-white" />
+                {(esIndividual || esInicioTramo || esFinTramo) && (
+                  <span className="h-1 w-1 rounded-full bg-[#EDEDED] dark:bg-[#111827]" />
+                )}
+                {!estaSeleccionado && !esDiaSiguienteExcluido && esHoy && (
+                  <span className="h-1 w-1 rounded-full bg-[#111827] dark:bg-[#EDEDED]" />
                 )}
               </button>
             </div>
@@ -422,42 +585,50 @@ export default function EditorialAvailabilityCalendar({
         })}
       </div>
 
-      {/* Aviso breve o Leyenda Compacta en una sola línea */}
+      {/* Aviso breve o Leyenda Compacta */}
       {avisoFranja ? (
         <div
           role="status"
-          className="mt-2.5 rounded-full bg-[#EDEDED] border border-[#9CA3AF]/50 px-3 py-1 text-[11px] font-medium text-[#111827] flex items-center justify-between gap-2 animate-fade-in"
+          className="mt-2.5 rounded-full bg-[#EDEDED] border border-[#9CA3AF]/50 px-3 py-1 text-[11px] font-medium text-[#111827] flex items-center justify-between gap-2 animate-fade-in dark:bg-[#111827] dark:border-white/15 dark:text-[#EDEDED]"
         >
           <span className="truncate">{avisoFranja}</span>
           <button
             type="button"
             onClick={() => setAvisoFranja(null)}
             aria-label="Cerrar aviso"
-            className="text-[#4B5563] hover:text-[#111827] font-bold cursor-pointer"
+            className="text-[#4B5563] hover:text-[#111827] dark:text-[#D1D5DB] dark:hover:text-white font-bold cursor-pointer"
           >
             ✕
           </button>
         </div>
       ) : (
-        <div className="mt-2.5 flex items-center justify-between border-t border-[#9CA3AF]/25 pt-2 text-[10px] font-medium text-[#4B5563]">
-          <div className="flex items-center gap-3">
+        <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 border-t border-[#9CA3AF]/25 pt-2 text-[10px] font-medium text-[#4B5563] dark:border-white/10 dark:text-[#D1D5DB]">
+          <div className="flex flex-wrap items-center gap-2.5">
             <span className="inline-flex items-center gap-1">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#EDEDED] border border-[#9CA3AF]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#EDEDED] border border-[#9CA3AF] dark:bg-[#111827] dark:border-white/30" />
               Libre
             </span>
             <span className="inline-flex items-center gap-1">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#111827]" />
-              Seleccionado
+              <span className="h-2.5 w-2.5 rounded-full bg-[#111827] shadow-[0_0_6px_rgba(31,41,55,0.65)] dark:bg-[#EDEDED] dark:shadow-[0_0_6px_rgba(237,237,237,0.65)]" />
+              Inicio / Fin
             </span>
             <span className="inline-flex items-center gap-1">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#4B5563]/25" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#4B5563]/35 border border-[#4B5563]/75 dark:bg-[#4B5563]/70 dark:border-[#9CA3AF]/80" />
+              Intermedio
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <span className="h-2.5 w-2.5 rounded-full bg-[#9CA3AF]/30 border border-[#9CA3AF]/50 dark:bg-[#111827]/45 dark:border-white/15" />
               Ocupado
             </span>
           </div>
-          <span className="font-semibold text-[#111827]">
-            {faseSeleccion === 'ELIGIENDO_FIN' && fechaInicio
-              ? 'Toca día final'
-              : 'Rango listo'}
+          <span className="font-semibold text-[#111827] dark:text-[#EDEDED]">
+            {diasSeleccionados === 0
+              ? 'Toca fecha de inicio'
+              : esModoPorDia
+                ? 'Toca para agregar o quitar'
+                : excluirDiaSiguiente && esperandoFinRango
+                  ? 'Elige fecha de devolución'
+                  : 'Toca días para ampliar o recortar'}
           </span>
         </div>
       )}

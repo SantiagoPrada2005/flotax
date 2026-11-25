@@ -42,6 +42,16 @@ export const GET: APIRoute = async ({ params, request }) => {
     });
   }
 
+  const keyNormalizada = key.toLowerCase();
+  if (
+    keyNormalizada.startsWith('documentos/') ||
+    keyNormalizada.includes('/documentos/')
+  ) {
+    return new Response('Acceso restringido a documentos privados', {
+      status: 403,
+    });
+  }
+
   const bucket = env.BUCKET_MULTIMEDIA;
   if (!bucket) {
     return new Response(

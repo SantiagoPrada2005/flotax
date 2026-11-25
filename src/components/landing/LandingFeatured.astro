@@ -64,7 +64,7 @@ const featuredVehicles: Vehicle[] = [
     <div class="w-full flex flex-col sm:flex-row sm:items-end justify-between gap-4">
       <div class="flex flex-col gap-2 max-w-xl">
         <span class="inline-flex items-center gap-1.5 text-xs font-mono font-bold tracking-wider uppercase text-[#2E4E8F] bg-[#EEF2F6] px-3 py-1 rounded-full w-fit">
-          FLOTA DESTACADA
+          TODOS
         </span>
         <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#0C1120] font-[Manrope,system-ui,sans-serif] tracking-tight">
           Vehículos listos en patio
@@ -92,11 +92,11 @@ const featuredVehicles: Vehicle[] = [
           class="min-w-[290px] sm:min-w-[320px] md:min-w-0 bg-white rounded-[26px] overflow-hidden flex flex-col justify-between"
         >
           <!-- Image Container with Lighting & Badges -->
-          <div class="relative w-full aspect-[16/10] bg-white overflow-hidden flex items-center justify-center">
+          <div class="relative w-full aspect-[16/10] bg-[#111827] overflow-hidden">
             <img
               src={v.image}
               alt={v.name}
-              class="w-full h-full object-cover rounded-2xl"
+              class="w-full h-full object-cover object-center block"
               loading="lazy"
               decoding="async"
             />

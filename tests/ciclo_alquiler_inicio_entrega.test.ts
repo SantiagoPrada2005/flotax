@@ -25,6 +25,7 @@ import {
   movimientosCaja,
   verificacionesIdentidad,
   documentosVehiculo,
+  clientesLocal,
 } from '../src/db/schema/index.ts';
 
 function buscarEnChunks(chunk: unknown, buscar: string): boolean {
@@ -63,6 +64,35 @@ function crearMockBatch() {
     }
     return Promise.resolve(ops);
   };
+}
+
+function crearDocsVigentesMock(vehiculoId: string) {
+  return [
+    {
+      id: `doc-soat-${vehiculoId}`,
+      vehiculoId,
+      tipoDocumento: 'SOAT',
+      numeroReferencia: 'SOAT-MOCK-2027',
+      fechaExpedicion: '2026-01-01',
+      fechaVencimiento: '2027-12-31',
+      vigente: true,
+      archivoR2Key: null,
+      archivoReversoR2Key: null,
+      actualizadoEn: new Date('2026-01-01T00:00:00Z'),
+    },
+    {
+      id: `doc-rtm-${vehiculoId}`,
+      vehiculoId,
+      tipoDocumento: 'TECNICO_MECANICA',
+      numeroReferencia: 'RTM-MOCK-2027',
+      fechaExpedicion: '2026-01-01',
+      fechaVencimiento: '2027-12-31',
+      vigente: true,
+      archivoR2Key: null,
+      archivoReversoR2Key: null,
+      actualizadoEn: new Date('2026-01-01T00:00:00Z'),
+    },
+  ];
 }
 
 describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega R2', () => {
@@ -107,7 +137,7 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
           if (table === vehiculos) rows = [vehiculoValido];
           else if (table === politicasLocal) rows = [politicaValida];
           else if (table === cuentasFinancieras) rows = [cuentaValida];
-          else if (table === documentosVehiculo) rows = [];
+          else if (table === documentosVehiculo) rows = crearDocsVigentesMock(vehiculoId);
           else if (table === reservas) {
             return crearMockQuery(
               reservaInsertada ? [reservaInsertada] : [],
@@ -263,6 +293,7 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
           if (table === vehiculos) rows = [vehiculoValido];
           else if (table === politicasLocal) rows = [politicaValida];
           else if (table === cuentasFinancieras) rows = [cuentaCaja];
+          else if (table === documentosVehiculo) rows = crearDocsVigentesMock(vehiculoId);
           else if (table === reservas) {
             return crearMockQuery(
               reservaCreada ? [reservaCreada] : [],
@@ -339,9 +370,15 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
   });
 
   it('3. vincularReservasHuerfanasPorCorreoD1: vincula reservas, contratos y garantías con clienteId null hacia el userId normalizando mayúsculas y espacios', async () => {
-    let updateReservasVals: Record<string, unknown> | null = null;
-    let updateContratosVals: Record<string, unknown> | null = null;
-    let updateGarantiasVals: Record<string, unknown> | null = null;
+    const capturas: {
+      reservas: Record<string, unknown> | null;
+      contratos: Record<string, unknown> | null;
+      garantias: Record<string, unknown> | null;
+    } = {
+      reservas: null,
+      contratos: null,
+      garantias: null,
+    };
 
     const mockReservasHuerfanas = [
       {
@@ -368,9 +405,9 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
       }),
       update: (table: unknown) => ({
         set: (vals: Record<string, unknown>) => {
-          if (table === reservas) updateReservasVals = vals;
-          if (table === contratosAlquiler) updateContratosVals = vals;
-          if (table === depositosGarantia) updateGarantiasVals = vals;
+          if (table === reservas) capturas.reservas = vals;
+          if (table === contratosAlquiler) capturas.contratos = vals;
+          if (table === depositosGarantia) capturas.garantias = vals;
           return {
             where: async () => [],
           };
@@ -392,10 +429,10 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
     );
 
     assert.equal(totalVinculadas, 2, 'Debe vincular las 2 reservas coincidentes');
-    assert.equal(updateReservasVals?.['clienteId'], 'usr-nuevo-registrado');
-    assert.equal(updateGarantiasVals?.['clienteId'], 'usr-nuevo-registrado');
+    assert.equal(capturas.reservas?.['clienteId'], 'usr-nuevo-registrado');
+    assert.equal(capturas.garantias?.['clienteId'], 'usr-nuevo-registrado');
     assert.ok(
-      updateGarantiasVals?.['actualizadoEn'] instanceof Date,
+      capturas.garantias?.['actualizadoEn'] instanceof Date,
       'depositosGarantia debe incluir actualizadoEn con la fecha de vinculación'
     );
   });
@@ -468,7 +505,7 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
             };
           } else if (table === vehiculos) rows = [vehiculoData];
           else if (table === verificacionesIdentidad) rows = [];
-          else if (table === documentosVehiculo) rows = [];
+          else if (table === documentosVehiculo) rows = crearDocsVigentesMock(vehiculoId);
           else if (table === contratosAlquiler) rows = contratoCreado ? [contratoCreado] : [];
           return crearMockQuery(rows);
         },
@@ -530,8 +567,8 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
     assert.ok(depositoCreado, 'Debe crear depósito en estado PENDIENTE_RECIBIR');
     assert.equal(depositoCreado?.['estado'], 'PENDIENTE_RECIBIR');
 
-    // 4c. Si el cliente tiene todos los documentos pero el vehículo tiene SOAT vencido,
-    // confirmarReservaD1 debe advertirlo en advertencias.vehiculo.soatVencido y exigir autorización sin documentos.
+    // 4c. Si el vehículo tiene SOAT vencido (SIN_REALIZAR) o documentos sin registrar (SIN_REGISTRAR),
+    // confirmarReservaD1 debe rechazar con CONFLICT incluso si autorizarSinDocumentos es true.
     const reservaConClienteCompleto = {
       ...reservaPendiente,
       id: 'res-pend-soat-vencido',
@@ -541,28 +578,34 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
       contactoCategoriaLicencia: 'B1', // Compatible con SUV
     };
 
-    let updateReservaSoat: Record<string, unknown> | null = null;
-    let contratoSoatCreado: Record<string, unknown> | null = null;
-    let eventoSoatCreado: Record<string, unknown> | null = null;
-
     const mockDbSoatVencidoConfirmacion = {
       session: new MockD1Session(),
       select: () => ({
         from: (table: unknown) => {
           let rows: unknown[] = [];
           if (table === reservas) {
-            const data = updateReservaSoat ? { ...reservaConClienteCompleto, ...updateReservaSoat } : reservaConClienteCompleto;
             return {
-              limit: (n?: number) => Promise.resolve(n != null ? [data].slice(0, n) : [data]),
-              orderBy: () => crearMockQuery([data], [{ reserva: data, vehiculo: vehiculoData }]),
+              limit: (n?: number) =>
+                Promise.resolve(
+                  n != null ? [reservaConClienteCompleto].slice(0, n) : [reservaConClienteCompleto]
+                ),
+              orderBy: () =>
+                crearMockQuery(
+                  [reservaConClienteCompleto],
+                  [{ reserva: reservaConClienteCompleto, vehiculo: vehiculoData }]
+                ),
               where: (clause?: any) => {
                 if (buscarEnChunks(clause, 'res-pend-soat-vencido')) {
                   return crearMockQuery([]);
                 }
-                return crearMockQuery([data], [{ reserva: data, vehiculo: vehiculoData }]);
+                return crearMockQuery(
+                  [reservaConClienteCompleto],
+                  [{ reserva: reservaConClienteCompleto, vehiculo: vehiculoData }]
+                );
               },
-              leftJoin: () => crearMockQuery([{ reserva: data, vehiculo: vehiculoData }]),
-              then: (resolve: (v: unknown) => unknown) => resolve([data]),
+              leftJoin: () =>
+                crearMockQuery([{ reserva: reservaConClienteCompleto, vehiculo: vehiculoData }]),
+              then: (resolve: (v: unknown) => unknown) => resolve([reservaConClienteCompleto]),
             };
           } else if (table === vehiculos) rows = [vehiculoData];
           else if (table === verificacionesIdentidad) rows = [{ estado: 'APROBADO' }];
@@ -580,55 +623,21 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
           return crearMockQuery(rows);
         },
       }),
-      insert: (table: unknown) => ({
-        values: (vals: Record<string, unknown>) => {
-          if (table === eventosAlquiler) eventoSoatCreado = vals;
-          if (table === contratosAlquiler) contratoSoatCreado = vals;
-          return {
-            onConflictDoNothing: async () => [vals],
-            then: (resolve: (v: unknown) => unknown) => resolve([vals]),
-          };
-        },
-      }),
-      update: (table: unknown) => ({
-        set: (vals: Record<string, unknown>) => {
-          if (table === reservas) updateReservaSoat = vals;
-          return {
-            where: async () => [],
-          };
-        },
-      }),
       batch: crearMockBatch(),
     } as unknown as AppDb;
 
-    const intentoSinAutorizarSoat = await confirmarReservaD1(mockDbSoatVencidoConfirmacion, {
-      codigo: 'FLX-CONF-SOAT',
-      localId,
-      usuarioId: 'usr-admin-1',
-      autorizarSinDocumentos: false,
-    });
-
-    assert.equal(intentoSinAutorizarSoat.requiereAutorizacionSinDocs, true, 'Debe requerir autorización por SOAT vehicular vencido');
-    if (intentoSinAutorizarSoat.requiereAutorizacionSinDocs) {
-      assert.equal(intentoSinAutorizarSoat.advertencias.vehiculo.soatVencido, true, 'Debe marcar soatVencido = true');
-      assert.equal(intentoSinAutorizarSoat.advertencias.cliente.faltaDocumentoIdentidad, false, 'Cliente tiene CC');
-      assert.equal(intentoSinAutorizarSoat.advertencias.cliente.faltaLicencia, false, 'Cliente tiene B1');
-    }
-
-    const confirmacionConAutorizacionSoat = await confirmarReservaD1(mockDbSoatVencidoConfirmacion, {
-      codigo: 'FLX-CONF-SOAT',
-      localId,
-      usuarioId: 'usr-admin-1',
-      autorizarSinDocumentos: true,
-      notaAutorizacion: 'Vehículo autorizado con póliza comercial sustituta en mostrador',
-    });
-
-    assert.equal(confirmacionConAutorizacionSoat.requiereAutorizacionSinDocs, false);
-    if (!confirmacionConAutorizacionSoat.requiereAutorizacionSinDocs) {
-      assert.equal(confirmacionConAutorizacionSoat.reserva.estado, 'CONFIRMADA');
-    }
-    assert.equal(updateReservaSoat?.['estado'], 'CONFIRMADA');
-    assert.ok(eventoSoatCreado, 'Debe registrar evento de autorización');
+    await assert.rejects(
+      async () => {
+        await confirmarReservaD1(mockDbSoatVencidoConfirmacion, {
+          codigo: 'FLX-CONF-SOAT',
+          localId,
+          usuarioId: 'usr-admin-1',
+          autorizarSinDocumentos: true,
+        });
+      },
+      (err: unknown) => err instanceof ErrorCicloAlquiler && err.code === 'CONFLICT',
+      'Debe rechazar con CONFLICT la confirmación si el vehículo tiene documentos vencidos o sin registrar'
+    );
   });
 
   it('5. entregarVehiculoConContratoD1: pasa CONFIRMADA a EN_CURSO, contrato a VIGENTE, sella acta ENTREGA, asienta fianza y rechaza con CONFLICT entrega duplicada', async () => {
@@ -712,7 +721,7 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
           } else if (table === vehiculos) rows = [vehiculoData];
           else if (table === cuentasFinancieras) rows = [cuentaCaja];
           else if (table === verificacionesIdentidad) rows = [];
-          else if (table === documentosVehiculo) rows = [];
+          else if (table === documentosVehiculo) rows = crearDocsVigentesMock(vehiculoId);
           return crearMockQuery(rows);
         },
       }),
@@ -887,5 +896,574 @@ describe('Ciclo de Alquiler - Inicio, Vinculación OTP, Confirmación y Entrega 
     // Al invocar como método o usando .call(db, ops), this es preservado correctamente
     await mockDbConSession.batch([]);
     assert.equal(batchInvocadoConSession, true);
+  });
+
+  it('8. entregarVehiculoConContratoD1 (Wizard Typeform): valida licencia compatible, persiste datos comprobados del cliente, checklist, puntos R2, cobro de saldo y fianza', async () => {
+    let reservaUpdate: Record<string, unknown> | null = null;
+    let contratoUpdate: Record<string, unknown> | null = null;
+    let inspInsertada: Record<string, unknown> | null = null;
+    let depositoInsertado: Record<string, unknown> | null = null;
+    const puntosInsertados: Record<string, unknown>[] = [];
+    const puntosActualizados: Record<string, unknown>[] = [];
+    const movimientosInsertados: Record<string, unknown>[] = [];
+
+    const motoData = {
+      id: 'veh-moto-01',
+      localId,
+      marca: 'Yamaha',
+      modelo: 'MT-03',
+      placa: 'MTO-99A',
+      kilometraje: 4_200,
+      depositoGarantia: 400_000,
+      precioDia: 110_000,
+      estado: 'RESERVADO',
+      activo: true,
+      categoria: 'MOTO',
+    };
+
+    const reservaMotoConfirmada = {
+      id: 'res-moto-conf',
+      codigo: 'FLX-MOTO-01',
+      localId,
+      vehiculoId: 'veh-moto-01',
+      clienteId: null, // Reserva invitado/mostrador sin cuenta
+      estado: 'CONFIRMADA',
+      fechaInicio: '2026-11-20',
+      fechaFin: '2026-11-22',
+      diasAlquiler: 3,
+      precioDiaCotizado: 110_000,
+      subtotalTarifaCotizado: 330_000,
+      coberturaPericialCotizada: 26_400,
+      totalCotizado: 356_400,
+      montoAbonoReportado: 100_000,
+      modalidadEntrega: 'PATIO_PRINCIPAL',
+      sedeNombre: 'Patio Norte',
+      contactoNombre: 'Conductor Inicial',
+      contactoTelefono: '3001110000',
+      contactoCorreo: null,
+      contactoTipoDocumento: null,
+      contactoNumeroDocumento: null,
+      contactoCategoriaLicencia: null,
+      ley1581Aceptada: true,
+      creadoEn: new Date(),
+      actualizadoEn: new Date(),
+    };
+
+    const contratoBorradorMoto = {
+      id: 'ctr-moto-01',
+      numeroContrato: 'CTR-MOTO-01',
+      reservaId: 'res-moto-conf',
+      localId,
+      vehiculoId: 'veh-moto-01',
+      totalLiquidado: 356_400,
+      totalPagado: 100_000,
+      saldoPendiente: 256_400,
+      estadoPago: 'PARCIAL',
+      estadoContrato: 'BORRADOR',
+      medidorUsoEntrega: 4_200,
+      nivelEnergiaEntregaPct: 100,
+      fechaHoraDevolucionPactada: new Date(),
+    };
+
+    const cuentaBanco = {
+      id: 'cta-banco-1',
+      localId,
+      tipo: 'BANCO',
+      activo: true,
+    };
+
+    const mockDb = {
+      select: () => ({
+        from: (table: unknown) => {
+          let rows: unknown[] = [];
+          if (table === reservas) {
+            const data = reservaUpdate
+              ? { ...reservaMotoConfirmada, ...reservaUpdate }
+              : reservaMotoConfirmada;
+            return crearMockQuery([data], [{ reserva: data, vehiculo: motoData }]);
+          } else if (table === contratosAlquiler) {
+            rows = [
+              contratoUpdate
+                ? { ...contratoBorradorMoto, ...contratoUpdate }
+                : contratoBorradorMoto,
+            ];
+          } else if (table === vehiculos) rows = [motoData];
+          else if (table === cuentasFinancieras) rows = [cuentaBanco];
+          else if (table === documentosVehiculo) rows = crearDocsVigentesMock('veh-moto-01');
+          return crearMockQuery(rows);
+        },
+      }),
+      insert: (table: unknown) => ({
+        values: (vals: Record<string, unknown>) => {
+          if (table === inspeccionesPericiales) inspInsertada = vals;
+          if (table === puntosInspeccionR2) puntosInsertados.push(vals);
+          if (table === movimientosCaja) movimientosInsertados.push(vals);
+          if (table === depositosGarantia) depositoInsertado = vals;
+          return {
+            onConflictDoNothing: async () => [vals],
+            then: (resolve: (v: unknown) => unknown) => resolve([vals]),
+          };
+        },
+      }),
+      update: (table: unknown) => ({
+        set: (vals: Record<string, unknown>) => {
+          if (table === reservas) reservaUpdate = vals;
+          if (table === contratosAlquiler) contratoUpdate = vals;
+          if (table === puntosInspeccionR2) puntosActualizados.push(vals);
+          return {
+            where: async () => [],
+          };
+        },
+      }),
+      session: new MockD1Session(),
+      batch: crearMockBatch(),
+    } as unknown as AppDb;
+
+    // 8a. Licencia incompatible (B1 para MOTO) sin autorización excepcional debe rechazarse
+    await assert.rejects(
+      async () => {
+        await entregarVehiculoConContratoD1(mockDb, {
+          codigo: 'FLX-MOTO-01',
+          localId,
+          usuarioId: 'usr-asesor-1',
+          medidorUsoEntrega: 4_250,
+          conductorVerificado: {
+            nombreCompleto: 'Andrea Torres',
+            telefono: '3105558899',
+            tipoDocumento: 'CC',
+            numeroDocumento: '1020304050',
+            licenciaCategoria: 'B1',
+          },
+        });
+      },
+      (err: unknown) => err instanceof ErrorCicloAlquiler && err.code === 'BAD_REQUEST',
+      'Debe rechazar licencia B1 para una motocicleta si no hay autorización excepcional'
+    );
+
+    // 8b. Con licencia A2 compatible, datos comprobados, checklist, puntos R2 y cobros: persiste todo en D1
+    const resEntrega = await entregarVehiculoConContratoD1(mockDb, {
+      codigo: 'FLX-MOTO-01',
+      localId,
+      usuarioId: 'usr-asesor-1',
+      medidorUsoEntrega: 4_250,
+      nivelEnergiaEntregaPct: 100,
+      conductorVerificado: {
+        nombreCompleto: 'Andrea Torres',
+        telefono: '3105558899',
+        correo: 'andrea@correo.com',
+        tipoDocumento: 'CC',
+        numeroDocumento: '1020304050',
+        ciudadExpedicion: 'Medellín',
+        licenciaNumero: 'LIC-A2-1020',
+        licenciaCategoria: 'A2',
+        domicilio: 'Cra 43 # 10-20',
+      },
+      estadoGeneralEntrega: 'OPTIMO',
+      observacionesEntrega: 'Moto entregada con 2 cascos certificados',
+      respuestasChecklist: [
+        {
+          codigo: 'cascos-chaleco',
+          nombre: 'Casco(s) certificados DOT/ECE y chaleco',
+          estado: 'BIEN',
+        },
+      ],
+      puntosR2: [
+        {
+          zona: 'Tanque',
+          etiqueta: 'Verificado OK',
+          dictamen: 'Pintura sin rayones',
+          estado: 'VERIFICADO',
+          coordX: '50%',
+          coordY: '40%',
+        },
+        {
+          id: 'pto-existente-1',
+          zona: 'Tren Delantero',
+          etiqueta: 'Verificado OK en entrega',
+          dictamen: 'Actualizado en salida',
+          estado: 'VERIFICADO',
+          coordX: '34%',
+          coordY: '66%',
+        },
+      ],
+      consentimientosContrato: {
+        ley1581Aceptada: true,
+        trasladoFotomultasAceptado: true,
+        pagareBlancoFirmado: true,
+      },
+      cobrarSaldoAhora: {
+        monto: 256_400,
+        metodoPago: 'transferencia',
+        referencia: 'BREB-9001',
+      },
+      recibirGarantiaAhora: {
+        monto: 400_000,
+        metodoPago: 'efectivo',
+      },
+    });
+
+    assert.equal(resEntrega.reserva.estado, 'EN_CURSO');
+    assert.equal(reservaUpdate?.['contactoNumeroDocumento'], '1020304050');
+    assert.equal(reservaUpdate?.['contactoCategoriaLicencia'], 'A2');
+    assert.equal(contratoUpdate?.['estadoContrato'], 'VIGENTE');
+    assert.equal(contratoUpdate?.['arrendatarioCiudadExpedicion'], 'Medellín');
+    assert.equal(contratoUpdate?.['arrendatarioLicenciaNumero'], 'LIC-A2-1020');
+    assert.equal(contratoUpdate?.['arrendatarioDomicilio'], 'Cra 43 # 10-20');
+    assert.equal(contratoUpdate?.['estadoPago'], 'PAGADO');
+    assert.equal(contratoUpdate?.['saldoPendiente'], 0);
+    assert.equal(contratoUpdate?.['pagareBlancoFirmado'], true);
+    assert.equal(inspInsertada?.['estadoGeneral'], 'OPTIMO');
+    assert.equal(
+      (inspInsertada?.['respuestasChecklist'] as unknown[])?.length,
+      1,
+      'Debe persistir el checklist de entrega en el acta pericial'
+    );
+    assert.equal(puntosInsertados.length, 1, 'Debe insertar los puntos R2 nuevos de salida');
+    assert.equal(puntosActualizados.length, 1, 'Debe actualizar puntos R2 preexistentes');
+    assert.equal(depositoInsertado?.['estado'], 'RECIBIDO_CUSTODIA', 'Debe crear el depósito en custodia si no existía fila previa');
+    assert.equal(movimientosInsertados.length, 2, 'Debe registrar saldo y depósito de garantía en caja');
+  });
+
+  it('9. registrarOActualizarDocumentosClienteRapidoD1 actualiza reserva y contrato incluso para reservas sin cuenta (clienteId null)', async () => {
+    let reservaAct: Record<string, unknown> | null = null;
+    let contratoAct: Record<string, unknown> | null = null;
+
+    const mockDb = {
+      select: () => ({
+        from: (table: unknown) => {
+          if (table === reservas) {
+            return crearMockQuery([
+              {
+                id: 'res-invitado-1',
+                codigo: 'FLX-INV-1',
+                clienteId: null,
+              },
+            ]);
+          }
+          return crearMockQuery([]);
+        },
+      }),
+      update: (table: unknown) => ({
+        set: (vals: Record<string, unknown>) => {
+          if (table === reservas) reservaAct = vals;
+          if (table === contratosAlquiler) contratoAct = vals;
+          return { where: async () => [] };
+        },
+      }),
+    } as unknown as AppDb;
+
+    const res = await registrarOActualizarDocumentosClienteRapidoD1(mockDb, {
+      codigo: 'FLX-INV-1',
+      tipoDocumento: 'CE',
+      numeroDocumento: '99887766',
+      licenciaNumero: 'LIC-99887766',
+      licenciaCategoria: 'B1',
+    });
+
+    assert.equal(res.ok, true);
+    assert.equal(reservaAct?.['contactoTipoDocumento'], 'CE');
+    assert.equal(reservaAct?.['contactoNumeroDocumento'], '99887766');
+    assert.equal(reservaAct?.['contactoCategoriaLicencia'], 'B1');
+    assert.equal(contratoAct?.['arrendatarioNumeroDocumento'], '99887766');
+    assert.equal(contratoAct?.['arrendatarioLicenciaNumero'], 'LIC-99887766');
+  });
+
+  it('10. crearReservaConValidaciones (web con usuarioId): vincula clienteId en reserva y registra relación en clientesLocal', async () => {
+    const vehiculoValido = {
+      id: vehiculoId,
+      localId,
+      marca: 'Mazda',
+      modelo: 'CX-30',
+      placa: 'FLX-123',
+      precioDia: 180_000,
+      depositoGarantia: 600_000,
+      estado: 'DISPONIBLE',
+      activo: true,
+      categoria: 'SUV',
+      kilometraje: 15_000,
+    };
+
+    let reservaInsertada: Record<string, unknown> | null = null;
+    let clienteLocalInsertado: Record<string, unknown> | null = null;
+
+    const mockDb = {
+      session: new MockD1Session(),
+      batch: crearMockBatch(),
+      select: () => ({
+        from: (table: unknown) => {
+          if (table === vehiculos) return crearMockQuery([vehiculoValido]);
+          if (table === politicasLocal) return crearMockQuery([{ id: 'pol-1', localId, abonoMinimoPct: 30, coberturaPericialPct: 8 }]);
+          if (table === documentosVehiculo) return crearMockQuery(crearDocsVigentesMock(vehiculoId));
+          if (table === reservas) {
+            return crearMockQuery(
+              reservaInsertada ? [reservaInsertada] : [],
+              reservaInsertada ? [{ reserva: reservaInsertada, vehiculo: vehiculoValido }] : []
+            );
+          }
+          return crearMockQuery([]);
+        },
+      }),
+      insert: (table: unknown) => ({
+        values: (vals: Record<string, unknown>) => {
+          if (table === reservas) reservaInsertada = vals;
+          if (table === clientesLocal) clienteLocalInsertado = vals;
+          return { onConflictDoNothing: async () => [] };
+        },
+      }),
+      update: () => ({
+        set: () => ({ where: async () => [] }),
+      }),
+    } as unknown as AppDb;
+
+    const res = await crearReservaConValidaciones(
+      mockDb,
+      {
+        vehiculoId,
+        localId,
+        fechaInicio: '2026-12-01',
+        fechaFin: '2026-12-03',
+        contactoNombre: 'Cliente Verificado',
+        contactoTelefono: '3001234567',
+        contactoCorreo: 'cliente@flotax.co',
+      },
+      {
+        usuarioId: 'usr-cliente-42',
+        rol: 'USUARIO',
+        localId,
+        origen: 'CLIENTE_WEB',
+      }
+    );
+
+    assert.equal(res.reserva.clienteId, 'usr-cliente-42');
+    assert.equal(reservaInsertada?.['clienteId'], 'usr-cliente-42');
+    assert.equal(clienteLocalInsertado?.['usuarioId'], 'usr-cliente-42');
+    assert.equal(clienteLocalInsertado?.['localId'], localId);
+  });
+
+  it('11. vincularReservasHuerfanasPorCorreoD1 con incluirCreadasPorUsuario vincula reservas huérfanas previas del cliente', async () => {
+    let reservaActualizada: Record<string, unknown> | null = null;
+    let clienteLocalInsertado: Record<string, unknown> | null = null;
+
+    const mockDb = {
+      session: new MockD1Session(),
+      batch: crearMockBatch(),
+      select: () => ({
+        from: (table: unknown) => {
+          if (table === reservas) {
+            return crearMockQuery([
+              { id: 'res-huerfana-9', codigo: 'FLX-900111', localId },
+            ]);
+          }
+          return crearMockQuery([]);
+        },
+      }),
+      update: (table: unknown) => ({
+        set: (vals: Record<string, unknown>) => {
+          if (table === reservas) reservaActualizada = vals;
+          return { where: async () => [] };
+        },
+      }),
+      insert: (table: unknown) => ({
+        values: (vals: Record<string, unknown>) => {
+          if (table === clientesLocal) clienteLocalInsertado = vals;
+          return { onConflictDoNothing: async () => [] };
+        },
+      }),
+    } as unknown as AppDb;
+
+    const vinculadas = await vincularReservasHuerfanasPorCorreoD1(
+      mockDb,
+      'usr-cliente-42',
+      'cliente@flotax.co',
+      { incluirCreadasPorUsuario: true }
+    );
+
+    assert.equal(vinculadas, 1);
+    assert.equal(reservaActualizada?.['clienteId'], 'usr-cliente-42');
+    assert.equal(clienteLocalInsertado?.['usuarioId'], 'usr-cliente-42');
+  });
+
+  it('12. entregarVehiculoConContratoD1 y crearReservaConValidaciones rechazan vehículos con documentos SIN_REGISTRAR o SIN_REALIZAR', async () => {
+    const vehiculoSinDocs = {
+      id: vehiculoId,
+      localId,
+      marca: 'Mazda',
+      modelo: 'CX-30',
+      placa: 'FLX-123',
+      precioDia: 180_000,
+      depositoGarantia: 600_000,
+      estado: 'DISPONIBLE',
+      activo: true,
+      categoria: 'SUV',
+      kilometraje: 15_000,
+    };
+
+    const mockDbSinDocs = {
+      session: new MockD1Session(),
+      batch: crearMockBatch(),
+      select: () => ({
+        from: (table: unknown) => {
+          if (table === vehiculos) return crearMockQuery([vehiculoSinDocs]);
+          if (table === politicasLocal) return crearMockQuery([{ id: 'pol-1', localId, abonoMinimoPct: 30, coberturaPericialPct: 8 }]);
+          if (table === reservas) {
+            return crearMockQuery([
+              {
+                id: 'res-confirmada-sin-docs',
+                codigo: 'FLX-ENT-SIN-DOC',
+                localId,
+                vehiculoId,
+                estado: 'CONFIRMADA',
+                fechaInicio: '2026-11-23',
+                fechaFin: '2026-11-25',
+                contactoNombre: 'Conductor Prueba',
+                contactoTelefono: '3001112233',
+                precioDiaCotizado: 180_000,
+                subtotalTarifaCotizado: 540_000,
+                coberturaPericialCotizada: 43_200,
+                totalCotizado: 583_200,
+                montoAbonoReportado: 0,
+              },
+            ]);
+          }
+          return crearMockQuery([]);
+        },
+      }),
+    } as unknown as AppDb;
+
+    await assert.rejects(
+      async () => {
+        await crearReservaConValidaciones(
+          mockDbSinDocs,
+          {
+            vehiculoId,
+            localId,
+            fechaInicio: '2026-12-01',
+            fechaFin: '2026-12-03',
+            contactoNombre: 'Cliente Mostrador',
+            contactoTelefono: '3001234567',
+          },
+          { origen: 'MOSTRADOR_ADMIN', usuarioId: 'usr-admin-1', rol: 'ADMIN', localId }
+        );
+      },
+      (err: unknown) => err instanceof ErrorCicloAlquiler && err.code === 'CONFLICT',
+      'Debe rechazar reserva en mostrador si el vehículo está en SIN_REGISTRAR'
+    );
+
+    await assert.rejects(
+      async () => {
+        await entregarVehiculoConContratoD1(mockDbSinDocs, {
+          codigo: 'FLX-ENT-SIN-DOC',
+          localId,
+          usuarioId: 'usr-admin-1',
+          medidorUsoEntrega: 15_050,
+          autorizarSinDocumentos: true,
+        });
+      },
+      (err: unknown) => err instanceof ErrorCicloAlquiler && err.code === 'CONFLICT',
+      'Debe rechazar entrega si el vehículo tiene documentos SIN_REGISTRAR'
+    );
+  });
+
+  it('13. crearReservaConValidaciones (web): acepta rangos continuos de 1, 2 o 3 días y rechaza huecos intermedios', async () => {
+    const vehiculoValido = {
+      id: vehiculoId,
+      localId,
+      marca: 'Mazda',
+      modelo: 'CX-30',
+      placa: 'FLX-123',
+      precioDia: 180_000,
+      depositoGarantia: 600_000,
+      estado: 'DISPONIBLE',
+      activo: true,
+      categoria: 'SUV',
+      kilometraje: 15_000,
+    };
+
+    let reservaInsertada: Record<string, unknown> | null = null;
+
+    const mockDb = {
+      session: new MockD1Session(),
+      batch: crearMockBatch(),
+      select: () => ({
+        from: (table: unknown) => {
+          if (table === vehiculos) return crearMockQuery([vehiculoValido]);
+          if (table === politicasLocal) return crearMockQuery([{ id: 'pol-1', localId, abonoMinimoPct: 30, coberturaPericialPct: 10 }]);
+          if (table === documentosVehiculo) return crearMockQuery(crearDocsVigentesMock(vehiculoId));
+          if (table === reservas) {
+            return crearMockQuery(
+              reservaInsertada ? [reservaInsertada] : [],
+              reservaInsertada ? [{ reserva: reservaInsertada, vehiculo: vehiculoValido }] : []
+            );
+          }
+          return crearMockQuery([]);
+        },
+      }),
+      insert: (table: unknown) => ({
+        values: (vals: Record<string, unknown>) => {
+          if (table === reservas) reservaInsertada = vals;
+          return { onConflictDoNothing: async () => [vals] };
+        },
+      }),
+      update: () => ({
+        set: () => ({ where: async () => [] }),
+      }),
+    } as unknown as AppDb;
+
+    // Rechaza rangos no continuos (con huecos)
+    await assert.rejects(
+      async () => {
+        await crearReservaConValidaciones(
+          mockDb,
+          {
+            vehiculoId,
+            localId,
+            fechaInicio: '2026-12-27',
+            fechaFin: '2026-12-29',
+            fechasSeleccionadas: ['2026-12-27', '2026-12-29'],
+            contactoNombre: 'Cliente Web',
+            contactoTelefono: '3001234567',
+            contactoCorreo: 'cliente@flotax.co',
+          },
+          { origen: 'CLIENTE_WEB', localId }
+        );
+      },
+      (err: unknown) => err instanceof ErrorCicloAlquiler && err.code === 'BAD_REQUEST',
+      'Debe rechazar reserva con fechas no consecutivas'
+    );
+
+    // Acepta recorte continuo de 2 días (ej. 27-28 tras bajar desde 27-29)
+    const resDosDias = await crearReservaConValidaciones(
+      mockDb,
+      {
+        vehiculoId,
+        localId,
+        fechaInicio: '2026-12-27',
+        fechaFin: '2026-12-28',
+        fechasSeleccionadas: ['2026-12-27', '2026-12-28'],
+        contactoNombre: 'Cliente Web',
+        contactoTelefono: '3001234567',
+        contactoCorreo: 'cliente@flotax.co',
+      },
+      { origen: 'CLIENTE_WEB', localId }
+    );
+    assert.equal(resDosDias.reserva.diasAlquiler, 2);
+
+    // Acepta reserva de 1 día
+    reservaInsertada = null;
+    const resUnDia = await crearReservaConValidaciones(
+      mockDb,
+      {
+        vehiculoId,
+        localId,
+        fechaInicio: '2026-12-27',
+        fechaFin: '2026-12-27',
+        fechasSeleccionadas: ['2026-12-27'],
+        contactoNombre: 'Cliente Web',
+        contactoTelefono: '3001234567',
+        contactoCorreo: 'cliente@flotax.co',
+      },
+      { origen: 'CLIENTE_WEB', localId }
+    );
+    assert.equal(resUnDia.reserva.diasAlquiler, 1);
   });
 });

@@ -36,8 +36,13 @@ export function validarAccesoReservaLectura(
     return true;
   }
 
-  // 2. Colaborador en el mismo local
-  if (usuario?.localActivo?.id && reserva.localId) {
+  // 2. Colaborador en el mismo local (excluye clientes con rol USUARIO)
+  if (
+    usuario?.localActivo?.id &&
+    usuario.localActivo.rol &&
+    usuario.localActivo.rol !== 'USUARIO' &&
+    reserva.localId
+  ) {
     if (usuario.localActivo.id === reserva.localId) {
       return true;
     }
@@ -119,4 +124,55 @@ export function esRutaDetalleConTokenPublico(
   }
 
   return typeof token === 'string' && token.trim().length > 0;
+}
+
+export type OrigenCreacionReserva = 'CLIENTE_WEB' | 'MOSTRADOR_ADMIN';
+
+export interface ResultadoContextoOrigenReserva {
+  readonly permitido: boolean;
+  readonly origen: OrigenCreacionReserva;
+  readonly clienteId: string | null;
+}
+
+/**
+ * Determina el origen efectivo (`CLIENTE_WEB` vs `MOSTRADOR_ADMIN`) y el `clienteId`
+ * de una nueva reserva, validando que solo personal de patio pueda operar en mostrador.
+ */
+export function resolverContextoOrigenReserva(
+  usuario:
+    | {
+        readonly id: string;
+        readonly esSuperAdmin?: boolean | null | undefined;
+        readonly localActivo?: { readonly rol?: string | null | undefined } | null | undefined;
+      }
+    | null
+    | undefined,
+  origenSolicitado?: OrigenCreacionReserva | null | undefined,
+  clienteIdInput?: string | null | undefined
+): ResultadoContextoOrigenReserva {
+  const esPersonalPatio = Boolean(
+    usuario?.esSuperAdmin ||
+      (usuario?.localActivo?.rol && usuario.localActivo.rol !== 'USUARIO')
+  );
+
+  if (origenSolicitado === 'MOSTRADOR_ADMIN') {
+    if (!esPersonalPatio) {
+      return {
+        permitido: false,
+        origen: 'CLIENTE_WEB',
+        clienteId: usuario?.id ?? null,
+      };
+    }
+    return {
+      permitido: true,
+      origen: 'MOSTRADOR_ADMIN',
+      clienteId: clienteIdInput ?? null,
+    };
+  }
+
+  return {
+    permitido: true,
+    origen: 'CLIENTE_WEB',
+    clienteId: usuario?.id ?? null,
+  };
 }

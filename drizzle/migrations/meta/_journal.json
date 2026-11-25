@@ -64,6 +64,20 @@
       "when": 1794520530796,
       "tag": "0008_giant_next_avengers",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1795048584496,
+      "tag": "0009_faulty_chronomancer",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1795487308024,
+      "tag": "0010_aspiring_cable",
+      "breakpoints": true
     }
   ]
 }

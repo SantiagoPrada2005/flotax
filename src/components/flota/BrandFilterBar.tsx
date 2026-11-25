@@ -1,4 +1,4 @@
-import { useState, useMemo, type ReactNode } from 'react';
+import { useState, useEffect, useMemo, type ReactNode } from 'react';
 
 export interface BrandFilterBarProps {
   onSelectBrand?: ((brand: string) => void) | undefined;
@@ -149,6 +149,12 @@ export default function BrandFilterBar({
   const [internalSelected, setInternalSelected] = useState(activeBrand);
   const selected = activeBrand !== undefined ? activeBrand : internalSelected;
 
+  useEffect(() => {
+    if (activeBrand !== undefined) {
+      setInternalSelected(activeBrand);
+    }
+  }, [activeBrand]);
+
   const brandsList: BrandItem[] = useMemo(() => {
     if (availableBrands && availableBrands.length > 0) {
       const items: BrandItem[] = [
@@ -188,13 +194,13 @@ export default function BrandFilterBar({
   return (
     <div className="space-y-2.5">
       <div className="flex items-center justify-between px-0.5">
-        <h3 className="font-display text-sm font-bold tracking-tight text-[#111827]">
+        <h3 className="font-display text-sm font-bold tracking-tight text-[#111827] dark:text-[#EDEDED]">
           Marcas
         </h3>
         <button
           type="button"
           onClick={() => handleSelect('ALL')}
-          className="text-xs font-semibold text-[#71717A] hover:text-[#111827] transition cursor-pointer"
+          className="text-xs font-semibold text-[#9CA3AF] hover:text-[#111827] dark:hover:text-[#EDEDED] transition-colors cursor-pointer"
         >
           Ver todas
         </button>
@@ -207,11 +213,12 @@ export default function BrandFilterBar({
             <button
               key={b.id}
               type="button"
+              aria-pressed={isActive}
               onClick={() => handleSelect(b.id)}
-              className={`ios-press-bounce flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold transition shrink-0 cursor-pointer ${
+              className={`fx-press flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold transition-colors shrink-0 cursor-pointer border ${
                 isActive
-                  ? 'bg-[#18181B] text-white shadow-sm'
-                  : 'bg-white border border-[#E4E4E7] text-[#18181B] hover:border-[#A1A1AA] hover:bg-[#FAFAFA]'
+                  ? 'bg-[#111827] dark:bg-[#EDEDED] border-[#111827] dark:border-[#EDEDED] text-[#EDEDED] dark:text-[#111827] shadow-sm'
+                  : 'bg-[#EDEDED]/60 dark:bg-[#1F2937] border-[#9CA3AF]/30 dark:border-[#4B5563]/40 text-[#111827] dark:text-[#EDEDED] hover:border-[#4B5563] dark:hover:border-[#9CA3AF]'
               }`}
             >
               <div className="flex h-4.5 w-4.5 items-center justify-center shrink-0">

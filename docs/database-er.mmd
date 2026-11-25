@@ -116,6 +116,8 @@ erDiagram
         string slug UK
         string ciudad
         string direccion
+        real latitud
+        real longitud
         string telefono
         string dueno_id FK
         boolean activo
@@ -130,6 +132,12 @@ erDiagram
         integer cobertura_pericial_pct
         integer recargo_mora_diaria_pct
         integer recargo_admin_fotomulta_pct
+        boolean domicilio_habilitado
+        real radio_cobertura_km
+        real km_incluidos_domicilio
+        integer tarifa_domicilio_base
+        integer tarifa_domicilio_por_km
+        string zona_cobertura_etiqueta
         integer cargo_lavado_estandar
         integer limite_km_diario
         integer cargo_km_adicional
@@ -313,6 +321,12 @@ erDiagram
         integer dias_alquiler
         string estado
         string modalidad_entrega
+        string direccion_entrega
+        real entrega_latitud
+        real entrega_longitud
+        string entrega_referencia
+        real distancia_entrega_km
+        integer recargo_entrega_domicilio
         integer precio_dia_cotizado
         integer subtotal_tarifa_cotizado
         integer cobertura_pericial_cotizada

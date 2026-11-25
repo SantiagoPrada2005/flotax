@@ -12,6 +12,9 @@
 | [`FlotaxIsotype.astro`](./FlotaxIsotype.astro) | Componente SSR Astro: Isotipo Vectorial | `default` | Astro |
 | [`FlotaxIsotype.tsx`](./FlotaxIsotype.tsx) | Isla React 19: Isotipo Vectorial | `default`, `FLOTAX_ISOTYPE_PATH` | React |
 | [`IconButton.tsx`](./IconButton.tsx) | Isla React 19: Botón Canónico Solo-Icono | `IconButton`, `default`, `IconButtonVariant`, `IconButtonSize`, `IconButtonProps` (`aria-label` obligatorio) | React |
+| [`LocationOptionSelectorModal.tsx`](./LocationOptionSelectorModal.tsx) | Isla React 19: Selector Nativo Modal/Sheet | `LocationOptionSelectorModal`, `default`, `LocationOptionSelectorModalProps` | `lucide-react`, `@/lib/geo/colombia`, `./IconButton` |
+| [`Select.tsx`](./Select.tsx) | Isla React 19: Selector Desplegable Canónico Adaptativo con Portal | `Select`, `default`, `SelectOption`, `SelectProps` | `react`, `react-dom`, `lucide-react` |
+| [`WheelPicker.tsx`](./WheelPicker.tsx) | Isla React 19: Selector Vertical Estilo Rueda iOS | `WheelPicker`, `default`, `WheelPickerProps` | `react` |
 | [`index.ts`](./index.ts) | Barrel de exportación | Todos los componentes UI Tier 1 | Componentes internos |
 
 ## Invariants & Directory Rules

@@ -1,4 +1,4 @@
-import { useState, useEffect, useTransition, useRef } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { actions } from 'astro:actions';
 import { navigate } from 'astro:transitions/client';
 import { motion, AnimatePresence, useReducedMotion, type Variants } from 'framer-motion';
@@ -22,21 +22,23 @@ const MOTION_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 const stepVariants: Variants = {
   enter: (direction: number) => ({
-    y: direction >= 0 ? '100%' : '-100%',
-    opacity: 1,
+    y: direction >= 0 ? 18 : -18,
+    opacity: 0,
   }),
   center: {
     y: 0,
     opacity: 1,
     transition: {
-      y: { duration: 0.4, ease: MOTION_EASE },
+      y: { duration: 0.22, ease: MOTION_EASE },
+      opacity: { duration: 0.18 },
     },
   },
   exit: (direction: number) => ({
-    y: direction >= 0 ? '-100%' : '100%',
-    opacity: 1,
+    y: direction >= 0 ? -18 : 18,
+    opacity: 0,
     transition: {
-      y: { duration: 0.4, ease: MOTION_EASE },
+      y: { duration: 0.16, ease: MOTION_EASE },
+      opacity: { duration: 0.14 },
     },
   }),
 };
@@ -107,25 +109,26 @@ const VALORES_INICIALES_DEFAULT: VehiculoWizardData = {
   modelo: '',
   anio: 2024,
   placa: '',
-  estado: 'DISPONIBLE',
-  precioDia: 180000,
-  depositoGarantia: 500000,
-  transmision: 'Automática',
-  combustible: 'Gasolina',
+  estado: '',
+  precioDia: '',
+  depositoGarantia: '',
+  transmision: '',
+  combustible: '',
   capacidadPasajeros: 5,
   autonomiaKm: '',
-  kilometraje: 0,
+  kilometraje: '',
   imagenUrl: '',
+  galeria: [],
   destacado: false,
   descripcion: '',
   aceleracion: '6.5 s',
   velocidadMaxima: '190 km/h',
   rating: 4.8,
   autonomiaOdo: '0 km',
-  soatVigente: true,
-  tarjetaPropiedad: true,
-  tecnicoMecanica: true,
-  kitCarretera: true,
+  soatVigente: false,
+  tarjetaPropiedad: false,
+  tecnicoMecanica: false,
+  kitCarretera: false,
 };
 
 export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIslandProps) {
@@ -133,10 +136,9 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
 
   const [pasoActual, setPasoActual] = useState<WizardStepId>(1);
   const [pasoMaximoAlcanzado, setPasoMaximoAlcanzado] = useState<number>(esEdicion ? 8 : 1);
+  const [editandoDesdeConfirmacion, setEditandoDesdeConfirmacion] = useState<boolean>(false);
   const [direction, setDirection] = useState<number>(1);
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
-  const [containerHeight, setContainerHeight] = useState<number | 'auto'>('auto');
-  const containerRef = useRef<HTMLDivElement>(null);
   const shouldReduceMotion = useReducedMotion();
 
   const [data, setData] = useState<VehiculoWizardData>(() => {
@@ -158,6 +160,22 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
         autonomiaKm: vehiculoInicial.autonomiaKm ?? '',
         kilometraje: vehiculoInicial.kilometraje,
         imagenUrl: vehiculoInicial.imagenUrl,
+        galeria:
+          vehiculoInicial.galeria && vehiculoInicial.galeria.length > 0
+            ? vehiculoInicial.galeria.map((f) => ({ ...f, estado: 'listo' as const }))
+            : vehiculoInicial.imagenUrl
+              ? [
+                  {
+                    id: 'portada-inicial',
+                    url: vehiculoInicial.imagenUrl,
+                    categoria: 'EXTERIOR' as const,
+                    zona: 'EXTERIOR_LATERAL_IZQ' as const,
+                    esPrincipal: true,
+                    orden: 0,
+                    estado: 'listo' as const,
+                  },
+                ]
+              : [],
         destacado: Boolean(vehiculoInicial.destacado),
         descripcion: vehiculoInicial.descripcion,
         aceleracion: vehiculoInicial.aceleracion,
@@ -252,15 +270,20 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
         nuevosErrores.anio = 'Indique un año válido entre 1990 y 2035.';
       }
     } else if (paso === 3) {
-      if (!data.marca.trim()) {
-        nuevosErrores.marca = 'Indique la marca o fabricante.';
-      }
-      if (!data.modelo.trim()) {
-        nuevosErrores.modelo = 'Indique el modelo o versión comercial.';
+      if (!data.marca.trim() || !data.modelo.trim()) {
+        nuevosErrores.marca = 'Indica la marca y el modelo (ej. Toyota Corolla).';
       }
     } else if (paso === 4) {
+      if (data.categoria !== 'PATINETA') {
+        if (!data.transmision) {
+          nuevosErrores.transmision = 'Selecciona el tipo de caja.';
+        }
+        if (!data.combustible) {
+          nuevosErrores.combustible = 'Selecciona el combustible o motor.';
+        }
+      }
       if (data.kilometraje === '' || Number(data.kilometraje) < 0) {
-        nuevosErrores.kilometraje = 'Indique el kilometraje de patio.';
+        nuevosErrores.kilometraje = 'Indique los kilómetros acumulados.';
       }
     } else if (paso === 5) {
       if (data.precioDia === '' || Number(data.precioDia) <= 0) {
@@ -270,8 +293,20 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
         nuevosErrores.depositoGarantia = 'El depósito de fianza no puede ser negativo.';
       }
     } else if (paso === 6) {
-      if (!data.imagenUrl.trim()) {
-        nuevosErrores.imagenUrl = 'Suba una fotografía para registrar la ficha de la unidad.';
+      const fotosEnCarga = (data.galeria ?? []).some((f) => f.estado === 'cargando');
+      if (fotosEnCarga) {
+        nuevosErrores.imagenUrl = 'Espera a que terminen de optimizarse las fotografías antes de continuar.';
+      } else {
+        const fotosListas = (data.galeria ?? []).filter((f) => Boolean(f.url));
+        if (fotosListas.length === 0 || !data.imagenUrl.trim()) {
+          nuevosErrores.imagenUrl = 'Debes agregar al menos una fotografía del vehículo para poder registrarlo.';
+        } else if (!fotosListas.some((f) => f.esPrincipal)) {
+          nuevosErrores.imagenUrl = 'Selecciona cuál fotografía será la imagen principal del vehículo.';
+        }
+      }
+    } else if (paso === 7) {
+      if (!data.estado) {
+        nuevosErrores.estado = 'Selecciona el estado operativo inicial.';
       }
     }
 
@@ -280,16 +315,32 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
   };
 
   const cambiarPaso = (nuevoPaso: WizardStepId, dir: number) => {
-    if (isTransitioning || nuevoPaso === pasoActual) return;
+    if (nuevoPaso === pasoActual) return;
 
-    if (containerRef.current) {
-      setContainerHeight(containerRef.current.offsetHeight);
-    }
     setDirection(dir);
-    setIsTransitioning(true);
+    setIsTransitioning(false);
     setPasoActual(nuevoPaso);
     setPasoMaximoAlcanzado((prev) => Math.max(prev, nuevoPaso));
+    if (nuevoPaso === 8) {
+      setEditandoDesdeConfirmacion(false);
+    }
     setErrorMsgGeneral(null);
+  };
+
+  const handleEditarDesdeConfirmacion = (paso: WizardStepId) => {
+    if (isTransitioning) return;
+    setEditandoDesdeConfirmacion(true);
+    cambiarPaso(paso, -1);
+  };
+
+  const handleVolverAConfirmacion = () => {
+    if (isTransitioning) return;
+    if (!validarPasoActual(pasoActual)) {
+      setErrorMsgGeneral('Complete los datos requeridos para volver a la confirmación.');
+      return;
+    }
+    setEditandoDesdeConfirmacion(false);
+    cambiarPaso(8, 1);
   };
 
   const avanzarPaso = () => {
@@ -341,9 +392,9 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
       case 6:
         return <Step6Fotografia data={data} errors={errors} onChange={handleDataChange} />;
       case 7:
-        return <Step7Patio data={data} onChange={handleDataChange} />;
+        return <Step7Patio data={data} errors={errors} onChange={handleDataChange} />;
       case 8:
-        return <Step8Revision data={data} onEditPaso={handleSelectPaso} />;
+        return <Step8Revision data={data} onEditPaso={handleEditarDesdeConfirmacion} />;
       default:
         return null;
     }
@@ -361,6 +412,11 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
       setErrorMsgGeneral('Verifique la marca y modelo.');
       return;
     }
+    if (!validarPasoActual(4)) {
+      setPasoActual(4);
+      setErrorMsgGeneral('Complete las características mecánicas y kilómetros acumulados.');
+      return;
+    }
     if (!validarPasoActual(5)) {
       setPasoActual(5);
       setErrorMsgGeneral('Verifique las tarifas de alquiler.');
@@ -369,6 +425,11 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
     if (!validarPasoActual(6)) {
       setPasoActual(6);
       setErrorMsgGeneral('Suba una fotografía para la ficha técnica.');
+      return;
+    }
+    if (!validarPasoActual(7)) {
+      setPasoActual(7);
+      setErrorMsgGeneral('Selecciona el estado operativo del vehículo.');
       return;
     }
 
@@ -387,15 +448,31 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
           categoria: data.categoria,
           categoriaEtiqueta: data.categoriaEtiqueta.trim() || data.categoria,
           placa: data.placa.trim().toUpperCase(),
-          estado: data.estado,
+          estado: data.estado || 'DISPONIBLE',
           precioDia: Number(data.precioDia),
           depositoGarantia: Number(data.depositoGarantia),
-          transmision: data.categoria === 'PATINETA' ? 'Eléctrica' : data.transmision,
-          combustible: data.categoria === 'PATINETA' ? 'Eléctrico' : data.combustible,
+          transmision:
+            data.categoria === 'PATINETA'
+              ? 'Eléctrica'
+              : data.transmision || 'Automática',
+          combustible:
+            data.categoria === 'PATINETA'
+              ? 'Eléctrico'
+              : data.combustible || 'Gasolina',
           capacidadPasajeros: data.categoria === 'PATINETA' ? 1 : Number(data.capacidadPasajeros || 1),
           autonomiaKm: data.autonomiaKm !== '' ? Number(data.autonomiaKm) : undefined,
           kilometraje: Number(data.kilometraje || 0),
           imagenUrl: data.imagenUrl.trim(),
+          galeria: (data.galeria ?? [])
+            .filter((f) => Boolean(f.url))
+            .map((f, idx) => ({
+              id: f.id,
+              url: f.url,
+              categoria: f.categoria,
+              zona: f.zona,
+              esPrincipal: f.esPrincipal,
+              orden: idx,
+            })),
           destacado: Boolean(data.destacado),
           descripcion:
             data.descripcion.trim() ||
@@ -438,8 +515,10 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
         pasoActual={pasoActual}
         pasoMaximoAlcanzado={pasoMaximoAlcanzado}
         isTransitioning={isTransitioning}
+        showReturnToConfirmation={editandoDesdeConfirmacion && pasoActual < 8}
         onSelectPaso={handleSelectPaso}
         onPrevPaso={pasoActual > 1 ? retrocederPaso : undefined}
+        onReturnToConfirmation={handleVolverAConfirmacion}
         onCancelar={() => navigate('/admin/flota')}
       />
 
@@ -483,45 +562,23 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
         </div>
       )}
 
-      {/* 2. Zona Central Inmersiva con Transición Vertical Continua */}
+      {/* 2. Zona Central Inmersiva con Transición Fluida */}
       <main className="my-auto py-4 w-full">
-        <motion.div
-          ref={containerRef}
-          animate={{ height: containerHeight }}
-          transition={{ duration: 0.4, ease: MOTION_EASE }}
-          className="w-full relative overflow-hidden bg-[#EDEDED] dark:bg-transparent"
-        >
-          <div className="grid grid-cols-1 grid-rows-1 items-start w-full bg-[#EDEDED] dark:bg-transparent">
-            <AnimatePresence mode="sync" custom={direction} initial={false}>
-              <motion.div
-                key={pasoActual}
-                custom={direction}
-                variants={shouldReduceMotion ? reducedVariants : stepVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                ref={(node) => {
-                  if (node && isTransitioning) {
-                    const h = node.offsetHeight;
-                    if (h && h > 0) {
-                      setContainerHeight(h);
-                    }
-                  }
-                }}
-                onAnimationComplete={(definition) => {
-                  if (definition === 'center') {
-                    setIsTransitioning(false);
-                    setContainerHeight('auto');
-                  }
-                }}
-                className="col-start-1 row-start-1 w-full bg-[#EDEDED] dark:bg-transparent"
-                style={{ willChange: 'transform' }}
-              >
-                {renderPaso(pasoActual)}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </motion.div>
+        <div className="w-full relative bg-[#EDEDED] dark:bg-transparent">
+          <AnimatePresence mode="wait" custom={direction} initial={false}>
+            <motion.div
+              key={pasoActual}
+              custom={direction}
+              variants={shouldReduceMotion ? reducedVariants : stepVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              className="w-full bg-[#EDEDED] dark:bg-transparent"
+            >
+              {renderPaso(pasoActual)}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </main>
 
       {/* 3. Zona Inferior de Acciones Principales */}

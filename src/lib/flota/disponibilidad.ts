@@ -4,12 +4,17 @@ import { logFalloD1 } from '@/lib/db/diagnostics';
 import { documentosVehiculo, mantenimientosVehiculo, reservas, vehiculos } from '@/db/schema';
 import { and, desc, eq, gte, inArray, lte, ne } from 'drizzle-orm';
 import { toClientISODate } from '@/lib/time/client-time';
+import {
+  esCategoriaExentaDocumentosLegales,
+  evaluarResumenDocumentalVehiculo,
+} from '@/lib/documentos-vehiculo';
 import type {
   BloqueNoDisponible,
   CotizacionAlquiler,
   DiaCalendarioItem,
   EstadoDocumentalVehiculo,
   FranjaDisponible,
+  TramoFechasSeleccionadas,
   VehiculoItem,
 } from './types';
 
@@ -421,6 +426,164 @@ export function esRangoDisponibleValido(
 }
 
 /**
+ * Calcula la fecha de fin mínima permitida dada una fecha de inicio.
+ * Por defecto excluye el mismo día y el día siguiente inmediato (ej. inicio 27 -> fin mínimo 29).
+ * Cuando `permitirAlquilerUnDia` está habilitado explícitamente, permite finalizar desde el mismo día.
+ */
+export function obtenerFechaFinMinimaAlquiler(
+  fechaInicio: string,
+  permitirAlquilerUnDia: boolean = false
+): string {
+  return permitirAlquilerUnDia ? fechaInicio : sumarDiasISO(fechaInicio, 2);
+}
+
+/**
+ * Determina el último día contiguo libre a partir de `fechaInicio` antes del próximo bloque ocupado.
+ * Retorna `null` si no existe ningún bloque posterior a `fechaInicio`.
+ */
+export function obtenerUltimoDiaContiguoLibre(
+  fechaInicio: string,
+  bloques: readonly BloqueNoDisponible[] = []
+): string | null {
+  let masTemprano: string | null = null;
+  for (const b of bloques) {
+    if (b.fechaInicio > fechaInicio) {
+      if (!masTemprano || b.fechaInicio < masTemprano) {
+        masTemprano = b.fechaInicio;
+      }
+    }
+  }
+  return masTemprano ? sumarDiasISO(masTemprano, -1) : null;
+}
+
+/**
+ * Calcula el nuevo rango continuo al tocar `fechaTocada` sobre una selección existente:
+ * - Sin selección: inicia en `[fechaTocada, fechaTocada]` (1 día).
+ * - Con 1 día `[A, A]`: tocar `A` limpia; tocar otra fecha `B` libre contigua amplía `[min(A,B), max(A,B)]`.
+ * - Con rango múltiple `[A, B]` (ej. `20-21-22`):
+ *   - Tocar el extremo final `B` recorta a `[A, B - 1]`.
+ *   - Tocar el extremo inicial `A` recorta a `[A + 1, B]`.
+ *   - Tocar un día intermedio `T` (`A < T < B`, ej. `21`) recorta hasta `T` -> `[A, T]` (`20-21`), eliminando solo los días posteriores (`22`).
+ *   - Tocar un día inmediatamente adyacente libre (`B + 1` o `A - 1`) amplía el rango en 1 día.
+ *   - Tocar un día lejano inicia una nueva selección `[T, T]`.
+ */
+export function actualizarRangoAlquilerPorToque(params: {
+  fechaInicio: string | null;
+  fechaFin: string | null;
+  fechaTocada: string;
+  vehiculoId: string;
+  hoyISO: string;
+  bloques?: readonly BloqueNoDisponible[] | undefined;
+}): {
+  fechaInicio: string | null;
+  fechaFin: string | null;
+  aviso?: string;
+} {
+  const { fechaInicio, fechaFin, fechaTocada, vehiculoId, hoyISO, bloques } = params;
+  const bloquesLista = bloques ? [...bloques] : undefined;
+
+  if (!fechaInicio) {
+    return { fechaInicio: fechaTocada, fechaFin: fechaTocada };
+  }
+
+  const finActual = fechaFin && fechaFin >= fechaInicio ? fechaFin : fechaInicio;
+
+  // 1. Toque dentro del rango seleccionado -> recorte sin borrar todo el tramo
+  if (fechaTocada >= fechaInicio && fechaTocada <= finActual) {
+    if (fechaInicio === finActual) {
+      return { fechaInicio: null, fechaFin: null };
+    }
+    if (fechaTocada === finActual) {
+      return { fechaInicio, fechaFin: sumarDiasISO(finActual, -1) };
+    }
+    if (fechaTocada === fechaInicio) {
+      return { fechaInicio: sumarDiasISO(fechaInicio, 1), fechaFin: finActual };
+    }
+    return { fechaInicio, fechaFin: fechaTocada };
+  }
+
+  // 2. Si solo hay 1 día elegido, permitir expandir a varios días a la vez si es contiguo y libre
+  if (fechaInicio === finActual) {
+    const nuevoInicio = fechaTocada < fechaInicio ? fechaTocada : fechaInicio;
+    const nuevoFin = fechaTocada < fechaInicio ? fechaInicio : fechaTocada;
+
+    if (esRangoDisponibleValido(vehiculoId, nuevoInicio, nuevoFin, hoyISO, bloquesLista)) {
+      return { fechaInicio: nuevoInicio, fechaFin: nuevoFin };
+    }
+    return {
+      fechaInicio: fechaTocada,
+      fechaFin: fechaTocada,
+      aviso: 'Nueva franja iniciada (había días reservados en medio).',
+    };
+  }
+
+  // 3. Con rango múltiple, permitir ampliar día por día en los extremos
+  if (fechaTocada === sumarDiasISO(finActual, 1)) {
+    if (esRangoDisponibleValido(vehiculoId, fechaInicio, fechaTocada, hoyISO, bloquesLista)) {
+      return { fechaInicio, fechaFin: fechaTocada };
+    }
+  }
+  if (fechaTocada === sumarDiasISO(fechaInicio, -1)) {
+    if (esRangoDisponibleValido(vehiculoId, fechaTocada, finActual, hoyISO, bloquesLista)) {
+      return { fechaInicio: fechaTocada, fechaFin: finActual };
+    }
+  }
+
+  // 4. Toque fuera de los extremos adyacentes -> iniciar nueva franja desde ese día
+  return { fechaInicio: fechaTocada, fechaFin: fechaTocada };
+}
+
+/**
+ * Valida las reglas de negocio del rango de fechas de un alquiler:
+ * 1. `fechaInicio` <= `fechaFin`.
+ * 2. Si se envían `fechasSeleccionadas`, deben formar un único rango continuo sin huecos.
+ * 3. Por defecto (`permitirAlquilerUnDia = true`) acepta rangos continuos desde 1 día en adelante;
+ *    si `permitirAlquilerUnDia = false`, exige devolución mínima desde `sumarDiasISO(fechaInicio, 2)`.
+ */
+export function validarReglasRangoAlquiler(params: {
+  fechaInicio: string;
+  fechaFin: string;
+  fechasSeleccionadas?: readonly string[] | null | undefined;
+  permitirAlquilerUnDia?: boolean | undefined;
+}): { valido: boolean; mensaje?: string } {
+  const { fechaInicio, fechaFin, fechasSeleccionadas, permitirAlquilerUnDia = true } = params;
+
+  if (!REGEX_FECHA_ISO.test(fechaInicio) || !REGEX_FECHA_ISO.test(fechaFin)) {
+    return {
+      valido: false,
+      mensaje: 'Las fechas de inicio y devolución deben tener un formato válido (YYYY-MM-DD).',
+    };
+  }
+
+  if (fechaInicio > fechaFin) {
+    return {
+      valido: false,
+      mensaje: 'La fecha de inicio debe ser anterior o igual a la fecha de fin.',
+    };
+  }
+
+  if (fechasSeleccionadas && fechasSeleccionadas.length > 0) {
+    const tramos = agruparFechasEnTramos(fechasSeleccionadas);
+    if (tramos.length !== 1) {
+      return {
+        valido: false,
+        mensaje: 'Debes seleccionar un rango continuo de fechas consecutivas sin días intermedios vacíos.',
+      };
+    }
+  }
+
+  const fechaFinMinima = obtenerFechaFinMinimaAlquiler(fechaInicio, permitirAlquilerUnDia);
+  if (fechaFin < fechaFinMinima) {
+    return {
+      valido: false,
+      mensaje: `El día siguiente inmediato (${formatearFechaCorta(sumarDiasISO(fechaInicio, 1))}) no está disponible como fecha de devolución. Selecciona desde el ${formatearFechaCorta(fechaFinMinima)}.`,
+    };
+  }
+
+  return { valido: true };
+}
+
+/**
  * Encuentra la primera ventana de `duracionDias` consecutivos libres a partir de `hoyISO`,
  * considerando los bloques reales de indisponibilidad (reservas y mantenimientos en D1).
  */
@@ -455,18 +618,167 @@ export function encontrarPrimerRangoDisponible(
   return { fechaInicio: hoyISO, fechaFin: sumarDiasISO(hoyISO, diasEfectivos - 1) };
 }
 
+const REGEX_FECHA_ISO = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Normaliza, deduplica y ordena ascendentemente una colección de fechas ISO (YYYY-MM-DD).
+ */
+export function normalizarFechasSeleccionadas(fechas: readonly string[]): string[] {
+  const unicas = new Set<string>();
+  for (const f of fechas) {
+    const limpia = f.trim();
+    if (REGEX_FECHA_ISO.test(limpia)) {
+      unicas.add(limpia);
+    }
+  }
+  return Array.from(unicas).sort((a, b) => a.localeCompare(b));
+}
+
+/**
+ * Expande un rango inclusivo [fechaInicio, fechaFin] en una lista ordenada de fechas ISO.
+ */
+export function expandirRangoAFechas(fechaInicio: string, fechaFin: string): string[] {
+  if (!REGEX_FECHA_ISO.test(fechaInicio) || !REGEX_FECHA_ISO.test(fechaFin) || fechaInicio > fechaFin) {
+    return [];
+  }
+  const resultado: string[] = [];
+  let cursor = fechaInicio;
+  for (let i = 0; i < 366 && cursor <= fechaFin; i++) {
+    resultado.push(cursor);
+    cursor = sumarDiasISO(cursor, 1);
+  }
+  return resultado;
+}
+
+/**
+ * Agrega o quita una fecha individual sin afectar ni reiniciar el resto de días seleccionados.
+ */
+export function alternarFechaEnSeleccion(
+  fechasActuales: readonly string[],
+  fechaISO: string
+): string[] {
+  const normalizadas = normalizarFechasSeleccionadas(fechasActuales);
+  if (!REGEX_FECHA_ISO.test(fechaISO)) {
+    return normalizadas;
+  }
+  if (normalizadas.includes(fechaISO)) {
+    return normalizadas.filter((f) => f !== fechaISO);
+  }
+  return normalizarFechasSeleccionadas([...normalizadas, fechaISO]);
+}
+
+/**
+ * Agrupa una colección de fechas ordenadas en tramos contiguos para presentación o validación en D1.
+ */
+export function agruparFechasEnTramos(
+  fechas: readonly string[]
+): TramoFechasSeleccionadas[] {
+  const ordenadas = normalizarFechasSeleccionadas(fechas);
+  if (ordenadas.length === 0) return [];
+
+  const tramos: TramoFechasSeleccionadas[] = [];
+  let inicio = ordenadas[0]!;
+  let fin = ordenadas[0]!;
+  let dias = 1;
+
+  for (let i = 1; i < ordenadas.length; i++) {
+    const actual = ordenadas[i]!;
+    if (sumarDiasISO(fin, 1) === actual) {
+      fin = actual;
+      dias += 1;
+    } else {
+      tramos.push({ inicio, fin, dias });
+      inicio = actual;
+      fin = actual;
+      dias = 1;
+    }
+  }
+  tramos.push({ inicio, fin, dias });
+  return tramos;
+}
+
+/**
+ * Formatea una colección de fechas seleccionadas en una etiqueta legible y compacta.
+ */
+export function formatearResumenFechasSeleccionadas(fechas: readonly string[]): string {
+  const tramos = agruparFechasEnTramos(fechas);
+  if (tramos.length === 0) return '';
+  return tramos
+    .map((t) =>
+      t.inicio === t.fin
+        ? formatearFechaCorta(t.inicio)
+        : `${formatearFechaCorta(t.inicio)} → ${formatearFechaCorta(t.fin)}`
+    )
+    .join(', ');
+}
+
+/**
+ * Verifica que cada fecha individual en la colección sea >= hoyISO y no pertenezca a ningún bloque ocupado.
+ */
+export function sonFechasDisponiblesValidas(
+  _vehiculoId: string,
+  fechas: readonly string[],
+  hoyISO: string = toClientISODate(),
+  bloquesPrecalculados?: BloqueNoDisponible[]
+): boolean {
+  const normalizadas = normalizarFechasSeleccionadas(fechas);
+  if (normalizadas.length === 0) return false;
+
+  const bloques = bloquesPrecalculados ?? [];
+  return normalizadas.every((fecha) => {
+    if (fecha < hoyISO) return false;
+    return !bloques.some((b) => fecha >= b.fechaInicio && fecha <= b.fechaFin);
+  });
+}
+
+/**
+ * Calcula la liquidación transparente de costos para una colección de fechas seleccionadas individualmente.
+ */
+export function calcularCotizacionPorFechas(
+  vehiculo: VehiculoItem,
+  fechas: readonly string[],
+  recargoDomicilio: number = 0
+): CotizacionAlquiler {
+  const normalizadas = normalizarFechasSeleccionadas(fechas);
+  const diasAlquiler = normalizadas.length;
+  const fechaInicio = normalizadas[0] ?? '';
+  const fechaFin = normalizadas[normalizadas.length - 1] ?? fechaInicio;
+  const subtotalTarifa = diasAlquiler * vehiculo.precioDia;
+  const coberturaPericial = diasAlquiler > 0 ? Math.round(subtotalTarifa * 0.08) : 0;
+  const recargoSeguro = diasAlquiler > 0 ? Math.max(0, Math.round(recargoDomicilio)) : 0;
+  const totalAlquiler = subtotalTarifa + coberturaPericial + recargoSeguro;
+  const abonoMinimoReserva = diasAlquiler > 0 ? Math.round(totalAlquiler * 0.3) : 0;
+
+  return {
+    vehiculoId: vehiculo.id,
+    fechaInicio,
+    fechaFin,
+    fechasSeleccionadas: normalizadas,
+    diasAlquiler,
+    precioDia: vehiculo.precioDia,
+    subtotalTarifa,
+    coberturaPericial,
+    recargoDomicilio: recargoSeguro,
+    depositoGarantia: vehiculo.depositoGarantia,
+    totalAlquiler,
+    abonoMinimoReserva,
+  };
+}
+
 /**
  * Calcula la liquidación transparente de costos para un rango seleccionado.
  */
 export function calcularCotizacionAlquiler(
   vehiculo: VehiculoItem,
   fechaInicio: string,
-  fechaFin: string
+  fechaFin: string,
+  recargoDomicilio: number = 0
 ): CotizacionAlquiler {
   const diasAlquiler = calcularDiasInclusivos(fechaInicio, fechaFin);
   const subtotalTarifa = diasAlquiler * vehiculo.precioDia;
   const coberturaPericial = Math.round(subtotalTarifa * 0.08);
-  const totalAlquiler = subtotalTarifa + coberturaPericial;
+  const recargoSeguro = Math.max(0, Math.round(recargoDomicilio));
+  const totalAlquiler = subtotalTarifa + coberturaPericial + recargoSeguro;
   const abonoMinimoReserva = Math.round(totalAlquiler * 0.3);
 
   return {
@@ -477,6 +789,7 @@ export function calcularCotizacionAlquiler(
     precioDia: vehiculo.precioDia,
     subtotalTarifa,
     coberturaPericial,
+    recargoDomicilio: recargoSeguro,
     depositoGarantia: vehiculo.depositoGarantia,
     totalAlquiler,
     abonoMinimoReserva,
@@ -485,10 +798,9 @@ export function calcularCotizacionAlquiler(
 
 /**
  * Evalúa el estado documental legal de un vehículo en Cloudflare D1:
- * - SOAT aplica a todas las categorías de vehículos.
- * - TECNICO_MECANICA aplica a todas las categorías excepto 'PATINETA'.
- * - Solo vigente === false o fechaVencimiento < fechaReferenciaISO marca tieneVencidos = true.
- * - Ausencia de filas registradas en documentos_vehiculo se reporta en faltantesSinCarga con tieneVencidos = false.
+ * - Las patinetas eléctricas livianas (`PATINETA`) están exentas de SOAT y Tecnomecánica (Ley 2486 de 2025).
+ * - Para el resto de categorías, tanto el estado `SIN_REALIZAR` (vencido/inactivo) como `SIN_REGISTRAR`
+ *   bloquean la disponibilidad, reserva y entrega del vehículo.
  */
 export async function obtenerEstadoDocumentalVehiculoD1(
   db: DrizzleD1Database | AppDb,
@@ -496,74 +808,75 @@ export async function obtenerEstadoDocumentalVehiculoD1(
   categoria?: string,
   fechaReferenciaISO: string = toClientISODate()
 ): Promise<EstadoDocumentalVehiculo> {
-  const cat = categoria?.toUpperCase() ?? '';
-  const requiereRtm = cat !== 'PATINETA';
+  if (esCategoriaExentaDocumentosLegales(categoria)) {
+    return {
+      tieneVencidos: false,
+      faltantesSinCarga: [],
+      vencidos: [],
+      requiereRtm: false,
+      exentoPorLey2486: true,
+      bloqueadoPorDocumentos: false,
+      motivoBloqueo: null,
+    };
+  }
 
   if (!db || !vehiculoId) {
     return {
       tieneVencidos: false,
-      faltantesSinCarga: requiereRtm ? ['SOAT', 'TECNICO_MECANICA'] : ['SOAT'],
+      faltantesSinCarga: ['SOAT', 'TECNICO_MECANICA'],
       vencidos: [],
-      requiereRtm,
+      requiereRtm: true,
+      exentoPorLey2486: false,
+      bloqueadoPorDocumentos: true,
+      motivoBloqueo: 'SOAT sin registrar · Tecnomecánica sin registrar',
     };
   }
 
   try {
     const rawRows = await db
       .select({
+        id: documentosVehiculo.id,
         tipoDocumento: documentosVehiculo.tipoDocumento,
+        numeroReferencia: documentosVehiculo.numeroReferencia,
+        fechaExpedicion: documentosVehiculo.fechaExpedicion,
         fechaVencimiento: documentosVehiculo.fechaVencimiento,
         vigente: documentosVehiculo.vigente,
+        archivoR2Key: documentosVehiculo.archivoR2Key,
+        archivoReversoR2Key: documentosVehiculo.archivoReversoR2Key,
+        actualizadoEn: documentosVehiculo.actualizadoEn,
       })
       .from(documentosVehiculo)
       .where(eq(documentosVehiculo.vehiculoId, vehiculoId))
       .orderBy(desc(documentosVehiculo.fechaVencimiento));
 
-    // Ordenar de forma determinista por fecha de vencimiento descendente
-    // para garantizar que siempre se evalúe el documento más reciente de cada tipo
-    const rows = [...(rawRows ?? [])].sort((a, b) => {
-      const fechaA = a.fechaVencimiento ?? '';
-      const fechaB = b.fechaVencimiento ?? '';
-      if (fechaA !== fechaB) {
-        return fechaB.localeCompare(fechaA);
-      }
-      return (b.vigente ? 1 : 0) - (a.vigente ? 1 : 0);
+    const resumen = evaluarResumenDocumentalVehiculo({
+      categoria,
+      documentos: rawRows ?? [],
+      hoyISO: fechaReferenciaISO,
     });
 
     const faltantesSinCarga: Array<'SOAT' | 'TECNICO_MECANICA'> = [];
     const vencidos: Array<{ tipo: string; fechaVencimiento: string }> = [];
 
-    // Validar SOAT
-    const docSoat = rows?.find((r) => r.tipoDocumento === 'SOAT');
-    if (!docSoat) {
-      faltantesSinCarga.push('SOAT');
-    } else {
-      const estaVencido =
-        docSoat.vigente === false ||
-        (Boolean(docSoat.fechaVencimiento) && docSoat.fechaVencimiento! < fechaReferenciaISO);
-      if (estaVencido) {
+    if (resumen.soat) {
+      if (resumen.soat.estado === 'SIN_REGISTRAR') {
+        faltantesSinCarga.push('SOAT');
+      } else if (resumen.soat.estado === 'SIN_REALIZAR') {
         vencidos.push({
           tipo: 'SOAT',
-          fechaVencimiento: docSoat.fechaVencimiento ?? '',
+          fechaVencimiento: resumen.soat.fechaVencimiento ?? '',
         });
       }
     }
 
-    // Validar TECNICO_MECANICA
-    if (requiereRtm) {
-      const docRtm = rows?.find((r) => r.tipoDocumento === 'TECNICO_MECANICA');
-      if (!docRtm) {
+    if (resumen.tecnomecanica) {
+      if (resumen.tecnomecanica.estado === 'SIN_REGISTRAR') {
         faltantesSinCarga.push('TECNICO_MECANICA');
-      } else {
-        const estaVencido =
-          docRtm.vigente === false ||
-          (Boolean(docRtm.fechaVencimiento) && docRtm.fechaVencimiento! < fechaReferenciaISO);
-        if (estaVencido) {
-          vencidos.push({
-            tipo: 'TECNICO_MECANICA',
-            fechaVencimiento: docRtm.fechaVencimiento ?? '',
-          });
-        }
+      } else if (resumen.tecnomecanica.estado === 'SIN_REALIZAR') {
+        vencidos.push({
+          tipo: 'TECNICO_MECANICA',
+          fechaVencimiento: resumen.tecnomecanica.fechaVencimiento ?? '',
+        });
       }
     }
 
@@ -571,7 +884,10 @@ export async function obtenerEstadoDocumentalVehiculoD1(
       tieneVencidos: vencidos.length > 0,
       faltantesSinCarga,
       vencidos,
-      requiereRtm,
+      requiereRtm: true,
+      exentoPorLey2486: false,
+      bloqueadoPorDocumentos: resumen.bloqueadoPorDocumentos,
+      motivoBloqueo: resumen.motivoBloqueo,
     };
   } catch (error) {
     logFalloD1('disponibilidad.obtenerEstadoDocumentalVehiculoD1', error, {
@@ -581,9 +897,12 @@ export async function obtenerEstadoDocumentalVehiculoD1(
     });
     return {
       tieneVencidos: false,
-      faltantesSinCarga: requiereRtm ? ['SOAT', 'TECNICO_MECANICA'] : ['SOAT'],
+      faltantesSinCarga: ['SOAT', 'TECNICO_MECANICA'],
       vencidos: [],
-      requiereRtm,
+      requiereRtm: true,
+      exentoPorLey2486: false,
+      bloqueadoPorDocumentos: true,
+      motivoBloqueo: 'SOAT sin registrar · Tecnomecánica sin registrar',
     };
   }
 }
@@ -662,7 +981,7 @@ export async function verificarDisponibilidadVehiculo(
       };
     }
 
-    // 2. Validar estado documental legal (bloquea solo si tiene vencidos)
+    // 2. Validar estado documental legal (bloquea por vencidos o sin registrar)
     const estadoDocumental = await obtenerEstadoDocumentalVehiculoD1(
       db,
       vehiculoId,
@@ -670,15 +989,20 @@ export async function verificarDisponibilidadVehiculo(
       hoyISO
     );
 
-    if (estadoDocumental.tieneVencidos) {
-      const docsVencidosStr = estadoDocumental.vencidos.map((d) => d.tipo).join(', ');
+    if (
+      estadoDocumental.bloqueadoPorDocumentos ||
+      estadoDocumental.tieneVencidos ||
+      estadoDocumental.faltantesSinCarga.length > 0
+    ) {
       return {
         disponible: false,
         usable: false,
         ocupado: false,
         estadoSugerido: 'NO_DISPONIBLE',
         motivoBloqueo: 'NO_DISPONIBLE',
-        etiqueta: `Documentación legal vencida (${docsVencidosStr})`,
+        etiqueta: estadoDocumental.motivoBloqueo
+          ? `Documentos pendientes (${estadoDocumental.motivoBloqueo})`
+          : 'Documentación legal vencida o sin registrar',
         fechaInicioEvaluada: inicio,
         fechaFinEvaluada: fin,
         estadoDocumental,

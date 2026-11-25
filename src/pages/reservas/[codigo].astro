@@ -1,12 +1,13 @@
 ---
 import LayoutApp from '@/layouts/LayoutApp.astro';
-import AlquilerDetalleView from '@/components/reservas/AlquilerDetalleView';
+import ReservaClienteDetalleView from '@/components/reservas/ReservaClienteDetalleView';
 import { obtenerReservaClientePorCodigo } from '@/lib/flota';
 import { obtenerReservaPorCodigoD1 } from '@/lib/flota/repositorio-reservas';
 import { resolveClientTimeContext } from '@/lib/time/client-time';
 import { env } from 'cloudflare:workers';
 import { getDb } from '@/lib/db';
 import { validarAccesoReservaLectura } from '@/lib/auth';
+import { resolverTokenMapboxPublico } from '@/lib/ubicacion';
 
 const { codigo } = Astro.params;
 
@@ -42,6 +43,8 @@ const tokenPublicoValido =
     : usuario?.id === reservaInicial.clienteId
       ? reservaInicial.tokenAccesoPublico ?? null
       : null;
+
+const mapboxPublicToken = resolverTokenMapboxPublico(env);
 ---
 
 <LayoutApp
@@ -52,12 +55,13 @@ const tokenPublicoValido =
   navVariant="client"
 >
   <div class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-2 sm:py-6">
-    <AlquilerDetalleView
+    <ReservaClienteDetalleView
       client:load
       codigo={codigo.toUpperCase()}
       reservaInicial={reservaInicial}
       hoyISO={hoyISO}
       tokenAccesoPublico={tokenPublicoValido}
+      mapboxPublicToken={mapboxPublicToken}
     />
   </div>
 </LayoutApp>

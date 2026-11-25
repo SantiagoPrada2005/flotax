@@ -2,13 +2,19 @@ import { useState, type SyntheticEvent } from 'react';
 import { actions } from 'astro:actions';
 import type { ReservaClienteItem } from '@/lib/flota';
 import type { EstadoDocumentalVehiculo } from '@/lib/flota/disponibilidad';
+import { Select } from '@/components/ui/Select';
 
 export interface SemaforoDocumentalPanelProps {
   reserva: ReservaClienteItem;
   estadoDocVehiculo?: EstadoDocumentalVehiculo | undefined;
   autorizarSinDocumentos: boolean;
   onToggleAutorizarSinDocs: (val: boolean) => void;
-  onDocumentosActualizados?: () => void;
+  onDocumentosActualizados?: (datosActualizados?: {
+    tipoDocumento: 'CC' | 'CE' | 'PASAPORTE' | 'NIT';
+    numeroDocumento: string;
+    categoriaLicencia: string;
+    licenciaNumero?: string | undefined;
+  }) => void;
   puedeModificar?: boolean | undefined;
 }
 
@@ -20,6 +26,7 @@ export default function SemaforoDocumentalPanel({
   onDocumentosActualizados,
   puedeModificar = true,
 }: SemaforoDocumentalPanelProps) {
+  const [mostrarDetalleSemaforo, setMostrarDetalleSemaforo] = useState(false);
   const [mostrarFormularioRapido, setMostrarFormularioRapido] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [mensajeExito, setMensajeExito] = useState<string | null>(null);
@@ -50,23 +57,19 @@ export default function SemaforoDocumentalPanel({
   const tieneDocsVehiculoVencidos = Boolean(estadoDocVehiculo?.tieneVencidos);
   const docsVehiculoVencidos = estadoDocVehiculo?.vencidos ?? [];
   const docsVehiculoSinCarga = estadoDocVehiculo?.faltantesSinCarga ?? [];
+  const vehiculoBloqueadoPorDocs = Boolean(
+    estadoDocVehiculo?.bloqueadoPorDocumentos ||
+      tieneDocsVehiculoVencidos ||
+      docsVehiculoSinCarga.length > 0
+  );
 
-  const hayAlertas =
-    faltaDocCliente ||
-    tieneDocsVehiculoVencidos ||
-    docsVehiculoSinCarga.length > 0;
+  // La autorización excepcional del local aplica únicamente a documentos del cliente
+  const hayAlertas = faltaDocCliente;
 
   const manejarGuardarRapido = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     setMensajeError(null);
     setMensajeExito(null);
-
-    if (!reserva.clienteId) {
-      setMensajeError(
-        'Esta reserva fue radicada en modo invitado/presencial sin cuenta vinculada. Puedes autorizar la operación marcando el check de responsabilidad del local.'
-      );
-      return;
-    }
 
     if (!numeroDocumento.trim()) {
       setMensajeError('El número de documento es obligatorio.');
@@ -76,7 +79,8 @@ export default function SemaforoDocumentalPanel({
     setGuardando(true);
     try {
       const res = await actions.reservas.registrarOActualizarDocumentosRapido({
-        usuarioId: reserva.clienteId,
+        usuarioId: reserva.clienteId ?? undefined,
+        codigo: reserva.codigo,
         tipoDocumento,
         numeroDocumento: numeroDocumento.trim(),
         licenciaNumero: licenciaNumero.trim() || undefined,
@@ -92,7 +96,12 @@ export default function SemaforoDocumentalPanel({
       setMensajeExito('Documentos del cliente registrados y verificados en D1.');
       setMostrarFormularioRapido(false);
       if (onDocumentosActualizados) {
-        onDocumentosActualizados();
+        onDocumentosActualizados({
+          tipoDocumento,
+          numeroDocumento: numeroDocumento.trim(),
+          categoriaLicencia: licenciaCategoria,
+          licenciaNumero: licenciaNumero.trim() || undefined,
+        });
       }
     } catch (err) {
       setMensajeError(
@@ -106,146 +115,183 @@ export default function SemaforoDocumentalPanel({
   return (
     <section
       aria-label="Semáforo documental de cliente y vehículo"
-      className="rounded-[24px] bg-white border border-[#9CA3AF]/40 p-4 sm:p-5 space-y-4 shadow-xs"
+      className="rounded-[24px] bg-white dark:bg-[#111827] border border-[#9CA3AF]/40 dark:border-white/12 p-4 space-y-3 shadow-xs"
     >
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
           <span
             className={`h-3 w-3 rounded-full shrink-0 ${
-              tieneDocsVehiculoVencidos
-                ? 'bg-[#111827]'
-                : faltaDocCliente || docsVehiculoSinCarga.length > 0
-                  ? 'bg-[#4B5563]'
-                  : 'bg-[#9CA3AF]'
+              vehiculoBloqueadoPorDocs
+                ? 'bg-status-danger'
+                : faltaDocCliente
+                  ? 'bg-[#4B5563] dark:bg-[#9CA3AF]'
+                  : 'bg-[#9CA3AF] dark:bg-[#EDEDED]'
             }`}
           />
-          <h3 className="font-display text-sm font-black text-[#111827] uppercase tracking-wider">
-            Semáforo Documental
-          </h3>
-        </div>
-        <span
-          className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
-            tieneDocsVehiculoVencidos
-              ? 'bg-[#111827] text-white'
-              : faltaDocCliente
-                ? 'bg-[#EDEDED] text-[#111827] border border-[#9CA3AF]/50'
-                : 'bg-[#EDEDED] text-[#4B5563]'
-          }`}
-        >
-          {tieneDocsVehiculoVencidos
-            ? 'Doc. Vehicular Vencido'
-            : faltaDocCliente
-              ? 'KYC / Licencia Incompleta'
-              : 'Verificación al día'}
-        </span>
-      </div>
-
-      {/* Alertas de Documentación del Cliente */}
-      <div className="rounded-[18px] bg-[#EDEDED]/70 border border-[#9CA3AF]/30 p-3.5 space-y-2.5">
-        <div className="flex items-center justify-between text-xs">
-          <span className="font-bold text-[#111827]">
-            Conductor: {reserva.conductor.nombreCompleto}
-          </span>
-          <span className="text-[11px] font-semibold text-[#4B5563]">
-            {reserva.conductor.telefono}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-          <div className="flex items-center justify-between rounded-[12px] bg-white p-2 border border-[#9CA3AF]/30">
-            <span className="text-[#4B5563]">Documento</span>
-            <span
-              className={`font-semibold ${
-                faltaNumDoc ? 'text-[#111827] underline decoration-[#4B5563]' : 'text-[#111827]'
-              }`}
-            >
+          <div className="min-w-0">
+            <h3 className="font-display text-xs font-black text-[#111827] dark:text-[#EDEDED] uppercase tracking-wider">
+              Semáforo Documental
+            </h3>
+            <p className="text-[11px] text-[#4B5563] dark:text-[#D1D5DB] truncate">
               {faltaNumDoc
-                ? 'Sin registrar'
-                : `${reserva.conductor.tipoDocumento || 'CC'} ${reserva.conductor.numeroDocumento}`}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between rounded-[12px] bg-white p-2 border border-[#9CA3AF]/30">
-            <span className="text-[#4B5563]">Licencia de conducción</span>
-            <span
-              className={`font-semibold ${
-                faltaLicencia ? 'text-[#111827] underline decoration-[#4B5563]' : 'text-[#111827]'
-              }`}
-            >
+                ? 'Doc. pendiente'
+                : `${reserva.conductor.tipoDocumento || 'CC'} ${reserva.conductor.numeroDocumento}`}{' '}
+              ·{' '}
               {faltaLicencia
+                ? 'Lic. pendiente'
+                : `Lic. ${reserva.conductor.categoriaLicencia}`}{' '}
+              · SOAT/RTM {vehiculoBloqueadoPorDocs ? 'Bloqueado' : 'OK'}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <span
+            className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${
+              vehiculoBloqueadoPorDocs
+                ? 'bg-[#111827] text-white dark:bg-[#EDEDED] dark:text-[#111827]'
+                : faltaDocCliente
+                  ? 'bg-[#EDEDED] text-[#111827] border border-[#9CA3AF]/50 dark:bg-[#1F2937] dark:text-[#EDEDED] dark:border-white/15'
+                  : 'bg-[#EDEDED] text-[#4B5563] dark:bg-[#1F2937] dark:text-[#D1D5DB] dark:border dark:border-white/10'
+            }`}
+          >
+            {tieneDocsVehiculoVencidos
+              ? 'Doc. Vencido'
+              : docsVehiculoSinCarga.length > 0
                 ? 'Sin registrar'
-                : `Categoría ${reserva.conductor.categoriaLicencia}`}
-            </span>
-          </div>
-        </div>
+                : faltaDocCliente
+                  ? 'Incompleto'
+                  : 'Al día ✓'}
+          </span>
 
-        {puedeModificar && reserva.clienteId && (
-          <div className="pt-1">
-            <button
-              type="button"
-              onClick={() => setMostrarFormularioRapido((prev) => !prev)}
-              className="min-h-[44px] inline-flex items-center justify-center rounded-full bg-[#111827] px-4 py-2 text-xs font-bold text-white hover:bg-[#1F2937] cursor-pointer"
-            >
-              {mostrarFormularioRapido
-                ? 'Ocultar formulario'
-                : 'Registrar / Aprobar datos rápidos de cliente'}
-            </button>
-          </div>
-        )}
+          <button
+            type="button"
+            onClick={() => setMostrarDetalleSemaforo((prev) => !prev)}
+            className="fx-press min-h-[38px] rounded-full bg-[#EDEDED] dark:bg-[#1F2937] border border-[#9CA3AF]/50 dark:border-white/15 px-3 py-1 text-[11px] font-bold text-[#111827] dark:text-[#EDEDED] hover:bg-[#9CA3AF]/25 dark:hover:bg-white/10 cursor-pointer"
+          >
+            {mostrarDetalleSemaforo ? 'Ocultar −' : 'Revisar +'}
+          </button>
+        </div>
       </div>
 
-      {/* Alertas de Documentación del Vehículo */}
-      <div className="rounded-[18px] bg-[#EDEDED]/70 border border-[#9CA3AF]/30 p-3.5 space-y-2">
-        <div className="flex items-center justify-between text-xs">
-          <span className="font-bold text-[#111827]">
-            Unidad: {reserva.vehiculo.marca} {reserva.vehiculo.modelo} ({reserva.vehiculo.placa})
-          </span>
-          <span className="text-[11px] font-semibold text-[#4B5563]">
-            {reserva.vehiculo.categoria}
-          </span>
+      {mostrarDetalleSemaforo && (
+        <div className="space-y-3 pt-1">
+          {/* Alertas de Documentación del Cliente */}
+          <div className="rounded-[18px] bg-[#EDEDED]/70 dark:bg-[#1F2937] border border-[#9CA3AF]/30 dark:border-white/10 p-3.5 space-y-2.5">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-bold text-[#111827] dark:text-[#EDEDED]">
+                Conductor: {reserva.conductor.nombreCompleto}
+              </span>
+              <span className="text-[11px] font-semibold text-[#4B5563] dark:text-[#D1D5DB]">
+                {reserva.conductor.telefono}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <div className="flex items-center justify-between rounded-[12px] bg-white dark:bg-[#111827] p-2.5 border border-[#9CA3AF]/30 dark:border-white/10">
+                <span className="text-[#4B5563] dark:text-[#9CA3AF]">Documento</span>
+                <span
+                  className={`font-semibold ${
+                    faltaNumDoc
+                      ? 'text-[#111827] dark:text-[#EDEDED] underline decoration-[#4B5563] dark:decoration-[#9CA3AF]'
+                      : 'text-[#111827] dark:text-[#EDEDED]'
+                  }`}
+                >
+                  {faltaNumDoc
+                    ? 'Sin registrar'
+                    : `${reserva.conductor.tipoDocumento || 'CC'} ${reserva.conductor.numeroDocumento}`}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between rounded-[12px] bg-white dark:bg-[#111827] p-2.5 border border-[#9CA3AF]/30 dark:border-white/10">
+                <span className="text-[#4B5563] dark:text-[#9CA3AF]">Licencia de conducción</span>
+                <span
+                  className={`font-semibold ${
+                    faltaLicencia
+                      ? 'text-[#111827] dark:text-[#EDEDED] underline decoration-[#4B5563] dark:decoration-[#9CA3AF]'
+                      : 'text-[#111827] dark:text-[#EDEDED]'
+                  }`}
+                >
+                  {faltaLicencia
+                    ? 'Sin registrar'
+                    : `Categoría ${reserva.conductor.categoriaLicencia}`}
+                </span>
+              </div>
+            </div>
+
+            {puedeModificar && (
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={() => setMostrarFormularioRapido((prev) => !prev)}
+                  className="fx-press min-h-[44px] inline-flex items-center justify-center rounded-full bg-[#111827] dark:bg-[#EDEDED] px-4 py-2 text-xs font-bold text-white dark:text-[#111827] hover:bg-[#1F2937] dark:hover:bg-white cursor-pointer"
+                >
+                  {mostrarFormularioRapido
+                    ? 'Ocultar formulario'
+                    : 'Registrar / Comprobar datos del cliente'}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Alertas de Documentación del Vehículo */}
+          <div className="rounded-[18px] bg-[#EDEDED]/70 dark:bg-[#1F2937] border border-[#9CA3AF]/30 dark:border-white/10 p-3.5 space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-bold text-[#111827] dark:text-[#EDEDED]">
+                Unidad: {reserva.vehiculo.marca} {reserva.vehiculo.modelo} ({reserva.vehiculo.placa})
+              </span>
+              <span className="text-[11px] font-semibold text-[#4B5563] dark:text-[#D1D5DB]">
+                {reserva.vehiculo.categoria}
+              </span>
+            </div>
+
+            {tieneDocsVehiculoVencidos && (
+              <div className="rounded-[12px] bg-[#111827] dark:bg-[#111827] border border-transparent dark:border-white/15 text-white p-2.5 text-xs space-y-1">
+                <p className="font-bold">Bloqueo: Documento legal sin realizar / vencido</p>
+                {docsVehiculoVencidos.map((d) => (
+                  <p key={d.tipo} className="text-[11px] text-[#EDEDED]/90">
+                    · {d.tipo === 'SOAT' ? 'Sin SOAT vigente' : 'Sin realizar tecnomecánica'} ({d.fechaVencimiento || 'Sin fecha'})
+                  </p>
+                ))}
+              </div>
+            )}
+
+            {docsVehiculoSinCarga.length > 0 && (
+              <div className="rounded-[12px] bg-[#111827] dark:bg-[#111827] border border-transparent dark:border-white/15 text-white p-2.5 text-xs space-y-1">
+                <p className="font-bold">Bloqueo: Documentos sin registrar</p>
+                <p className="text-[11px] text-[#EDEDED]/90">
+                  Falta registrar: {docsVehiculoSinCarga.join(', ')}. Regulariza los documentos en la ficha del vehículo antes de confirmar o entregar.
+                </p>
+              </div>
+            )}
+
+            {!tieneDocsVehiculoVencidos && docsVehiculoSinCarga.length === 0 && (
+              <div className="rounded-[12px] bg-white dark:bg-[#111827] p-2.5 text-xs text-[#111827] dark:text-[#EDEDED] font-medium border border-[#9CA3AF]/30 dark:border-white/10 flex items-center justify-between">
+                <span>{estadoDocVehiculo?.exentoPorLey2486 ? 'Exento (Ley 2486 de 2025)' : 'SOAT y Tecnicomecánica'}</span>
+                <span className="font-bold text-[#111827] dark:text-[#EDEDED]">
+                  {estadoDocVehiculo?.exentoPorLey2486 ? 'No aplica' : 'Vigentes'}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
-
-        {tieneDocsVehiculoVencidos && (
-          <div className="rounded-[12px] bg-[#111827] text-white p-2.5 text-xs space-y-1">
-            <p className="font-bold">Alerta: Documento legal vencido en flota</p>
-            {docsVehiculoVencidos.map((d) => (
-              <p key={d.tipo} className="text-[11px] text-[#EDEDED]/90">
-                · {d.tipo}: Vencido ({d.fechaVencimiento || 'Sin fecha'})
-              </p>
-            ))}
-          </div>
-        )}
-
-        {docsVehiculoSinCarga.length > 0 && !tieneDocsVehiculoVencidos && (
-          <div className="rounded-[12px] bg-white p-2.5 text-xs text-[#4B5563] border border-[#9CA3AF]/30">
-            <span className="font-semibold text-[#111827]">Docs sin registro en D1: </span>
-            {docsVehiculoSinCarga.join(', ')}. No bloquea la operación si el local cuenta con comprobante físico.
-          </div>
-        )}
-
-        {!tieneDocsVehiculoVencidos && docsVehiculoSinCarga.length === 0 && (
-          <div className="rounded-[12px] bg-white p-2 text-xs text-[#111827] font-medium border border-[#9CA3AF]/30 flex items-center justify-between">
-            <span>SOAT y Tecnicomecánica</span>
-            <span className="font-bold text-[#111827]">Vigentes</span>
-          </div>
-        )}
-      </div>
+      )}
 
       {/* Formulario Rápido de Documentos de Cliente */}
       {mostrarFormularioRapido && puedeModificar && (
         <form
           onSubmit={manejarGuardarRapido}
-          className="rounded-[20px] bg-[#EDEDED] border border-[#9CA3AF]/40 p-4 space-y-3"
+          className="rounded-[20px] bg-[#EDEDED] dark:bg-[#1F2937] border border-[#9CA3AF]/40 dark:border-white/15 p-4 space-y-3"
         >
           <div className="flex items-center justify-between">
-            <h4 className="font-bold text-xs text-[#111827] uppercase tracking-wider">
+            <h4 className="font-bold text-xs text-[#111827] dark:text-[#EDEDED] uppercase tracking-wider">
               Ingreso rápido de documentos de cliente
             </h4>
             <button
               type="button"
               onClick={() => setMostrarFormularioRapido(false)}
               aria-label="Cerrar formulario rápido"
-              className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-[#4B5563] hover:text-[#111827] font-bold cursor-pointer"
+              className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white font-bold cursor-pointer"
             >
               ✕
             </button>
@@ -255,31 +301,29 @@ export default function SemaforoDocumentalPanel({
             <div>
               <label
                 htmlFor="semaforo-tipo-doc"
-                className="block text-[11px] font-semibold text-[#4B5563] mb-1"
+                className="block text-[11px] font-semibold text-[#4B5563] dark:text-[#D1D5DB] mb-1"
               >
                 Tipo doc.
               </label>
-              <select
+              <Select<'CC' | 'CE' | 'PASAPORTE' | 'NIT'>
                 id="semaforo-tipo-doc"
+                ariaLabel="Tipo de documento"
+                variant="subtle"
                 value={tipoDocumento}
-                onChange={(e) =>
-                  setTipoDocumento(
-                    e.target.value as 'CC' | 'CE' | 'PASAPORTE' | 'NIT'
-                  )
-                }
-                className="w-full min-h-[44px] rounded-[12px] bg-white border border-[#9CA3AF]/40 px-3 py-2 text-base text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
-              >
-                <option value="CC">CC - Cédula</option>
-                <option value="CE">CE - Extranjería</option>
-                <option value="PASAPORTE">Pasaporte</option>
-                <option value="NIT">NIT</option>
-              </select>
+                onChange={(val) => setTipoDocumento(val)}
+                options={[
+                  { value: 'CC', label: 'CC - Cédula' },
+                  { value: 'CE', label: 'CE - Extranjería' },
+                  { value: 'PASAPORTE', label: 'Pasaporte' },
+                  { value: 'NIT', label: 'NIT' },
+                ]}
+              />
             </div>
 
             <div className="sm:col-span-2">
               <label
                 htmlFor="semaforo-num-doc"
-                className="block text-[11px] font-semibold text-[#4B5563] mb-1"
+                className="block text-[11px] font-semibold text-[#4B5563] dark:text-[#D1D5DB] mb-1"
               >
                 Número de documento
               </label>
@@ -290,7 +334,7 @@ export default function SemaforoDocumentalPanel({
                 value={numeroDocumento}
                 onChange={(e) => setNumeroDocumento(e.target.value)}
                 placeholder="1037645890"
-                className="w-full min-h-[44px] rounded-[12px] bg-white border border-[#9CA3AF]/40 px-3 py-2 text-base text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                className="w-full min-h-[44px] rounded-[12px] bg-white dark:bg-[#111827] border border-[#9CA3AF]/40 dark:border-white/15 px-3 py-2 text-base text-[#111827] dark:text-[#EDEDED] focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-[#EDEDED]"
               />
             </div>
           </div>
@@ -299,7 +343,7 @@ export default function SemaforoDocumentalPanel({
             <div>
               <label
                 htmlFor="semaforo-lic-num"
-                className="block text-[11px] font-semibold text-[#4B5563] mb-1"
+                className="block text-[11px] font-semibold text-[#4B5563] dark:text-[#D1D5DB] mb-1"
               >
                 Número de licencia
               </label>
@@ -309,37 +353,39 @@ export default function SemaforoDocumentalPanel({
                 value={licenciaNumero}
                 onChange={(e) => setLicenciaNumero(e.target.value)}
                 placeholder="Opcional si coincide con documento"
-                className="w-full min-h-[44px] rounded-[12px] bg-white border border-[#9CA3AF]/40 px-3 py-2 text-base text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+                className="w-full min-h-[44px] rounded-[12px] bg-white dark:bg-[#111827] border border-[#9CA3AF]/40 dark:border-white/15 px-3 py-2 text-base text-[#111827] dark:text-[#EDEDED] focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-[#EDEDED]"
               />
             </div>
 
             <div>
               <label
                 htmlFor="semaforo-lic-cat"
-                className="block text-[11px] font-semibold text-[#4B5563] mb-1"
+                className="block text-[11px] font-semibold text-[#4B5563] dark:text-[#D1D5DB] mb-1"
               >
                 Categoría de licencia
               </label>
-              <select
+              <Select
                 id="semaforo-lic-cat"
+                ariaLabel="Categoría de licencia"
+                variant="subtle"
                 value={licenciaCategoria}
-                onChange={(e) => setLicenciaCategoria(e.target.value)}
-                className="w-full min-h-[44px] rounded-[12px] bg-white border border-[#9CA3AF]/40 px-3 py-2 text-base text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
-              >
-                <option value="B1">B1 (Automóvil / Camioneta)</option>
-                <option value="B2">B2 / C1 (Servicio Público)</option>
-                <option value="A2">A2 (Motocicleta)</option>
-                <option value="A1">A1 (Motocicleta liviana)</option>
-              </select>
+                onChange={(val) => setLicenciaCategoria(val)}
+                options={[
+                  { value: 'B1', label: 'B1 (Automóvil / Camioneta)' },
+                  { value: 'B2', label: 'B2 / C1 (Servicio Público)' },
+                  { value: 'A2', label: 'A2 (Motocicleta)' },
+                  { value: 'A1', label: 'A1 (Motocicleta liviana)' },
+                ]}
+              />
             </div>
           </div>
 
-          <label className="flex items-center gap-2 text-xs font-semibold text-[#111827] cursor-pointer pt-1">
+          <label className="flex items-center gap-2 text-xs font-semibold text-[#111827] dark:text-[#EDEDED] cursor-pointer pt-1">
             <input
               type="checkbox"
               checked={aprobarInmediato}
               onChange={(e) => setAprobarInmediato(e.target.checked)}
-              className="h-4 w-4 rounded border-[#9CA3AF] text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
+              className="h-4 w-4 rounded border-[#9CA3AF] accent-[#111827] dark:accent-[#EDEDED] focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-[#EDEDED]"
             />
             <span>Aprobar verificación KYC inmediatamente con documentos físicos</span>
           </label>
@@ -348,14 +394,14 @@ export default function SemaforoDocumentalPanel({
             <button
               type="button"
               onClick={() => setMostrarFormularioRapido(false)}
-              className="min-h-[44px] rounded-full bg-[#EDEDED] border border-[#9CA3AF]/60 px-4 py-2 text-xs font-bold text-[#111827] cursor-pointer"
+              className="fx-press min-h-[44px] rounded-full bg-[#EDEDED] dark:bg-[#111827] border border-[#9CA3AF]/60 dark:border-white/15 px-4 py-2 text-xs font-bold text-[#111827] dark:text-[#EDEDED] cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={guardando}
-              className="min-h-[44px] rounded-full bg-[#111827] px-5 py-2 text-xs font-bold text-white hover:bg-[#1F2937] disabled:opacity-50 cursor-pointer"
+              className="fx-press min-h-[44px] rounded-full bg-[#111827] dark:bg-[#EDEDED] px-5 py-2 text-xs font-bold text-white dark:text-[#111827] hover:bg-[#1F2937] dark:hover:bg-white disabled:opacity-50 cursor-pointer"
             >
               {guardando ? 'Guardando...' : 'Guardar y verificar en D1'}
             </button>
@@ -364,7 +410,7 @@ export default function SemaforoDocumentalPanel({
       )}
 
       {mensajeExito && (
-        <div className="rounded-[14px] bg-[#EDEDED] border border-[#9CA3AF]/60 p-3 text-xs font-semibold text-[#111827]">
+        <div className="rounded-[14px] bg-[#EDEDED] dark:bg-[#1F2937] border border-[#9CA3AF]/60 dark:border-white/15 p-3 text-xs font-semibold text-[#111827] dark:text-[#EDEDED]">
           {mensajeExito}
         </div>
       )}
@@ -372,7 +418,7 @@ export default function SemaforoDocumentalPanel({
       {mensajeError && (
         <div
           role="alert"
-          className="rounded-[14px] bg-[#111827] text-white p-3 text-xs font-semibold"
+          className="rounded-[14px] bg-[#111827] border border-transparent dark:border-white/15 text-white p-3 text-xs font-semibold"
         >
           {mensajeError}
         </div>
@@ -380,18 +426,18 @@ export default function SemaforoDocumentalPanel({
 
       {/* Checkbox de Autorización Explícita del Local */}
       {hayAlertas && puedeModificar && (
-        <label className="flex items-start gap-3 p-3.5 rounded-[18px] bg-[#111827] text-white cursor-pointer select-none border border-[#4B5563]/40">
+        <label className="flex items-start gap-3 p-3.5 rounded-[18px] bg-[#111827] dark:bg-[#1F2937] text-white cursor-pointer select-none border border-[#4B5563]/40 dark:border-white/15">
           <input
             type="checkbox"
             checked={autorizarSinDocumentos}
             onChange={(e) => onToggleAutorizarSinDocs(e.target.checked)}
-            className="h-5 w-5 mt-0.5 rounded border-[#9CA3AF] text-[#111827] focus-visible:ring-2 focus-visible:ring-white shrink-0 cursor-pointer"
+            className="h-5 w-5 mt-0.5 rounded border-[#9CA3AF] accent-[#EDEDED] focus-visible:ring-2 focus-visible:ring-white shrink-0 cursor-pointer"
           />
           <div className="text-xs">
             <span className="font-bold block text-[#EDEDED]">
               Autorizar operación bajo responsabilidad del local
             </span>
-            <span className="text-[#9CA3AF] block mt-0.5 leading-relaxed">
+            <span className="text-[#9CA3AF] dark:text-[#D1D5DB] block mt-0.5 leading-relaxed">
               Permite confirmar la reserva o realizar la entrega registrando auditoría en Cloudflare D1 del operador que autoriza el despacho con documentos pendientes.
             </span>
           </div>

@@ -139,9 +139,14 @@ export default function LoginFlow({ initialMode = 'login' }: LoginFlowProps) {
         window.location.assign(res.data.url);
         return;
       }
+
+      setError('No se recibió la URL de redirección de Google. Inténtalo de nuevo.');
+      setIsLoading(false);
+      isGoogleSubmitting.current = false;
     } catch (err: unknown) {
       console.error('Error al iniciar sesión con Google:', err);
-      setError('No se pudo conectar con el servicio de autenticación de Google. Por favor, intenta de nuevo.');
+      const msg = err instanceof Error ? err.message : null;
+      setError(msg || 'No se pudo conectar con el servicio de autenticación de Google. Por favor, intenta de nuevo.');
       setIsLoading(false);
       isGoogleSubmitting.current = false;
     }

@@ -1,256 +1,23 @@
-import { useState, useEffect, useRef, useId } from 'react';
+import { useState } from 'react';
 import type { CuentaFinancieraSelect } from '@/lib/caja';
+import {
+  Select,
+  type SelectOption,
+  type SelectProps,
+} from '@/components/ui/Select';
 
-export interface CajaSelectOption<T extends string = string> {
-  readonly value: T;
-  readonly label: string;
-  readonly badge?: string | undefined;
-}
-
-export interface CajaCustomSelectProps<T extends string = string> {
-  readonly id?: string | undefined;
-  readonly label?: string | undefined;
-  readonly ariaLabel: string;
-  readonly value: T;
-  readonly defaultValue?: T | undefined;
-  readonly options: readonly CajaSelectOption<T>[];
-  readonly onChange: (nextValue: T) => void;
-  readonly dropDirection?: 'down' | 'up' | undefined;
-  /**
-   * `floating`: la lista flota sobre el contenido (modales y formularios).
-   * `inline`: la lista se expande en línea, empuja el contenido siguiente hacia abajo
-   * y no se cierra al abrir otro selector (permite varios abiertos a la vez).
-   */
-  readonly display?: 'floating' | 'inline' | undefined;
-}
+export type CajaSelectOption<T extends string = string> = SelectOption<T>;
+export type CajaCustomSelectProps<T extends string = string> = SelectProps<T>;
 
 /**
- * Dropdown List personalizado de FlotaX.
- * Implementa fielmente los 3 estados de diseño (Default State, Clicked State y Selected State):
- * - Default State: Contenedor blanco limpio, borde sutil `#9CA3AF`, texto atenuado y chevron fino `⌄`.
- * - Clicked State: Borde nítido `#111827` con anillo de foco suave, chevron `⌃` y tarjeta flotante blanca
- *   con opción activa resaltada en gris suave (`#EDEDED`) + check fino `✓` a la derecha.
- * - Selected State: Contenedor blanco con tipografía `#111827` de alto contraste.
+ * Dropdown List personalizado de FlotaX (delegado a la primitiva canónica `Select`).
+ * Mantiene compatibilidad de tipos para todos los módulos de Caja y soporta
+ * portales sincronizados con el tema Claro/Oscuro.
  */
-export function CajaCustomSelect<T extends string = string>({
-  id,
-  label,
-  ariaLabel,
-  value,
-  defaultValue,
-  options,
-  onChange,
-  dropDirection = 'down',
-  display = 'floating',
-}: CajaCustomSelectProps<T>) {
-  const isInline = display === 'inline';
-  const [isOpen, setIsOpen] = useState(false);
-  const [focusedIdx, setFocusedIdx] = useState<number>(-1);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const listboxId = useId();
-
-  const selectedOption =
-    options.find((opt) => opt.value === value) ?? options[0];
-
-  const isDefaultState =
-    (defaultValue !== undefined && value === defaultValue) || value === '';
-
-  useEffect(() => {
-    if (!isOpen || isInline) return;
-
-    const handlePointerDown = (event: PointerEvent) => {
-      const target = event.target;
-      if (
-        containerRef.current &&
-        target instanceof Node &&
-        !containerRef.current.contains(target)
-      ) {
-        setIsOpen(false);
-      }
-    };
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('pointerdown', handlePointerDown);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isOpen, isInline]);
-
-  const openDropdown = () => {
-    if (options.length === 0) return;
-    const currentIndex = options.findIndex((opt) => opt.value === value);
-    setFocusedIdx(currentIndex >= 0 ? currentIndex : 0);
-    setIsOpen(true);
-  };
-
-  const handleTriggerKeyDown = (
-    event: React.KeyboardEvent<HTMLButtonElement>
-  ) => {
-    if (options.length === 0) return;
-
-    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-      event.preventDefault();
-      if (!isOpen) {
-        openDropdown();
-        return;
-      }
-      const delta = event.key === 'ArrowDown' ? 1 : -1;
-      setFocusedIdx((prev) => (prev + delta + options.length) % options.length);
-    } else if ((event.key === 'Enter' || event.key === ' ') && isOpen) {
-      event.preventDefault();
-      const targetOption = options[focusedIdx];
-      if (targetOption) {
-        onChange(targetOption.value);
-        setIsOpen(false);
-      }
-    }
-  };
-
-  return (
-    <div
-      ref={containerRef}
-      onKeyDown={(event) => {
-        if (isInline && isOpen && event.key === 'Escape') {
-          setIsOpen(false);
-        }
-      }}
-      className={`relative ${isInline ? '' : isOpen ? 'z-50' : 'z-10'}`}
-    >
-      {label && (
-        <span className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
-          {label}
-        </span>
-      )}
-
-      <button
-        id={id}
-        type="button"
-        aria-label={ariaLabel}
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
-        aria-controls={listboxId}
-        onClick={() => (isOpen ? setIsOpen(false) : openDropdown())}
-        onKeyDown={handleTriggerKeyDown}
-        className={`flex min-h-[44px] w-full items-center justify-between gap-2 rounded-xl bg-white dark:bg-[#1F2937] px-3.5 py-2 text-left text-base sm:text-sm transition-all duration-150 cursor-pointer ${
-          isOpen
-            ? 'border border-[#2D6BFF] text-[#111827] dark:text-[#EDEDED] font-semibold ring-3 ring-[#2D6BFF]/15 shadow-2xs'
-            : isDefaultState
-              ? 'border border-[#9CA3AF]/40 dark:border-white/10 text-[#4B5563] dark:text-[#9CA3AF] font-normal hover:border-[#2D6BFF]/60 hover:text-[#111827] dark:hover:text-[#EDEDED]'
-              : 'border border-[#2D6BFF]/40 dark:border-[#2D6BFF]/50 text-[#111827] dark:text-[#EDEDED] font-medium bg-blue-50/20 dark:bg-blue-950/20'
-        }`}
-      >
-        <span className="flex min-w-0 items-center gap-2 truncate">
-          <span className="truncate">{selectedOption?.label ?? ''}</span>
-          {selectedOption?.badge && !isDefaultState && (
-            <span className="shrink-0 rounded-md bg-[#EDEDED] dark:bg-white/10 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[#4B5563] dark:text-[#D1D5DB]">
-              {selectedOption.badge}
-            </span>
-          )}
-        </span>
-
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-          className={`h-4 w-4 shrink-0 transition-transform duration-200 ${
-            isOpen
-              ? 'rotate-180 text-[#2D6BFF]'
-              : isDefaultState
-                ? 'text-[#9CA3AF]'
-                : 'text-[#2D6BFF]'
-          }`}
-        >
-          <path d="m6 9 6 6 6-6" />
-        </svg>
-      </button>
-
-      {isOpen && options.length > 0 && (
-        <div
-          id={listboxId}
-          role="listbox"
-          aria-label={ariaLabel}
-          className={`max-h-60 overflow-y-auto rounded-2xl border border-[#9CA3AF]/30 dark:border-white/15 bg-white dark:bg-[#1F2937] p-1.5 animate-in fade-in duration-150 shadow-xl ${
-            isInline
-              ? 'relative mt-1.5 shadow-2xs'
-              : `absolute left-0 right-0 z-50 shadow-[0_16px_38px_-6px_rgba(17,24,39,0.16),0_4px_12px_-2px_rgba(17,24,39,0.06)] ${
-                  dropDirection === 'up'
-                    ? 'bottom-[calc(100%+6px)]'
-                    : 'top-[calc(100%+6px)]'
-                }`
-          }`}
-        >
-          {options.map((opt, idx) => {
-            const isSelected = opt.value === value;
-            const isFocused = idx === focusedIdx;
-
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                role="option"
-                aria-selected={isSelected}
-                onMouseEnter={() => setFocusedIdx(idx)}
-                onClick={() => {
-                  onChange(opt.value);
-                  setIsOpen(false);
-                }}
-                className={`flex min-h-[40px] w-full items-center justify-between gap-2 rounded-xl px-3.5 py-2 text-left text-sm transition-colors cursor-pointer ${
-                  isSelected
-                    ? 'bg-[#111827] text-white dark:bg-[#2D6BFF] font-semibold'
-                    : isFocused
-                      ? 'bg-[#EDEDED]/70 dark:bg-white/10 text-[#111827] dark:text-[#EDEDED]'
-                      : 'text-[#1F2937] dark:text-[#D1D5DB] hover:bg-[#EDEDED]/55 dark:hover:bg-white/10'
-                }`}
-              >
-                <span className="truncate">{opt.label}</span>
-
-                <span className="flex shrink-0 items-center gap-2">
-                  {opt.badge && (
-                    <span
-                      className={`rounded-md px-1.5 py-0.5 font-mono text-[10px] font-semibold ${
-                        isSelected
-                          ? 'bg-white/20 text-white'
-                          : 'bg-[#EDEDED] dark:bg-white/10 text-[#4B5563] dark:text-[#D1D5DB]'
-                      }`}
-                    >
-                      {opt.badge}
-                    </span>
-                  )}
-                  {isSelected && (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                      className="h-4 w-4 shrink-0 text-white"
-                    >
-                      <path d="M20 6 9 17l-5-5" />
-                    </svg>
-                  )}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
+export function CajaCustomSelect<T extends string = string>(
+  props: CajaCustomSelectProps<T>
+) {
+  return <Select<T> {...props} />;
 }
 
 export type FiltroTipoMovimiento =
@@ -388,7 +155,7 @@ export function CajaMovimientosFilterBar({
             placeholder="Buscar por concepto, cliente, contrato, referencia..."
             value={filtroBusqueda}
             onChange={(e) => onChangeBusqueda(e.target.value)}
-            className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 dark:border-white/10 bg-white dark:bg-[#111827] pl-10 pr-9 py-2 text-base text-[#111827] dark:text-[#EDEDED] placeholder-[#9CA3AF] transition-all focus:border-[#2D6BFF] focus:ring-3 focus:ring-[#2D6BFF]/15 focus:outline-none"
+            className="w-full min-h-[44px] rounded-xl border border-[#9CA3AF]/40 dark:border-white/10 bg-white dark:bg-[#111827] pl-10 pr-9 py-2 text-base text-[#111827] dark:text-[#EDEDED] placeholder-[#9CA3AF] transition-colors focus:border-[#111827] dark:focus:border-[#EDEDED]/60 focus:ring-2 focus:ring-[#111827]/10 dark:focus:ring-white/15"
           />
 
           {filtroBusqueda.length > 0 && (
@@ -418,9 +185,9 @@ export function CajaMovimientosFilterBar({
                 role="radio"
                 aria-checked={isSelected}
                 onClick={() => onChangeTipo(seg.id)}
-                className={`ios-press-bounce min-h-[36px] whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-bold tracking-tight transition-all cursor-pointer ${
+                className={`fx-press min-h-[36px] whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-bold tracking-tight transition-colors cursor-pointer ${
                   isSelected
-                    ? 'bg-white text-[#111827] shadow-xs dark:bg-[#2D6BFF] dark:text-white'
+                    ? 'bg-white text-[#111827] shadow-xs dark:bg-[#1F2937] dark:text-[#EDEDED]'
                     : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/5'
                 }`}
               >
@@ -436,9 +203,9 @@ export function CajaMovimientosFilterBar({
             type="button"
             onClick={() => setFiltrosAvanzadosAbiertos((prev) => !prev)}
             aria-expanded={filtrosAvanzadosAbiertos}
-            className={`ios-press-bounce inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition-all cursor-pointer ${
+            className={`fx-press inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition-colors cursor-pointer ${
               filtrosSecundariosActivos > 0
-                ? 'bg-[#2D6BFF] text-white border-[#2D6BFF] shadow-xs'
+                ? 'bg-[#111827] text-[#EDEDED] border-[#111827] dark:bg-[#EDEDED] dark:text-[#111827] dark:border-[#EDEDED] shadow-xs'
                 : filtrosAvanzadosAbiertos
                   ? 'bg-[#EDEDED] text-[#111827] border-[#9CA3AF]/50 dark:bg-white/15 dark:text-white dark:border-white/20'
                   : 'bg-white text-[#4B5563] border-[#9CA3AF]/40 hover:bg-[#EDEDED] dark:bg-[#111827] dark:text-[#EDEDED] dark:border-white/10 dark:hover:bg-white/10'
@@ -467,7 +234,7 @@ export function CajaMovimientosFilterBar({
             </svg>
             <span>Filtros</span>
             {filtrosSecundariosActivos > 0 && (
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-[#2D6BFF] font-black text-[10px]">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-[#111827] dark:bg-[#111827] dark:text-[#EDEDED] font-black text-[10px]">
                 {filtrosSecundariosActivos}
               </span>
             )}
@@ -515,7 +282,7 @@ export function CajaMovimientosFilterBar({
                   onChangeCuenta('TODAS');
                   onChangeEstado('TODOS');
                 }}
-                className="text-xs font-semibold text-[#2D6BFF] hover:underline cursor-pointer"
+                className="text-xs font-semibold text-[#111827] dark:text-[#EDEDED] hover:underline cursor-pointer"
               >
                 Limpiar avanzados
               </button>
@@ -577,7 +344,7 @@ export function CajaMovimientosFilterBar({
 
         <div className="flex items-center gap-1.5 text-[11px]">
           {filtroTipo !== 'TODOS' && (
-            <span className="rounded-md bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/40 px-2 py-0.5 font-medium text-blue-700 dark:text-blue-300">
+            <span className="rounded-md bg-[#EDEDED] dark:bg-white/10 border border-[#9CA3AF]/30 dark:border-white/15 px-2 py-0.5 font-medium text-[#111827] dark:text-[#EDEDED]">
               Tipo: {filtroTipo}
             </span>
           )}

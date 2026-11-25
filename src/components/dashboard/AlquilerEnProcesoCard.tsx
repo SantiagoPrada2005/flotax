@@ -364,18 +364,18 @@ export default function AlquilerEnProcesoCard({
                     type="button"
                     onClick={() => toggleContrato(item.id)}
                     aria-expanded={isExpanded}
-                    className="fx-pressable flex w-full items-center gap-3 p-2.5 text-left sm:p-3"
+                    className="fx-pressable flex w-full items-stretch text-left cursor-pointer"
                   >
-                    <div className="flex h-20 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[14px] bg-[#EDEDED] p-1.5 sm:h-22 sm:w-28">
+                    <div className="relative w-28 sm:w-36 self-stretch shrink-0 overflow-hidden">
                       <img
                         src={item.imagenUrl}
                         alt={`Vehículo ${item.placa}`}
                         loading="lazy"
-                        className="h-full w-full object-contain"
+                        className="h-full w-full object-cover object-center block"
                       />
                     </div>
 
-                    <div className="min-w-0 flex-1 space-y-1.5">
+                    <div className="min-w-0 flex-1 space-y-1.5 p-2.5 sm:p-3.5">
                       <div className="flex items-center justify-between gap-2">
                         <span
                           className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${meta.badgeClass}`}
@@ -391,9 +391,9 @@ export default function AlquilerEnProcesoCard({
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
-                            stroke-width="2.2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
+                            strokeWidth="2.2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
                             className={`h-3.5 w-3.5 transition-transform duration-150 ${
                               isExpanded ? 'rotate-180 text-white' : ''
                             }`}

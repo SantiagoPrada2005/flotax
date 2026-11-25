@@ -11,7 +11,18 @@ import {
   type ReservaClienteItem,
 } from '@/lib/flota';
 import type { CapacidadesOperacionAlquiler } from '@/lib/auth/capacidades-alquiler';
+import {
+  crearDetalleReservaAdminVacio,
+  type DetalleCompletoAlquilerResponse,
+  type DetalleReservaAdminContext,
+  type FotoInspeccionItem,
+} from '@/lib/flota/detalle-reserva-admin';
 import SemaforoDocumentalPanel from './SemaforoDocumentalPanel';
+import DeliveryPointCard from './DeliveryPointCard';
+import { AdminControlCenterPanel } from './AdminControlCenterPanel';
+import { FinalizarAlquilerWizardModal } from './FinalizarAlquilerWizardModal';
+import { FacturaAlquilerModal } from './FacturaAlquilerModal';
+import { Select } from '@/components/ui/Select';
 import {
   ModalPausar,
   ModalProrrogar,
@@ -27,6 +38,8 @@ export interface AlquilerDetalleViewProps {
   capacidades?: CapacidadesOperacionAlquiler | undefined;
   cuentasFinancieras?: Array<{ id: string; nombre: string; tipo: string }> | undefined;
   tokenAccesoPublico?: string | null | undefined;
+  mapboxPublicToken?: string | null | undefined;
+  detalleAdminInicial?: DetalleReservaAdminContext | undefined;
 }
 
 type TabDetalleAlquiler = 'INSPECCION' | 'WAYBILL' | 'HIGHLIGHTS';
@@ -37,7 +50,7 @@ const ETIQUETA_ESTADO_CABECERA: Readonly<
   Record<EstadoReservaCliente, string>
 > = {
   PENDIENTE: 'Solicitud pendiente de revisión',
-  CONFIRMADA: 'Confirmada · Lista para entrega R2',
+  CONFIRMADA: 'Confirmada · Lista para entrega',
   EN_CURSO: 'En curso · Unidad en ruta',
   PAUSADA: 'Alquiler en pausa',
   COMPLETADA: 'Completada · Contrato cerrado',
@@ -52,6 +65,22 @@ const formatCop = (val: number): string =>
     maximumFractionDigits: 0,
   }).format(val);
 
+const esDetalleCompletoResponse = (
+  val: unknown
+): val is DetalleCompletoAlquilerResponse => {
+  if (typeof val !== 'object' || val === null) return false;
+  return (
+    'ok' in val &&
+    val.ok === true &&
+    'reserva' in val &&
+    typeof val.reserva === 'object' &&
+    val.reserva !== null &&
+    'detalleAdmin' in val &&
+    typeof val.detalleAdmin === 'object' &&
+    val.detalleAdmin !== null
+  );
+};
+
 export default function AlquilerDetalleView({
   codigo: _codigo,
   reservaInicial,
@@ -60,11 +89,18 @@ export default function AlquilerDetalleView({
   capacidades,
   cuentasFinancieras = [],
   tokenAccesoPublico,
+  mapboxPublicToken = null,
+  detalleAdminInicial,
 }: AlquilerDetalleViewProps) {
   const esAdmin = modo === 'admin';
 
   const [reserva, setReserva] = useState<ReservaClienteItem>(reservaInicial);
-  const [tabActiva, setTabActiva] = useState<TabDetalleAlquiler>('INSPECCION');
+  const [detalleAdmin, setDetalleAdmin] = useState<DetalleReservaAdminContext>(
+    () => detalleAdminInicial ?? crearDetalleReservaAdminVacio()
+  );
+  const [modalFinalizarAbierto, setModalFinalizarAbierto] = useState<boolean>(false);
+  const [modalFacturaAbierto, setModalFacturaAbierto] = useState<boolean>(false);
+  const [tabActiva, setTabActiva] = useState<TabDetalleAlquiler>('HIGHLIGHTS');
   const [puntoActivoId, setPuntoActivoId] = useState<string>('r2-carroceria');
   const [rubroActivoId, setRubroActivoId] = useState<string>('total-contrato');
 
@@ -99,6 +135,12 @@ export default function AlquilerDetalleView({
   useEffect(() => {
     setReserva(reservaInicial);
   }, [reservaInicial]);
+
+  useEffect(() => {
+    if (detalleAdminInicial) {
+      setDetalleAdmin(detalleAdminInicial);
+    }
+  }, [detalleAdminInicial]);
 
   const { vehiculo, specsBento } = reserva;
 
@@ -171,6 +213,53 @@ export default function AlquilerDetalleView({
 
   const guardarCambioReserva = (actualizada: ReservaClienteItem) => {
     setReserva(actualizada);
+  };
+
+  /**
+   * Consulta el endpoint único consolidado `GET /api/alquileres/[codigo]`
+   * para mantener sincronizados fotos, pagos, fechas reales y estado sin recargar.
+   */
+  const refrescarDetalleUnificado = async (codigoTarget = reserva.codigo) => {
+    if (!esAdmin || typeof fetch === 'undefined') return;
+    try {
+      const resp = await fetch(
+        `/api/alquileres/${encodeURIComponent(codigoTarget)}`,
+        {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+          cache: 'no-store',
+        }
+      );
+      if (!resp.ok) return;
+      const json: unknown = await resp.json();
+      if (esDetalleCompletoResponse(json)) {
+        setReserva(json.reserva);
+        setDetalleAdmin(json.detalleAdmin);
+      }
+    } catch {
+      // Tolerante ante fallo transitorio de red
+    }
+  };
+
+  const agregarFotoEntregaLocal = (foto: FotoInspeccionItem) => {
+    setDetalleAdmin((prev) => ({
+      ...prev,
+      fotosEntrega: [
+        foto,
+        ...prev.fotosEntrega.filter((f) => f.id !== foto.id),
+      ],
+    }));
+    mostrarAviso('Fotografía de entrega guardada');
+  };
+
+  const agregarFotoDevolucionLocal = (foto: FotoInspeccionItem) => {
+    setDetalleAdmin((prev) => ({
+      ...prev,
+      fotosDevolucion: [
+        foto,
+        ...prev.fotosDevolucion.filter((f) => f.id !== foto.id),
+      ],
+    }));
   };
 
   // --- Acciones Operativas Estación 1: Inspección R2 ---
@@ -362,50 +451,12 @@ export default function AlquilerDetalleView({
           ...reserva,
           estado: 'CONFIRMADA',
         });
+        void refrescarDetalleUnificado();
         mostrarAviso(`Reserva #${reserva.codigo} confirmada exitosamente`);
       }
     } catch (err: unknown) {
       const msg =
         err instanceof Error ? err.message : 'Error al confirmar la reserva';
-      setErrorOperacion(msg);
-      mostrarAviso(msg);
-    } finally {
-      setOperacionCargando(false);
-    }
-  };
-
-  const entregarVehiculoOperativo = async () => {
-    if (operacionCargando) return;
-    setOperacionCargando(true);
-    setErrorOperacion(null);
-    try {
-      const res = await actions.reservas.entregarVehiculo({
-        codigo: reserva.codigo,
-        medidorUsoEntrega: reserva.kilometrajeEntrega,
-        nivelEnergiaEntregaPct: reserva.nivelCargaPorcentaje,
-        autorizarSinDocumentos,
-        notaAutorizacion: autorizarSinDocumentos
-          ? 'Entrega autorizada bajo responsabilidad del local'
-          : undefined,
-      });
-
-      if (res.error) {
-        setErrorOperacion(res.error.message);
-        mostrarAviso(res.error.message);
-      } else if (res.data?.reserva) {
-        guardarCambioReserva({
-          ...reserva,
-          estado: 'EN_CURSO',
-          kilometrajeEntrega:
-            res.data.reserva.kilometrajeEntrega ?? reserva.kilometrajeEntrega,
-        });
-        mostrarAviso(
-          `Vehículo entregado · Contrato vigente · Unidad ${vehiculo.placa} en ruta`
-        );
-      }
-    } catch (err: unknown) {
-      const msg =
-        err instanceof Error ? err.message : 'Error al entregar el vehículo';
       setErrorOperacion(msg);
       mostrarAviso(msg);
     } finally {
@@ -430,6 +481,7 @@ export default function AlquilerDetalleView({
           ...reserva,
           estado: 'EN_CURSO',
         });
+        void refrescarDetalleUnificado();
         mostrarAviso('Alquiler reanudado · Unidad de nuevo en curso');
       }
     } catch (err: unknown) {
@@ -460,6 +512,7 @@ export default function AlquilerDetalleView({
           ...reserva,
           estado: 'PENDIENTE',
         });
+        void refrescarDetalleUnificado();
         mostrarAviso(`Reserva #${reserva.codigo} reabierta para revisión`);
       }
     } catch (err: unknown) {
@@ -486,74 +539,72 @@ export default function AlquilerDetalleView({
       )}
 
       {/* Grid Responsivo: 1 Columna en móvil, 2 Columnas Cockpit en Desktop */}
-      <div className="flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-8">
+      <div className="flex flex-col lg:flex-row lg:items-start gap-2 sm:gap-5 lg:gap-8">
         {/* Columna Izquierda (En PC): Cabecera + Escenario 3D de Inspección R2 */}
-        <div className="w-full lg:w-7/12 xl:w-3/5 space-y-5 lg:sticky lg:top-20">
+        <div className="w-full lg:w-7/12 xl:w-3/5 space-y-2.5 sm:space-y-5 lg:sticky lg:top-20">
           {/* =====================================================================
               ZONA 1: CABECERA EDITORIAL Y PÍLDORAS DIRECTAS SOBRE EL LIENZO MÓVIL
               ===================================================================== */}
-          <header className="space-y-3">
-        <div className="flex items-start justify-between gap-2">
-          <h1 className="font-display text-[28px] sm:text-[32px] font-extrabold tracking-tight text-[#111827] leading-[1.08]">
-            {vehiculo.marca}
-            <span className="block font-bold text-[#1F2937]">
-              {vehiculo.modelo}
-            </span>
-          </h1>
+          <header className="space-y-3 text-center">
+            {esAdmin && (
+              <div className="flex justify-center">
+                <span
+                  className={`inline-flex items-center rounded-full px-3.5 py-1 text-[11px] font-bold ${
+                    reserva.estado === 'PENDIENTE'
+                      ? 'bg-[#111827] text-white dark:bg-[#EDEDED] dark:text-[#111827]'
+                      : reserva.estado === 'EN_CURSO'
+                        ? 'bg-[#1F2937] text-white dark:bg-[#EDEDED] dark:text-[#111827]'
+                        : 'bg-white text-[#111827] dark:bg-[#111827] dark:text-[#EDEDED] border border-[#9CA3AF]/30 dark:border-white/10'
+                  }`}
+                >
+                  {ETIQUETA_ESTADO_CABECERA[reserva.estado]}
+                </span>
+              </div>
+            )}
 
-          {esAdmin && (
-            <span
-              className={`shrink-0 rounded-full px-3 py-1.5 text-[11px] font-bold ${
-                reserva.estado === 'PENDIENTE'
-                  ? 'bg-[#111827] text-white'
-                  : reserva.estado === 'EN_CURSO'
-                    ? 'bg-[#1F2937] text-white'
-                    : 'bg-white text-[#111827]'
-              }`}
-            >
-              {ETIQUETA_ESTADO_CABECERA[reserva.estado]}
-            </span>
-          )}
-        </div>
+            <h1 className="font-display text-[26px] sm:text-[32px] font-extrabold tracking-tight text-[#111827] dark:text-[#EDEDED] leading-tight">
+              <span className="inline-block">{vehiculo.marca}</span>{' '}
+              <span className="block font-bold text-[#1F2937] dark:text-[#9CA3AF] text-[20px] sm:text-[24px] mt-0.5">
+                {vehiculo.modelo}
+              </span>
+            </h1>
 
-        {/* Píldoras Suaves sin Bordes sobre el Lienzo #EDEDED */}
-        <div className="flex flex-wrap items-center gap-1.5">
-          {esAdmin && (
-            <button
-              type="button"
-              onClick={() => setTabActiva('HIGHLIGHTS')}
-              className="ios-press-bounce rounded-full bg-[#111827] px-3 py-1 text-[11px] font-semibold text-white cursor-pointer"
-            >
-              {reserva.conductor.nombreCompleto} · Lic.{' '}
-              {reserva.conductor.categoriaLicencia}
-            </button>
-          )}
-          <span className="rounded-full bg-white/75 px-3 py-1 text-[11px] font-medium text-[#111827]">
-            {reserva.sedeNombre}
-          </span>
-          <span className="rounded-full bg-white/75 px-3 py-1 text-[11px] font-medium text-[#111827]">
-            {vehiculo.combustible} · {vehiculo.autonomiaOdo}
-          </span>
-          <span className="rounded-full bg-white/75 px-3 py-1 text-[11px] font-semibold text-[#111827] tabular-nums">
-            {formatCop(reserva.totalAlquiler)} Total
-          </span>
-          <span className="rounded-full bg-white/75 px-3 py-1 text-[11px] font-medium text-[#4B5563] tabular-nums">
-            {formatCop(vehiculo.depositoGarantia)} Garantía
-          </span>
-          <span className="rounded-full bg-white/75 px-3 py-1 font-mono text-[11px] font-semibold text-[#111827]">
-            #{reserva.codigo}
-          </span>
-        </div>
-      </header>
+            {/* Píldoras Suaves sobre el Lienzo */}
+            <div className="flex flex-wrap items-center justify-center gap-1.5 pt-0.5">
+              {esAdmin && (
+                <span className="rounded-full bg-[#111827] dark:bg-[#EDEDED] px-3 py-1 text-[11px] font-semibold text-white dark:text-[#111827]">
+                  {reserva.conductor.nombreCompleto} · Lic.{' '}
+                  {reserva.conductor.categoriaLicencia}
+                </span>
+              )}
+              <span className="rounded-full bg-white/75 dark:bg-[#1F2937] border border-[#9CA3AF]/20 dark:border-white/10 px-3 py-1 text-[11px] font-medium text-[#111827] dark:text-[#EDEDED]">
+                {reserva.sedeNombre}
+              </span>
+              <span className="rounded-full bg-white/75 dark:bg-[#1F2937] border border-[#9CA3AF]/20 dark:border-white/10 px-3 py-1 text-[11px] font-medium text-[#111827] dark:text-[#EDEDED]">
+                {vehiculo.combustible} · {vehiculo.autonomiaOdo}
+              </span>
+              <span className="rounded-full bg-white/75 dark:bg-[#1F2937] border border-[#9CA3AF]/20 dark:border-white/10 px-3 py-1 text-[11px] font-semibold text-[#111827] dark:text-[#EDEDED] tabular-nums">
+                {formatCop(reserva.totalAlquiler)} Total
+              </span>
+              <span className="rounded-full bg-white/75 dark:bg-[#1F2937] border border-[#9CA3AF]/20 dark:border-white/10 px-3 py-1 text-[11px] font-medium text-[#4B5563] dark:text-[#9CA3AF] tabular-nums">
+                {formatCop(vehiculo.depositoGarantia)} Garantía
+              </span>
+              <span className="rounded-full bg-white/75 dark:bg-[#1F2937] border border-[#9CA3AF]/20 dark:border-white/10 px-3 py-1 font-mono text-[11px] font-semibold text-[#111827] dark:text-[#EDEDED]">
+                #{reserva.codigo}
+              </span>
+            </div>
+          </header>
 
       {/* =====================================================================
           ZONA 2: ESCENARIO ABIERTO DEL VEHÍCULO + CÁPSULA VERTICAL EN CRISTAL
           ===================================================================== */}
       <section
         aria-label={`Escenario de inspección de ${vehiculo.marca} ${vehiculo.modelo}`}
-        className="relative my-auto flex items-center justify-center py-5 min-h-[205px]"
+        className={`relative my-auto flex items-center justify-center ${
+          esAdmin ? 'py-2 sm:py-5 min-h-[150px] sm:min-h-[205px]' : 'py-5 min-h-[205px]'
+        }`}
       >
-        <div className="relative w-full pr-12">
+        <div className={`relative w-full ${esAdmin ? '' : 'pr-12'}`}>
           <img
             src={vehiculo.imagenUrl}
             alt={`${vehiculo.marca} ${vehiculo.modelo}`}
@@ -563,89 +614,35 @@ export default function AlquilerDetalleView({
             aria-hidden="true"
             className="mx-auto -mt-2 h-3.5 w-4/5 rounded-full bg-[radial-gradient(ellipse_at_center,_rgba(17,24,39,0.20)_0%,_transparent_75%)]"
           />
-
-          {/* Puntos Interactivos R2 sobre la Silueta del Vehículo */}
-          {puntosR2.map((punto) => {
-            const activo = puntoSeleccionado.id === punto.id;
-            const tieneNovedad = punto.estado === 'NOVEDAD';
-            return (
-              <button
-                key={punto.id}
-                type="button"
-                onClick={() => {
-                  setPuntoActivoId(punto.id);
-                  setTabActiva('INSPECCION');
-                  setEditandoDictamen(false);
-                }}
-                style={{ left: punto.coordX, top: punto.coordY }}
-                aria-label={`Inspección: ${punto.zona}`}
-                className={`ios-press-bounce absolute -translate-x-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full transition-transform cursor-pointer ${
-                  activo
-                    ? 'bg-[#111827] text-white ring-4 ring-white/85 scale-110 z-20'
-                    : tieneNovedad
-                      ? 'bg-[#1F2937] text-white ring-2 ring-white z-10'
-                      : 'bg-white/90 text-[#111827] hover:scale-105 z-10'
-                }`}
-              >
-                <span
-                  className={`h-2 w-2 rounded-full ${
-                    activo || tieneNovedad ? 'bg-white' : 'bg-[#111827]'
-                  }`}
-                />
-              </button>
-            );
-          })}
         </div>
 
         {/* Insignia Inferior Izquierda: Silueta y Placa */}
-        <div className="absolute bottom-1 left-0 flex items-center gap-1.5 rounded-2xl bg-white/65 backdrop-blur-md px-3 py-1.5">
+        <div className="absolute bottom-1 left-0 flex items-center gap-1.5 rounded-2xl bg-white/85 dark:bg-[#1F2937] border border-[#9CA3AF]/30 dark:border-white/15 backdrop-blur-md px-3 py-1.5">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
             strokeWidth="1.7"
-            className="h-4 w-4 text-[#111827]"
+            className="h-4 w-4 text-[#111827] dark:text-[#EDEDED]"
           >
             <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2" />
             <circle cx="7" cy="17" r="2" />
             <path d="M9 17h6" />
             <circle cx="17" cy="17" r="2" />
           </svg>
-          <span className="font-mono text-[10px] font-bold text-[#111827]">
+          <span className="font-mono text-[10px] font-bold text-[#111827] dark:text-[#EDEDED]">
             {vehiculo.placa}
           </span>
         </div>
 
-        {/* Cápsula Vertical Flotante Derecha (3 Estaciones) */}
-        <div
-          role="toolbar"
-          aria-label="Cambiar estación de trabajo del alquiler"
-          className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col gap-2 rounded-full bg-[#9CA3AF]/25 backdrop-blur-xl border border-white/60 p-1.5 shadow-[0_12px_28px_-8px_rgba(17,24,39,0.14)] z-20"
-        >
-          <button
-            type="button"
-            onClick={() => setTabActiva('INSPECCION')}
-            aria-label="Inspección Pericial R2"
-            aria-pressed={tabActiva === 'INSPECCION'}
-            className={`ios-press-bounce flex h-10 w-10 items-center justify-center rounded-full transition-colors cursor-pointer ${
-              tabActiva === 'INSPECCION'
-                ? 'bg-[#111827] text-white'
-                : 'bg-white/80 text-[#111827] hover:bg-white'
-            }`}
+        {/* Cápsula Vertical Flotante Derecha (2 Estaciones en modo cliente) */}
+        {!esAdmin && (
+          <div
+            role="toolbar"
+            aria-label="Cambiar estación de trabajo del alquiler"
+            className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col gap-2 rounded-full bg-[#9CA3AF]/25 dark:bg-[#1F2937]/90 backdrop-blur-xl border border-white/60 dark:border-white/15 p-1.5 shadow-[0_12px_28px_-8px_rgba(17,24,39,0.14)] z-20"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="h-4 w-4"
-            >
-              <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-            </svg>
-          </button>
-
           <button
             type="button"
             onClick={() => setTabActiva('WAYBILL')}
@@ -653,8 +650,8 @@ export default function AlquilerDetalleView({
             aria-pressed={tabActiva === 'WAYBILL'}
             className={`ios-press-bounce flex h-10 w-10 items-center justify-center rounded-full transition-colors cursor-pointer ${
               tabActiva === 'WAYBILL'
-                ? 'bg-[#111827] text-white'
-                : 'bg-white/80 text-[#111827] hover:bg-white'
+                ? 'bg-[#111827] text-white dark:bg-[#EDEDED] dark:text-[#111827]'
+                : 'bg-white/80 text-[#111827] hover:bg-white dark:bg-[#111827] dark:text-[#EDEDED] dark:hover:bg-white/15'
             }`}
           >
             <svg
@@ -681,8 +678,8 @@ export default function AlquilerDetalleView({
             aria-pressed={tabActiva === 'HIGHLIGHTS'}
             className={`ios-press-bounce flex h-10 w-10 items-center justify-center rounded-full transition-colors cursor-pointer ${
               tabActiva === 'HIGHLIGHTS'
-                ? 'bg-[#111827] text-white'
-                : 'bg-white/80 text-[#111827] hover:bg-white'
+                ? 'bg-[#111827] text-white dark:bg-[#EDEDED] dark:text-[#111827]'
+                : 'bg-white/80 text-[#111827] hover:bg-white dark:bg-[#111827] dark:text-[#EDEDED] dark:hover:bg-white/15'
             }`}
           >
             {esAdmin ? (
@@ -713,18 +710,84 @@ export default function AlquilerDetalleView({
               </svg>
             )}
           </button>
-        </div>
+          </div>
+        )}
       </section>
+
+      {esAdmin && (
+        <DeliveryPointCard
+          modalidadEntrega={reserva.modalidadEntrega}
+          sedeNombre={reserva.sedeNombre}
+          direccionEntrega={reserva.direccionEntrega}
+          entregaLatitud={reserva.entregaLatitud}
+          entregaLongitud={reserva.entregaLongitud}
+          entregaReferencia={reserva.entregaReferencia}
+          distanciaEntregaKm={reserva.distanciaEntregaKm}
+          recargoEntregaDomicilio={reserva.recargoEntregaDomicilio}
+          mapboxPublicToken={mapboxPublicToken}
+          vista="admin"
+          onAviso={mostrarAviso}
+        />
+      )}
     </div>
 
-    {/* Columna Derecha (En PC): Panel Blanco de Estaciones (Inspección, Waybill, Highlights) */}
+    {/* Columna Derecha (En PC): Centro de Control Admin o Lámina Cliente */}
     <div className="w-full lg:w-5/12 xl:w-2/5">
+      {esAdmin ? (
+        <AdminControlCenterPanel
+          reserva={reserva}
+          detalleAdmin={detalleAdmin}
+          capacidades={capacidades}
+          autorizarSinDocumentos={autorizarSinDocumentos}
+          onToggleAutorizarSinDocs={setAutorizarSinDocumentos}
+          onDocumentosActualizados={(datos) => {
+            if (datos) {
+              guardarCambioReserva({
+                ...reserva,
+                conductor: {
+                  ...reserva.conductor,
+                  tipoDocumento: datos.tipoDocumento,
+                  numeroDocumento: datos.numeroDocumento,
+                  categoriaLicencia: datos.categoriaLicencia,
+                  licenciaNumero: datos.licenciaNumero ?? reserva.conductor.licenciaNumero,
+                },
+              });
+            }
+            void refrescarDetalleUnificado();
+            mostrarAviso('Expediente documental del cliente actualizado');
+          }}
+          onFotoEntregaRegistrada={agregarFotoEntregaLocal}
+          operacionCargando={operacionCargando}
+          errorOperacion={errorOperacion}
+          onClearError={() => setErrorOperacion(null)}
+          onConfirmarReserva={confirmarReservaOperativa}
+          onRechazarReserva={() => {
+            setTipoModalCancelar('RECHAZAR');
+            setModalCancelarAbierto(true);
+          }}
+          onCancelarReserva={() => {
+            setTipoModalCancelar('CANCELAR');
+            setModalCancelarAbierto(true);
+          }}
+          onPausarAlquiler={() => setModalPausarAbierto(true)}
+          onReanudarAlquiler={reanudarAlquilerOperativo}
+          onProrrogarAlquiler={() => setModalProrrogarAbierto(true)}
+          onAbrirFinalizarAlquiler={() => setModalFinalizarAbierto(true)}
+          onAnularAlquiler={() => {
+            setTipoModalCancelar('ANULAR');
+            setModalCancelarAbierto(true);
+          }}
+          onReabrirReserva={reabrirReservaOperativa}
+          onAbrirFactura={() => setModalFacturaAbierto(true)}
+        />
+      ) : (
+        <>
           {/* =====================================================================
               ZONA 3: ÚNICA LÁMINA BLANCA + ESTACIÓN ACTIVA + CICLO DE VIDA
               ===================================================================== */}
           <section
             aria-label="Panel inferior del alquiler"
-            className="rounded-[32px] bg-white p-5 sm:p-6 shadow-[0_10px_30px_-15px_rgba(17,24,39,0.06)] border border-[#E5E4DF]/70 space-y-4"
+            className="rounded-[32px] bg-white dark:bg-[#1F2937] p-5 sm:p-6 shadow-[0_10px_30px_-15px_rgba(17,24,39,0.06)] border border-[#E5E4DF]/70 dark:border-white/12 space-y-4"
           >
         {/* -------------------------------------------------------------------
             VISTA 1: INSPECCIÓN PERICIAL & BARRA DE CONFIANZA
@@ -735,14 +798,14 @@ export default function AlquilerDetalleView({
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <h2 className="font-display text-base font-bold text-[#111827] truncate">
+                  <h2 className="font-display text-base font-bold text-[#111827] dark:text-[#EDEDED] truncate">
                     {puntoSeleccionado.zona}
                   </h2>
                   {esAdmin && (
                     <button
                       type="button"
                       onClick={abrirEdicionDictamen}
-                      className="rounded-full bg-[#EDEDED] px-2.5 py-0.5 text-[10px] font-bold text-[#111827] hover:bg-[#9CA3AF]/40 cursor-pointer"
+                      className="rounded-full bg-[#EDEDED] dark:bg-[#111827] px-2.5 py-0.5 text-[10px] font-bold text-[#111827] dark:text-[#EDEDED] hover:bg-[#9CA3AF]/40 dark:hover:bg-white/15 cursor-pointer"
                     >
                       Editar nota
                     </button>
@@ -755,18 +818,18 @@ export default function AlquilerDetalleView({
                       type="text"
                       value={borradorDictamen}
                       onChange={(e) => setBorradorDictamen(e.target.value)}
-                      className="flex-1 min-h-[44px] rounded-[12px] bg-[#EDEDED] px-3 py-1.5 text-base text-[#111827] outline-none"
+                      className="flex-1 min-h-[44px] rounded-[12px] bg-[#EDEDED] dark:bg-[#111827] px-3 py-1.5 text-base text-[#111827] dark:text-[#EDEDED] outline-none"
                     />
                     <button
                       type="button"
                       onClick={guardarDictamenEditado}
-                      className="min-h-[44px] rounded-full bg-[#111827] px-4 py-2 text-xs font-bold text-white cursor-pointer"
+                      className="min-h-[44px] rounded-full bg-[#111827] dark:bg-[#EDEDED] px-4 py-2 text-xs font-bold text-white dark:text-[#111827] cursor-pointer"
                     >
                       Guardar
                     </button>
                   </div>
                 ) : (
-                  <p className="mt-0.5 text-xs text-[#4B5563] leading-relaxed">
+                  <p className="mt-0.5 text-xs text-[#4B5563] dark:text-[#D1D5DB] leading-relaxed">
                     {puntoSeleccionado.dictamen}
                   </p>
                 )}
@@ -776,7 +839,7 @@ export default function AlquilerDetalleView({
                 type="button"
                 onClick={ciclarVista}
                 aria-label="Ver liquidación Waybill"
-                className="flex h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full bg-[#EDEDED]/75 text-[#111827] hover:bg-[#EDEDED] cursor-pointer"
+                className="flex h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full bg-[#EDEDED]/75 dark:bg-[#111827] dark:border dark:border-white/15 text-[#111827] dark:text-[#EDEDED] hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -806,8 +869,8 @@ export default function AlquilerDetalleView({
                     }}
                     className={`ios-press-bounce shrink-0 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-colors cursor-pointer ${
                       activo
-                        ? 'bg-[#111827] text-white'
-                        : 'bg-[#EDEDED]/75 text-[#4B5563] hover:text-[#111827]'
+                        ? 'bg-[#111827] text-white dark:bg-[#EDEDED] dark:text-[#111827]'
+                        : 'bg-[#EDEDED]/75 dark:bg-[#111827] text-[#4B5563] dark:text-[#D1D5DB] hover:text-[#111827] dark:hover:text-white'
                     }`}
                   >
                     {punto.zona.split(' ')[0]} · {punto.etiqueta}
@@ -819,8 +882,8 @@ export default function AlquilerDetalleView({
             {/* Controles de Dictamen R2 y Telemetría (Solo Admin) */}
             {esAdmin && (
               <div className="space-y-2.5 pt-0.5">
-                <div className="flex flex-wrap items-center justify-between gap-2 rounded-[18px] bg-[#EDEDED]/65 px-3 py-2">
-                  <span className="text-[11px] font-semibold text-[#4B5563]">
+                <div className="flex flex-wrap items-center justify-between gap-2 rounded-[18px] bg-[#EDEDED]/65 dark:bg-[#111827] dark:border dark:border-white/10 px-3 py-2">
+                  <span className="text-[11px] font-semibold text-[#4B5563] dark:text-[#D1D5DB]">
                     Dictamen del punto:
                   </span>
                   <div className="flex items-center gap-1.5">
@@ -839,8 +902,8 @@ export default function AlquilerDetalleView({
                           onClick={() => cambiarEstadoPuntoR2(op.id)}
                           className={`ios-press-bounce rounded-full px-2.5 py-1 text-[10px] font-bold transition-colors cursor-pointer ${
                             esActual
-                              ? 'bg-[#111827] text-white'
-                              : 'bg-white text-[#4B5563] hover:text-[#111827]'
+                              ? 'bg-[#111827] text-white dark:bg-[#EDEDED] dark:text-[#111827]'
+                              : 'bg-white dark:bg-[#1F2937] text-[#4B5563] dark:text-[#D1D5DB] hover:text-[#111827] dark:hover:text-white'
                           }`}
                         >
                           {op.label}
@@ -853,12 +916,12 @@ export default function AlquilerDetalleView({
                 {/* Ajuste Rápido de Odómetro y Carga cuando está en el punto de telemetría */}
                 {puntoSeleccionado.id === 'r2-telemetria' && (
                   <div className="grid grid-cols-2 gap-2">
-                    <div className="flex items-center justify-between rounded-[16px] bg-[#EDEDED]/65 px-3 py-2">
+                    <div className="flex items-center justify-between rounded-[16px] bg-[#EDEDED]/65 dark:bg-[#111827] dark:border dark:border-white/10 px-3 py-2">
                       <div>
-                        <span className="block text-[10px] text-[#4B5563]">
+                        <span className="block text-[10px] text-[#4B5563] dark:text-[#9CA3AF]">
                           Odómetro patio
                         </span>
-                        <span className="font-mono text-xs font-bold text-[#111827] tabular-nums">
+                        <span className="font-mono text-xs font-bold text-[#111827] dark:text-[#EDEDED] tabular-nums">
                           {reserva.kilometrajeEntrega.toLocaleString('es-CO')} km
                         </span>
                       </div>
@@ -867,7 +930,7 @@ export default function AlquilerDetalleView({
                           type="button"
                           onClick={() => ajustarTelemetriaPatio(-50, 0)}
                           aria-label="Restar 50 km"
-                          className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-white text-xs font-bold text-[#111827] cursor-pointer"
+                          className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-white dark:bg-[#1F2937] text-xs font-bold text-[#111827] dark:text-[#EDEDED] cursor-pointer"
                         >
                           -
                         </button>
@@ -875,19 +938,19 @@ export default function AlquilerDetalleView({
                           type="button"
                           onClick={() => ajustarTelemetriaPatio(50, 0)}
                           aria-label="Sumar 50 km"
-                          className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-[#111827] text-xs font-bold text-white cursor-pointer"
+                          className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-[#111827] dark:bg-[#EDEDED] text-xs font-bold text-white dark:text-[#111827] cursor-pointer"
                         >
                           +
                         </button>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between rounded-[16px] bg-[#EDEDED]/65 px-3 py-2">
+                    <div className="flex items-center justify-between rounded-[16px] bg-[#EDEDED]/65 dark:bg-[#111827] dark:border dark:border-white/10 px-3 py-2">
                       <div>
-                        <span className="block text-[10px] text-[#4B5563]">
+                        <span className="block text-[10px] text-[#4B5563] dark:text-[#9CA3AF]">
                           Carga / Tanque
                         </span>
-                        <span className="font-mono text-xs font-bold text-[#111827] tabular-nums">
+                        <span className="font-mono text-xs font-bold text-[#111827] dark:text-[#EDEDED] tabular-nums">
                           {reserva.nivelCargaPorcentaje}%
                         </span>
                       </div>
@@ -896,7 +959,7 @@ export default function AlquilerDetalleView({
                           type="button"
                           onClick={() => ajustarTelemetriaPatio(0, -10)}
                           aria-label="Restar 10% de carga"
-                          className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-white text-xs font-bold text-[#111827] cursor-pointer"
+                          className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-white dark:bg-[#1F2937] text-xs font-bold text-[#111827] dark:text-[#EDEDED] cursor-pointer"
                         >
                           -
                         </button>
@@ -904,7 +967,7 @@ export default function AlquilerDetalleView({
                           type="button"
                           onClick={() => ajustarTelemetriaPatio(0, 10)}
                           aria-label="Sumar 10% de carga"
-                          className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-[#111827] text-xs font-bold text-white cursor-pointer"
+                          className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-[#111827] dark:bg-[#EDEDED] text-xs font-bold text-white dark:text-[#111827] cursor-pointer"
                         >
                           +
                         </button>
@@ -917,7 +980,7 @@ export default function AlquilerDetalleView({
 
             {/* Barra de 28 Trazos Verticales */}
             <div className="pt-0.5">
-              <div className="flex items-center justify-between text-xs font-bold text-[#111827]">
+              <div className="flex items-center justify-between text-xs font-bold text-[#111827] dark:text-[#EDEDED]">
                 <span>{puntosR2.length} verificaciones R2</span>
                 <span>
                   {cantidadNovedadesR2 === 0
@@ -937,8 +1000,8 @@ export default function AlquilerDetalleView({
                     key={idx}
                     className={`flex-1 rounded-full ${
                       idx < ticksActivos
-                        ? 'h-3 bg-[#111827]'
-                        : 'h-2 bg-[#9CA3AF]/40'
+                        ? 'h-3 bg-[#111827] dark:bg-[#EDEDED]'
+                        : 'h-2 bg-[#9CA3AF]/40 dark:bg-white/15'
                     }`}
                   />
                 ))}
@@ -946,7 +1009,7 @@ export default function AlquilerDetalleView({
 
               <div className="mt-1.5 flex items-center justify-between text-[11px] text-[#9CA3AF]">
                 <span>Nivel de confianza</span>
-                <span className="font-medium text-[#4B5563]">
+                <span className="font-medium text-[#4B5563] dark:text-[#D1D5DB]">
                   {formatearRangoReservaHumano(
                     reserva.fechaInicio,
                     reserva.fechaFin
@@ -966,10 +1029,10 @@ export default function AlquilerDetalleView({
             <div className="flex items-center justify-between gap-2">
               <div>
                 <div className="flex items-baseline gap-1.5">
-                  <h2 className="font-display text-lg font-extrabold tracking-tight text-[#111827]">
+                  <h2 className="font-display text-lg font-extrabold tracking-tight text-[#111827] dark:text-[#EDEDED]">
                     #{reserva.codigo}
                   </h2>
-                  <span className="text-[11px] font-medium text-[#4B5563]">
+                  <span className="text-[11px] font-medium text-[#4B5563] dark:text-[#D1D5DB]">
                     Waybill
                   </span>
                 </div>
@@ -986,7 +1049,7 @@ export default function AlquilerDetalleView({
                 type="button"
                 onClick={ciclarVista}
                 aria-label="Ver expediente y especificaciones"
-                className="flex h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full bg-[#EDEDED]/75 text-[#111827] hover:bg-[#EDEDED] cursor-pointer"
+                className="flex h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full bg-[#EDEDED]/75 dark:bg-[#111827] dark:border dark:border-white/15 text-[#111827] dark:text-[#EDEDED] hover:bg-[#EDEDED] dark:hover:bg-white/10 cursor-pointer"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -1014,8 +1077,8 @@ export default function AlquilerDetalleView({
                       onClick={() => setRubroActivoId(rubro.id)}
                       className={`ios-press-bounce w-full rounded-full px-3 py-1.5 text-left text-[11px] transition-colors cursor-pointer truncate ${
                         seleccionado
-                          ? 'bg-[#111827] text-white font-semibold'
-                          : 'bg-[#EDEDED]/75 text-[#4B5563] font-medium hover:text-[#111827]'
+                          ? 'bg-[#111827] text-white dark:bg-[#EDEDED] dark:text-[#111827] font-semibold'
+                          : 'bg-[#EDEDED]/75 dark:bg-[#111827] text-[#4B5563] dark:text-[#D1D5DB] font-medium hover:text-[#111827] dark:hover:text-white'
                       }`}
                     >
                       {rubro.etiqueta}
@@ -1036,7 +1099,7 @@ export default function AlquilerDetalleView({
                     cy="60"
                     r={radioCirculo}
                     fill="none"
-                    stroke="#EDEDED"
+                    className="stroke-[#EDEDED] dark:stroke-[#111827]"
                     strokeWidth="5"
                   />
                   <circle
@@ -1044,16 +1107,15 @@ export default function AlquilerDetalleView({
                     cy="60"
                     r={radioCirculo}
                     fill="none"
-                    stroke="#111827"
+                    className="stroke-[#111827] dark:stroke-[#EDEDED] transition-[stroke-dashoffset] duration-300"
                     strokeWidth="5"
                     strokeLinecap="round"
                     strokeDasharray={circunferencia}
                     strokeDashoffset={offsetArco}
-                    className="transition-[stroke-dashoffset] duration-300"
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-2">
-                  <span className="font-display text-xs font-extrabold tracking-tight text-[#111827] tabular-nums">
+                  <span className="font-display text-xs font-extrabold tracking-tight text-[#111827] dark:text-[#EDEDED] tabular-nums">
                     {formatCop(rubroSeleccionado.monto)}
                   </span>
                   <span className="mt-0.5 text-[9px] font-medium text-[#9CA3AF]">
@@ -1066,35 +1128,35 @@ export default function AlquilerDetalleView({
             {/* 3 Indicadores de Porcentaje Planos */}
             <div className="grid grid-cols-3 gap-3 pt-1">
               <div>
-                <span className="font-display text-xs font-extrabold text-[#111827] tabular-nums">
+                <span className="font-display text-xs font-extrabold text-[#111827] dark:text-[#EDEDED] tabular-nums">
                   {pctAbonado}%
                 </span>
                 <span className="block text-[10px] text-[#9CA3AF]">Abonado</span>
-                <div className="mt-1 h-1 w-full rounded-full bg-[#EDEDED]">
+                <div className="mt-1 h-1 w-full rounded-full bg-[#EDEDED] dark:bg-[#111827]">
                   <div
-                    className="h-full rounded-full bg-[#111827]"
+                    className="h-full rounded-full bg-[#111827] dark:bg-[#EDEDED]"
                     style={{ width: `${pctAbonado}%` }}
                   />
                 </div>
               </div>
 
               <div>
-                <span className="font-display text-xs font-extrabold text-[#111827] tabular-nums">
+                <span className="font-display text-xs font-extrabold text-[#111827] dark:text-[#EDEDED] tabular-nums">
                   {pctSaldo}%
                 </span>
                 <span className="block text-[10px] text-[#9CA3AF]">
                   Saldo patio
                 </span>
-                <div className="mt-1 h-1 w-full rounded-full bg-[#EDEDED]">
+                <div className="mt-1 h-1 w-full rounded-full bg-[#EDEDED] dark:bg-[#111827]">
                   <div
-                    className="h-full rounded-full bg-[#4B5563]"
+                    className="h-full rounded-full bg-[#4B5563] dark:bg-[#9CA3AF]"
                     style={{ width: `${pctSaldo}%` }}
                   />
                 </div>
               </div>
 
               <div>
-                <span className="font-display text-xs font-extrabold text-[#111827] tabular-nums">
+                <span className="font-display text-xs font-extrabold text-[#111827] dark:text-[#EDEDED] tabular-nums">
                   {reserva.estadoGarantia === 'LIBERADA'
                     ? 'Liberada'
                     : reserva.estadoGarantia === 'RETENIDA_NOVEDAD'
@@ -1104,8 +1166,8 @@ export default function AlquilerDetalleView({
                 <span className="block text-[10px] text-[#9CA3AF]">
                   Garantía R2
                 </span>
-                <div className="mt-1 h-1 w-full rounded-full bg-[#EDEDED]">
-                  <div className="h-full w-full rounded-full bg-[#1F2937]" />
+                <div className="mt-1 h-1 w-full rounded-full bg-[#EDEDED] dark:bg-[#111827]">
+                  <div className="h-full w-full rounded-full bg-[#1F2937] dark:bg-[#EDEDED]" />
                 </div>
               </div>
             </div>
@@ -1114,7 +1176,7 @@ export default function AlquilerDetalleView({
             {esAdmin && (
               <div className="space-y-2 pt-1">
                 {saldoPatioPendiente > 0 ? (
-                  <div className="flex flex-wrap items-center justify-between gap-2 rounded-[18px] bg-[#EDEDED]/75 p-2.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2 rounded-[18px] bg-[#EDEDED]/75 dark:bg-[#111827] dark:border dark:border-white/10 p-2.5">
                     <div className="flex flex-wrap items-center gap-1.5">
                       <div className="flex items-center gap-1">
                         {(
@@ -1130,8 +1192,8 @@ export default function AlquilerDetalleView({
                             onClick={() => setMetodoCobroSaldo(m.id)}
                             className={`min-h-[44px] rounded-full px-3 py-1.5 text-xs font-bold cursor-pointer ${
                               metodoCobroSaldo === m.id
-                                ? 'bg-[#111827] text-white'
-                                : 'bg-white text-[#4B5563]'
+                                ? 'bg-[#111827] text-white dark:bg-[#EDEDED] dark:text-[#111827]'
+                                : 'bg-white dark:bg-[#1F2937] text-[#4B5563] dark:text-[#D1D5DB]'
                             }`}
                           >
                             {m.label}
@@ -1140,18 +1202,16 @@ export default function AlquilerDetalleView({
                       </div>
 
                       {cuentasFinancieras && cuentasFinancieras.length > 0 && (
-                        <select
+                        <Select
+                          ariaLabel="Cuenta receptora del abono"
+                          size="sm"
                           value={cuentaCobroId}
-                          onChange={(e) => setCuentaCobroId(e.target.value)}
-                          className="min-h-[44px] rounded-[10px] border border-[#9CA3AF]/40 bg-white px-3 py-2 text-base font-medium text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827]"
-                          aria-label="Cuenta receptora del abono"
-                        >
-                          {cuentasFinancieras.map((c) => (
-                            <option key={c.id} value={c.id}>
-                              {c.nombre}
-                            </option>
-                          ))}
-                        </select>
+                          onChange={(val) => setCuentaCobroId(val)}
+                          options={cuentasFinancieras.map((c) => ({
+                            value: c.id,
+                            label: c.nombre,
+                          }))}
+                        />
                       )}
                     </div>
 
@@ -1159,7 +1219,7 @@ export default function AlquilerDetalleView({
                       type="button"
                       disabled={operacionCargando}
                       onClick={asentarCobroSaldoPatio}
-                      className="min-h-[44px] rounded-full bg-[#111827] px-4 py-2 text-xs font-bold text-white hover:bg-[#1F2937] disabled:opacity-50 cursor-pointer"
+                      className="min-h-[44px] rounded-full bg-[#111827] dark:bg-[#EDEDED] px-4 py-2 text-xs font-bold text-white dark:text-[#111827] hover:bg-[#1F2937] dark:hover:bg-white disabled:opacity-50 cursor-pointer"
                     >
                       {operacionCargando
                         ? 'Asentando...'
@@ -1167,26 +1227,26 @@ export default function AlquilerDetalleView({
                     </button>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-between rounded-[18px] bg-[#EDEDED]/65 px-3.5 py-2 text-[11px] font-semibold text-[#111827]">
+                  <div className="flex items-center justify-between rounded-[18px] bg-[#EDEDED]/65 dark:bg-[#111827] dark:border dark:border-white/10 px-3.5 py-2 text-[11px] font-semibold text-[#111827] dark:text-[#EDEDED]">
                     <span>Contrato 100% pagado en caja</span>
-                    <span className="font-mono text-[10px] text-[#4B5563]">
+                    <span className="font-mono text-[10px] text-[#4B5563] dark:text-[#9CA3AF]">
                       PAZ Y SALVO
                     </span>
                   </div>
                 )}
 
                 {/* Control de Depósito de Garantía */}
-                <div className="flex flex-wrap items-center justify-between gap-2 rounded-[18px] bg-[#EDEDED]/65 px-3.5 py-2.5">
-                  <span className="text-[11px] font-semibold text-[#4B5563]">
+                <div className="flex flex-wrap items-center justify-between gap-2 rounded-[18px] bg-[#EDEDED]/65 dark:bg-[#111827] dark:border dark:border-white/10 px-3.5 py-2.5">
+                  <span className="text-[11px] font-semibold text-[#4B5563] dark:text-[#D1D5DB]">
                     Garantía ({formatCop(vehiculo.depositoGarantia)}):
                   </span>
                   <div className="flex items-center gap-2">
                     <span
                       className={`rounded-full px-3 py-1 text-xs font-bold ${
                         reserva.estadoGarantia === 'CUSTODIA_ACTIVA'
-                          ? 'bg-[#111827] text-white'
+                          ? 'bg-[#111827] text-white dark:bg-[#EDEDED] dark:text-[#111827]'
                           : reserva.estadoGarantia === 'LIBERADA'
-                            ? 'bg-[#EDEDED] text-[#111827] border border-[#9CA3AF]/60'
+                            ? 'bg-[#EDEDED] dark:bg-[#1F2937] text-[#111827] dark:text-[#EDEDED] border border-[#9CA3AF]/60 dark:border-white/15'
                             : 'bg-[#1F2937] text-white border border-[#4B5563]'
                       }`}
                     >
@@ -1202,7 +1262,7 @@ export default function AlquilerDetalleView({
                         <button
                           type="button"
                           onClick={() => setModalDevolverAbierto(true)}
-                          className="min-h-[44px] rounded-full bg-[#111827] px-3.5 py-1.5 text-xs font-bold text-white hover:bg-[#1F2937] cursor-pointer inline-flex items-center"
+                          className="min-h-[44px] rounded-full bg-[#111827] dark:bg-[#EDEDED] px-3.5 py-1.5 text-xs font-bold text-white dark:text-[#111827] hover:bg-[#1F2937] dark:hover:bg-white cursor-pointer inline-flex items-center"
                         >
                           Devolución / Liquidar
                         </button>
@@ -1220,7 +1280,7 @@ export default function AlquilerDetalleView({
         {tabActiva === 'HIGHLIGHTS' && (
           <div className="space-y-3 animate-fade-up">
             <div className="flex items-center justify-between">
-              <h2 className="font-display text-base font-bold text-[#111827]">
+              <h2 className="font-display text-base font-bold text-[#111827] dark:text-[#EDEDED]">
                 {esAdmin
                   ? 'Expediente del Conductor y Unidad'
                   : 'Feature Highlights'}
@@ -1229,7 +1289,7 @@ export default function AlquilerDetalleView({
                 type="button"
                 onClick={ciclarVista}
                 aria-label="Volver a inspección"
-                className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-[#EDEDED]/75 text-[#111827] cursor-pointer"
+                className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-[#EDEDED]/75 dark:bg-[#111827] dark:border dark:border-white/15 text-[#111827] dark:text-[#EDEDED] cursor-pointer"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -1247,112 +1307,112 @@ export default function AlquilerDetalleView({
 
             {esAdmin ? (
               <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-[20px] bg-[#EDEDED]/65 p-3.5">
-                  <span className="text-[10px] font-medium text-[#4B5563]">
+                <div className="rounded-[20px] bg-[#EDEDED]/65 dark:bg-[#111827] dark:border dark:border-white/10 p-3.5">
+                  <span className="text-[10px] font-medium text-[#4B5563] dark:text-[#9CA3AF]">
                     Conductor titular
                   </span>
-                  <p className="mt-1 font-display text-xs font-extrabold text-[#111827] truncate">
+                  <p className="mt-1 font-display text-xs font-extrabold text-[#111827] dark:text-[#EDEDED] truncate">
                     {reserva.conductor.nombreCompleto}
                   </p>
-                  <p className="mt-0.5 text-[11px] font-medium text-[#4B5563] truncate">
+                  <p className="mt-0.5 text-[11px] font-medium text-[#4B5563] dark:text-[#D1D5DB] truncate">
                     {reserva.conductor.telefono}
                   </p>
                 </div>
 
-                <div className="rounded-[20px] bg-[#EDEDED]/65 p-3.5">
-                  <span className="text-[10px] font-medium text-[#4B5563]">
+                <div className="rounded-[20px] bg-[#EDEDED]/65 dark:bg-[#111827] dark:border dark:border-white/10 p-3.5">
+                  <span className="text-[10px] font-medium text-[#4B5563] dark:text-[#9CA3AF]">
                     Identificación y licencia
                   </span>
-                  <p className="mt-1 font-display text-xs font-extrabold text-[#111827] tabular-nums">
+                  <p className="mt-1 font-display text-xs font-extrabold text-[#111827] dark:text-[#EDEDED] tabular-nums">
                     {reserva.conductor.tipoDocumento}{' '}
                     {reserva.conductor.numeroDocumento}
                   </p>
-                  <p className="mt-0.5 text-[11px] font-semibold text-[#1F2937]">
+                  <p className="mt-0.5 text-[11px] font-semibold text-[#1F2937] dark:text-[#D1D5DB]">
                     Categoría {reserva.conductor.categoriaLicencia} vigente
                   </p>
                 </div>
 
-                <div className="rounded-[20px] bg-[#EDEDED]/65 p-3.5">
-                  <span className="text-[10px] font-medium text-[#4B5563]">
+                <div className="rounded-[20px] bg-[#EDEDED]/65 dark:bg-[#111827] dark:border dark:border-white/10 p-3.5">
+                  <span className="text-[10px] font-medium text-[#4B5563] dark:text-[#9CA3AF]">
                     Entrega y Ley 1581
                   </span>
-                  <p className="mt-1 font-display text-xs font-bold text-[#111827] truncate">
+                  <p className="mt-1 font-display text-xs font-bold text-[#111827] dark:text-[#EDEDED] truncate">
                     {reserva.modalidadEntrega === 'DOMICILIO_MEDELLIN'
-                      ? 'Domicilio Medellín'
+                      ? reserva.direccionEntrega || 'Domicilio coordinado'
                       : 'Entrega en Patio'}
                   </p>
-                  <p className="mt-0.5 text-[10px] font-semibold text-[#4B5563]">
+                  <p className="mt-0.5 text-[10px] font-semibold text-[#4B5563] dark:text-[#D1D5DB]">
                     {reserva.conductor.ley1581Aceptada
-                      ? 'Datos y R2 autorizados ✓'
+                      ? 'Datos y ubicación autorizados ✓'
                       : 'Pendiente firma'}
                   </p>
                 </div>
 
-                <div className="rounded-[20px] bg-[#EDEDED]/65 p-3.5">
-                  <span className="text-[10px] font-medium text-[#4B5563]">
+                <div className="rounded-[20px] bg-[#EDEDED]/65 dark:bg-[#111827] dark:border dark:border-white/10 p-3.5">
+                  <span className="text-[10px] font-medium text-[#4B5563] dark:text-[#9CA3AF]">
                     Unidad · {vehiculo.placa}
                   </span>
                   <div className="mt-1 flex items-baseline gap-1">
-                    <span className="font-display text-base font-black text-[#111827] tabular-nums">
+                    <span className="font-display text-base font-black text-[#111827] dark:text-[#EDEDED] tabular-nums">
                       {potenciaValor}
                     </span>
-                    <span className="text-[11px] font-bold text-[#4B5563]">
+                    <span className="text-[11px] font-bold text-[#4B5563] dark:text-[#D1D5DB]">
                       {potenciaUnidad} · {vehiculo.transmision}
                     </span>
                   </div>
-                  <p className="mt-0.5 text-[10px] text-[#4B5563] truncate">
+                  <p className="mt-0.5 text-[10px] text-[#4B5563] dark:text-[#9CA3AF] truncate">
                     {specsBento.carroceriaTag}
                   </p>
                 </div>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-[20px] bg-[#EDEDED]/65 p-3.5">
-                  <span className="text-[10px] font-medium text-[#4B5563]">
+                <div className="rounded-[20px] bg-[#EDEDED]/65 dark:bg-[#111827] dark:border dark:border-white/10 p-3.5">
+                  <span className="text-[10px] font-medium text-[#4B5563] dark:text-[#9CA3AF]">
                     Passenger capacity
                   </span>
                   <div className="mt-1 flex items-baseline gap-1.5">
-                    <span className="font-display text-xl font-black text-[#111827] tabular-nums">
+                    <span className="font-display text-xl font-black text-[#111827] dark:text-[#EDEDED] tabular-nums">
                       {vehiculo.capacidadPasajeros}
                     </span>
-                    <span className="text-[11px] font-semibold text-[#4B5563]">
+                    <span className="text-[11px] font-semibold text-[#4B5563] dark:text-[#D1D5DB]">
                       {specsBento.carroceriaTag}
                     </span>
                   </div>
                 </div>
 
-                <div className="rounded-[20px] bg-[#EDEDED]/65 p-3.5">
-                  <span className="text-[10px] font-medium text-[#4B5563]">
+                <div className="rounded-[20px] bg-[#EDEDED]/65 dark:bg-[#111827] dark:border dark:border-white/10 p-3.5">
+                  <span className="text-[10px] font-medium text-[#4B5563] dark:text-[#9CA3AF]">
                     Power · {specsBento.motorSubtitulo}
                   </span>
                   <div className="mt-1 flex items-baseline gap-1">
-                    <span className="font-display text-xl font-black text-[#111827] tabular-nums">
+                    <span className="font-display text-xl font-black text-[#111827] dark:text-[#EDEDED] tabular-nums">
                       {potenciaValor}
                     </span>
-                    <span className="text-xs font-bold text-[#4B5563]">
+                    <span className="text-xs font-bold text-[#4B5563] dark:text-[#D1D5DB]">
                       {potenciaUnidad}
                     </span>
                   </div>
                 </div>
 
-                <div className="rounded-[20px] bg-[#EDEDED]/65 p-3.5">
-                  <span className="text-[10px] font-medium text-[#4B5563]">
+                <div className="rounded-[20px] bg-[#EDEDED]/65 dark:bg-[#111827] dark:border dark:border-white/10 p-3.5">
+                  <span className="text-[10px] font-medium text-[#4B5563] dark:text-[#9CA3AF]">
                     Transmisión {vehiculo.transmision.toLowerCase()}
                   </span>
-                  <p className="mt-1 font-display text-xs font-bold text-[#111827] truncate">
+                  <p className="mt-1 font-display text-xs font-bold text-[#111827] dark:text-[#EDEDED] truncate">
                     {specsBento.transmisionBadge}
                   </p>
                 </div>
 
-                <div className="rounded-[20px] bg-[#EDEDED]/65 p-3.5">
-                  <span className="text-[10px] font-medium text-[#4B5563]">
+                <div className="rounded-[20px] bg-[#EDEDED]/65 dark:bg-[#111827] dark:border dark:border-white/10 p-3.5">
+                  <span className="text-[10px] font-medium text-[#4B5563] dark:text-[#9CA3AF]">
                     0-100 km/h · {vehiculo.velocidadMaxima}
                   </span>
                   <div className="mt-1 flex items-baseline gap-1">
-                    <span className="font-display text-xl font-black text-[#111827] tabular-nums">
+                    <span className="font-display text-xl font-black text-[#111827] dark:text-[#EDEDED] tabular-nums">
                       {acelValor}
                     </span>
-                    <span className="text-xs font-bold text-[#4B5563]">
+                    <span className="text-xs font-bold text-[#4B5563] dark:text-[#D1D5DB]">
                       {acelUnidad}
                     </span>
                   </div>
@@ -1367,12 +1427,39 @@ export default function AlquilerDetalleView({
             =================================================================== */}
         {esAdmin && (
           <div className="border-t border-[#EDEDED] pt-3.5 space-y-3">
+            {/* Tarjeta visible de dirección y coordenadas para entregas a domicilio */}
+            <DeliveryPointCard
+              modalidadEntrega={reserva.modalidadEntrega}
+              sedeNombre={reserva.sedeNombre}
+              direccionEntrega={reserva.direccionEntrega}
+              entregaLatitud={reserva.entregaLatitud}
+              entregaLongitud={reserva.entregaLongitud}
+              entregaReferencia={reserva.entregaReferencia}
+              distanciaEntregaKm={reserva.distanciaEntregaKm}
+              recargoEntregaDomicilio={reserva.recargoEntregaDomicilio}
+              mapboxPublicToken={mapboxPublicToken}
+              vista="admin"
+              onAviso={mostrarAviso}
+            />
+
             {/* Panel Semáforo: KYC Cliente + SOAT / RTM Vehículo */}
             <SemaforoDocumentalPanel
               reserva={reserva}
               autorizarSinDocumentos={autorizarSinDocumentos}
               onToggleAutorizarSinDocs={setAutorizarSinDocumentos}
-              onDocumentosActualizados={() => {
+              onDocumentosActualizados={(datos) => {
+                if (datos) {
+                  guardarCambioReserva({
+                    ...reserva,
+                    conductor: {
+                      ...reserva.conductor,
+                      tipoDocumento: datos.tipoDocumento,
+                      numeroDocumento: datos.numeroDocumento,
+                      categoriaLicencia: datos.categoriaLicencia,
+                      licenciaNumero: datos.licenciaNumero ?? reserva.conductor.licenciaNumero,
+                    },
+                  });
+                }
                 mostrarAviso('Expediente documental del cliente actualizado');
               }}
             />
@@ -1408,7 +1495,7 @@ export default function AlquilerDetalleView({
                       setTipoModalCancelar('RECHAZAR');
                       setModalCancelarAbierto(true);
                     }}
-                    className="min-h-[44px] rounded-full bg-[#EDEDED] px-4 py-2.5 text-xs font-bold text-[#111827] hover:bg-[#9CA3AF]/40 disabled:opacity-50 cursor-pointer"
+                    className="min-h-[44px] rounded-full bg-[#EDEDED] dark:bg-[#111827] dark:border dark:border-white/15 px-4 py-2.5 text-xs font-bold text-[#111827] dark:text-[#EDEDED] hover:bg-[#9CA3AF]/40 dark:hover:bg-white/10 disabled:opacity-50 cursor-pointer"
                   >
                     Rechazar
                   </button>
@@ -1418,7 +1505,7 @@ export default function AlquilerDetalleView({
                     type="button"
                     disabled={operacionCargando}
                     onClick={confirmarReservaOperativa}
-                    className="min-h-[44px] flex-1 rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] disabled:opacity-50 cursor-pointer"
+                    className="min-h-[44px] flex-1 rounded-full bg-[#111827] dark:bg-[#EDEDED] px-5 py-2.5 text-xs font-bold text-white dark:text-[#111827] hover:bg-[#1F2937] dark:hover:bg-white disabled:opacity-50 cursor-pointer"
                   >
                     {operacionCargando
                       ? 'Confirmando...'
@@ -1428,19 +1515,19 @@ export default function AlquilerDetalleView({
               </div>
             )}
 
-            {/* Etapa 2: CONFIRMADA -> Entrega del vehículo (Contrato VIGENTE) o Cancelar */}
+            {/* Etapa 2: CONFIRMADA -> Formulario Typeform de Entrega del Vehículo */}
             {reserva.estado === 'CONFIRMADA' && (
               <div className="flex flex-wrap items-center gap-2">
                 {capacidades?.puedeEntregar && (
                   <button
                     type="button"
                     disabled={operacionCargando}
-                    onClick={entregarVehiculoOperativo}
-                    className="min-h-[44px] flex-1 rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] disabled:opacity-50 cursor-pointer"
+                    onClick={() =>
+                      navigate(`/admin/reservas/${reserva.codigo}/entrega`)
+                    }
+                    className="ios-press-bounce min-h-[48px] flex-1 rounded-full bg-[#111827] dark:bg-[#EDEDED] px-5 py-2.5 text-xs font-bold text-white dark:text-[#111827] hover:bg-[#1F2937] dark:hover:bg-white disabled:opacity-50 cursor-pointer"
                   >
-                    {operacionCargando
-                      ? 'Entregando...'
-                      : 'Confirmar entrega y salida R2 (Vigente)'}
+                    Iniciar entrega del vehículo (Formulario) →
                   </button>
                 )}
                 {capacidades?.puedeConfirmarRechazar && (
@@ -1451,7 +1538,7 @@ export default function AlquilerDetalleView({
                       setTipoModalCancelar('CANCELAR');
                       setModalCancelarAbierto(true);
                     }}
-                    className="min-h-[44px] rounded-full bg-[#EDEDED] px-4 py-2.5 text-xs font-bold text-[#111827] hover:bg-[#9CA3AF]/40 disabled:opacity-50 cursor-pointer"
+                    className="min-h-[48px] rounded-full bg-[#EDEDED] dark:bg-[#111827] dark:border dark:border-white/15 px-4 py-2.5 text-xs font-bold text-[#111827] dark:text-[#EDEDED] hover:bg-[#9CA3AF]/40 dark:hover:bg-white/10 disabled:opacity-50 cursor-pointer"
                   >
                     Cancelar reserva
                   </button>
@@ -1468,7 +1555,7 @@ export default function AlquilerDetalleView({
                       type="button"
                       disabled={operacionCargando}
                       onClick={() => setModalPausarAbierto(true)}
-                      className="min-h-[44px] rounded-full bg-[#EDEDED] px-3.5 py-2 text-xs font-bold text-[#111827] hover:bg-[#9CA3AF]/40 disabled:opacity-50 cursor-pointer"
+                      className="min-h-[44px] rounded-full bg-[#EDEDED] dark:bg-[#111827] dark:border dark:border-white/15 px-3.5 py-2 text-xs font-bold text-[#111827] dark:text-[#EDEDED] hover:bg-[#9CA3AF]/40 dark:hover:bg-white/10 disabled:opacity-50 cursor-pointer"
                     >
                       Pausar (+1 día $0)
                     </button>
@@ -1478,7 +1565,7 @@ export default function AlquilerDetalleView({
                       type="button"
                       disabled={operacionCargando}
                       onClick={() => setModalProrrogarAbierto(true)}
-                      className="min-h-[44px] rounded-full bg-[#EDEDED] px-3.5 py-2 text-xs font-bold text-[#111827] hover:bg-[#9CA3AF]/40 disabled:opacity-50 cursor-pointer"
+                      className="min-h-[44px] rounded-full bg-[#EDEDED] dark:bg-[#111827] dark:border dark:border-white/15 px-3.5 py-2 text-xs font-bold text-[#111827] dark:text-[#EDEDED] hover:bg-[#9CA3AF]/40 dark:hover:bg-white/10 disabled:opacity-50 cursor-pointer"
                     >
                       Prorrogar alquiler
                     </button>
@@ -1489,7 +1576,7 @@ export default function AlquilerDetalleView({
                   type="button"
                   disabled={operacionCargando}
                   onClick={() => setModalDevolverAbierto(true)}
-                  className="min-h-[44px] w-full rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] disabled:opacity-50 cursor-pointer"
+                  className="min-h-[44px] w-full rounded-full bg-[#111827] dark:bg-[#EDEDED] px-5 py-2.5 text-xs font-bold text-white dark:text-[#111827] hover:bg-[#1F2937] dark:hover:bg-white disabled:opacity-50 cursor-pointer"
                 >
                   Devolver y cerrar contrato
                 </button>
@@ -1502,7 +1589,7 @@ export default function AlquilerDetalleView({
                       setTipoModalCancelar('ANULAR');
                       setModalCancelarAbierto(true);
                     }}
-                    className="min-h-[44px] w-full text-center text-[11px] font-semibold text-[#4B5563] hover:text-[#111827] cursor-pointer"
+                    className="min-h-[44px] w-full text-center text-[11px] font-semibold text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-[#EDEDED] cursor-pointer"
                   >
                     Anular contrato y alquiler
                   </button>
@@ -1513,9 +1600,9 @@ export default function AlquilerDetalleView({
             {/* Etapa 4: PAUSADA -> Reanudar, Prorrogar, Devolver o Anular */}
             {reserva.estado === 'PAUSADA' && (
               <div className="space-y-2">
-                <div className="rounded-[16px] bg-[#EDEDED]/85 p-3 text-xs text-[#111827]">
+                <div className="rounded-[16px] bg-[#EDEDED]/85 dark:bg-[#111827] dark:border dark:border-white/12 p-3 text-xs text-[#111827] dark:text-[#EDEDED]">
                   <span className="font-bold">Alquiler pausado por acuerdo.</span>
-                  <p className="mt-0.5 text-[11px] text-[#4B5563]">
+                  <p className="mt-0.5 text-[11px] text-[#4B5563] dark:text-[#9CA3AF]">
                     La unidad está temporalmente resguardada. La pausa no genera costos adicionales ($0).
                   </p>
                 </div>
@@ -1526,7 +1613,7 @@ export default function AlquilerDetalleView({
                       type="button"
                       disabled={operacionCargando}
                       onClick={reanudarAlquilerOperativo}
-                      className="min-h-[44px] rounded-full bg-[#111827] px-4 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] disabled:opacity-50 cursor-pointer"
+                      className="min-h-[44px] rounded-full bg-[#111827] dark:bg-[#EDEDED] px-4 py-2.5 text-xs font-bold text-white dark:text-[#111827] hover:bg-[#1F2937] dark:hover:bg-white disabled:opacity-50 cursor-pointer"
                     >
                       {operacionCargando ? 'Reanudando...' : 'Reanudar alquiler'}
                     </button>
@@ -1536,7 +1623,7 @@ export default function AlquilerDetalleView({
                       type="button"
                       disabled={operacionCargando}
                       onClick={() => setModalProrrogarAbierto(true)}
-                      className="min-h-[44px] rounded-full bg-[#EDEDED] px-4 py-2.5 text-xs font-bold text-[#111827] hover:bg-[#9CA3AF]/40 disabled:opacity-50 cursor-pointer"
+                      className="min-h-[44px] rounded-full bg-[#EDEDED] dark:bg-[#111827] dark:border dark:border-white/15 px-4 py-2.5 text-xs font-bold text-[#111827] dark:text-[#EDEDED] hover:bg-[#9CA3AF]/40 dark:hover:bg-white/10 disabled:opacity-50 cursor-pointer"
                     >
                       Prorrogar alquiler
                     </button>
@@ -1547,7 +1634,7 @@ export default function AlquilerDetalleView({
                   type="button"
                   disabled={operacionCargando}
                   onClick={() => setModalDevolverAbierto(true)}
-                  className="min-h-[44px] w-full rounded-full border border-[#9CA3AF]/50 bg-white px-5 py-2.5 text-xs font-bold text-[#111827] hover:bg-[#EDEDED] disabled:opacity-50 cursor-pointer"
+                  className="min-h-[44px] w-full rounded-full border border-[#9CA3AF]/50 dark:border-white/15 bg-white dark:bg-[#111827] px-5 py-2.5 text-xs font-bold text-[#111827] dark:text-[#EDEDED] hover:bg-[#EDEDED] dark:hover:bg-white/10 disabled:opacity-50 cursor-pointer"
                 >
                   Devolver y cerrar contrato
                 </button>
@@ -1560,7 +1647,7 @@ export default function AlquilerDetalleView({
                       setTipoModalCancelar('ANULAR');
                       setModalCancelarAbierto(true);
                     }}
-                    className="min-h-[44px] w-full text-center text-[11px] font-semibold text-[#4B5563] hover:text-[#111827] cursor-pointer"
+                    className="min-h-[44px] w-full text-center text-[11px] font-semibold text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-[#EDEDED] cursor-pointer"
                   >
                     Anular contrato y alquiler
                   </button>
@@ -1572,9 +1659,9 @@ export default function AlquilerDetalleView({
             {(reserva.estado === 'COMPLETADA' ||
               reserva.estado === 'RECHAZADA' ||
               reserva.estado === 'CANCELADA') && (
-              <div className="flex items-center justify-between gap-2 rounded-[18px] bg-[#EDEDED]/75 px-3.5 py-2.5">
+              <div className="flex items-center justify-between gap-2 rounded-[18px] bg-[#EDEDED]/75 dark:bg-[#111827] dark:border dark:border-white/12 px-3.5 py-2.5">
                 <div className="min-w-0">
-                  <span className="block text-xs font-bold text-[#111827]">
+                  <span className="block text-xs font-bold text-[#111827] dark:text-[#EDEDED]">
                     {reserva.estado === 'COMPLETADA'
                       ? reserva.requiereMantenimientoRetorno
                         ? 'Contrato cerrado · Unidad en mantenimiento'
@@ -1584,7 +1671,7 @@ export default function AlquilerDetalleView({
                         : 'Reserva cancelada'}
                   </span>
                   {reserva.motivoRechazo && (
-                    <span className="block text-[11px] text-[#4B5563] truncate">
+                    <span className="block text-[11px] text-[#4B5563] dark:text-[#9CA3AF] truncate">
                       Motivo: {reserva.motivoRechazo}
                     </span>
                   )}
@@ -1595,7 +1682,7 @@ export default function AlquilerDetalleView({
                     type="button"
                     disabled={operacionCargando}
                     onClick={reabrirReservaOperativa}
-                    className="shrink-0 min-h-[44px] rounded-full bg-white px-4 py-2 text-xs font-bold text-[#111827] hover:bg-[#EDEDED] disabled:opacity-50 cursor-pointer"
+                    className="shrink-0 min-h-[44px] rounded-full bg-white dark:bg-[#1F2937] dark:border dark:border-white/15 px-4 py-2 text-xs font-bold text-[#111827] dark:text-[#EDEDED] hover:bg-[#EDEDED] dark:hover:bg-white/10 disabled:opacity-50 cursor-pointer"
                   >
                     {operacionCargando ? 'Reabriendo...' : 'Reabrir'}
                   </button>
@@ -1610,14 +1697,14 @@ export default function AlquilerDetalleView({
           modo === 'cliente' &&
           reserva.estado === 'PENDIENTE' &&
           reserva.montoReportado === 0 && (
-            <div className="border-t border-[#EDEDED] pt-3.5">
+            <div className="border-t border-[#EDEDED] dark:border-white/10 pt-3.5">
               <button
                 type="button"
                 onClick={() => {
                   setTipoModalCancelar('CANCELAR');
                   setModalCancelarAbierto(true);
                 }}
-                className="min-h-[44px] w-full rounded-full border border-[#9CA3AF]/40 bg-white px-4 py-2.5 text-xs font-semibold text-[#4B5563] hover:text-[#111827] cursor-pointer"
+                className="min-h-[44px] w-full rounded-full border border-[#9CA3AF]/40 dark:border-white/15 bg-white dark:bg-[#111827] px-4 py-2.5 text-xs font-semibold text-[#4B5563] dark:text-[#D1D5DB] hover:text-[#111827] dark:hover:text-white cursor-pointer"
               >
                 Cancelar mi solicitud de alquiler
               </button>
@@ -1625,71 +1712,73 @@ export default function AlquilerDetalleView({
           )}
 
         {/* ===================================================================
-            BARRA DE ENTREGA Y EVALUACIÓN INTERACTIVA (100DVH WIZARD)
+            EVALUACIÓN DEL CLIENTE (EN MODO ADMIN SOLO MUESTRA RESUMEN SI EXISTE;
+            EN MODO CLIENTE SOLO HABILITA RETORNO SI ESTÁ EN_CURSO)
             =================================================================== */}
-        <div className="border-t border-[#EDEDED] pt-3.5 space-y-2.5">
-          {reserva.evaluacionEntrega ? (
-            <div className="flex items-center justify-between gap-3 rounded-[20px] bg-[#EDEDED]/85 px-3.5 py-2.5">
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="rounded-full bg-[#111827] px-2 py-0.5 font-mono text-[10px] font-bold text-white">
-                    {reserva.evaluacionEntrega.puntajeNumerico}.0 ★
-                  </span>
-                  <span className="font-display text-xs font-bold text-[#111827] truncate">
-                    Entrega y evaluación registradas
-                  </span>
+        {(reserva.evaluacionEntrega || !esAdmin) && (
+          <div className="border-t border-[#EDEDED] dark:border-white/10 pt-3.5 space-y-2.5">
+            {reserva.evaluacionEntrega ? (
+              <div className="flex items-center justify-between gap-3 rounded-[20px] bg-[#EDEDED]/85 dark:bg-[#111827] dark:border dark:border-white/10 px-3.5 py-2.5">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="rounded-full bg-[#111827] dark:bg-[#EDEDED] px-2 py-0.5 font-mono text-[10px] font-bold text-white dark:text-[#111827]">
+                      {reserva.evaluacionEntrega.puntajeNumerico}.0 ★
+                    </span>
+                    <span className="font-display text-xs font-bold text-[#111827] dark:text-[#EDEDED] truncate">
+                      Evaluación del cliente registrada
+                    </span>
+                  </div>
+                  <p className="mt-0.5 text-[11px] font-medium text-[#4B5563] dark:text-[#9CA3AF] truncate">
+                    {reserva.evaluacionEntrega.aspectosDestacados.join(' · ') ||
+                      'Paz y salvo digital R2 activo'}
+                  </p>
                 </div>
-                <p className="mt-0.5 text-[11px] font-medium text-[#4B5563] truncate">
-                  {reserva.evaluacionEntrega.aspectosDestacados.join(' · ') ||
-                    'Paz y salvo digital R2 activo'}
-                </p>
-              </div>
 
-              <button
-                type="button"
-                onClick={() =>
-                  navigate(
-                    esAdmin
-                      ? `/reservas/${reserva.codigo}/entrega?retorno=/admin/reservas/${reserva.codigo}`
-                      : `/reservas/${reserva.codigo}/entrega${
+                {!esAdmin && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigate(
+                        `/reservas/${reserva.codigo}/entrega${
                           tokenAccesoPublico
                             ? `?token=${encodeURIComponent(tokenAccesoPublico)}`
                             : ''
                         }`
-                  )
-                }
-                className="ios-press-bounce shrink-0 min-h-[44px] rounded-full bg-white px-4 py-2 text-xs font-bold text-[#111827] cursor-pointer"
-              >
-                Ver resumen
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() =>
-                navigate(
-                  esAdmin
-                    ? `/reservas/${reserva.codigo}/entrega?retorno=/admin/reservas/${reserva.codigo}`
-                    : `/reservas/${reserva.codigo}/entrega${
+                      )
+                    }
+                    className="ios-press-bounce shrink-0 min-h-[44px] rounded-full bg-white dark:bg-[#1F2937] dark:border dark:border-white/15 px-4 py-2 text-xs font-bold text-[#111827] dark:text-[#EDEDED] cursor-pointer"
+                  >
+                    Ver resumen
+                  </button>
+                )}
+              </div>
+            ) : (
+              !esAdmin &&
+              reserva.estado === 'EN_CURSO' && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate(
+                      `/reservas/${reserva.codigo}/entrega${
                         tokenAccesoPublico
                           ? `?token=${encodeURIComponent(tokenAccesoPublico)}`
                           : ''
                       }`
-                )
-              }
-              className="ios-press-bounce flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#1F2937] cursor-pointer"
-            >
-              <span>⛶</span>
-              <span>
-                {esAdmin
-                  ? 'Realizar entrega pericial y evaluación R2'
-                  : 'Entregar vehículo y calificar servicio'}
-              </span>
-              <span>→</span>
-            </button>
-          )}
-        </div>
+                    )
+                  }
+                  className="ios-press-bounce flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full bg-[#111827] dark:bg-[#EDEDED] px-5 py-2.5 text-xs font-bold text-white dark:text-[#111827] shadow-sm hover:bg-[#1F2937] dark:hover:bg-white cursor-pointer"
+                >
+                  <span>⛶</span>
+                  <span>Entregar vehículo y calificar servicio</span>
+                  <span>→</span>
+                </button>
+              )
+            )}
+          </div>
+        )}
           </section>
+        </>
+      )}
         </div>
       </div>
 
@@ -1700,6 +1789,7 @@ export default function AlquilerDetalleView({
         reserva={reserva}
         onExito={(actualizada, msg) => {
           guardarCambioReserva(actualizada);
+          void refrescarDetalleUnificado();
           if (msg) mostrarAviso(msg);
         }}
       />
@@ -1711,6 +1801,7 @@ export default function AlquilerDetalleView({
         capacidades={capacidades}
         onExito={(actualizada, msg) => {
           guardarCambioReserva(actualizada);
+          void refrescarDetalleUnificado();
           if (msg) mostrarAviso(msg);
         }}
       />
@@ -1724,6 +1815,7 @@ export default function AlquilerDetalleView({
         cuentasFinancieras={cuentasFinancieras}
         onExito={(actualizada, msg) => {
           guardarCambioReserva(actualizada);
+          void refrescarDetalleUnificado();
           if (msg) mostrarAviso(msg);
         }}
       />
@@ -1737,9 +1829,41 @@ export default function AlquilerDetalleView({
         tokenAccesoPublico={tokenAccesoPublico}
         onExito={(actualizada, msg) => {
           guardarCambioReserva(actualizada);
+          void refrescarDetalleUnificado();
           if (msg) mostrarAviso(msg);
         }}
       />
+
+      {esAdmin && (
+        <>
+          <FinalizarAlquilerWizardModal
+            isOpen={modalFinalizarAbierto}
+            onClose={() => setModalFinalizarAbierto(false)}
+            reserva={reserva}
+            detalleAdmin={detalleAdmin}
+            hoyISO={_hoyISO}
+            capacidades={capacidades}
+            cuentasFinancieras={cuentasFinancieras}
+            onFotoDevolucionRegistrada={agregarFotoDevolucionLocal}
+            onExito={(actualizada, detalleActualizado, msg) => {
+              guardarCambioReserva(actualizada);
+              if (detalleActualizado) {
+                setDetalleAdmin(detalleActualizado);
+              } else {
+                void refrescarDetalleUnificado();
+              }
+              if (msg) mostrarAviso(msg);
+            }}
+          />
+
+          <FacturaAlquilerModal
+            isOpen={modalFacturaAbierto}
+            onClose={() => setModalFacturaAbierto(false)}
+            reserva={reserva}
+            detalleAdmin={detalleAdmin}
+          />
+        </>
+      )}
     </div>
   );
 }
