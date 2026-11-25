@@ -14,6 +14,7 @@ import type {
   DiaCalendarioItem,
   EstadoDocumentalVehiculo,
   FranjaDisponible,
+  TramoFechasSeleccionadas,
   VehiculoItem,
 } from './types';
 
@@ -457,6 +458,153 @@ export function encontrarPrimerRangoDisponible(
 
   // 3. Fallback de resguardo si todo el horizonte estuviera ocupado
   return { fechaInicio: hoyISO, fechaFin: sumarDiasISO(hoyISO, diasEfectivos - 1) };
+}
+
+const REGEX_FECHA_ISO = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Normaliza, deduplica y ordena ascendentemente una colección de fechas ISO (YYYY-MM-DD).
+ */
+export function normalizarFechasSeleccionadas(fechas: readonly string[]): string[] {
+  const unicas = new Set<string>();
+  for (const f of fechas) {
+    const limpia = f.trim();
+    if (REGEX_FECHA_ISO.test(limpia)) {
+      unicas.add(limpia);
+    }
+  }
+  return Array.from(unicas).sort((a, b) => a.localeCompare(b));
+}
+
+/**
+ * Expande un rango inclusivo [fechaInicio, fechaFin] en una lista ordenada de fechas ISO.
+ */
+export function expandirRangoAFechas(fechaInicio: string, fechaFin: string): string[] {
+  if (!REGEX_FECHA_ISO.test(fechaInicio) || !REGEX_FECHA_ISO.test(fechaFin) || fechaInicio > fechaFin) {
+    return [];
+  }
+  const resultado: string[] = [];
+  let cursor = fechaInicio;
+  for (let i = 0; i < 366 && cursor <= fechaFin; i++) {
+    resultado.push(cursor);
+    cursor = sumarDiasISO(cursor, 1);
+  }
+  return resultado;
+}
+
+/**
+ * Agrega o quita una fecha individual sin afectar ni reiniciar el resto de días seleccionados.
+ */
+export function alternarFechaEnSeleccion(
+  fechasActuales: readonly string[],
+  fechaISO: string
+): string[] {
+  const normalizadas = normalizarFechasSeleccionadas(fechasActuales);
+  if (!REGEX_FECHA_ISO.test(fechaISO)) {
+    return normalizadas;
+  }
+  if (normalizadas.includes(fechaISO)) {
+    return normalizadas.filter((f) => f !== fechaISO);
+  }
+  return normalizarFechasSeleccionadas([...normalizadas, fechaISO]);
+}
+
+/**
+ * Agrupa una colección de fechas ordenadas en tramos contiguos para presentación o validación en D1.
+ */
+export function agruparFechasEnTramos(
+  fechas: readonly string[]
+): TramoFechasSeleccionadas[] {
+  const ordenadas = normalizarFechasSeleccionadas(fechas);
+  if (ordenadas.length === 0) return [];
+
+  const tramos: TramoFechasSeleccionadas[] = [];
+  let inicio = ordenadas[0]!;
+  let fin = ordenadas[0]!;
+  let dias = 1;
+
+  for (let i = 1; i < ordenadas.length; i++) {
+    const actual = ordenadas[i]!;
+    if (sumarDiasISO(fin, 1) === actual) {
+      fin = actual;
+      dias += 1;
+    } else {
+      tramos.push({ inicio, fin, dias });
+      inicio = actual;
+      fin = actual;
+      dias = 1;
+    }
+  }
+  tramos.push({ inicio, fin, dias });
+  return tramos;
+}
+
+/**
+ * Formatea una colección de fechas seleccionadas en una etiqueta legible y compacta.
+ */
+export function formatearResumenFechasSeleccionadas(fechas: readonly string[]): string {
+  const tramos = agruparFechasEnTramos(fechas);
+  if (tramos.length === 0) return '';
+  return tramos
+    .map((t) =>
+      t.inicio === t.fin
+        ? formatearFechaCorta(t.inicio)
+        : `${formatearFechaCorta(t.inicio)} → ${formatearFechaCorta(t.fin)}`
+    )
+    .join(', ');
+}
+
+/**
+ * Verifica que cada fecha individual en la colección sea >= hoyISO y no pertenezca a ningún bloque ocupado.
+ */
+export function sonFechasDisponiblesValidas(
+  _vehiculoId: string,
+  fechas: readonly string[],
+  hoyISO: string = toClientISODate(),
+  bloquesPrecalculados?: BloqueNoDisponible[]
+): boolean {
+  const normalizadas = normalizarFechasSeleccionadas(fechas);
+  if (normalizadas.length === 0) return false;
+
+  const bloques = bloquesPrecalculados ?? [];
+  return normalizadas.every((fecha) => {
+    if (fecha < hoyISO) return false;
+    return !bloques.some((b) => fecha >= b.fechaInicio && fecha <= b.fechaFin);
+  });
+}
+
+/**
+ * Calcula la liquidación transparente de costos para una colección de fechas seleccionadas individualmente.
+ */
+export function calcularCotizacionPorFechas(
+  vehiculo: VehiculoItem,
+  fechas: readonly string[],
+  recargoDomicilio: number = 0
+): CotizacionAlquiler {
+  const normalizadas = normalizarFechasSeleccionadas(fechas);
+  const diasAlquiler = normalizadas.length;
+  const fechaInicio = normalizadas[0] ?? '';
+  const fechaFin = normalizadas[normalizadas.length - 1] ?? fechaInicio;
+  const subtotalTarifa = diasAlquiler * vehiculo.precioDia;
+  const coberturaPericial = diasAlquiler > 0 ? Math.round(subtotalTarifa * 0.08) : 0;
+  const recargoSeguro = diasAlquiler > 0 ? Math.max(0, Math.round(recargoDomicilio)) : 0;
+  const totalAlquiler = subtotalTarifa + coberturaPericial + recargoSeguro;
+  const abonoMinimoReserva = diasAlquiler > 0 ? Math.round(totalAlquiler * 0.3) : 0;
+
+  return {
+    vehiculoId: vehiculo.id,
+    fechaInicio,
+    fechaFin,
+    fechasSeleccionadas: normalizadas,
+    diasAlquiler,
+    precioDia: vehiculo.precioDia,
+    subtotalTarifa,
+    coberturaPericial,
+    recargoDomicilio: recargoSeguro,
+    depositoGarantia: vehiculo.depositoGarantia,
+    totalAlquiler,
+    abonoMinimoReserva,
+  };
 }
 
 /**

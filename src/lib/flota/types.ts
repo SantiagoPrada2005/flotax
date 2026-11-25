@@ -125,10 +125,17 @@ export interface DiaCalendarioItem {
   franjaId?: string | undefined;
 }
 
+export interface TramoFechasSeleccionadas {
+  inicio: string;
+  fin: string;
+  dias: number;
+}
+
 export interface CotizacionAlquiler {
   vehiculoId: string;
   fechaInicio: string;
   fechaFin: string;
+  fechasSeleccionadas?: string[] | undefined;
   diasAlquiler: number;
   precioDia: number;
   subtotalTarifa: number;

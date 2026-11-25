@@ -30,7 +30,9 @@ import {
 } from './repositorio-reservas';
 import type { ReservaClienteItem } from './reservas-cliente';
 import {
+  agruparFechasEnTramos,
   calcularDiasInclusivos,
+  normalizarFechasSeleccionadas,
   verificarDisponibilidadVehiculo,
   obtenerEstadoDocumentalVehiculoD1,
 } from './disponibilidad';
@@ -74,6 +76,7 @@ export interface CrearReservaCicloInput {
   localId?: string | undefined;
   fechaInicio: string; // YYYY-MM-DD
   fechaFin: string;    // YYYY-MM-DD
+  fechasSeleccionadas?: string[] | undefined;
   modalidadEntrega?: ModalidadEntregaReservaSchema | undefined;
   direccionEntrega?: string | null | undefined;
   entregaLatitud?: number | null | undefined;
@@ -353,14 +356,22 @@ export async function crearReservaConValidaciones(
   tokenAccesoPublico: string | null;
   advertenciasDocumentales: AdvertenciaDocumentalCiclo;
 }> {
-  if (!input.fechaInicio || !input.fechaFin) {
+  const fechasNorm =
+    input.fechasSeleccionadas && input.fechasSeleccionadas.length > 0
+      ? normalizarFechasSeleccionadas(input.fechasSeleccionadas)
+      : null;
+
+  const fechaInicioEfectiva = fechasNorm?.[0] ?? input.fechaInicio;
+  const fechaFinEfectiva = fechasNorm?.[fechasNorm.length - 1] ?? input.fechaFin;
+
+  if (!fechaInicioEfectiva || !fechaFinEfectiva) {
     throw new ErrorCicloAlquiler(
       'BAD_REQUEST',
       'Las fechas de inicio y fin del alquiler son obligatorias'
     );
   }
 
-  if (input.fechaInicio > input.fechaFin) {
+  if (fechaInicioEfectiva > fechaFinEfectiva) {
     throw new ErrorCicloAlquiler(
       'BAD_REQUEST',
       'La fecha de inicio debe ser anterior o igual a la fecha de fin'
@@ -401,19 +412,25 @@ export async function crearReservaConValidaciones(
     );
   }
 
-  // 2. Validar disponibilidad vehicular
-  const disp = await verificarDisponibilidadVehiculo(
-    db,
-    input.vehiculoId,
-    input.fechaInicio,
-    input.fechaFin
-  );
+  // 2. Validar disponibilidad vehicular (por tramos si hay días individuales, o rango completo)
+  const tramosAValidar = fechasNorm
+    ? agruparFechasEnTramos(fechasNorm)
+    : [{ inicio: fechaInicioEfectiva, fin: fechaFinEfectiva, dias: calcularDiasInclusivos(fechaInicioEfectiva, fechaFinEfectiva) }];
 
-  if (!disp.disponible && disp.ocupado) {
-    throw new ErrorCicloAlquiler(
-      'CONFLICT',
-      disp.etiqueta || 'El vehículo no se encuentra disponible en las fechas solicitadas'
+  for (const tramo of tramosAValidar) {
+    const disp = await verificarDisponibilidadVehiculo(
+      db,
+      input.vehiculoId,
+      tramo.inicio,
+      tramo.fin
     );
+
+    if (!disp.disponible && disp.ocupado) {
+      throw new ErrorCicloAlquiler(
+        'CONFLICT',
+        disp.etiqueta || 'El vehículo no se encuentra disponible en las fechas solicitadas'
+      );
+    }
   }
 
   // 3. Validar documentación del vehículo (bloqueo estricto si está Sin realizar o Sin registrar)
@@ -421,8 +438,10 @@ export async function crearReservaConValidaciones(
     db,
     input.vehiculoId,
     vehiculo.categoria,
-    input.fechaInicio
+    fechaInicioEfectiva
   );
+
+  const esFlujoWeb = contexto.origen === 'CLIENTE_WEB' || contexto.origen === 'WEB';
 
   if (
     estadoDocVeh.bloqueadoPorDocumentos ||
@@ -431,15 +450,18 @@ export async function crearReservaConValidaciones(
   ) {
     throw new ErrorCicloAlquiler(
       'CONFLICT',
-      estadoDocVeh.motivoBloqueo
-        ? `No se puede reservar el vehículo hasta regularizar sus documentos: ${estadoDocVeh.motivoBloqueo}.`
-        : 'El vehículo presenta documentación legal vencida o sin registrar (SOAT / Tecnomecánica).'
+      esFlujoWeb
+        ? 'Este vehículo no está disponible por el momento. Para más información, comuníquese con el encargado.'
+        : estadoDocVeh.motivoBloqueo
+          ? `No se puede reservar el vehículo hasta regularizar sus documentos: ${estadoDocVeh.motivoBloqueo}.`
+          : 'El vehículo presenta documentación legal vencida o sin registrar (SOAT / Tecnomecánica).'
     );
   }
 
   // 4. Recalcular precios estrictamente contra D1
-  const esFlujoWeb = contexto.origen === 'CLIENTE_WEB' || contexto.origen === 'WEB';
-  const diasAlquiler = calcularDiasInclusivos(input.fechaInicio, input.fechaFin);
+  const diasAlquiler = fechasNorm
+    ? fechasNorm.length
+    : calcularDiasInclusivos(fechaInicioEfectiva, fechaFinEfectiva);
   const precioDia = vehiculo.precioDia;
   const subtotalTarifaCotizado = diasAlquiler * precioDia;
 
@@ -625,9 +647,9 @@ export async function crearReservaConValidaciones(
       localId,
       vehiculoId: input.vehiculoId,
       clienteId,
-      fechaInicio: input.fechaInicio,
-      fechaFin: input.fechaFin,
-      fechaFinOriginal: input.fechaFin,
+      fechaInicio: fechaInicioEfectiva,
+      fechaFin: fechaFinEfectiva,
+      fechaFinOriginal: fechaFinEfectiva,
       diasAlquiler,
       estado: estadoInicial,
       modalidadEntrega: modalidadEntregaFinal,
@@ -705,7 +727,7 @@ export async function crearReservaConValidaciones(
           arrendatarioTipoDocumento: input.contactoTipoDocumento ?? null,
           arrendatarioNumeroDocumento: input.contactoNumeroDocumento ?? null,
           arrendatarioLicenciaCategoria: input.contactoCategoriaLicencia ?? null,
-          fechaHoraDevolucionPactada: new Date(`${input.fechaFin}T20:00:00Z`),
+          fechaHoraDevolucionPactada: new Date(`${fechaFinEfectiva}T20:00:00Z`),
           medidorUsoEntrega: vehiculo.kilometraje ?? 0,
           canonDiarioPactado: precioDia,
           subtotalCanon: subtotalTarifaCotizado,

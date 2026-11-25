@@ -16,42 +16,6 @@ export interface VehicleStudioShowcaseProps {
   hoyISO?: string;
 }
 
-type StudioAngleId = 'estudio' | 'perfil' | 'cabina' | 'desempeno';
-
-interface StudioAngleOption {
-  id: StudioAngleId;
-  label: string;
-  badge: string;
-  imageClass: string;
-}
-
-const STUDIO_ANGLES: StudioAngleOption[] = [
-  {
-    id: 'estudio',
-    label: '3/4 Estudio',
-    badge: 'Vista Principal',
-    imageClass: 'scale-100 rotate-0',
-  },
-  {
-    id: 'perfil',
-    label: 'Dinámica',
-    badge: 'Perfil Lateral',
-    imageClass: 'scale-105 -rotate-1',
-  },
-  {
-    id: 'cabina',
-    label: 'Detalle Zoom',
-    badge: 'Acabado & Confort',
-    imageClass: 'scale-115 translate-y-1',
-  },
-  {
-    id: 'desempeno',
-    label: 'Perspectiva',
-    badge: 'Tren Motriz',
-    imageClass: 'scale-95 -scale-x-100',
-  },
-];
-
 function formatCop(val: number): string {
   return new Intl.NumberFormat('es-CO', {
     style: 'currency',
@@ -77,21 +41,31 @@ export default function VehicleStudioShowcase({
   );
 
   const [unidadIndex, setUnidadIndex] = useState<number>(indiceInicial);
-  const [angleIndex, setAngleIndex] = useState<number>(2); // Tercer thumbnail activo en oscuro como en Pantalla 3
   const [galeriaIndex, setGaleriaIndex] = useState<number>(0);
   const [lightboxAbierto, setLightboxAbierto] = useState<boolean>(false);
 
   const vehiculo = listaUnidades[unidadIndex] ?? vehiculoInicial;
-  const currentAngle = STUDIO_ANGLES[angleIndex] ?? STUDIO_ANGLES[0]!;
   const galeriaPublica = useMemo(() => {
-    if (!vehiculo.galeria || vehiculo.galeria.length === 0) return [];
-    return [...vehiculo.galeria].sort((a, b) => {
-      if (a.esPrincipal && !b.esPrincipal) return -1;
-      if (!a.esPrincipal && b.esPrincipal) return 1;
-      return a.orden - b.orden;
-    });
-  }, [vehiculo.galeria]);
-  const tieneGaleria = galeriaPublica.length > 0;
+    if (vehiculo.galeria && vehiculo.galeria.length > 0) {
+      return [...vehiculo.galeria].sort((a, b) => {
+        if (a.esPrincipal && !b.esPrincipal) return -1;
+        if (!a.esPrincipal && b.esPrincipal) return 1;
+        return a.orden - b.orden;
+      });
+    }
+    if (vehiculo.imagenUrl) {
+      return [
+        {
+          id: `principal-${vehiculo.id}`,
+          url: vehiculo.imagenUrl,
+          categoria: 'EXTERIOR' as const,
+          esPrincipal: true,
+          orden: 0,
+        },
+      ];
+    }
+    return [];
+  }, [vehiculo.galeria, vehiculo.id, vehiculo.imagenUrl]);
   const fotoActualGaleria = galeriaPublica[galeriaIndex] ?? galeriaPublica[0];
 
   useEffect(() => {
@@ -132,20 +106,15 @@ export default function VehicleStudioShowcase({
     });
   };
 
-  const rotarAngulo = () => {
-    triggerHaptic(6);
-    setAngleIndex((prev) => (prev + 1) % STUDIO_ANGLES.length);
-  };
-
   return (
     <div className="mx-auto w-full max-w-md sm:max-w-xl space-y-4 pb-10">
       {/* =====================================================================
-          1. ESCENARIO STUDIO 360° CON PEDESTAL ELÍPTICO Y MINIATURAS (PANTALLAS 3 Y 4)
+          1. GALERÍA FOTOGRÁFICA REAL DEL VEHÍCULO
          ===================================================================== */}
       <section className="rounded-[32px] bg-white dark:bg-[#1F2937] border border-[#9CA3AF]/30 dark:border-white/12 shadow-[0_16px_38px_-10px_rgba(17,24,39,0.08)] relative overflow-hidden">
         {/* Escenario Principal: Fotografía 16:9 de borde a borde, sin marco ni relleno */}
         <div className="relative w-full aspect-video rounded-t-[31px] overflow-hidden">
-          {tieneGaleria && fotoActualGaleria ? (
+          {fotoActualGaleria && (
             <>
               <button
                 type="button"
@@ -155,7 +124,11 @@ export default function VehicleStudioShowcase({
               >
                 <img
                   src={fotoActualGaleria.url}
-                  alt={`${vehiculo.marca} ${vehiculo.modelo} - ${ETIQUETA_CATEGORIA_GALERIA[fotoActualGaleria.categoria]}`}
+                  alt={`${vehiculo.marca} ${vehiculo.modelo} - ${
+                    fotoActualGaleria.esPrincipal
+                      ? 'Principal'
+                      : ETIQUETA_CATEGORIA_GALERIA[fotoActualGaleria.categoria]
+                  }`}
                   className="h-full w-full object-cover object-center block select-none"
                 />
               </button>
@@ -208,81 +181,12 @@ export default function VehicleStudioShowcase({
                 <ZoomIn className="h-4 w-4" aria-hidden="true" />
               </button>
             </>
-          ) : (
-            <>
-              <img
-                src={vehiculo.imagenUrl}
-                alt={`${vehiculo.marca} ${vehiculo.modelo} - ${currentAngle.label}`}
-                className={`h-full w-full object-cover object-center block transition-transform duration-300 ease-out select-none ${currentAngle.imageClass}`}
-              />
-
-              {/* Etiqueta de Vista Activa */}
-              <span className="absolute left-3.5 top-3.5 inline-flex items-center gap-1.5 rounded-full bg-[#111827]/75 backdrop-blur-md border border-white/20 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
-                <span>{currentAngle.badge}</span>
-                <span>•</span>
-                <span className="font-mono tabular-nums">
-                  ★ {vehiculo.rating}
-                </span>
-              </span>
-
-              {/* Indicadores Verticales de Paginación a la Derecha */}
-              <div
-                aria-label="Indicador de perspectiva"
-                className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2"
-              >
-                {STUDIO_ANGLES.map((ang, idx) => {
-                  const active = idx === angleIndex;
-                  return (
-                    <button
-                      key={ang.id}
-                      type="button"
-                      onClick={() => {
-                        triggerHaptic(6);
-                        setAngleIndex(idx);
-                      }}
-                      aria-label={`Ver perspectiva ${ang.label}`}
-                      className={`transition-colors cursor-pointer flex items-center justify-center ${
-                        active
-                          ? 'h-5 w-5 rounded-full border border-white bg-[#111827]/85 shadow-2xs'
-                          : 'h-2.5 w-2.5 rounded-full bg-white/55 hover:bg-white'
-                      }`}
-                    >
-                      {active && (
-                        <span className="h-2 w-2 rounded-full bg-white" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Botón '< >' para rotar perspectiva */}
-              <button
-                type="button"
-                onClick={rotarAngulo}
-                aria-label="Rotar perspectiva del vehículo"
-                className="fx-press absolute right-3.5 bottom-3.5 flex h-9 w-9 items-center justify-center rounded-full bg-[#111827]/80 text-white border border-white/25 backdrop-blur-md shadow-md hover:bg-[#111827] cursor-pointer"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-4 w-4"
-                >
-                  <path d="m9 18-6-6 6-6" />
-                  <path d="m15 6 6 6-6 6" />
-                </svg>
-              </button>
-            </>
           )}
         </div>
 
         <div className="p-4 sm:p-6 space-y-5">
-          {/* Tira de Miniaturas */}
-          {tieneGaleria ? (
+          {/* Tira de Miniaturas Reales */}
+          {galeriaPublica.length > 1 && (
             <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-1">
               {galeriaPublica.map((foto, idx) => {
                 const isSelected = idx === galeriaIndex;
@@ -320,47 +224,9 @@ export default function VehicleStudioShowcase({
                 );
               })}
             </div>
-          ) : (
-            <div className="grid grid-cols-4 gap-2.5">
-              {STUDIO_ANGLES.map((ang, idx) => {
-                const isSelected = idx === angleIndex;
-                return (
-                  <button
-                    key={ang.id}
-                    type="button"
-                    onClick={() => {
-                      triggerHaptic(8);
-                      setAngleIndex(idx);
-                    }}
-                    className={`fx-press rounded-[18px] overflow-hidden pb-2 flex flex-col items-center justify-center gap-1.5 transition-colors cursor-pointer border ${
-                      isSelected
-                        ? 'bg-[#1F2937] text-[#EDEDED] border-[#111827] shadow-md dark:bg-[#EDEDED] dark:text-[#111827] dark:border-[#EDEDED]'
-                        : 'bg-[#EDEDED]/55 text-[#111827] border-[#9CA3AF]/25 hover:bg-[#EDEDED] dark:bg-[#111827] dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/10'
-                    }`}
-                  >
-                    <div className="w-full aspect-video overflow-hidden">
-                      <img
-                        src={vehiculo.imagenUrl}
-                        alt={ang.label}
-                        className={`h-full w-full object-cover object-center block transition-transform ${ang.imageClass}`}
-                      />
-                    </div>
-                    <span
-                      className={`px-1 text-[10px] font-bold truncate max-w-full ${
-                        isSelected
-                          ? 'text-[#EDEDED] dark:text-[#111827]'
-                          : 'text-[#4B5563] dark:text-[#D1D5DB]'
-                      }`}
-                    >
-                      {ang.label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
           )}
         {/* ===================================================================
-            2. INFORMACIÓN PRINCIPAL: FICHA TÉCNICA Y REQUISITOS (EN UN SOLO LUGAR)
+            2. INFORMACIÓN PRINCIPAL: FICHA TÉCNICA Y TARIFA DIARIA
            =================================================================== */}
         <div className="space-y-3.5 pt-1">
           {/* Ficha Técnica */}
@@ -390,29 +256,29 @@ export default function VehicleStudioShowcase({
                 </span>
               </div>
               <div className="p-2.5 sm:p-3 flex items-center justify-between gap-2">
-                <span className="text-[#4B5563] dark:text-[#D1D5DB]">Depósito</span>
+                <span className="text-[#4B5563] dark:text-[#D1D5DB]">Kilometraje</span>
                 <span className="font-mono tabular-nums font-bold text-[#111827] dark:text-[#EDEDED] truncate">
-                  {formatCop(vehiculo.depositoGarantia)}
+                  {vehiculo.kilometraje.toLocaleString('es-CO')} km
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Requisitos de Alquiler */}
+          {/* Requisitos y Tarifa Diaria */}
           <div className="space-y-2">
             <div className="flex items-center justify-between border-b border-[#EDEDED] dark:border-white/10 pb-1.5">
               <span className="text-xs sm:text-sm font-bold text-[#111827] dark:text-[#EDEDED]">
-                Requisitos para Alquilar
+                Tarifa y Requisitos
               </span>
               <span className="font-mono text-[10px] font-semibold text-[#4B5563] dark:text-[#D1D5DB]">
-                Verificación en patio
+                {local.nombre}
               </span>
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="rounded-2xl bg-[#EDEDED]/60 dark:bg-[#111827] dark:border dark:border-white/10 p-2.5 sm:p-3 flex flex-col justify-between gap-1.5">
                 <span className="font-mono text-[10px] font-semibold text-[#4B5563] dark:text-[#D1D5DB]">
-                  ✓ KYC en línea
+                  Documentación
                 </span>
                 <span className="font-semibold text-[#111827] dark:text-[#EDEDED] leading-snug">
                   Documento de identidad y licencia vigente
@@ -421,14 +287,14 @@ export default function VehicleStudioShowcase({
 
               <div className="rounded-2xl bg-[#EDEDED]/60 dark:bg-[#111827] dark:border dark:border-white/10 p-2.5 sm:p-3 flex flex-col justify-between gap-1.5">
                 <span className="text-[10px] font-semibold text-[#4B5563] dark:text-[#D1D5DB] truncate">
-                  ✓ Garantía ({local.nombre})
+                  Precio de alquiler
                 </span>
                 <div>
                   <span className="font-mono tabular-nums font-bold text-sm text-[#111827] dark:text-[#EDEDED] block">
-                    {formatCop(vehiculo.depositoGarantia)}
+                    {formatCop(vehiculo.precioDia)} / día
                   </span>
                   <span className="text-[10px] text-[#4B5563] dark:text-[#D1D5DB]">
-                    Depósito reembolsable
+                    Tarifa por día de alquiler
                   </span>
                 </div>
               </div>

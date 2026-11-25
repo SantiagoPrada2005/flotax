@@ -98,6 +98,12 @@ export const crearReservaAction = defineAction({
     fechaFin: z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/, { error: 'Fecha de fin no válida (YYYY-MM-DD)' }),
+    fechasSeleccionadas: z
+      .array(
+        z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { error: 'Fecha seleccionada no válida (YYYY-MM-DD)' })
+      )
+      .min(1, { error: 'Debes seleccionar al menos un día' })
+      .optional(),
     diasAlquiler: z.number().int().positive({ error: 'Días deben ser mayores a 0' }).optional(),
     precioDiaCotizado: z.number().positive().optional(),
     subtotalTarifaCotizado: z.number().positive().optional(),

@@ -9,6 +9,10 @@ import {
   verificarDisponibilidadVehiculo,
   obtenerBloquesNoDisponiblesD1,
   obtenerEstadoDocumentalVehiculoD1,
+  alternarFechaEnSeleccion,
+  agruparFechasEnTramos,
+  sonFechasDisponiblesValidas,
+  calcularCotizacionPorFechas,
 } from '../src/lib/flota/disponibilidad.ts';
 import { listarVehiculos } from '../src/lib/flota/repositorio.ts';
 import { resolverEstadoActualVehiculo } from '../src/lib/mantenimientos/repositorio.ts';
@@ -790,5 +794,103 @@ describe('Disponibilidad de Vehículos - FlotaX', () => {
     });
     assert.equal(lista.find((v) => v.id === 'veh-reservado-manual')?.estado, 'RESERVADO');
     assert.equal(lista.find((v) => v.id === 'veh-mant-manual')?.estado, 'MANTENIMIENTO');
+  });
+
+  test('20. alternarFechaEnSeleccion elimina únicamente el día tocado sin reiniciar los demás', () => {
+    const inicialTres = ['2026-11-20', '2026-11-21', '2026-11-22'];
+    assert.deepEqual(alternarFechaEnSeleccion(inicialTres, '2026-11-21'), [
+      '2026-11-20',
+      '2026-11-22',
+    ]);
+
+    const inicialCuatro = ['2026-11-20', '2026-11-21', '2026-11-22', '2026-11-23'];
+    assert.deepEqual(alternarFechaEnSeleccion(inicialCuatro, '2026-11-22'), [
+      '2026-11-20',
+      '2026-11-21',
+      '2026-11-23',
+    ]);
+
+    // Agregar un día nuevo conserva los existentes y ordena ascendentemente
+    assert.deepEqual(
+      alternarFechaEnSeleccion(['2026-11-20', '2026-11-22'], '2026-11-21'),
+      ['2026-11-20', '2026-11-21', '2026-11-22']
+    );
+  });
+
+  test('21. sonFechasDisponiblesValidas y agruparFechasEnTramos respetan días individuales no contiguos', () => {
+    const bloques: BloqueNoDisponible[] = [
+      {
+        id: 'b-21',
+        vehiculoId: vehiculoIdPrueba,
+        fechaInicio: '2026-11-21',
+        fechaFin: '2026-11-21',
+        motivo: 'RESERVADO',
+        etiqueta: 'Ocupado día 21',
+      },
+    ];
+
+    assert.equal(
+      sonFechasDisponiblesValidas(
+        vehiculoIdPrueba,
+        ['2026-11-20', '2026-11-22'],
+        hoyPrueba,
+        bloques
+      ),
+      true
+    );
+    assert.equal(
+      sonFechasDisponiblesValidas(
+        vehiculoIdPrueba,
+        ['2026-11-20', '2026-11-21', '2026-11-22'],
+        hoyPrueba,
+        bloques
+      ),
+      false
+    );
+
+    const tramos = agruparFechasEnTramos([
+      '2026-11-20',
+      '2026-11-22',
+      '2026-11-23',
+    ]);
+    assert.deepEqual(tramos, [
+      { inicio: '2026-11-20', fin: '2026-11-20', dias: 1 },
+      { inicio: '2026-11-22', fin: '2026-11-23', dias: 2 },
+    ]);
+  });
+
+  test('22. calcularCotizacionPorFechas recalcula días reales y precio total según los días elegidos', () => {
+    const vehiculoMock = {
+      id: vehiculoIdPrueba,
+      marca: 'Mazda',
+      modelo: 'CX-30',
+      anio: 2025,
+      categoria: 'SUV' as const,
+      categoriaEtiqueta: 'SUV',
+      placa: 'FLX-100',
+      estado: 'DISPONIBLE' as const,
+      precioDia: 150000,
+      depositoGarantia: 500000,
+      transmision: 'Automática' as const,
+      combustible: 'Gasolina' as const,
+      capacidadPasajeros: 5,
+      kilometraje: 12000,
+      imagenUrl: '/img/cx30.webp',
+      descripcion: 'SUV',
+      aceleracion: '7.5 s',
+      velocidadMaxima: '190 km/h',
+      rating: 4.9,
+      autonomiaOdo: '12.000 km',
+    };
+
+    const cot2Dias = calcularCotizacionPorFechas(
+      vehiculoMock,
+      ['2026-11-20', '2026-11-22'],
+      0
+    );
+    assert.equal(cot2Dias.diasAlquiler, 2);
+    assert.equal(cot2Dias.subtotalTarifa, 300000);
+    assert.equal(cot2Dias.coberturaPericial, 24000);
+    assert.equal(cot2Dias.totalAlquiler, 324000);
   });
 });

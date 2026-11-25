@@ -1,11 +1,14 @@
 import { useMemo, useState } from 'react';
 import {
   ENCABEZADOS_SEMANA_EDITORIAL,
-  calcularDiasInclusivos,
+  alternarFechaEnSeleccion,
   construirCalendarioMes,
   esRangoDisponibleValido,
-  formatearFechaCorta,
+  expandirRangoAFechas,
+  formatearResumenFechasSeleccionadas,
+  normalizarFechasSeleccionadas,
   obtenerDiaSemanaEditorial,
+  sumarDiasISO,
   type BloqueNoDisponible,
   type DiaCalendarioItem,
   type FranjaDisponible,
@@ -15,17 +18,21 @@ import {
 export interface EditorialAvailabilityCalendarProps {
   vehiculo: VehiculoItem;
   hoyISO: string;
-  fechaInicio: string | null;
-  fechaFin: string | null;
-  onChangeRango: (inicio: string | null, fin: string | null) => void;
+  fechasSeleccionadas?: readonly string[] | undefined;
+  onChangeFechas?: ((fechas: string[]) => void) | undefined;
+  fechaInicio?: string | null | undefined;
+  fechaFin?: string | null | undefined;
+  onChangeRango?: ((inicio: string | null, fin: string | null) => void) | undefined;
   bloquesPrecalculados?: BloqueNoDisponible[] | undefined;
 }
 
 export default function EditorialAvailabilityCalendar({
   vehiculo,
   hoyISO,
-  fechaInicio,
-  fechaFin,
+  fechasSeleccionadas,
+  onChangeFechas,
+  fechaInicio = null,
+  fechaFin = null,
   onChangeRango,
   bloquesPrecalculados,
 }: EditorialAvailabilityCalendarProps) {
@@ -42,6 +49,23 @@ export default function EditorialAvailabilityCalendar({
 
   const [avisoFranja, setAvisoFranja] = useState<string | null>(null);
 
+  const esModoPorDia = Boolean(onChangeFechas);
+
+  const fechasActivas = useMemo(() => {
+    if (fechasSeleccionadas !== undefined) {
+      return normalizarFechasSeleccionadas(fechasSeleccionadas);
+    }
+    if (fechaInicio) {
+      return expandirRangoAFechas(fechaInicio, fechaFin ?? fechaInicio);
+    }
+    return [];
+  }, [fechasSeleccionadas, fechaInicio, fechaFin]);
+
+  const conjuntoFechasActivas = useMemo(
+    () => new Set(fechasActivas),
+    [fechasActivas]
+  );
+
   const calendarioMes = useMemo(
     () =>
       construirCalendarioMes(
@@ -54,33 +78,26 @@ export default function EditorialAvailabilityCalendar({
     [vehiculo.id, mesCursor.anio, mesCursor.mesIndexCero, hoyISO, bloquesPrecalculados]
   );
 
-  const franjaActivaId = useMemo(() => {
-    if (!fechaInicio) return undefined;
-    const diaEnMesActual = calendarioMes.dias.find((d) => d.fechaISO === fechaInicio);
-    if (diaEnMesActual?.franjaId) return diaEnMesActual.franjaId;
+  const diasSeleccionados = fechasActivas.length;
 
-    const [y = 2026, m = 10] = fechaInicio.split('-').map(Number);
-    const calInicio = construirCalendarioMes(vehiculo.id, y, m - 1, hoyISO, bloquesPrecalculados);
-    return calInicio.dias.find((d) => d.fechaISO === fechaInicio)?.franjaId;
-  }, [fechaInicio, calendarioMes.dias, vehiculo.id, hoyISO, bloquesPrecalculados]);
-
-  const diasSeleccionados = useMemo(() => {
-    if (!fechaInicio) return 0;
-    const fin = fechaFin ?? fechaInicio;
-    return calcularDiasInclusivos(fechaInicio, fin);
-  }, [fechaInicio, fechaFin]);
+  const resumenFechasTexto = useMemo(
+    () => formatearResumenFechasSeleccionadas(fechasActivas),
+    [fechasActivas]
+  );
 
   const codigoDiaEditorial = useMemo(() => {
-    if (!fechaInicio) {
+    if (fechasActivas.length === 0) {
       return obtenerDiaSemanaEditorial(hoyISO);
     }
-    const d1 = obtenerDiaSemanaEditorial(fechaInicio);
-    if (!fechaFin || fechaFin === fechaInicio) {
+    const primera = fechasActivas[0]!;
+    const ultima = fechasActivas[fechasActivas.length - 1]!;
+    const d1 = obtenerDiaSemanaEditorial(primera);
+    if (primera === ultima) {
       return d1;
     }
-    const d2 = obtenerDiaSemanaEditorial(fechaFin);
+    const d2 = obtenerDiaSemanaEditorial(ultima);
     return `${d1} — ${d2}`;
-  }, [fechaInicio, fechaFin, hoyISO]);
+  }, [fechasActivas, hoyISO]);
 
   const cambiarMes = (delta: number) => {
     setMesCursor((prev) => {
@@ -111,6 +128,14 @@ export default function EditorialAvailabilityCalendar({
     }
 
     setAvisoFranja(null);
+
+    if (esModoPorDia && onChangeFechas) {
+      const siguiente = alternarFechaEnSeleccion(fechasActivas, dia.fechaISO);
+      onChangeFechas(siguiente);
+      return;
+    }
+
+    if (!onChangeRango) return;
 
     if (!fechaInicio || faseSeleccion === 'COMPLETO') {
       onChangeRango(dia.fechaISO, dia.fechaISO);
@@ -145,8 +170,15 @@ export default function EditorialAvailabilityCalendar({
 
   const aplicarFranjaRapida = (franja: FranjaDisponible) => {
     setAvisoFranja(null);
-    onChangeRango(franja.fechaInicio, franja.fechaFin);
-    setFaseSeleccion('COMPLETO');
+    if (esModoPorDia && onChangeFechas) {
+      const fechasFranja = expandirRangoAFechas(franja.fechaInicio, franja.fechaFin);
+      onChangeFechas(fechasFranja);
+      return;
+    }
+    if (onChangeRango) {
+      onChangeRango(franja.fechaInicio, franja.fechaFin);
+      setFaseSeleccion('COMPLETO');
+    }
   };
 
   return (
@@ -154,35 +186,33 @@ export default function EditorialAvailabilityCalendar({
       aria-label="Calendario de franjas disponibles"
       className="relative overflow-hidden rounded-[28px] bg-white border border-[#9CA3AF]/45 px-4 pt-4 pb-3.5 sm:p-6 shadow-xs dark:bg-[#1F2937] dark:border-white/12"
     >
-      {/* 1. Cabecera del Selector de Fechas: Contador de Días + Rango */}
+      {/* 1. Cabecera del Selector de Fechas: Contador de Días + Selección */}
       <div className="flex items-center justify-between gap-3 border-b border-[#9CA3AF]/30 pb-3.5 dark:border-white/12">
-        <div className="flex items-baseline gap-2.5">
+        <div className="flex items-baseline gap-2.5 min-w-0">
           <span
             key={diasSeleccionados}
-            className="animate-zoom-in font-display text-[3.25rem] sm:text-[3.75rem] font-black leading-[0.84] tracking-tighter text-[#111827] dark:text-[#EDEDED] tabular-nums select-none"
+            className="animate-zoom-in font-display text-[3.25rem] sm:text-[3.75rem] font-black leading-[0.84] tracking-tighter text-[#111827] dark:text-[#EDEDED] tabular-nums select-none shrink-0"
           >
             {diasSeleccionados > 0 ? diasSeleccionados : '—'}
           </span>
 
-          <div className="flex flex-col">
+          <div className="flex flex-col min-w-0">
             <span className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#4B5563] dark:text-[#D1D5DB]">
               {diasSeleccionados === 1 ? 'Día elegido' : 'Días de alquiler'}
             </span>
-            {fechaInicio ? (
-              <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-[#111827] px-2.5 py-0.5 text-[11px] font-bold text-white shadow-2xs dark:bg-[#EDEDED] dark:text-[#111827]">
-                <span>{formatearFechaCorta(fechaInicio)}</span>
-                <span className="opacity-70">→</span>
-                <span>{formatearFechaCorta(fechaFin ?? fechaInicio)}</span>
+            {diasSeleccionados > 0 ? (
+              <span className="mt-1 inline-flex max-w-full items-center gap-1 rounded-full bg-[#111827] px-2.5 py-0.5 text-[11px] font-bold text-[#EDEDED] shadow-2xs dark:bg-[#EDEDED] dark:text-[#111827] truncate">
+                <span className="truncate">{resumenFechasTexto}</span>
               </span>
             ) : (
               <span className="mt-0.5 text-[11px] font-medium text-[#4B5563] dark:text-[#D1D5DB]">
-                Toca un día libre
+                Toca los días libres que necesites
               </span>
             )}
           </div>
         </div>
 
-        <div className="text-right">
+        <div className="text-right shrink-0">
           <span className="block text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#D1D5DB]">
             Horario estándar
           </span>
@@ -253,9 +283,11 @@ export default function EditorialAvailabilityCalendar({
             Franjas:
           </span>
           {calendarioMes.franjasMes.map((franja) => {
+            const fechasFranja = expandirRangoAFechas(franja.fechaInicio, franja.fechaFin);
             const franjaSeleccionada =
-              fechaInicio === franja.fechaInicio &&
-              (fechaFin ?? fechaInicio) === franja.fechaFin;
+              fechasFranja.length > 0 &&
+              fechasFranja.length === fechasActivas.length &&
+              fechasFranja.every((f, idx) => fechasActivas[idx] === f);
             return (
               <button
                 key={franja.id}
@@ -304,45 +336,38 @@ export default function EditorialAvailabilityCalendar({
         ))}
 
         {calendarioMes.dias.map((dia) => {
-          const finEfectivo = fechaFin ?? fechaInicio;
-          const esInicio = Boolean(fechaInicio && dia.fechaISO === fechaInicio);
-          const esFin = Boolean(finEfectivo && dia.fechaISO === finEfectivo);
-          const enRango = Boolean(
-            fechaInicio &&
-              finEfectivo &&
-              dia.fechaISO >= fechaInicio &&
-              dia.fechaISO <= finEfectivo
-          );
-          const esIntermedio = enRango && !esInicio && !esFin;
+          const estaSeleccionado = conjuntoFechasActivas.has(dia.fechaISO);
+          const ayerISO = sumarDiasISO(dia.fechaISO, -1);
+          const mananaISO = sumarDiasISO(dia.fechaISO, 1);
+          const prevSeleccionado = estaSeleccionado && conjuntoFechasActivas.has(ayerISO);
+          const nextSeleccionado = estaSeleccionado && conjuntoFechasActivas.has(mananaISO);
 
-          const perteneceAFranjaActiva =
-            dia.estado === 'DISPONIBLE' &&
-            (!franjaActivaId || dia.franjaId === franjaActivaId);
+          const esIndividual = estaSeleccionado && !prevSeleccionado && !nextSeleccionado;
+          const esInicioTramo = estaSeleccionado && !prevSeleccionado && nextSeleccionado;
+          const esFinTramo = estaSeleccionado && prevSeleccionado && !nextSeleccionado;
+          const esIntermedioTramo = estaSeleccionado && prevSeleccionado && nextSeleccionado;
+          const esHoy = dia.fechaISO === hoyISO;
 
           let clasesCirculo = '';
-          if (esInicio || esFin) {
+          if (esIndividual || esInicioTramo || esFinTramo) {
             clasesCirculo =
-              'bg-[#111827] text-white font-black shadow-md ring-2 ring-[#111827] ring-offset-1 ring-offset-white dark:bg-[#EDEDED] dark:text-[#111827] dark:ring-[#EDEDED] dark:ring-offset-[#1F2937] z-10';
-          } else if (esIntermedio) {
+              'bg-[#111827] text-[#EDEDED] font-black shadow-md ring-2 ring-[#111827]/35 ring-offset-2 ring-offset-white hover:bg-[#1F2937] dark:bg-[#EDEDED] dark:text-[#111827] dark:ring-[#EDEDED]/45 dark:ring-offset-[#1F2937] dark:hover:bg-white z-10';
+          } else if (esIntermedioTramo) {
             clasesCirculo =
-              'bg-[#1F2937] text-white font-bold dark:bg-white/20 dark:text-[#EDEDED] z-10';
+              'bg-[#1F2937] text-[#EDEDED] font-bold hover:bg-[#111827] dark:bg-[#4B5563] dark:text-[#EDEDED] dark:hover:bg-[#9CA3AF] dark:hover:text-[#111827] z-10';
           } else if (dia.estado === 'DISPONIBLE') {
-            if (perteneceAFranjaActiva) {
-              clasesCirculo =
-                'bg-[#EDEDED] text-[#111827] font-semibold border border-[#9CA3AF]/55 hover:border-[#111827] dark:bg-[#111827] dark:text-[#EDEDED] dark:border-white/20 dark:hover:border-white/50';
-            } else {
-              clasesCirculo =
-                'bg-[#EDEDED]/70 text-[#4B5563] font-medium border border-dashed border-[#9CA3AF]/55 hover:bg-[#EDEDED] dark:bg-[#111827]/60 dark:text-[#D1D5DB] dark:border-white/15 dark:hover:bg-[#111827]';
-            }
+            clasesCirculo = esHoy
+              ? 'bg-[#EDEDED] text-[#111827] font-bold border-2 border-[#111827] hover:bg-[#111827]/12 dark:bg-[#111827] dark:text-[#EDEDED] dark:border-[#EDEDED] dark:hover:bg-[#EDEDED]/15'
+              : 'bg-[#EDEDED]/80 text-[#111827] font-semibold border border-[#9CA3AF]/55 hover:bg-[#111827]/10 hover:border-[#111827] dark:bg-[#111827] dark:text-[#EDEDED] dark:border-white/20 dark:hover:bg-[#EDEDED]/15 dark:hover:border-[#EDEDED]/60';
           } else if (dia.estado === 'PASADO') {
             clasesCirculo =
-              'bg-[#EDEDED]/40 text-[#9CA3AF] font-normal cursor-not-allowed opacity-55 dark:bg-white/5 dark:text-[#6B7280]';
+              'bg-transparent text-[#9CA3AF]/70 font-normal cursor-not-allowed dark:bg-transparent dark:text-[#4B5563]';
           } else if (dia.estado === 'NO_DISPONIBLE') {
             clasesCirculo =
-              'bg-[#1F2937]/15 text-[#4B5563] font-medium border border-[#4B5563]/50 cursor-not-allowed dark:bg-white/5 dark:text-[#9CA3AF] dark:border-white/10';
+              'bg-[#9CA3AF]/20 text-[#4B5563] font-medium border border-[#9CA3AF]/45 cursor-not-allowed dark:bg-[#111827]/45 dark:text-[#9CA3AF]/60 dark:border-white/10';
           } else {
             clasesCirculo =
-              'bg-[#4B5563]/15 text-[#4B5563]/75 font-medium border border-[#9CA3AF]/35 cursor-not-allowed dark:bg-white/5 dark:text-[#9CA3AF] dark:border-white/10';
+              'bg-[#9CA3AF]/20 text-[#4B5563] font-medium border border-[#9CA3AF]/45 cursor-not-allowed dark:bg-[#111827]/45 dark:text-[#9CA3AF]/60 dark:border-white/10';
           }
 
           return (
@@ -350,15 +375,15 @@ export default function EditorialAvailabilityCalendar({
               key={dia.fechaISO}
               className="relative flex items-center justify-center h-10 sm:h-11 w-full"
             >
-              {enRango && fechaInicio !== finEfectivo && (
+              {estaSeleccionado && (prevSeleccionado || nextSeleccionado) && (
                 <div
                   aria-hidden="true"
-                  className={`absolute inset-y-1 bg-[#111827]/12 dark:bg-white/12 ${
-                    esInicio
+                  className={`absolute inset-y-1 bg-[#111827]/15 dark:bg-[#EDEDED]/20 ${
+                    esInicioTramo
                       ? 'left-1/2 right-0 rounded-l-full'
-                      : esFin
-                      ? 'left-0 right-1/2 rounded-r-full'
-                      : 'inset-x-0'
+                      : esFinTramo
+                        ? 'left-0 right-1/2 rounded-r-full'
+                        : 'inset-x-0'
                   }`}
                 />
               )}
@@ -367,28 +392,37 @@ export default function EditorialAvailabilityCalendar({
                 type="button"
                 disabled={dia.estado === 'PASADO'}
                 onClick={() => manejarToqueDia(dia)}
-                aria-label={`${dia.numeroDia} de ${calendarioMes.nombreMes.toLowerCase()}, ${
-                  dia.estado === 'DISPONIBLE'
-                    ? 'Disponible'
-                    : dia.etiquetaBloqueo ?? (dia.estado === 'NO_DISPONIBLE' ? 'No disponible' : 'Ocupado')
+                aria-label={`${dia.numeroDia} de ${calendarioMes.nombreMes.toLowerCase()}${
+                  esHoy ? ', hoy' : ''
+                }, ${
+                  estaSeleccionado
+                    ? 'seleccionado'
+                    : dia.estado === 'DISPONIBLE'
+                      ? 'disponible'
+                      : dia.etiquetaBloqueo ?? (dia.estado === 'NO_DISPONIBLE' ? 'no disponible' : 'ocupado')
                 }`}
-                aria-pressed={enRango}
-                className={`fx-press relative flex h-10 w-10 sm:h-11 sm:w-11 flex-col items-center justify-center rounded-full text-xs tabular-nums select-none cursor-pointer ${clasesCirculo}`}
+                aria-pressed={estaSeleccionado}
+                className={`fx-press relative flex h-10 w-10 sm:h-11 sm:w-11 flex-col items-center justify-center rounded-full text-xs tabular-nums select-none transition-colors ${
+                  dia.estado === 'PASADO' ? 'cursor-not-allowed' : 'cursor-pointer'
+                } ${clasesCirculo}`}
               >
                 <span
                   className={
                     dia.estado === 'RESERVADO' ||
                     dia.estado === 'MANTENIMIENTO' ||
                     dia.estado === 'NO_DISPONIBLE'
-                      ? 'line-through decoration-[#4B5563]/70 dark:decoration-[#9CA3AF]/70'
+                      ? 'line-through decoration-[#4B5563]/75 dark:decoration-[#9CA3AF]/65'
                       : ''
                   }
                 >
                   {dia.numeroDia}
                 </span>
 
-                {(esInicio || esFin) && (
-                  <span className="h-1 w-1 rounded-full bg-white dark:bg-[#111827]" />
+                {(esIndividual || esInicioTramo || esFinTramo) && (
+                  <span className="h-1 w-1 rounded-full bg-[#EDEDED] dark:bg-[#111827]" />
+                )}
+                {!estaSeleccionado && esHoy && (
+                  <span className="h-1 w-1 rounded-full bg-[#111827] dark:bg-[#EDEDED]" />
                 )}
               </button>
             </div>
@@ -396,7 +430,7 @@ export default function EditorialAvailabilityCalendar({
         })}
       </div>
 
-      {/* Aviso breve o Leyenda Compacta en una sola línea */}
+      {/* Aviso breve o Leyenda Compacta */}
       {avisoFranja ? (
         <div
           role="status"
@@ -413,25 +447,33 @@ export default function EditorialAvailabilityCalendar({
           </button>
         </div>
       ) : (
-        <div className="mt-2.5 flex items-center justify-between border-t border-[#9CA3AF]/25 pt-2 text-[10px] font-medium text-[#4B5563] dark:border-white/10 dark:text-[#D1D5DB]">
-          <div className="flex items-center gap-3">
+        <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 border-t border-[#9CA3AF]/25 pt-2 text-[10px] font-medium text-[#4B5563] dark:border-white/10 dark:text-[#D1D5DB]">
+          <div className="flex flex-wrap items-center gap-2.5">
             <span className="inline-flex items-center gap-1">
               <span className="h-2.5 w-2.5 rounded-full bg-[#EDEDED] border border-[#9CA3AF] dark:bg-[#111827] dark:border-white/30" />
               Libre
             </span>
             <span className="inline-flex items-center gap-1">
               <span className="h-2.5 w-2.5 rounded-full bg-[#111827] dark:bg-[#EDEDED]" />
-              Seleccionado
+              Elegido
             </span>
             <span className="inline-flex items-center gap-1">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#4B5563]/25 dark:bg-white/15" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#1F2937] dark:bg-[#4B5563]" />
+              Intermedio
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <span className="h-2.5 w-2.5 rounded-full bg-[#9CA3AF]/30 border border-[#9CA3AF]/50 dark:bg-[#111827]/45 dark:border-white/15" />
               Ocupado
             </span>
           </div>
           <span className="font-semibold text-[#111827] dark:text-[#EDEDED]">
-            {faseSeleccion === 'ELIGIENDO_FIN' && fechaInicio
-              ? 'Toca día final'
-              : 'Rango listo'}
+            {diasSeleccionados === 0
+              ? 'Toca cualquier día libre'
+              : esModoPorDia
+                ? 'Toca para agregar o quitar'
+                : faseSeleccion === 'ELIGIENDO_FIN'
+                  ? 'Toca día final'
+                  : 'Rango listo'}
           </span>
         </div>
       )}

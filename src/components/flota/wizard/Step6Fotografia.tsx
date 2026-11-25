@@ -32,17 +32,17 @@ const CATEGORIAS_GALERIA: readonly CategoriaConfig[] = [
   {
     id: 'EXTERIOR',
     titulo: 'Exterior',
-    descripcion: 'Vista frontal, trasera, laterales y detalles exteriores.',
+    descripcion: 'Vista frontal, trasera, laterales, techo y detalles exteriores.',
   },
   {
     id: 'INTERIOR',
     titulo: 'Interior',
-    descripcion: 'Tablero, consola, asientos, baúl y detalles de cabina.',
+    descripcion: 'Tablero, consola, asientos, maletero/baúl y detalles de cabina.',
   },
   {
     id: 'ESTADO',
     titulo: 'Estado y condiciones',
-    descripcion: 'Llantas, motor, parte inferior o detalles existentes.',
+    descripcion: 'Llantas, motor, parte inferior u otros detalles relevantes.',
   },
 ] as const;
 
@@ -232,6 +232,31 @@ export default function Step6Fotografia({
     sincronizarGaleria(actualizadas);
   };
 
+  const handleMoverFoto = (id: string, delta: -1 | 1) => {
+    const fotoActual = galeriaNormalizada.find((f) => f.id === id);
+    if (!fotoActual) return;
+    const mismaCategoria = galeriaNormalizada.filter(
+      (f) => f.categoria === fotoActual.categoria
+    );
+    const posEnCat = mismaCategoria.findIndex((f) => f.id === id);
+    const destinoEnCat = posEnCat + delta;
+    if (posEnCat < 0 || destinoEnCat < 0 || destinoEnCat >= mismaCategoria.length) {
+      return;
+    }
+    const fotoDestino = mismaCategoria[destinoEnCat];
+    if (!fotoDestino) return;
+
+    const idxA = galeriaNormalizada.findIndex((f) => f.id === id);
+    const idxB = galeriaNormalizada.findIndex((f) => f.id === fotoDestino.id);
+    if (idxA < 0 || idxB < 0) return;
+
+    const copia = [...galeriaNormalizada];
+    const tmp = copia[idxA]!;
+    copia[idxA] = copia[idxB]!;
+    copia[idxB] = tmp;
+    sincronizarGaleria(copia);
+  };
+
   const handleDrop = (
     e: DragEvent<HTMLElement>,
     categoria: CategoriaGaleriaVehiculo
@@ -358,7 +383,7 @@ export default function Step6Fotografia({
 
               {/* Cuadrícula de miniaturas + botón integrado */}
               <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-                {fotosCat.map((foto) => (
+                {fotosCat.map((foto, idxEnCat) => (
                   <div
                     key={foto.id}
                     className={`group relative aspect-[4/3] overflow-hidden rounded-2xl border bg-[#EDEDED]/40 dark:bg-[#111827] ${foto.esPrincipal
@@ -397,7 +422,7 @@ export default function Step6Fotografia({
                             type="button"
                             onClick={() => handleEstablecerPrincipal(foto.id)}
                             aria-label="Establecer como fotografía principal"
-                            className="fx-press absolute top-1.5 left-1.5 inline-flex items-center gap-1 rounded-full bg-[#111827]/75 px-2 py-0.5 font-mono text-[10px] font-semibold text-white backdrop-blur-xs hover:bg-[#111827]"
+                            className="fx-press absolute top-1.5 left-1.5 inline-flex items-center gap-1 rounded-full bg-[#111827]/75 px-2 py-0.5 font-mono text-[10px] font-semibold text-white backdrop-blur-xs hover:bg-[#111827] cursor-pointer"
                           >
                             <Star className="h-2.5 w-2.5" aria-hidden="true" />
                             <span>Portada</span>
@@ -410,7 +435,7 @@ export default function Step6Fotografia({
                             type="button"
                             onClick={() => setLightboxId(foto.id)}
                             aria-label="Ver fotografía ampliada"
-                            className="fx-press flex h-7 w-7 items-center justify-center rounded-full bg-[#111827]/75 text-white backdrop-blur-xs hover:bg-[#111827]"
+                            className="fx-press flex h-7 w-7 items-center justify-center rounded-full bg-[#111827]/75 text-white backdrop-blur-xs hover:bg-[#111827] cursor-pointer"
                           >
                             <ZoomIn className="h-3.5 w-3.5" aria-hidden="true" />
                           </button>
@@ -418,11 +443,35 @@ export default function Step6Fotografia({
                             type="button"
                             onClick={() => handleEliminarFoto(foto.id)}
                             aria-label="Eliminar fotografía"
-                            className="fx-press flex h-7 w-7 items-center justify-center rounded-full bg-rose-600/90 text-white hover:bg-rose-700"
+                            className="fx-press flex h-7 w-7 items-center justify-center rounded-full bg-rose-600/90 text-white hover:bg-rose-700 cursor-pointer"
                           >
                             <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                           </button>
                         </div>
+
+                        {/* Controles para reorganizar el orden */}
+                        {fotosCat.length > 1 && (
+                          <div className="absolute bottom-1.5 right-1.5 flex items-center gap-1">
+                            <button
+                              type="button"
+                              disabled={idxEnCat === 0}
+                              onClick={() => handleMoverFoto(foto.id, -1)}
+                              aria-label="Mover fotografía a la izquierda"
+                              className="fx-press flex h-6 w-6 items-center justify-center rounded-full bg-[#111827]/80 text-white backdrop-blur-xs hover:bg-[#111827] disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                            >
+                              <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
+                            </button>
+                            <button
+                              type="button"
+                              disabled={idxEnCat === fotosCat.length - 1}
+                              onClick={() => handleMoverFoto(foto.id, 1)}
+                              aria-label="Mover fotografía a la derecha"
+                              className="fx-press flex h-6 w-6 items-center justify-center rounded-full bg-[#111827]/80 text-white backdrop-blur-xs hover:bg-[#111827] disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                            >
+                              <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                            </button>
+                          </div>
+                        )}
                       </>
                     )}
                   </div>

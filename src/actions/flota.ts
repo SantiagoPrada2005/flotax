@@ -62,7 +62,7 @@ const vehiculoFormSchema = z.object({
   capacidadPasajeros: z.number().int().min(1),
   autonomiaKm: z.number().optional(),
   kilometraje: z.number().min(0),
-  imagenUrl: z.string().min(1, { error: 'La URL de la imagen es obligatoria' }),
+  imagenUrl: z.string().min(1, { error: 'Debes seleccionar una imagen principal para el vehículo.' }),
   galeria: z
     .array(
       z.object({
@@ -73,8 +73,11 @@ const vehiculoFormSchema = z.object({
         orden: z.number().int().min(0),
       })
     )
-    .max(24)
-    .optional(),
+    .min(1, { error: 'Debes agregar al menos una fotografía del vehículo.' })
+    .max(24, { error: 'Se permiten máximo 24 fotografías por vehículo.' })
+    .refine((fotos) => fotos.some((f) => f.esPrincipal), {
+      error: 'Debes marcar una fotografía como imagen principal.',
+    }),
   destacado: z.boolean().optional(),
   descripcion: z.string().min(1, { error: 'La descripción es obligatoria' }),
   aceleracion: z.string().optional(),

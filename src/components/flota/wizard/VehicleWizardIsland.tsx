@@ -292,8 +292,16 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
         nuevosErrores.depositoGarantia = 'El depósito de fianza no puede ser negativo.';
       }
     } else if (paso === 6) {
-      if (!data.imagenUrl.trim()) {
-        nuevosErrores.imagenUrl = 'Suba una fotografía para registrar la ficha de la unidad.';
+      const fotosEnCarga = (data.galeria ?? []).some((f) => f.estado === 'cargando');
+      if (fotosEnCarga) {
+        nuevosErrores.imagenUrl = 'Espera a que terminen de optimizarse las fotografías antes de continuar.';
+      } else {
+        const fotosListas = (data.galeria ?? []).filter((f) => Boolean(f.url));
+        if (fotosListas.length === 0 || !data.imagenUrl.trim()) {
+          nuevosErrores.imagenUrl = 'Debes agregar al menos una fotografía del vehículo para poder registrarlo.';
+        } else if (!fotosListas.some((f) => f.esPrincipal)) {
+          nuevosErrores.imagenUrl = 'Selecciona cuál fotografía será la imagen principal del vehículo.';
+        }
       }
     } else if (paso === 7) {
       if (!data.estado) {

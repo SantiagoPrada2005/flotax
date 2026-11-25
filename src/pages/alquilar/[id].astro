@@ -3,11 +3,14 @@ import LayoutApp from '@/layouts/LayoutApp.astro';
 import RentalWizardFlow from '@/components/alquiler/RentalWizardFlow';
 import {
   obtenerVehiculoAsync,
+  listarVehiculos,
   obtenerBloquesNoDisponiblesD1,
   obtenerLocalPorSlugOId,
   obtenerLocalCatalogoPorDefecto,
+  type VehiculoItem,
 } from '@/lib/flota';
 import { obtenerEstadoDocumentalVehiculoD1 } from '@/lib/flota/disponibilidad';
+import { listarResumenesDocumentalesFlotaD1 } from '@/lib/documentos-vehiculo';
 import { resolveClientTimeContext } from '@/lib/time/client-time';
 import {
   normalizarPoliticaDomicilio,
@@ -115,6 +118,54 @@ if (db && localInfo.id) {
 
 const politicaDomicilio = normalizarPoliticaDomicilio(politicaRow);
 const mapboxPublicToken = resolverTokenMapboxPublico(env);
+const esAdminOperador = Astro.locals.modoPortal === 'ADMIN';
+
+const vehiculoBloqueadoDocs = Boolean(
+  estadoDocumental.bloqueadoPorDocumentos ||
+    estadoDocumental.tieneVencidos ||
+    estadoDocumental.faltantesSinCarga.length > 0
+);
+
+let vehiculosSimilares: VehiculoItem[] = [];
+if (vehiculoBloqueadoDocs && !esAdminOperador) {
+  const fechaEvalInicio = desdeParam ?? hoyISO;
+  const fechaEvalFin = hastaParam ?? fechaEvalInicio;
+  const candidatos = await listarVehiculos(db, {
+    localId: localInfo.id,
+    soloDisponibles: true,
+    desde: fechaEvalInicio,
+    hasta: fechaEvalFin,
+    hoyISO,
+  });
+  const otros = candidatos.filter((v) => v.id !== vehiculo.id);
+  const resumenesDocs =
+    db && otros.length > 0
+      ? await listarResumenesDocumentalesFlotaD1(db, otros, hoyISO)
+      : {};
+  const habilitados = otros.filter(
+    (v) => !resumenesDocs[v.id]?.bloqueadoPorDocumentos
+  );
+  const mismaCategoria = habilitados.filter(
+    (v) => v.categoria === vehiculo.categoria
+  );
+  const otrasCategorias = habilitados.filter(
+    (v) => v.categoria !== vehiculo.categoria
+  );
+  vehiculosSimilares = [...mismaCategoria, ...otrasCategorias].slice(0, 3);
+}
+
+const estadoDocumentalSeguro =
+  esAdminOperador || !vehiculoBloqueadoDocs
+    ? estadoDocumental
+    : {
+        tieneVencidos: false,
+        faltantesSinCarga: [],
+        vencidos: [],
+        requiereRtm: false,
+        exentoPorLey2486: false,
+        bloqueadoPorDocumentos: true,
+        motivoBloqueo: null,
+      };
 ---
 
 <LayoutApp
@@ -133,7 +184,10 @@ const mapboxPublicToken = resolverTokenMapboxPublico(env);
       fechaInicioInicial={desdeParam}
       fechaFinInicial={hastaParam}
       pasoInicial={pasoInicial}
-      estadoDocumental={estadoDocumental}
+      estadoDocumental={estadoDocumentalSeguro}
+      esAdminOperador={esAdminOperador}
+      telefonoEncargado={localInfo.telefono}
+      vehiculosSimilares={vehiculosSimilares}
       localId={localInfo.id}
       sedeNombre={sedeNombre}
       patioUbicacion={patioUbicacion}
