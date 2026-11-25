@@ -26,7 +26,8 @@ const usuarioCorreo = usuario?.correo ?? null;
 const usuarioLocalNombre = usuario?.localActivo?.nombre ?? null;
 const tieneAccesoAdmin = Boolean(usuario?.localActivo || usuario?.esSuperAdmin);
 const modoPortal = Astro.locals.modoPortal;
-const localCaptacion = Astro.locals.localCaptacion;
+const esEscaparateLocal = Astro.url.pathname.startsWith('/c/');
+const localCaptacion = esEscaparateLocal ? Astro.locals.localCaptacion : null;
 ---
 
 <TopBarIsland

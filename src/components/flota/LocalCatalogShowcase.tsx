@@ -6,6 +6,8 @@ export interface LocalCatalogShowcaseProps {
   local: LocalPublicoContexto;
   initialVehiculos: VehiculoItem[];
   esPerimetroCerrado?: boolean | undefined;
+  localesRelacionados?: LocalPublicoContexto[] | undefined;
+  localesDisponibles?: LocalPublicoContexto[] | undefined;
 }
 
 export type FiltroCategoriaCircular =
@@ -138,9 +140,49 @@ export function coincideCategoriaShowcase(
 export default function LocalCatalogShowcase({
   local,
   initialVehiculos,
+  esPerimetroCerrado = false,
+  localesRelacionados = [],
+  localesDisponibles = [],
 }: LocalCatalogShowcaseProps) {
   const [categoriaActiva, setCategoriaActiva] = useState<FiltroCategoriaCircular>('TODOS');
+  const [localFiltro, setLocalFiltro] = useState<string>('TODOS');
   const [busqueda, setBusqueda] = useState('');
+
+  const idsLocalesRelacionados = useMemo(
+    () => new Set(localesRelacionados.map((l) => l.id)),
+    [localesRelacionados]
+  );
+
+  // Locales que efectivamente tienen unidades en la oferta actual (priorizando relacionados)
+  const localesEnOferta = useMemo(() => {
+    if (esPerimetroCerrado) return [];
+    const idsPresentes = new Set(
+      initialVehiculos.map((v) => v.localId).filter((id): id is string => Boolean(id))
+    );
+    const mapa = new Map<string, LocalPublicoContexto>();
+
+    for (const rel of localesRelacionados) {
+      if (idsPresentes.has(rel.id)) mapa.set(rel.id, rel);
+    }
+    for (const disp of localesDisponibles) {
+      if (idsPresentes.has(disp.id) && !mapa.has(disp.id)) mapa.set(disp.id, disp);
+    }
+    for (const v of initialVehiculos) {
+      if (v.localId && !mapa.has(v.localId)) {
+        mapa.set(v.localId, {
+          id: v.localId,
+          nombre: v.localNombre ?? 'Sede FlotaX',
+          slug: v.localSlug ?? v.localId,
+          ciudad: v.localCiudad ?? null,
+          direccion: null,
+          latitud: null,
+          longitud: null,
+          telefono: null,
+        });
+      }
+    }
+    return Array.from(mapa.values());
+  }, [esPerimetroCerrado, initialVehiculos, localesRelacionados, localesDisponibles]);
 
   // Solo mostrar categorías adicionales (como UTILITARIO) si hay vehículos de ese tipo o si está seleccionada,
   // manteniendo siempre visibles las categorías base (Todos, SUVs, Sedán, Motos, Eléctricos, Scooter).
@@ -206,7 +248,7 @@ export default function LocalCatalogShowcase({
     setCategoriaActiva((prev) => (prev === catId ? 'TODOS' : catId));
   };
 
-  // Filtrado reactivo dentro del inventario exclusivo de este local
+  // Filtrado reactivo por categoría, sede y búsqueda
   const vehiculosFiltrados = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
 
@@ -215,29 +257,168 @@ export default function LocalCatalogShowcase({
         return false;
       }
 
+      if (!esPerimetroCerrado && localFiltro !== 'TODOS') {
+        if (localFiltro === 'RELACIONADOS') {
+          if (!v.localId || !idsLocalesRelacionados.has(v.localId)) {
+            return false;
+          }
+        } else if (v.localId !== localFiltro) {
+          return false;
+        }
+      }
+
       if (!q) return true;
-      const texto = `${v.marca} ${v.modelo} ${v.placa} ${v.categoriaEtiqueta} ${v.transmision} ${v.combustible} ${v.anio}`.toLowerCase();
+      const texto = `${v.marca} ${v.modelo} ${v.placa} ${v.categoriaEtiqueta} ${v.transmision} ${v.combustible} ${v.anio} ${v.localNombre ?? ''} ${v.localCiudad ?? ''}`.toLowerCase();
       return texto.includes(q);
     });
-  }, [initialVehiculos, categoriaActiva, busqueda]);
+  }, [
+    initialVehiculos,
+    categoriaActiva,
+    busqueda,
+    esPerimetroCerrado,
+    localFiltro,
+    idsLocalesRelacionados,
+  ]);
+
+  const { vehiculosPrioritarios, vehiculosOtrosLocales } = useMemo(() => {
+    if (
+      esPerimetroCerrado ||
+      localFiltro !== 'TODOS' ||
+      idsLocalesRelacionados.size === 0
+    ) {
+      return {
+        vehiculosPrioritarios: vehiculosFiltrados,
+        vehiculosOtrosLocales: [] as VehiculoItem[],
+      };
+    }
+    const prioritarios: VehiculoItem[] = [];
+    const otros: VehiculoItem[] = [];
+    for (const v of vehiculosFiltrados) {
+      if (v.localId && idsLocalesRelacionados.has(v.localId)) {
+        prioritarios.push(v);
+      } else {
+        otros.push(v);
+      }
+    }
+    return { vehiculosPrioritarios: prioritarios, vehiculosOtrosLocales: otros };
+  }, [vehiculosFiltrados, esPerimetroCerrado, localFiltro, idsLocalesRelacionados]);
+
+  const renderVehicleCard = (v: VehiculoItem) => (
+    <a
+      key={v.id}
+      href={`/vehiculos/${v.id}`}
+      data-astro-prefetch="tap"
+      onClick={() => triggerHaptic(8)}
+      className="fx-pressable group rounded-[26px] bg-white border border-[#9CA3AF]/35 shadow-2xs hover:border-[#111827] dark:bg-[#1F2937] dark:border-white/10 dark:hover:border-white/30 transition-colors flex flex-col justify-between overflow-hidden"
+    >
+      {/* Fotografía 16:9 a sangre ocupando todo el ancho y esquinas superiores de la tarjeta */}
+      <div className="relative w-full aspect-video overflow-hidden">
+        <img
+          src={v.imagenUrl}
+          alt={`${v.marca} ${v.modelo}`}
+          className="h-full w-full object-cover object-center block"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+
+      {/* Información y tarifa de la unidad */}
+      <div className="flex flex-1 flex-col justify-between p-4 sm:p-5 space-y-3">
+        <div className="space-y-1">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#D1D5DB] truncate">
+              {v.categoriaEtiqueta} · {v.anio}
+            </span>
+
+            <div className="flex items-center gap-1.5 shrink-0">
+              {v.estado === 'DISPONIBLE' && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#EDEDED] text-[#111827] border border-[#9CA3AF]/35 dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15">
+                  <span className="h-1.5 w-1.5 rounded-full bg-status-success" />
+                  <span>Disponible</span>
+                </span>
+              )}
+              {v.estado === 'RESERVADO' && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#EDEDED] text-[#4B5563] border border-[#9CA3AF]/35 dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15">
+                  Reservado
+                </span>
+              )}
+              {v.estado === 'MANTENIMIENTO' && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#EDEDED] text-[#4B5563] border border-[#9CA3AF]/35 dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15">
+                  Taller
+                </span>
+              )}
+            </div>
+          </div>
+
+          <h3 className="font-display text-base sm:text-lg font-extrabold text-[#111827] dark:text-[#EDEDED] truncate">
+            {v.marca} {v.modelo}
+          </h3>
+
+          <p className="text-xs text-[#4B5563] dark:text-[#9CA3AF]">
+            {v.transmision} · {v.combustible} · {v.capacidadPasajeros} puestos
+          </p>
+
+          {!esPerimetroCerrado && v.localNombre && (
+            <p className="text-[11px] font-semibold text-[#4B5563] dark:text-[#D1D5DB] truncate pt-0.5">
+              {v.localNombre}
+              {v.localCiudad ? ` · ${v.localCiudad}` : ''}
+            </p>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between gap-2 border-t border-[#EDEDED] dark:border-white/10 pt-2.5">
+          <p className="font-mono tabular-nums text-sm sm:text-base font-black text-[#111827] dark:text-[#EDEDED]">
+            {formatCop(v.precioDia)}
+            <span className="font-sans text-[11px] font-normal text-[#4B5563] dark:text-[#9CA3AF]">
+              {' '}
+              / día
+            </span>
+          </p>
+
+          <span className="inline-flex items-center gap-1 text-xs font-bold text-[#111827] dark:text-[#EDEDED]">
+            <span>Ver unidad</span>
+            <span aria-hidden="true">→</span>
+          </span>
+        </div>
+      </div>
+    </a>
+  );
 
   return (
     <div className="mx-auto w-full max-w-md sm:max-w-2xl lg:max-w-6xl space-y-5 pb-8">
       {/* =====================================================================
-          CABECERA IDENTITARIA DEL LOCAL (PERÍMETRO EXCLUSIVO MOBILE-FIRST)
+          CABECERA IDENTITARIA (ESCAPARATE DE LOCAL O CATÁLOGO COMPLETO)
          ===================================================================== */}
       <section className="space-y-3.5 pt-1">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
           <div>
             <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-[#111827] dark:text-[#EDEDED] leading-tight">
-              {local.nombre}
+              {esPerimetroCerrado
+                ? local.nombre
+                : localesRelacionados.length > 0
+                  ? 'Flota disponible para ti'
+                  : 'Explora toda la flota'}
             </h1>
             <p className="text-xs sm:text-sm text-[#4B5563] dark:text-[#9CA3AF] mt-0.5">
-              {local.direccion
-                ? `${local.direccion} · Flota verificada para entrega inmediata`
-                : 'Reserva directa sin intermediarios · Flota disponible en patio'}
+              {esPerimetroCerrado
+                ? local.direccion
+                  ? `${local.direccion} · Flota verificada para entrega inmediata`
+                  : 'Reserva directa sin intermediarios · Flota disponible en patio'
+                : localesRelacionados.length > 0
+                  ? `Priorizamos unidades de ${localesRelacionados.map((l) => l.nombre).join(', ')} sin limitar tus opciones en la red.`
+                  : 'Compara unidades disponibles en todos los locales de FlotaX y reserva al instante.'}
             </p>
           </div>
+          {esPerimetroCerrado && (
+            <a
+              href="/catalogo"
+              onClick={() => triggerHaptic(8)}
+              className="fx-press inline-flex items-center gap-1 text-xs font-semibold text-[#4B5563] hover:text-[#111827] dark:text-[#9CA3AF] dark:hover:text-[#EDEDED] shrink-0"
+            >
+              <span>Ver toda la red FlotaX</span>
+              <span aria-hidden="true">→</span>
+            </a>
+          )}
         </div>
 
         {/* Barra de Búsqueda Píldora iOS */}
@@ -259,8 +440,16 @@ export default function LocalCatalogShowcase({
             type="text"
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            placeholder={`Buscar en ${local.nombre}...`}
-            aria-label={`Buscar vehículos en ${local.nombre}`}
+            placeholder={
+              esPerimetroCerrado
+                ? `Buscar en ${local.nombre}...`
+                : 'Buscar por marca, modelo, placa o local...'
+            }
+            aria-label={
+              esPerimetroCerrado
+                ? `Buscar vehículos en ${local.nombre}`
+                : 'Buscar vehículos en toda la red FlotaX'
+            }
             className="w-full bg-transparent text-base text-[#111827] placeholder:text-[#9CA3AF] dark:text-[#EDEDED] dark:placeholder:text-[#9CA3AF]/60"
           />
           {busqueda ? (
@@ -332,17 +521,89 @@ export default function LocalCatalogShowcase({
             );
           })}
         </div>
+        {/* Filtro Rápido por Local (solo en catálogo global con múltiples sedes) */}
+        {!esPerimetroCerrado && localesEnOferta.length > 1 && (
+          <div
+            role="tablist"
+            aria-label="Filtrar por local de renta"
+            className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-0.5 pb-1"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={localFiltro === 'TODOS'}
+              onClick={() => {
+                triggerHaptic(8);
+                setLocalFiltro('TODOS');
+              }}
+              className={`fx-press min-h-[36px] px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 cursor-pointer border transition-colors ${
+                localFiltro === 'TODOS'
+                  ? 'bg-[#111827] text-[#EDEDED] border-[#111827] dark:bg-white dark:text-[#111827] dark:border-white'
+                  : 'bg-white text-[#4B5563] border-[#9CA3AF]/35 hover:border-[#111827] dark:bg-[#1F2937] dark:text-[#D1D5DB] dark:border-white/15 dark:hover:border-white/40'
+              }`}
+            >
+              Todos los locales ({initialVehiculos.length})
+            </button>
+
+            {localesRelacionados.length > 0 && (
+              <button
+                type="button"
+                role="tab"
+                aria-selected={localFiltro === 'RELACIONADOS'}
+                onClick={() => {
+                  triggerHaptic(8);
+                  setLocalFiltro('RELACIONADOS');
+                }}
+                className={`fx-press min-h-[36px] px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 cursor-pointer border transition-colors ${
+                  localFiltro === 'RELACIONADOS'
+                    ? 'bg-[#111827] text-[#EDEDED] border-[#111827] dark:bg-white dark:text-[#111827] dark:border-white'
+                    : 'bg-white text-[#4B5563] border-[#9CA3AF]/35 hover:border-[#111827] dark:bg-[#1F2937] dark:text-[#D1D5DB] dark:border-white/15 dark:hover:border-white/40'
+                }`}
+              >
+                Tus locales
+              </button>
+            )}
+
+            {localesEnOferta.map((loc) => {
+              const activo = localFiltro === loc.id;
+              return (
+                <button
+                  key={loc.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={activo}
+                  onClick={() => {
+                    triggerHaptic(8);
+                    setLocalFiltro(loc.id);
+                  }}
+                  className={`fx-press min-h-[36px] px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 cursor-pointer border transition-colors ${
+                    activo
+                      ? 'bg-[#111827] text-[#EDEDED] border-[#111827] dark:bg-white dark:text-[#111827] dark:border-white'
+                      : 'bg-white text-[#4B5563] border-[#9CA3AF]/35 hover:border-[#111827] dark:bg-[#1F2937] dark:text-[#D1D5DB] dark:border-white/15 dark:hover:border-white/40'
+                  }`}
+                >
+                  {loc.nombre}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* =====================================================================
-          ENCABEZADO DE SELECCIÓN DE PATIO: ÚNICAMENTE «TODOS» (SIN DESTACADOS)
+          ENCABEZADO DE SELECCIÓN DE PATIO
          ===================================================================== */}
       {vehiculosFiltrados.length > 0 && (
         <div className="flex items-center justify-between gap-2 px-1 pt-0.5">
           <h2 className="font-display text-sm sm:text-base font-extrabold tracking-tight text-[#111827] dark:text-[#EDEDED]">
             {busqueda
               ? `Resultados (${vehiculosFiltrados.length})`
-              : 'Selección de Patio'}
+              : !esPerimetroCerrado &&
+                  localFiltro === 'TODOS' &&
+                  vehiculosPrioritarios.length > 0 &&
+                  vehiculosOtrosLocales.length > 0
+                ? 'En tus locales habituales'
+                : 'Selección de Patio'}
           </h2>
 
           {!busqueda && (
@@ -354,10 +615,11 @@ export default function LocalCatalogShowcase({
               <button
                 type="button"
                 role="tab"
-                aria-selected={categoriaActiva === 'TODOS'}
+                aria-selected={categoriaActiva === 'TODOS' && localFiltro === 'TODOS'}
                 onClick={() => {
                   triggerHaptic(8);
                   setCategoriaActiva('TODOS');
+                  setLocalFiltro('TODOS');
                 }}
                 className="fx-press min-h-[34px] px-4 py-1 text-xs font-bold rounded-full transition-colors cursor-pointer bg-[#111827] text-[#EDEDED] shadow-xs dark:bg-white dark:text-[#111827]"
               >
@@ -369,7 +631,7 @@ export default function LocalCatalogShowcase({
       )}
 
       {/* =====================================================================
-          ESTADO VACÍO SI EL FILTRO NO TIENE COINCIDENCIAS EN ESTE LOCAL
+          ESTADO VACÍO SI EL FILTRO NO TIENE COINCIDENCIAS
          ===================================================================== */}
       {vehiculosFiltrados.length === 0 ? (
         <div className="rounded-[28px] bg-white border border-[#9CA3AF]/35 p-8 text-center shadow-xs space-y-4 dark:bg-[#1F2937] dark:border-white/10">
@@ -384,7 +646,9 @@ export default function LocalCatalogShowcase({
               Sin unidades en esta categoría
             </h2>
             <p className="text-xs sm:text-sm text-[#4B5563] dark:text-[#9CA3AF] max-w-sm mx-auto">
-              En este momento {local.nombre} no tiene vehículos bajo ese filtro. Explora todas las unidades disponibles en patio.
+              {esPerimetroCerrado
+                ? `En este momento ${local.nombre} no tiene vehículos bajo ese filtro. Explora todas las unidades disponibles en patio.`
+                : 'No encontramos vehículos bajo este filtro. Explora todas las unidades disponibles en la red FlotaX.'}
             </p>
           </div>
           <button
@@ -392,93 +656,42 @@ export default function LocalCatalogShowcase({
             onClick={() => {
               triggerHaptic(8);
               setCategoriaActiva('TODOS');
+              setLocalFiltro('TODOS');
               setBusqueda('');
             }}
             className="fx-press min-h-[44px] inline-flex items-center justify-center rounded-full bg-[#111827] px-6 py-2.5 text-xs font-bold text-[#EDEDED] hover:bg-[#1F2937] cursor-pointer dark:bg-white dark:text-[#111827] dark:hover:bg-[#EDEDED]"
           >
-            Ver toda la flota del local
+            {esPerimetroCerrado ? 'Ver toda la flota del local' : 'Ver toda la flota'}
           </button>
         </div>
       ) : (
         /* =====================================================================
-            VISTA GENERAL «TODOS»: FOTOGRAFÍA BORDE A BORDE SIN DOBLE RECUADRO
+            VISTA GENERAL «TODOS»: PRIORITARIOS + RESTO DE LA RED
            ===================================================================== */
         <section aria-label="Inventario Completo" className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-            {vehiculosFiltrados.map((v) => (
-              <a
-                key={v.id}
-                href={`/vehiculos/${v.id}`}
-                data-astro-prefetch="tap"
-                onClick={() => triggerHaptic(8)}
-                className="fx-pressable group rounded-[26px] bg-white border border-[#9CA3AF]/35 shadow-2xs hover:border-[#111827] dark:bg-[#1F2937] dark:border-white/10 dark:hover:border-white/30 transition-colors flex flex-col justify-between overflow-hidden"
-              >
-                {/* Fotografía 16:9 a sangre ocupando todo el ancho y esquinas superiores de la tarjeta */}
-                <div className="relative w-full aspect-video overflow-hidden">
-                  <img
-                    src={v.imagenUrl}
-                    alt={`${v.marca} ${v.modelo}`}
-                    className="h-full w-full object-cover object-center block"
-                    loading="lazy"
-                    decoding="async"
-                  />
+          {vehiculosPrioritarios.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+              {vehiculosPrioritarios.map(renderVehicleCard)}
+            </div>
+          )}
+
+          {vehiculosOtrosLocales.length > 0 && (
+            <div className="space-y-4 pt-2">
+              {vehiculosPrioritarios.length > 0 && (
+                <div className="flex items-center justify-between gap-2 px-1 border-t border-[#9CA3AF]/25 dark:border-white/10 pt-5">
+                  <h2 className="font-display text-sm sm:text-base font-extrabold tracking-tight text-[#111827] dark:text-[#EDEDED]">
+                    Más opciones en la red FlotaX
+                  </h2>
+                  <span className="text-xs font-medium text-[#4B5563] dark:text-[#9CA3AF]">
+                    {vehiculosOtrosLocales.length} unidades
+                  </span>
                 </div>
-
-                {/* Información y tarifa de la unidad */}
-                <div className="flex flex-1 flex-col justify-between p-4 sm:p-5 space-y-3">
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#D1D5DB] truncate">
-                        {v.categoriaEtiqueta} · {v.anio}
-                      </span>
-
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        {v.estado === 'DISPONIBLE' && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#EDEDED] text-[#111827] border border-[#9CA3AF]/35 dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15">
-                            <span className="h-1.5 w-1.5 rounded-full bg-status-success" />
-                            <span>Disponible</span>
-                          </span>
-                        )}
-                        {v.estado === 'RESERVADO' && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#EDEDED] text-[#4B5563] border border-[#9CA3AF]/35 dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15">
-                            Reservado
-                          </span>
-                        )}
-                        {v.estado === 'MANTENIMIENTO' && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#EDEDED] text-[#4B5563] border border-[#9CA3AF]/35 dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15">
-                            Taller
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <h3 className="font-display text-base sm:text-lg font-extrabold text-[#111827] dark:text-[#EDEDED] truncate">
-                      {v.marca} {v.modelo}
-                    </h3>
-
-                    <p className="text-xs text-[#4B5563] dark:text-[#9CA3AF]">
-                      {v.transmision} · {v.combustible} · {v.capacidadPasajeros} puestos
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-2 border-t border-[#EDEDED] dark:border-white/10 pt-2.5">
-                    <p className="font-mono tabular-nums text-sm sm:text-base font-black text-[#111827] dark:text-[#EDEDED]">
-                      {formatCop(v.precioDia)}
-                      <span className="font-sans text-[11px] font-normal text-[#4B5563] dark:text-[#9CA3AF]">
-                        {' '}
-                        / día
-                      </span>
-                    </p>
-
-                    <span className="inline-flex items-center gap-1 text-xs font-bold text-[#111827] dark:text-[#EDEDED]">
-                      <span>Ver unidad</span>
-                      <span aria-hidden="true">→</span>
-                    </span>
-                  </div>
-                </div>
-              </a>
-            ))}
-          </div>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                {vehiculosOtrosLocales.map(renderVehicleCard)}
+              </div>
+            </div>
+          )}
 
           {/* Banner de Invitación: Crea tu propio alquiler de vehículos */}
           <div className="relative overflow-hidden rounded-[24px] bg-gradient-to-br from-[#111827] via-[#1F2937] to-[#111827] p-5 text-white border border-white/10 shadow-sm">

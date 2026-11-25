@@ -11,6 +11,7 @@ import {
   multimediaVehiculo,
   reservas,
   mantenimientosVehiculo,
+  localesAlquiler,
   type ZonaEvidenciaVehiculo,
 } from '@/db/schema';
 import { eq, ne, desc, asc, and, inArray, gte, lte } from 'drizzle-orm';
@@ -175,6 +176,41 @@ export async function listarVehiculos(
     );
 
     const galeriaPorVehiculo = new Map<string, VehiculoGaleriaFoto[]>();
+    const localesPorId = new Map<
+      string,
+      { nombre: string; slug: string; ciudad: string | null }
+    >();
+
+    const localIds = Array.from(
+      new Set(rows.map((r) => r.localId).filter((id): id is string => Boolean(id)))
+    );
+
+    if (localIds.length > 0) {
+      try {
+        const localRows = await db
+          .select({
+            id: localesAlquiler.id,
+            nombre: localesAlquiler.nombre,
+            slug: localesAlquiler.slug,
+            ciudad: localesAlquiler.ciudad,
+            activo: localesAlquiler.activo,
+          })
+          .from(localesAlquiler)
+          .where(inArray(localesAlquiler.id, localIds));
+
+        for (const l of localRows) {
+          if (l.activo) {
+            localesPorId.set(l.id, {
+              nombre: l.nombre,
+              slug: l.slug,
+              ciudad: l.ciudad,
+            });
+          }
+        }
+      } catch {
+        // No bloquear el listado si falla la resolución auxiliar de sedes
+      }
+    }
     try {
       const mediaRows = await db
         .select()
@@ -209,6 +245,14 @@ export async function listarVehiculos(
 
     const items = rows.map((row) => {
       const item = mapD1ToVehiculoItem(row);
+      if (item.localId) {
+        const sede = localesPorId.get(item.localId);
+        if (sede) {
+          item.localNombre = sede.nombre;
+          item.localSlug = sede.slug;
+          item.localCiudad = sede.ciudad;
+        }
+      }
       const galeriaItem = galeriaPorVehiculo.get(item.id);
       if (galeriaItem && galeriaItem.length > 0) {
         item.galeria = galeriaItem;

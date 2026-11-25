@@ -18,34 +18,24 @@ const localCautivo = Astro.locals.localCaptacion;
 const modoOperador = Astro.locals.modoPortal === "ADMIN";
 const { dateString: hoyISO } = resolveClientTimeContext(Astro.request);
 
-// Validar que el vehículo exista y pertenezca al perímetro del local cautivo
+// Resolver el vehículo activo sin bloquear unidades de otros locales de la red
 const vehiculo = id
-  ? await obtenerVehiculoAsync(id, db, localCautivo?.id, hoyISO)
+  ? await obtenerVehiculoAsync(id, db, undefined, hoyISO)
   : undefined;
 
 if (!vehiculo) {
-  return Astro.redirect(
-    modoOperador
-      ? "/admin/flota"
-      : localCautivo
-        ? `/c/${localCautivo.slug}`
-        : "/catalogo"
-  );
+  return Astro.redirect(modoOperador ? "/admin/flota" : "/catalogo");
 }
 
 const local =
-  localCautivo ??
   (vehiculo.localId
     ? await obtenerLocalPorSlugOId(vehiculo.localId, db)
     : null) ??
+  localCautivo ??
   (await obtenerLocalCatalogoPorDefecto(db));
 
 const flotaLocal = await listarVehiculos(db, { localId: local.id, hoyISO });
-const backHref = modoOperador
-  ? "/admin/flota"
-  : localCautivo
-    ? `/c/${local.slug}`
-    : "/catalogo";
+const backHref = modoOperador ? "/admin/flota" : "/catalogo";
 
 const siteUrl = (Astro.site ? Astro.site.toString() : 'https://flotax.innovaweb.pro').replace(/\/$/, '');
 const vehicleSchema = buildVehicleProductSchema(vehiculo, siteUrl);

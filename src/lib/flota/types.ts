@@ -182,6 +182,8 @@ export interface VehiculoGaleriaFoto {
 export type VehiculoItem = ColumnasVehiculoItem & {
   localId?: string | undefined;
   localSlug?: string | undefined;
+  localNombre?: string | undefined;
+  localCiudad?: string | null | undefined;
   autonomiaKm?: number | undefined;
   destacado?: boolean | undefined;
   aceleracion: string;

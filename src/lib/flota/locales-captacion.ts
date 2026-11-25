@@ -8,7 +8,7 @@ import {
   cuentasFinancieras,
 } from '@/db/schema';
 import type { LocalAlquilerSelect } from '@/db/schema';
-import { eq, and, or } from 'drizzle-orm';
+import { eq, and, or, desc, asc } from 'drizzle-orm';
 
 export const COOKIE_LOCAL_CAPTACION = 'movix_local_captacion';
 
@@ -414,5 +414,126 @@ export async function asegurarConfiguracionBaseLocal(
   } catch (error) {
     logFalloD1('locales.asegurarConfiguracionBase', error, { localId });
   }
+}
+
+/**
+ * Lista todos los locales activos ordenados alfabéticamente para filtros del catálogo general.
+ */
+export async function listarLocalesPublicosActivos(
+  db?: AppDb
+): Promise<LocalPublicoContexto[]> {
+  if (!db) {
+    return Array.from(registroLocalesMemoria.values());
+  }
+
+  try {
+    const filas = await db
+      .select({
+        id: localesAlquiler.id,
+        nombre: localesAlquiler.nombre,
+        slug: localesAlquiler.slug,
+        ciudad: localesAlquiler.ciudad,
+        direccion: localesAlquiler.direccion,
+        latitud: localesAlquiler.latitud,
+        longitud: localesAlquiler.longitud,
+        telefono: localesAlquiler.telefono,
+      })
+      .from(localesAlquiler)
+      .where(eq(localesAlquiler.activo, true))
+      .orderBy(asc(localesAlquiler.nombre));
+
+    return filas.map((f) => {
+      const ctx: LocalPublicoContexto = {
+        id: f.id,
+        nombre: f.nombre,
+        slug: f.slug,
+        ciudad: f.ciudad ?? 'Medellín',
+        direccion: f.direccion ?? null,
+        latitud: f.latitud ?? LOCAL_CANONICO_DEFECTO.latitud,
+        longitud: f.longitud ?? LOCAL_CANONICO_DEFECTO.longitud,
+        telefono: f.telefono ?? null,
+      };
+      registroLocalesMemoria.set(ctx.id, ctx);
+      return ctx;
+    });
+  } catch (error) {
+    logFalloD1('locales.listarActivos', error, {});
+    return Array.from(registroLocalesMemoria.values());
+  }
+}
+
+/**
+ * Obtiene la lista priorizada de locales con los que el usuario tiene relación
+ * (`clientes_local`, `localOrigenId` y/o `localCaptacion` actual).
+ */
+export async function listarLocalesRelacionadosUsuario(
+  db: AppDb | undefined,
+  usuarioId?: string | null,
+  localCaptacionActual?: LocalPublicoContexto | null,
+  localOrigenId?: string | null
+): Promise<LocalPublicoContexto[]> {
+  const resultado: LocalPublicoContexto[] = [];
+  const vistos = new Set<string>();
+
+  const agregarSiNuevo = (local: LocalPublicoContexto | null | undefined) => {
+    if (!local || vistos.has(local.id)) return;
+    vistos.add(local.id);
+    resultado.push(local);
+  };
+
+  // 1. Priorizar primero el local de captación de la sesión actual si existe
+  agregarSiNuevo(localCaptacionActual);
+
+  if (db && usuarioId) {
+    try {
+      const filas = await db
+        .select({
+          id: localesAlquiler.id,
+          nombre: localesAlquiler.nombre,
+          slug: localesAlquiler.slug,
+          ciudad: localesAlquiler.ciudad,
+          direccion: localesAlquiler.direccion,
+          latitud: localesAlquiler.latitud,
+          longitud: localesAlquiler.longitud,
+          telefono: localesAlquiler.telefono,
+        })
+        .from(clientesLocal)
+        .innerJoin(localesAlquiler, eq(clientesLocal.localId, localesAlquiler.id))
+        .where(
+          and(
+            eq(clientesLocal.usuarioId, usuarioId),
+            eq(localesAlquiler.activo, true)
+          )
+        )
+        .orderBy(
+          desc(clientesLocal.esLocalOrigen),
+          desc(clientesLocal.esPreferido),
+          desc(clientesLocal.ultimaVisitaEn)
+        );
+
+      for (const f of filas) {
+        agregarSiNuevo({
+          id: f.id,
+          nombre: f.nombre,
+          slug: f.slug,
+          ciudad: f.ciudad ?? 'Medellín',
+          direccion: f.direccion ?? null,
+          latitud: f.latitud ?? LOCAL_CANONICO_DEFECTO.latitud,
+          longitud: f.longitud ?? LOCAL_CANONICO_DEFECTO.longitud,
+          telefono: f.telefono ?? null,
+        });
+      }
+    } catch (error) {
+      logFalloD1('clientesLocal.listarRelacionados', error, { usuarioId });
+    }
+  }
+
+  // 2. Respaldar con localOrigenId si aún no estaba en clientes_local
+  if (localOrigenId && !vistos.has(localOrigenId)) {
+    const origen = await obtenerLocalPorSlugOId(localOrigenId, db);
+    agregarSiNuevo(origen);
+  }
+
+  return resultado;
 }
 

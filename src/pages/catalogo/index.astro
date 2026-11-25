@@ -4,6 +4,8 @@ import LocalCatalogShowcase from '@/components/flota/LocalCatalogShowcase';
 import {
   listarVehiculos,
   obtenerLocalCatalogoPorDefecto,
+  listarLocalesRelacionadosUsuario,
+  listarLocalesPublicosActivos,
 } from '@/lib/flota';
 import { resolveClientTimeContext } from '@/lib/time/client-time';
 import { env } from 'cloudflare:workers';
@@ -11,24 +13,51 @@ import { getDb } from '@/lib/db';
 
 const db = env.DB ? getDb(env.DB) : undefined;
 const localCautivo = Astro.locals.localCaptacion;
-const local = localCautivo ?? (await obtenerLocalCatalogoPorDefecto(db));
+const usuario = Astro.locals.usuario;
 
 const url = Astro.url;
 const desde = url.searchParams.get('desde') || undefined;
 const hasta = url.searchParams.get('hasta') || undefined;
 const { dateString: hoyISO } = resolveClientTimeContext(Astro.request);
 
-const vehiculos = await listarVehiculos(db, {
-  localId: local.id,
-  desde,
-  hasta,
-  hoyISO,
+const [vehiculosSinOrden, localesRelacionados, localesActivos, localDefecto] =
+  await Promise.all([
+    listarVehiculos(db, {
+      desde,
+      hasta,
+      hoyISO,
+    }),
+    listarLocalesRelacionadosUsuario(
+      db,
+      usuario?.id,
+      localCautivo,
+      usuario?.localOrigenId
+    ),
+    listarLocalesPublicosActivos(db),
+    obtenerLocalCatalogoPorDefecto(db),
+  ]);
+
+const prioridadLocal = new Map<string, number>();
+localesRelacionados.forEach((loc, idx) => {
+  prioridadLocal.set(loc.id, idx);
 });
+
+const vehiculos = [...vehiculosSinOrden].sort((a, b) => {
+  const prioA = a.localId ? (prioridadLocal.get(a.localId) ?? Number.MAX_SAFE_INTEGER) : Number.MAX_SAFE_INTEGER;
+  const prioB = b.localId ? (prioridadLocal.get(b.localId) ?? Number.MAX_SAFE_INTEGER) : Number.MAX_SAFE_INTEGER;
+  return prioA - prioB;
+});
+
+const local = localesRelacionados[0] ?? localCautivo ?? localDefecto;
+const tituloCatalogo =
+  localesRelacionados.length > 0
+    ? `Catálogo de Vehículos — ${local.nombre} y Red FlotaX`
+    : 'Catálogo Completo de Vehículos en Alquiler | FlotaX';
 ---
 
 <LayoutApp
-  title={`${local.nombre} — Catálogo de Vehículos en Alquiler | FlotaX`}
-  description={`Explora el inventario de vehículos disponibles en ${local.nombre}. Compara tarifas por día, modelos eléctricos, híbridos y reserva al instante en FlotaX.`}
+  title={tituloCatalogo}
+  description="Explora toda la oferta de vehículos disponibles en FlotaX. Priorizamos tus locales de renta habituales sin limitar tus opciones en toda la red."
   canonicalUrl="https://flotax.innovaweb.pro/catalogo"
   ogImage="/images/landing/hero-vehicle.webp"
   activeTab="home"
@@ -39,7 +68,9 @@ const vehiculos = await listarVehiculos(db, {
       client:load
       local={local}
       initialVehiculos={vehiculos}
-      esPerimetroCerrado={Boolean(localCautivo)}
+      esPerimetroCerrado={false}
+      localesRelacionados={localesRelacionados}
+      localesDisponibles={localesActivos}
     />
   </div>
 </LayoutApp>
