@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState, type SyntheticEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type SyntheticEvent } from 'react';
 import { actions } from 'astro:actions';
 import { navigate } from 'astro:transitions/client';
+import { Select } from '@/components/ui/Select';
 import {
   ENCABEZADOS_SEMANA_EDITORIAL,
   calcularDiasInclusivos,
@@ -34,12 +35,13 @@ type FiltroEstadoAdmin =
   | 'CANCELADA'
   | 'RECHAZADA';
 
-const formatCop = (val: number): string =>
-  new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0,
-  }).format(val);
+const COP_FORMATTER = new Intl.NumberFormat('es-CO', {
+  style: 'currency',
+  currency: 'COP',
+  maximumFractionDigits: 0,
+});
+
+const formatCop = (val: number): string => COP_FORMATTER.format(val);
 
 const ETIQUETA_ESTADO: Readonly<Record<EstadoReservaCliente, string>> = {
   EN_CURSO: 'En curso',
@@ -120,6 +122,8 @@ export default function MisReservasHub({
   const [buscandoClientes, setBuscandoClientes] = useState(false);
   const [errorModalNueva, setErrorModalNueva] = useState<string | null>(null);
   const [submittingModalNueva, setSubmittingModalNueva] = useState(false);
+  const busquedaSeqRef = useRef<number>(0);
+  const busquedaDebounceRef = useRef<number | null>(null);
 
   const [anioHoy = 2026, mesHoyUno = 10] = hoyISO.split('-').map(Number);
   const [mesCursor, setMesCursor] = useState<{
@@ -216,6 +220,23 @@ export default function MisReservasHub({
       ),
     [mesCursor.anio, mesCursor.mesIndexCero, reservaActiva, reservas, hoyISO]
   );
+
+  const mapaOcupacionMes = useMemo(() => {
+    const enAlquiler = new Set<string>();
+    const conPendiente = new Set<string>();
+    for (const celda of calendario.celdas) {
+      const f = celda.fechaISO;
+      for (const r of reservas) {
+        if (r.estado !== 'RECHAZADA' && f >= r.fechaInicio && f <= r.fechaFin) {
+          enAlquiler.add(f);
+          if (esAdmin && r.estado === 'PENDIENTE') {
+            conPendiente.add(f);
+          }
+        }
+      }
+    }
+    return { enAlquiler, conPendiente };
+  }, [calendario.celdas, reservas, esAdmin]);
 
   const alquileresMostrados = useMemo(() => {
     return reservas.filter((r) => {
@@ -330,24 +351,62 @@ export default function MisReservasHub({
     }
   };
 
-  const ejecutarBusquedaCliente = async (query: string) => {
+  const ejecutarBusquedaCliente = (query: string) => {
     setBusquedaCliente(query);
-    if (query.trim().length < 2) {
+    if (busquedaDebounceRef.current !== null) {
+      window.clearTimeout(busquedaDebounceRef.current);
+      busquedaDebounceRef.current = null;
+    }
+
+    const limpio = query.trim();
+    if (limpio.length < 2) {
+      busquedaSeqRef.current += 1;
       setClientesEncontrados([]);
+      setBuscandoClientes(false);
       return;
     }
+
     setBuscandoClientes(true);
-    try {
-      const res = await actions.reservas.buscarClientesLocal({ query: query.trim() });
-      if (res.data?.ok && res.data.clientes) {
-        setClientesEncontrados(res.data.clientes);
+    const seq = ++busquedaSeqRef.current;
+
+    busquedaDebounceRef.current = window.setTimeout(async () => {
+      try {
+        const res = await actions.reservas.buscarClientesLocal({ query: limpio });
+        if (seq !== busquedaSeqRef.current) return;
+        if (res.data?.ok && res.data.clientes) {
+          setClientesEncontrados(res.data.clientes);
+        } else {
+          setClientesEncontrados([]);
+        }
+      } catch {
+        if (seq === busquedaSeqRef.current) {
+          setClientesEncontrados([]);
+        }
+      } finally {
+        if (seq === busquedaSeqRef.current) {
+          setBuscandoClientes(false);
+        }
       }
-    } catch {
-      // Tolerante
-    } finally {
-      setBuscandoClientes(false);
-    }
+    }, 240);
   };
+
+  useEffect(() => {
+    const sincronizarQueryNueva = () => {
+      if (typeof window === 'undefined') return;
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('nueva') === '1') {
+        setSheetNuevaAbierto(true);
+      }
+    };
+    sincronizarQueryNueva();
+    document.addEventListener('astro:page-load', sincronizarQueryNueva);
+    return () => {
+      document.removeEventListener('astro:page-load', sincronizarQueryNueva);
+      if (busquedaDebounceRef.current !== null) {
+        window.clearTimeout(busquedaDebounceRef.current);
+      }
+    };
+  }, []);
 
   const seleccionarCliente = (cliente: {
     id: string;
@@ -358,6 +417,12 @@ export default function MisReservasHub({
     numeroDocumento: string | null;
     licenciaCategoria: string | null;
   }) => {
+    if (busquedaDebounceRef.current !== null) {
+      window.clearTimeout(busquedaDebounceRef.current);
+      busquedaDebounceRef.current = null;
+    }
+    busquedaSeqRef.current += 1;
+    setBuscandoClientes(false);
     setClienteSeleccionadoId(cliente.id);
     setFormNombre(cliente.nombre);
     setFormCorreo(cliente.correo);
@@ -382,8 +447,15 @@ export default function MisReservasHub({
   };
 
   const limpiarClienteSeleccionado = () => {
+    if (busquedaDebounceRef.current !== null) {
+      window.clearTimeout(busquedaDebounceRef.current);
+      busquedaDebounceRef.current = null;
+    }
+    busquedaSeqRef.current += 1;
+    setBuscandoClientes(false);
     setClienteSeleccionadoId(null);
     setBusquedaCliente('');
+    setClientesEncontrados([]);
   };
 
   const manejarCrearReservaMostrador = async (e: SyntheticEvent<HTMLFormElement>) => {
@@ -627,21 +699,8 @@ export default function MisReservasHub({
             const esIntermedioFiltro =
               enRangoFiltro && !esInicioFiltro && !esFinFiltro;
 
-            const enAlgunAlquiler = reservas.some(
-              (r) =>
-                r.estado !== 'RECHAZADA' &&
-                celda.fechaISO >= r.fechaInicio &&
-                celda.fechaISO <= r.fechaFin
-            );
-
-            const tienePendienteEnDia =
-              esAdmin &&
-              reservas.some(
-                (r) =>
-                  r.estado === 'PENDIENTE' &&
-                  celda.fechaISO >= r.fechaInicio &&
-                  celda.fechaISO <= r.fechaFin
-              );
+            const enAlgunAlquiler = mapaOcupacionMes.enAlquiler.has(celda.fechaISO);
+            const tienePendienteEnDia = mapaOcupacionMes.conPendiente.has(celda.fechaISO);
 
             let clasesCirculo = '';
             if (!celda.esMesActual) {
@@ -1086,41 +1145,40 @@ export default function MisReservasHub({
 
               {/* Selección de Vehículo (Regla 16px: text-base) */}
               <div>
-                <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
+                <label className="block text-[11px] font-semibold text-[#4B5563] dark:text-[#D1D5DB] mb-1">
                   Unidad de flota
                 </label>
                 {catalogoVehiculos.length === 0 ? (
-                  <div className="rounded-[16px] bg-[#EDEDED] dark:bg-white/5 border border-[#9CA3AF]/40 dark:border-white/15 p-4 text-center space-y-2">
-                    <p className="text-xs font-bold text-[#111827]">
+                  <div className="rounded-[16px] bg-[#EDEDED] dark:bg-[#111827] border border-[#9CA3AF]/40 dark:border-white/15 p-4 text-center space-y-2">
+                    <p className="text-xs font-bold text-[#111827] dark:text-[#EDEDED]">
                       No hay unidades disponibles en este patio
                     </p>
                     <a
                       href="/admin/flota"
-                      className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-[#111827] px-4 py-2 text-xs font-bold text-white hover:bg-[#1F2937]"
+                      className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-[#111827] dark:bg-[#EDEDED] px-4 py-2 text-xs font-bold text-white dark:text-[#111827] hover:bg-[#1F2937] dark:hover:bg-white"
                     >
                       Ir a gestión de flota
                     </a>
                   </div>
                 ) : (
-                  <select
+                  <Select
+                    ariaLabel="Unidad de flota"
+                    variant="subtle"
                     value={formVehiculoId}
-                    onChange={(e) => setFormVehiculoId(e.target.value)}
-                    className="w-full rounded-[14px] bg-[#EDEDED]/75 dark:bg-[#111827] dark:border dark:border-white/15 px-3.5 py-2.5 text-base font-semibold text-[#111827] dark:text-[#EDEDED] focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-[#EDEDED]"
-                  >
-                    {catalogoVehiculos.map((veh) => (
-                      <option key={veh.id} value={veh.id}>
-                        {veh.marca} {veh.modelo} ({veh.placa}) ·{' '}
-                        {formatCop(veh.precioDia)}/día
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setFormVehiculoId(val)}
+                    options={catalogoVehiculos.map((veh) => ({
+                      value: veh.id,
+                      label: `${veh.marca} ${veh.modelo} (${veh.placa})`,
+                      badge: `${formatCop(veh.precioDia)}/día`,
+                    }))}
+                  />
                 )}
               </div>
 
               {/* Rango de Fechas */}
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
+                  <label className="block text-[11px] font-semibold text-[#4B5563] dark:text-[#D1D5DB] mb-1">
                     Entrega
                   </label>
                   <input
@@ -1132,7 +1190,7 @@ export default function MisReservasHub({
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
+                  <label className="block text-[11px] font-semibold text-[#4B5563] dark:text-[#D1D5DB] mb-1">
                     Devolución
                   </label>
                   <input
@@ -1147,16 +1205,16 @@ export default function MisReservasHub({
               </div>
 
               {/* Buscador de Clientes del Local / KYC */}
-              <div className="rounded-[18px] bg-[#EDEDED]/80 dark:bg-white/5 dark:border dark:border-white/15 p-3 space-y-2">
+              <div className="rounded-[18px] bg-[#EDEDED]/80 dark:bg-[#111827] dark:border dark:border-white/15 p-3 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-[#111827]">
+                  <span className="text-[11px] font-bold text-[#111827] dark:text-[#EDEDED]">
                     Buscador de clientes (Local)
                   </span>
                   {clienteSeleccionadoId && (
                     <button
                       type="button"
                       onClick={limpiarClienteSeleccionado}
-                      className="text-[10px] font-semibold text-[#4B5563] hover:text-[#111827] underline cursor-pointer"
+                      className="text-[10px] font-semibold text-[#4B5563] dark:text-[#D1D5DB] hover:text-[#111827] dark:hover:text-white underline cursor-pointer"
                     >
                       Modo presencial / Walk-in
                     </button>
@@ -1170,13 +1228,13 @@ export default function MisReservasHub({
                       placeholder="Buscar por nombre, correo o documento..."
                       value={busquedaCliente}
                       onChange={(e) => ejecutarBusquedaCliente(e.target.value)}
-                      className="w-full rounded-[12px] bg-white dark:bg-[#111827] border border-[#9CA3AF]/40 dark:border-white/15 px-3 py-2 text-base text-[#111827] dark:text-[#EDEDED] placeholder:text-[#9CA3AF] focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-[#EDEDED]"
+                      className="w-full rounded-[12px] bg-white dark:bg-[#1F2937] border border-[#9CA3AF]/40 dark:border-white/15 px-3 py-2 text-base text-[#111827] dark:text-[#EDEDED] placeholder:text-[#9CA3AF] focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-[#EDEDED]"
                     />
                     {buscandoClientes && (
                       <p className="text-[11px] text-[#4B5563] dark:text-[#9CA3AF]">Buscando clientes...</p>
                     )}
                     {clientesEncontrados.length > 0 && (
-                      <ul className="rounded-[12px] bg-white dark:bg-[#111827] border border-[#9CA3AF]/40 dark:border-white/15 divide-y divide-[#9CA3AF]/20 dark:divide-white/10 max-h-36 overflow-y-auto">
+                      <ul className="rounded-[12px] bg-white dark:bg-[#1F2937] border border-[#9CA3AF]/40 dark:border-white/15 divide-y divide-[#9CA3AF]/20 dark:divide-white/10 max-h-36 overflow-y-auto">
                         {clientesEncontrados.map((c) => (
                           <li key={c.id}>
                             <button
@@ -1212,7 +1270,7 @@ export default function MisReservasHub({
                     )}
                   </div>
                 ) : (
-                  <div className="flex items-center justify-between rounded-[12px] bg-white dark:bg-[#111827] border border-[#9CA3AF]/30 dark:border-white/15 p-2.5 text-xs">
+                  <div className="flex items-center justify-between rounded-[12px] bg-white dark:bg-[#1F2937] border border-[#9CA3AF]/30 dark:border-white/15 p-2.5 text-xs">
                     <div>
                       <p className="font-bold text-[#111827] dark:text-[#EDEDED]">{formNombre}</p>
                       <p className="text-[11px] text-[#4B5563] dark:text-[#9CA3AF]">
@@ -1228,8 +1286,8 @@ export default function MisReservasHub({
 
               {/* Datos del Conductor (Modo Walk-in: solo nombre y teléfono obligatorios) */}
               <div>
-                <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
-                  Nombre completo del conductor <span className="text-[#111827]">*</span>
+                <label className="block text-[11px] font-semibold text-[#4B5563] dark:text-[#D1D5DB] mb-1">
+                  Nombre completo del conductor <span className="text-[#111827] dark:text-[#EDEDED]">*</span>
                 </label>
                 <input
                   type="text"
@@ -1243,8 +1301,8 @@ export default function MisReservasHub({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
-                    Teléfono móvil <span className="text-[#111827]">*</span>
+                  <label className="block text-[11px] font-semibold text-[#4B5563] dark:text-[#D1D5DB] mb-1">
+                    Teléfono móvil <span className="text-[#111827] dark:text-[#EDEDED]">*</span>
                   </label>
                   <input
                     type="tel"
@@ -1257,7 +1315,7 @@ export default function MisReservasHub({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
+                  <label className="block text-[11px] font-semibold text-[#4B5563] dark:text-[#D1D5DB] mb-1">
                     Correo electrónico (opcional)
                   </label>
                   <input
@@ -1272,27 +1330,24 @@ export default function MisReservasHub({
 
               <div className="grid grid-cols-[90px_1fr_84px] gap-2">
                 <div>
-                  <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
+                  <label className="block text-[11px] font-semibold text-[#4B5563] dark:text-[#D1D5DB] mb-1">
                     Tipo doc.
                   </label>
-                  <select
+                  <Select<'CC' | 'CE' | 'PASAPORTE'>
+                    ariaLabel="Tipo de documento"
+                    variant="subtle"
                     value={formTipoDoc}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      if (v === 'CC' || v === 'CE' || v === 'PASAPORTE') {
-                        setFormTipoDoc(v);
-                      }
-                    }}
-                    className="w-full rounded-[14px] bg-[#EDEDED]/75 dark:bg-[#111827] dark:border dark:border-white/15 px-2.5 py-2.5 text-base font-semibold text-[#111827] dark:text-[#EDEDED] focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-[#EDEDED]"
-                  >
-                    <option value="CC">CC</option>
-                    <option value="CE">CE</option>
-                    <option value="PASAPORTE">PAS</option>
-                  </select>
+                    onChange={(v) => setFormTipoDoc(v)}
+                    options={[
+                      { value: 'CC', label: 'CC' },
+                      { value: 'CE', label: 'CE' },
+                      { value: 'PASAPORTE', label: 'PAS' },
+                    ]}
+                  />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
+                  <label className="block text-[11px] font-semibold text-[#4B5563] dark:text-[#D1D5DB] mb-1">
                     Documento (opcional)
                   </label>
                   <input
@@ -1305,50 +1360,38 @@ export default function MisReservasHub({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
+                  <label className="block text-[11px] font-semibold text-[#4B5563] dark:text-[#D1D5DB] mb-1">
                     Licencia (opc.)
                   </label>
-                  <select
+                  <Select<'B1' | 'B2' | 'A2' | 'C1'>
+                    ariaLabel="Categoría de licencia"
+                    variant="subtle"
                     value={formLicencia}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      if (
-                        v === 'B1' ||
-                        v === 'B2' ||
-                        v === 'A2' ||
-                        v === 'C1'
-                      ) {
-                        setFormLicencia(v);
-                      }
-                    }}
-                    className="w-full rounded-[14px] bg-[#EDEDED]/75 dark:bg-[#111827] dark:border dark:border-white/15 px-2.5 py-2.5 text-base font-semibold text-[#111827] dark:text-[#EDEDED] focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-[#EDEDED]"
-                  >
-                    <option value="B1">B1</option>
-                    <option value="B2">B2</option>
-                    <option value="A2">A2</option>
-                    <option value="C1">C1</option>
-                  </select>
+                    onChange={(v) => setFormLicencia(v)}
+                    options={[
+                      { value: 'B1', label: 'B1' },
+                      { value: 'B2', label: 'B2' },
+                      { value: 'A2', label: 'A2' },
+                      { value: 'C1', label: 'C1' },
+                    ]}
+                  />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-[#4B5563] mb-1">
+                <label className="block text-[11px] font-semibold text-[#4B5563] dark:text-[#D1D5DB] mb-1">
                   Modalidad de entrega
                 </label>
-                <select
+                <Select<ModalidadEntregaReserva>
+                  ariaLabel="Modalidad de entrega"
+                  variant="subtle"
                   value={formModalidad}
-                  onChange={(e) =>
-                    setFormModalidad(
-                      e.target.value === 'DOMICILIO_MEDELLIN'
-                        ? 'DOMICILIO_MEDELLIN'
-                        : 'PATIO_PRINCIPAL'
-                    )
-                  }
-                  className="w-full rounded-[14px] bg-[#EDEDED]/75 dark:bg-[#111827] dark:border dark:border-white/15 px-2.5 py-2.5 text-base font-semibold text-[#111827] dark:text-[#EDEDED] focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-[#EDEDED]"
-                >
-                  <option value="PATIO_PRINCIPAL">En Patio</option>
-                  <option value="DOMICILIO_MEDELLIN">Domicilio</option>
-                </select>
+                  onChange={(v) => setFormModalidad(v)}
+                  options={[
+                    { value: 'PATIO_PRINCIPAL', label: 'En Patio' },
+                    { value: 'DOMICILIO_MEDELLIN', label: 'Domicilio' },
+                  ]}
+                />
               </div>
 
               {/* Estado inicial y Abono */}
@@ -1360,12 +1403,12 @@ export default function MisReservasHub({
                       prev === 'CONFIRMADA' ? 'PENDIENTE' : 'CONFIRMADA'
                     )
                   }
-                  className="min-h-[44px] rounded-[16px] bg-[#EDEDED]/80 dark:bg-white/5 px-3 py-2 text-left cursor-pointer border border-[#9CA3AF]/30 dark:border-white/15"
+                  className="min-h-[44px] rounded-[16px] bg-[#EDEDED]/80 dark:bg-[#111827] px-3 py-2 text-left cursor-pointer border border-[#9CA3AF]/30 dark:border-white/15"
                 >
-                  <span className="block text-[10px] font-medium text-[#4B5563]">
+                  <span className="block text-[10px] font-medium text-[#4B5563] dark:text-[#9CA3AF]">
                     Estado inicial
                   </span>
-                  <span className="font-display text-xs font-extrabold text-[#111827]">
+                  <span className="font-display text-xs font-extrabold text-[#111827] dark:text-[#EDEDED]">
                     {formEstadoInicial === 'CONFIRMADA'
                       ? '✓ Confirmada directa'
                       : 'Pendiente revisión'}
@@ -1377,12 +1420,12 @@ export default function MisReservasHub({
                   onClick={() =>
                     setFormPorcentajeAbono((prev) => (prev === 100 ? 30 : 100))
                   }
-                  className="min-h-[44px] rounded-[16px] bg-[#EDEDED]/80 dark:bg-white/5 px-3 py-2 text-left cursor-pointer border border-[#9CA3AF]/30 dark:border-white/15"
+                  className="min-h-[44px] rounded-[16px] bg-[#EDEDED]/80 dark:bg-[#111827] px-3 py-2 text-left cursor-pointer border border-[#9CA3AF]/30 dark:border-white/15"
                 >
-                  <span className="block text-[10px] font-medium text-[#4B5563]">
+                  <span className="block text-[10px] font-medium text-[#4B5563] dark:text-[#9CA3AF]">
                     Recaudo en mostrador
                   </span>
-                  <span className="font-display text-xs font-extrabold text-[#111827]">
+                  <span className="font-display text-xs font-extrabold text-[#111827] dark:text-[#EDEDED]">
                     {formPorcentajeAbono === 100
                       ? '100% Cancelado'
                       : 'Abono 30%'}
@@ -1392,7 +1435,7 @@ export default function MisReservasHub({
 
               {/* Cuenta financiera para recaudo inmediato */}
               {formEstadoInicial === 'CONFIRMADA' && cuentasFinancieras && cuentasFinancieras.length > 0 && (
-                <div className="rounded-[16px] bg-[#EDEDED]/80 dark:bg-white/5 p-3 space-y-2 border border-[#9CA3AF]/30 dark:border-white/15">
+                <div className="rounded-[16px] bg-[#EDEDED]/80 dark:bg-[#111827] p-3 space-y-2 border border-[#9CA3AF]/30 dark:border-white/15">
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-bold text-[#111827] dark:text-[#EDEDED]">
                       Asentar recaudo en caja
@@ -1402,36 +1445,33 @@ export default function MisReservasHub({
                     </span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <select
+                    <Select
+                      ariaLabel="Cuenta operativa de ingreso"
+                      size="sm"
                       value={cuentaPagoId}
-                      onChange={(e) => setCuentaPagoId(e.target.value)}
-                      className="w-full rounded-[12px] bg-white dark:bg-[#111827] border border-[#9CA3AF]/40 dark:border-white/15 px-2.5 py-2 text-base text-[#111827] dark:text-[#EDEDED] focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-[#EDEDED]"
-                    >
-                      {cuentasFinancieras.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.nombre} ({c.tipo})
-                        </option>
-                      ))}
-                    </select>
-                    <select
+                      onChange={(val) => setCuentaPagoId(val)}
+                      options={cuentasFinancieras.map((c) => ({
+                        value: c.id,
+                        label: `${c.nombre} (${c.tipo})`,
+                      }))}
+                    />
+                    <Select<'efectivo' | 'transferencia' | 'tarjeta'>
+                      ariaLabel="Método de pago"
+                      size="sm"
                       value={metodoPagoSeleccionado}
-                      onChange={(e) =>
-                        setMetodoPagoSeleccionado(
-                          e.target.value as 'efectivo' | 'transferencia' | 'tarjeta'
-                        )
-                      }
-                      className="w-full rounded-[12px] bg-white dark:bg-[#111827] border border-[#9CA3AF]/40 dark:border-white/15 px-2.5 py-2 text-base text-[#111827] dark:text-[#EDEDED] focus-visible:ring-2 focus-visible:ring-[#111827] dark:focus-visible:ring-[#EDEDED]"
-                    >
-                      <option value="efectivo">Efectivo</option>
-                      <option value="transferencia">Transferencia / PSE</option>
-                      <option value="tarjeta">Tarjeta Datáfono</option>
-                    </select>
+                      onChange={(val) => setMetodoPagoSeleccionado(val)}
+                      options={[
+                        { value: 'efectivo', label: 'Efectivo' },
+                        { value: 'transferencia', label: 'Transferencia / PSE' },
+                        { value: 'tarjeta', label: 'Tarjeta Datáfono' },
+                      ]}
+                    />
                   </div>
                 </div>
               )}
 
               {/* Resumen de liquidación y Submit */}
-              <div className="flex items-center justify-between rounded-[18px] bg-[#EDEDED] dark:bg-white/5 dark:border dark:border-white/15 px-4 py-3">
+              <div className="flex items-center justify-between rounded-[18px] bg-[#EDEDED] dark:bg-[#111827] dark:border dark:border-white/15 px-4 py-3">
                 <div>
                   <span className="block text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
                     Total ({cotizacionRapidaPatio.dias} días · Incluye R2)

@@ -1,5 +1,6 @@
 import type { EntregaWizardData, MetodoPagoEntrega } from './types';
 import type { ReservaClienteItem } from '@/lib/flota';
+import { Select } from '@/components/ui/Select';
 
 export interface Step4CajaYGarantiaProps {
   reserva: ReservaClienteItem;
@@ -153,20 +154,16 @@ export default function Step4CajaYGarantia({
                     >
                       Cuenta financiera
                     </label>
-                    <select
+                    <Select
                       id="entrega-cta-saldo"
+                      ariaLabel="Cuenta financiera"
                       value={data.cuentaCobroSaldoId}
-                      onChange={(e) =>
-                        onChange({ cuentaCobroSaldoId: e.target.value })
-                      }
-                      className="w-full min-h-[44px] rounded-xl bg-white dark:bg-[#1F2937] border border-[#9CA3AF]/40 dark:border-white/15 px-3 py-2 text-base font-medium text-[#111827] dark:text-[#EDEDED]"
-                    >
-                      {cuentasFinancieras.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.nombre}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(val) => onChange({ cuentaCobroSaldoId: val })}
+                      options={cuentasFinancieras.map((c) => ({
+                        value: c.id,
+                        label: c.nombre,
+                      }))}
+                    />
                   </div>
                 )}
 
@@ -289,20 +286,16 @@ export default function Step4CajaYGarantia({
                     >
                       Cuenta de custodia
                     </label>
-                    <select
+                    <Select
                       id="entrega-cta-garantia"
+                      ariaLabel="Cuenta de custodia"
                       value={data.cuentaGarantiaId}
-                      onChange={(e) =>
-                        onChange({ cuentaGarantiaId: e.target.value })
-                      }
-                      className="w-full min-h-[44px] rounded-xl bg-white dark:bg-[#1F2937] border border-[#9CA3AF]/40 dark:border-white/15 px-3 py-2 text-base font-medium text-[#111827] dark:text-[#EDEDED]"
-                    >
-                      {cuentasFinancieras.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.nombre}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(val) => onChange({ cuentaGarantiaId: val })}
+                      options={cuentasFinancieras.map((c) => ({
+                        value: c.id,
+                        label: c.nombre,
+                      }))}
+                    />
                   </div>
                 )}
 

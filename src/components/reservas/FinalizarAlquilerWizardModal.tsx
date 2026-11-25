@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { actions } from 'astro:actions';
+import { Select } from '@/components/ui/Select';
 import {
   ZONAS_FOTOS_ALQUILER,
   calcularLiquidacionCierreAlquiler,
@@ -1264,26 +1265,29 @@ export function FinalizarAlquilerWizardModal({
 
                 {requiereMantenimiento && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-                    <select
-                      aria-label="Tipo de mantenimiento"
+                    <Select
+                      ariaLabel="Tipo de mantenimiento"
                       value={tipoMantenimiento}
-                      onChange={(e) =>
+                      onChange={(val) =>
                         setTipoMantenimiento(
-                          normalizarTipoMantenimiento(e.target.value)
+                          normalizarTipoMantenimiento(val)
                         )
                       }
-                      className="w-full min-h-[44px] rounded-[12px] bg-white dark:bg-[#1F2937] border border-[#9CA3AF]/40 dark:border-white/15 px-3 py-2 text-base text-[#111827] dark:text-[#EDEDED]"
-                    >
-                      <option value="CORRECTIVO_NOVEDAD">
-                        Correctivo por novedad
-                      </option>
-                      <option value="ALISTAMIENTO">
-                        Alistamiento / Lavado
-                      </option>
-                      <option value="PREVENTIVO">
-                        Mantenimiento preventivo
-                      </option>
-                    </select>
+                      options={[
+                        {
+                          value: 'CORRECTIVO_NOVEDAD',
+                          label: 'Correctivo por novedad',
+                        },
+                        {
+                          value: 'ALISTAMIENTO',
+                          label: 'Alistamiento / Lavado',
+                        },
+                        {
+                          value: 'PREVENTIVO',
+                          label: 'Mantenimiento preventivo',
+                        },
+                      ]}
+                    />
                     <input
                       type="date"
                       aria-label="Fecha estimada salida de taller"
@@ -1472,20 +1476,16 @@ export function FinalizarAlquilerWizardModal({
                           >
                             Cuenta para liquidación / devolución de garantía
                           </label>
-                          <select
+                          <Select
                             id="fin-cuenta-garantia"
+                            ariaLabel="Cuenta para liquidación / devolución de garantía"
                             value={cuentaGarantiaId}
-                            onChange={(e) =>
-                              setCuentaGarantiaId(e.target.value)
-                            }
-                            className="w-full min-h-[44px] rounded-[12px] bg-[#EDEDED]/60 dark:bg-[#1F2937] border border-[#9CA3AF]/40 dark:border-white/15 px-3 py-2 text-base text-[#111827] dark:text-[#EDEDED]"
-                          >
-                            {cuentasFinancieras.map((cta) => (
-                              <option key={cta.id} value={cta.id}>
-                                {cta.nombre} ({cta.tipo})
-                              </option>
-                            ))}
-                          </select>
+                            onChange={(val) => setCuentaGarantiaId(val)}
+                            options={cuentasFinancieras.map((cta) => ({
+                              value: cta.id,
+                              label: `${cta.nombre} (${cta.tipo})`,
+                            }))}
+                          />
                         </div>
                       )}
 
@@ -1527,33 +1527,31 @@ export function FinalizarAlquilerWizardModal({
                     </label>
                     {cobrarSaldoAhora && (
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <select
-                          aria-label="Método de cobro de saldo"
+                        <Select
+                          ariaLabel="Método de cobro de saldo"
                           value={metodoCobro}
-                          onChange={(e) =>
-                            setMetodoCobro(normalizarMetodoCobro(e.target.value))
+                          onChange={(val) =>
+                            setMetodoCobro(normalizarMetodoCobro(val))
                           }
-                          className="w-full min-h-[44px] rounded-[12px] bg-[#EDEDED]/60 dark:bg-[#1F2937] border border-[#9CA3AF]/40 dark:border-white/15 px-3 py-2 text-base text-[#111827] dark:text-[#EDEDED]"
-                        >
-                          <option value="efectivo">Efectivo</option>
-                          <option value="transferencia">
-                            Transferencia / PSE
-                          </option>
-                          <option value="tarjeta">Tarjeta / Datáfono</option>
-                        </select>
+                          options={[
+                            { value: 'efectivo', label: 'Efectivo' },
+                            {
+                              value: 'transferencia',
+                              label: 'Transferencia / PSE',
+                            },
+                            { value: 'tarjeta', label: 'Tarjeta / Datáfono' },
+                          ]}
+                        />
                         {cuentasFinancieras.length > 0 && (
-                          <select
-                            aria-label="Cuenta de caja de ingreso"
+                          <Select
+                            ariaLabel="Cuenta de caja de ingreso"
                             value={cuentaCobroId}
-                            onChange={(e) => setCuentaCobroId(e.target.value)}
-                            className="w-full min-h-[44px] rounded-[12px] bg-[#EDEDED]/60 dark:bg-[#1F2937] border border-[#9CA3AF]/40 dark:border-white/15 px-3 py-2 text-base text-[#111827] dark:text-[#EDEDED]"
-                          >
-                            {cuentasFinancieras.map((cta) => (
-                              <option key={cta.id} value={cta.id}>
-                                {cta.nombre} ({cta.tipo})
-                              </option>
-                            ))}
-                          </select>
+                            onChange={(val) => setCuentaCobroId(val)}
+                            options={cuentasFinancieras.map((cta) => ({
+                              value: cta.id,
+                              label: `${cta.nombre} (${cta.tipo})`,
+                            }))}
+                          />
                         )}
                       </div>
                     )}

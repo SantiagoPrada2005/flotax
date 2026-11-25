@@ -211,7 +211,7 @@ export default function TransitLicenseCard({
                     <img
                       src={urlFoto}
                       alt={`${item.titulo} de Licencia de tránsito (${placa})`}
-                      className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+                      className="h-full w-full object-cover"
                       loading="lazy"
                     />
                     <span className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-full bg-[#111827]/85 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-xs">

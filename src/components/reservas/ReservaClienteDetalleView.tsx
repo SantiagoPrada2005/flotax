@@ -122,38 +122,38 @@ export default function ReservaClienteDetalleView({
           <header className="space-y-3">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
-                <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#4B5563]">
+                <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
                   Reserva #{reserva.codigo} · {reserva.sedeNombre}
                 </span>
-                <h1 className="font-display text-[28px] sm:text-[32px] font-extrabold tracking-tight text-[#111827] leading-[1.08]">
+                <h1 className="font-display text-[28px] sm:text-[32px] font-extrabold tracking-tight text-[#111827] dark:text-[#EDEDED] leading-[1.08]">
                   {vehiculo.marca} {vehiculo.modelo}
                 </h1>
               </div>
 
-              <span className="rounded-full bg-[#111827] px-3.5 py-1.5 text-xs font-bold text-white">
+              <span className="rounded-full bg-[#111827] dark:bg-[#EDEDED] px-3.5 py-1.5 text-xs font-bold text-white dark:text-[#111827]">
                 {infoEstado.titulo}
               </span>
             </div>
 
-            <p className="text-xs text-[#4B5563] leading-relaxed">
+            <p className="text-xs text-[#4B5563] dark:text-[#D1D5DB] leading-relaxed">
               {infoEstado.detalle}
             </p>
 
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-[#111827]">
+              <span className="rounded-full bg-white dark:bg-[#1F2937] dark:border dark:border-white/10 px-3 py-1 text-[11px] font-semibold text-[#111827] dark:text-[#EDEDED]">
                 {formatearRangoReservaHumano(reserva.fechaInicio, reserva.fechaFin)} ({reserva.diasAlquiler} días)
               </span>
-              <span className="rounded-full bg-white px-3 py-1 font-mono text-[11px] font-bold text-[#111827]">
+              <span className="rounded-full bg-white dark:bg-[#1F2937] dark:border dark:border-white/10 px-3 py-1 font-mono text-[11px] font-bold text-[#111827] dark:text-[#EDEDED]">
                 {vehiculo.placa}
               </span>
-              <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-[#111827] tabular-nums">
+              <span className="rounded-full bg-white dark:bg-[#1F2937] dark:border dark:border-white/10 px-3 py-1 text-[11px] font-semibold text-[#111827] dark:text-[#EDEDED] tabular-nums">
                 {formatCop(reserva.totalAlquiler)} Total
               </span>
             </div>
           </header>
 
           {/* Escenario visual de la unidad */}
-          <section className="relative rounded-[32px] bg-white/75 p-5 min-h-[210px] flex items-center justify-center">
+          <section className="relative rounded-[32px] bg-white/75 dark:bg-[#1F2937] dark:border dark:border-white/10 p-5 min-h-[210px] flex items-center justify-center">
             <img
               src={vehiculo.imagenUrl}
               alt={`${vehiculo.marca} ${vehiculo.modelo}`}
@@ -164,9 +164,9 @@ export default function ReservaClienteDetalleView({
 
         {/* Columna Derecha: Panel de Información para el Cliente */}
         <div className="w-full lg:w-5/12">
-          <section className="rounded-[32px] bg-white p-5 sm:p-6 shadow-[0_10px_30px_-15px_rgba(17,24,39,0.06)] border border-[#9CA3AF]/25 space-y-4">
+          <section className="rounded-[32px] bg-white dark:bg-[#1F2937] p-5 sm:p-6 shadow-[0_10px_30px_-15px_rgba(17,24,39,0.06)] border border-[#9CA3AF]/25 dark:border-white/12 space-y-4">
             {/* Selector de pestañas limpio para cliente */}
-            <div className="grid grid-cols-2 gap-1.5 rounded-full bg-[#EDEDED] p-1">
+            <div className="grid grid-cols-2 gap-1.5 rounded-full bg-[#EDEDED] dark:bg-[#111827] p-1 border border-transparent dark:border-white/10">
               {(
                 [
                   { id: 'RESUMEN', label: 'Mi Alquiler' },
@@ -179,8 +179,8 @@ export default function ReservaClienteDetalleView({
                   onClick={() => setTab(item.id)}
                   className={`min-h-[44px] rounded-full text-xs font-bold transition-colors cursor-pointer ${
                     tab === item.id
-                      ? 'bg-[#111827] text-white'
-                      : 'text-[#4B5563] hover:text-[#111827]'
+                      ? 'bg-[#111827] text-white dark:bg-[#EDEDED] dark:text-[#111827]'
+                      : 'text-[#4B5563] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-white'
                   }`}
                 >
                   {item.label}
@@ -190,32 +190,32 @@ export default function ReservaClienteDetalleView({
 
             {tab === 'RESUMEN' && (
               <div className="space-y-3">
-                <div className="rounded-[20px] bg-[#EDEDED]/70 p-4 space-y-2 text-xs">
+                <div className="rounded-[20px] bg-[#EDEDED]/70 dark:bg-[#111827] dark:border dark:border-white/10 p-4 space-y-2 text-xs">
                   <div className="flex justify-between">
-                    <span className="text-[#4B5563]">Conductor titular</span>
-                    <span className="font-bold text-[#111827]">
+                    <span className="text-[#4B5563] dark:text-[#9CA3AF]">Conductor titular</span>
+                    <span className="font-bold text-[#111827] dark:text-[#EDEDED]">
                       {reserva.conductor.nombreCompleto}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#4B5563]">Documento</span>
-                    <span className="font-semibold text-[#111827]">
+                    <span className="text-[#4B5563] dark:text-[#9CA3AF]">Documento</span>
+                    <span className="font-semibold text-[#111827] dark:text-[#EDEDED]">
                       {reserva.conductor.numeroDocumento
                         ? `${reserva.conductor.tipoDocumento || 'CC'} ${reserva.conductor.numeroDocumento}`
                         : 'Se comprobará al recoger en patio'}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#4B5563]">Licencia</span>
-                    <span className="font-semibold text-[#111827]">
+                    <span className="text-[#4B5563] dark:text-[#9CA3AF]">Licencia</span>
+                    <span className="font-semibold text-[#111827] dark:text-[#EDEDED]">
                       {reserva.conductor.categoriaLicencia
                         ? `Categoría ${reserva.conductor.categoriaLicencia}`
                         : 'Pendiente de comprobar en patio'}
                     </span>
                   </div>
                   <div className="flex justify-between gap-3">
-                    <span className="text-[#4B5563]">Entrega</span>
-                    <span className="font-semibold text-[#111827] text-right">
+                    <span className="text-[#4B5563] dark:text-[#9CA3AF]">Entrega</span>
+                    <span className="font-semibold text-[#111827] dark:text-[#EDEDED] text-right">
                       {reserva.modalidadEntrega === 'DOMICILIO_MEDELLIN'
                         ? reserva.direccionEntrega || 'Entrega a domicilio'
                         : reserva.sedeNombre}
@@ -238,19 +238,19 @@ export default function ReservaClienteDetalleView({
                 />
 
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="rounded-[18px] bg-[#EDEDED]/70 p-3.5">
-                    <span className="text-[10px] font-medium text-[#4B5563] block">
+                  <div className="rounded-[18px] bg-[#EDEDED]/70 dark:bg-[#111827] dark:border dark:border-white/10 p-3.5">
+                    <span className="text-[10px] font-medium text-[#4B5563] dark:text-[#9CA3AF] block">
                       Saldo en patio
                     </span>
-                    <span className="font-mono text-base font-black text-[#111827] tabular-nums">
+                    <span className="font-mono text-base font-black text-[#111827] dark:text-[#EDEDED] tabular-nums">
                       {formatCop(saldoPendiente)}
                     </span>
                   </div>
-                  <div className="rounded-[18px] bg-[#EDEDED]/70 p-3.5">
-                    <span className="text-[10px] font-medium text-[#4B5563] block">
+                  <div className="rounded-[18px] bg-[#EDEDED]/70 dark:bg-[#111827] dark:border dark:border-white/10 p-3.5">
+                    <span className="text-[10px] font-medium text-[#4B5563] dark:text-[#9CA3AF] block">
                       Garantía reembolsable
                     </span>
-                    <span className="font-mono text-base font-black text-[#111827] tabular-nums">
+                    <span className="font-mono text-base font-black text-[#111827] dark:text-[#EDEDED] tabular-nums">
                       {formatCop(vehiculo.depositoGarantia)}
                     </span>
                   </div>
@@ -268,8 +268,8 @@ export default function ReservaClienteDetalleView({
                       onClick={() => setRubroActivoId(rubro.id)}
                       className={`w-full min-h-[44px] flex items-center justify-between rounded-2xl px-4 py-2 text-xs font-semibold cursor-pointer ${
                         rubroSeleccionado.id === rubro.id
-                          ? 'bg-[#111827] text-white'
-                          : 'bg-[#EDEDED]/70 text-[#111827]'
+                          ? 'bg-[#111827] text-white dark:bg-[#EDEDED] dark:text-[#111827]'
+                          : 'bg-[#EDEDED]/70 dark:bg-[#111827] dark:border dark:border-white/10 text-[#111827] dark:text-[#EDEDED]'
                       }`}
                     >
                       <span>{rubro.etiqueta}</span>
@@ -284,11 +284,11 @@ export default function ReservaClienteDetalleView({
 
             {/* Cancelar solicitud pendiente sin abono */}
             {reserva.estado === 'PENDIENTE' && reserva.montoReportado === 0 && (
-              <div className="border-t border-[#EDEDED] pt-3">
+              <div className="border-t border-[#EDEDED] dark:border-white/10 pt-3">
                 <button
                   type="button"
                   onClick={() => setModalCancelarAbierto(true)}
-                  className="min-h-[44px] w-full rounded-full border border-[#9CA3AF]/40 bg-white px-4 py-2.5 text-xs font-semibold text-[#4B5563] hover:text-[#111827] cursor-pointer"
+                  className="min-h-[44px] w-full rounded-full border border-[#9CA3AF]/40 dark:border-white/15 bg-white dark:bg-[#111827] px-4 py-2.5 text-xs font-semibold text-[#4B5563] dark:text-[#D1D5DB] hover:text-[#111827] dark:hover:text-white cursor-pointer"
                 >
                   Cancelar mi solicitud de alquiler
                 </button>
@@ -297,14 +297,14 @@ export default function ReservaClienteDetalleView({
 
             {/* Autoevaluación y pre-entrega de retorno: únicamente cuando el vehículo ya está EN_CURSO */}
             {puedeEvaluarRetorno && (
-              <div className="border-t border-[#EDEDED] pt-3">
+              <div className="border-t border-[#EDEDED] dark:border-white/10 pt-3">
                 {reserva.evaluacionEntrega ? (
-                  <div className="flex items-center justify-between gap-3 rounded-[20px] bg-[#EDEDED]/85 px-3.5 py-2.5">
+                  <div className="flex items-center justify-between gap-3 rounded-[20px] bg-[#EDEDED]/85 dark:bg-[#111827] dark:border dark:border-white/10 px-3.5 py-2.5">
                     <div className="min-w-0">
-                      <span className="font-display text-xs font-bold text-[#111827] block truncate">
+                      <span className="font-display text-xs font-bold text-[#111827] dark:text-[#EDEDED] block truncate">
                         Evaluación enviada ({reserva.evaluacionEntrega.puntajeNumerico}.0 ★)
                       </span>
-                      <span className="text-[11px] text-[#4B5563] block truncate">
+                      <span className="text-[11px] text-[#4B5563] dark:text-[#9CA3AF] block truncate">
                         {reserva.evaluacionEntrega.aspectosDestacados.join(' · ') ||
                           'Pendiente validación final en patio'}
                       </span>
@@ -312,7 +312,7 @@ export default function ReservaClienteDetalleView({
                     <button
                       type="button"
                       onClick={() => navigate(rutaEvaluacionCliente)}
-                      className="min-h-[44px] shrink-0 rounded-full bg-white px-4 py-2 text-xs font-bold text-[#111827] cursor-pointer"
+                      className="min-h-[44px] shrink-0 rounded-full bg-white dark:bg-[#1F2937] dark:border dark:border-white/15 px-4 py-2 text-xs font-bold text-[#111827] dark:text-[#EDEDED] cursor-pointer"
                     >
                       Ver resumen
                     </button>
@@ -321,7 +321,7 @@ export default function ReservaClienteDetalleView({
                   <button
                     type="button"
                     onClick={() => navigate(rutaEvaluacionCliente)}
-                    className="fx-press flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-[#111827] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#1F2937] cursor-pointer"
+                    className="fx-press flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-[#111827] dark:bg-[#EDEDED] px-5 py-2.5 text-xs font-bold text-white dark:text-[#111827] hover:bg-[#1F2937] dark:hover:bg-white cursor-pointer"
                   >
                     <span>Devolver unidad y calificar servicio</span>
                     <span>→</span>

@@ -9,10 +9,10 @@ export interface FleetInventoryManagerProps {
   nuevaUnidadHref?: string | undefined;
 }
 
-const CATEGORIAS: Array<{ id: CategoriaVehiculo | 'TODAS'; label: string }> = [
-  { id: 'TODAS', label: 'Todas' },
-  { id: 'SEDAN', label: 'Sedán' },
+const CATEGORIAS: Array<{ id: CategoriaVehiculo | 'TODOS'; label: string }> = [
+  { id: 'TODOS', label: 'Todos' },
   { id: 'SUV', label: 'SUV' },
+  { id: 'SEDAN', label: 'Sedán' },
   { id: 'MOTO', label: 'Moto' },
   { id: 'PATINETA', label: 'Patineta' },
   { id: 'UTILITARIO', label: 'Utilitario' },
@@ -55,7 +55,7 @@ export default function FleetInventoryManager({
   nuevaUnidadHref = '/admin/flota/nuevo',
 }: FleetInventoryManagerProps) {
   const [vehiculos, setVehiculos] = useState<VehiculoItem[]>(initialVehiculos);
-  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<CategoriaVehiculo | 'TODAS'>('TODAS');
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<CategoriaVehiculo | 'TODOS'>('TODOS');
   const [estadoSeleccionado, setEstadoSeleccionado] = useState<EstadoVehiculo | 'TODOS'>('TODOS');
   const [soloAlertaDocs, setSoloAlertaDocs] = useState(false);
   const [busqueda, setBusqueda] = useState('');
@@ -85,7 +85,7 @@ export default function FleetInventoryManager({
     (v) => resumenesDocumentos[v.id]?.bloqueadoPorDocumentos
   ).length;
 
-  const hayFiltroCategoriaActivo = categoriaSeleccionada !== 'TODAS' || soloAlertaDocs;
+  const hayFiltroCategoriaActivo = categoriaSeleccionada !== 'TODOS' || soloAlertaDocs;
   const mostrarPanelCategorias = filtrosAbiertos || hayFiltroCategoriaActivo;
 
   // Filtrado reactivo de unidades
@@ -93,7 +93,10 @@ export default function FleetInventoryManager({
     if (soloAlertaDocs && !resumenesDocumentos[v.id]?.bloqueadoPorDocumentos) {
       return false;
     }
-    if (categoriaSeleccionada !== 'TODAS' && v.categoria !== categoriaSeleccionada) {
+    if (
+      categoriaSeleccionada !== 'TODOS' &&
+      (v.categoria || '').trim().toUpperCase() !== categoriaSeleccionada
+    ) {
       return false;
     }
     if (estadoSeleccionado !== 'TODOS') {
@@ -429,12 +432,17 @@ export default function FleetInventoryManager({
 
         {/* NIVEL 2 (Progressive Disclosure): Carrusel de Categorías Bajo Demanda */}
         {mostrarPanelCategorias && (
-          <div className="flex items-center gap-2 overflow-x-auto border-t border-[#EDEDED] pt-2.5 pb-0.5 no-scrollbar">
+          <div
+            role="tablist"
+            aria-label="Filtrar unidades por categoría"
+            className="flex items-center gap-2 overflow-x-auto border-t border-[#EDEDED] dark:border-white/10 pt-2.5 pb-0.5 no-scrollbar"
+          >
             {totalAlertaDocs > 0 && (
               <button
                 type="button"
+                aria-pressed={soloAlertaDocs}
                 onClick={() => setSoloAlertaDocs((prev) => !prev)}
-                className={`fx-press min-h-[44px] whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-bold border cursor-pointer ${
+                className={`fx-press min-h-[44px] whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-bold border transition-colors cursor-pointer ${
                   soloAlertaDocs
                     ? 'bg-status-danger text-white border-status-danger shadow-xs'
                     : 'bg-status-danger/10 text-status-danger border-status-danger/40 hover:bg-status-danger/20'
@@ -443,20 +451,35 @@ export default function FleetInventoryManager({
                 Docs pendientes ({totalAlertaDocs})
               </button>
             )}
-            {CATEGORIAS.map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => setCategoriaSeleccionada(cat.id)}
-                className={`fx-press min-h-[44px] whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-bold cursor-pointer ${
-                  categoriaSeleccionada === cat.id
-                    ? 'bg-[#111827] text-white shadow-xs'
-                    : 'bg-[#EDEDED] text-[#111827] hover:bg-[#9CA3AF]/35'
-                }`}
-              >
-                {cat.label}
-              </button>
-            ))}
+            {CATEGORIAS.map((cat) => {
+              const isSelected = categoriaSeleccionada === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={isSelected}
+                  aria-pressed={isSelected}
+                  onClick={() => {
+                    if (cat.id === 'TODOS') {
+                      setCategoriaSeleccionada('TODOS');
+                      setSoloAlertaDocs(false);
+                    } else {
+                      setCategoriaSeleccionada((prev) =>
+                        prev === cat.id ? 'TODOS' : cat.id
+                      );
+                    }
+                  }}
+                  className={`fx-press min-h-[44px] whitespace-nowrap rounded-full border px-3.5 py-1.5 text-xs font-bold transition-colors cursor-pointer ${
+                    isSelected
+                      ? 'bg-[#111827] text-[#EDEDED] border-[#111827] shadow-xs dark:bg-[#EDEDED] dark:text-[#111827] dark:border-[#EDEDED]'
+                      : 'bg-[#EDEDED] text-[#111827] border-[#9CA3AF]/35 hover:border-[#111827] hover:bg-white dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:border-white/35 dark:hover:bg-white/20'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              );
+            })}
           </div>
         )}
       </section>
@@ -481,7 +504,7 @@ export default function FleetInventoryManager({
             type="button"
             onClick={() => {
               setBusqueda('');
-              setCategoriaSeleccionada('TODAS');
+              setCategoriaSeleccionada('TODOS');
               setEstadoSeleccionado('TODOS');
               setSoloAlertaDocs(false);
               setFiltrosAbiertos(false);
@@ -509,7 +532,7 @@ export default function FleetInventoryManager({
                       : 'border-[#9CA3AF]/40 hover:border-[#111827] dark:border-white/10 dark:hover:border-white/30'
                 }`}
               >
-                <div className="relative w-full aspect-video rounded-t-[27px] overflow-hidden">
+                <div className="relative w-full aspect-video overflow-hidden">
                   <img
                     src={vehiculo.imagenUrl}
                     alt={`${vehiculo.marca} ${vehiculo.modelo}`}
@@ -541,12 +564,6 @@ export default function FleetInventoryManager({
                             <span className="h-2 w-2 rounded-full bg-status-warning animate-pulse ring-2 ring-status-warning/30" />
                             <span>EN TALLER</span>
                           </a>
-                        )}
-                        {vehiculo.destacado && (
-                          <span className="font-mono text-[10px] font-bold text-[#111827] bg-[#EDEDED] dark:bg-[#111827] dark:text-[#EDEDED] px-2.5 py-1 rounded-full border border-[#9CA3AF]/50 dark:border-white/20 flex items-center gap-1">
-                            <span>★</span>
-                            <span>DESTACADO</span>
-                          </span>
                         )}
                       </div>
                     </div>

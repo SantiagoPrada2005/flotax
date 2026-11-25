@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { actions } from 'astro:actions';
 import { navigate } from 'astro:transitions/client';
+import { Select } from '@/components/ui/Select';
 import {
   calcularCotizacionAlquiler,
   encontrarPrimerRangoDisponible,
@@ -88,12 +89,13 @@ const PASOS_META: ReadonlyArray<{ numero: PasoWizard; titulo: string; subtitulo:
   },
 ];
 
-const formatCop = (val: number): string =>
-  new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0,
-  }).format(val);
+const COP_FORMATTER = new Intl.NumberFormat('es-CO', {
+  style: 'currency',
+  currency: 'COP',
+  maximumFractionDigits: 0,
+});
+
+const formatCop = (val: number): string => COP_FORMATTER.format(val);
 
 export default function RentalWizardFlow({
   vehiculo,
@@ -687,7 +689,7 @@ export default function RentalWizardFlow({
 
             {/* SLIDE 1: Vehículo protagonista + Fechas */}
             {paso === 1 && (
-              <div className="animate-fade-up space-y-3">
+              <div className="animate-fade-in space-y-3">
                 {vehiculoBloqueadoPorDocs && (
                   <div className="rounded-[20px] bg-[#111827] border border-[#9CA3AF]/40 p-4 text-white space-y-1.5">
                     <span className="inline-flex items-center rounded-full bg-[#EDEDED] px-2.5 py-0.5 text-[11px] font-bold text-[#111827]">
@@ -713,7 +715,7 @@ export default function RentalWizardFlow({
 
             {/* SLIDE 2: Conductor (1 sola tarjeta limpia + progressive disclosure para docs opcionales) */}
             {paso === 2 && (
-              <section className="space-y-3.5 animate-fade-up">
+              <section className="space-y-3.5 animate-fade-in">
                 <RentalVehicleHero vehiculo={vehiculo} compact />
 
                 <div className="rounded-[28px] bg-white border border-[#9CA3AF]/45 p-5 space-y-4 shadow-xs dark:bg-[#1F2937] dark:border-white/12">
@@ -832,22 +834,24 @@ export default function RentalWizardFlow({
                               >
                                 Tipo doc.
                               </label>
-                              <select
+                              <Select<DatosConductorState['tipoDocumento']>
                                 id="conductor-tipo-doc"
+                                ariaLabel="Tipo de documento"
+                                variant="subtle"
                                 value={conductor.tipoDocumento}
-                                onChange={(e) =>
+                                onChange={(val) =>
                                   setConductor((prev) => ({
                                     ...prev,
-                                    tipoDocumento: e.target.value as DatosConductorState['tipoDocumento'],
+                                    tipoDocumento: val,
                                   }))
                                 }
-                                className="w-full min-h-[48px] rounded-[12px] bg-[#EDEDED] border border-[#9CA3AF] px-3 py-2.5 text-base text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827] dark:bg-[#111827] dark:border-white/20 dark:text-[#EDEDED]"
-                              >
-                                <option value="">Sin especificar</option>
-                                <option value="CC">Cédula (CC)</option>
-                                <option value="CE">Cédula Extranjería (CE)</option>
-                                <option value="PASAPORTE">Pasaporte</option>
-                              </select>
+                                options={[
+                                  { value: '', label: 'Sin especificar' },
+                                  { value: 'CC', label: 'Cédula (CC)' },
+                                  { value: 'CE', label: 'Cédula Extranjería (CE)' },
+                                  { value: 'PASAPORTE', label: 'Pasaporte' },
+                                ]}
+                              />
                             </div>
 
                             <div className="sm:col-span-2">
@@ -881,23 +885,24 @@ export default function RentalWizardFlow({
                             >
                               Categoría de licencia
                             </label>
-                            <select
+                            <Select<DatosConductorState['categoriaLicencia']>
                               id="conductor-licencia"
+                              ariaLabel="Categoría de licencia"
+                              variant="subtle"
                               value={conductor.categoriaLicencia}
-                              onChange={(e) =>
+                              onChange={(val) =>
                                 setConductor((prev) => ({
                                   ...prev,
-                                  categoriaLicencia: e.target
-                                    .value as DatosConductorState['categoriaLicencia'],
+                                  categoriaLicencia: val,
                                 }))
                               }
-                              className="w-full min-h-[48px] rounded-[12px] bg-[#EDEDED] border border-[#9CA3AF] px-3 py-2.5 text-base text-[#111827] focus-visible:ring-2 focus-visible:ring-[#111827] dark:bg-[#111827] dark:border-white/20 dark:text-[#EDEDED]"
-                            >
-                              <option value="">Sin especificar</option>
-                              <option value="B1">Categoría B1 (Automóviles / SUV)</option>
-                              <option value="B2">Categoría B2 / C1 (Servicio Público)</option>
-                              <option value="A2">Categoría A2 (Motocicletas)</option>
-                            </select>
+                              options={[
+                                { value: '', label: 'Sin especificar' },
+                                { value: 'B1', label: 'Categoría B1 (Automóviles / SUV)' },
+                                { value: 'B2', label: 'Categoría B2 / C1 (Servicio Público)' },
+                                { value: 'A2', label: 'Categoría A2 (Motocicletas)' },
+                              ]}
+                            />
                           </div>
                         </div>
                       )}
@@ -909,7 +914,7 @@ export default function RentalWizardFlow({
 
             {/* SLIDE 3: Entrega y Mapa interactivo Mapbox (slide dedicado, cero saturación) */}
             {paso === 3 && (
-              <section className="space-y-3.5 animate-fade-up">
+              <section className="space-y-3.5 animate-fade-in">
                 <RentalVehicleHero vehiculo={vehiculo} compact />
 
                 <div className="rounded-[28px] bg-white border border-[#9CA3AF]/45 p-5 shadow-xs dark:bg-[#1F2937] dark:border-white/12">
@@ -930,7 +935,7 @@ export default function RentalWizardFlow({
 
             {/* SLIDE 4: Resumen unificado en una sola tarjeta editorial */}
             {paso === 4 && (
-              <section className="space-y-3.5 animate-fade-up">
+              <section className="space-y-3.5 animate-fade-in">
                 <RentalVehicleHero vehiculo={vehiculo} compact />
 
                 <div className="rounded-[28px] bg-white border border-[#9CA3AF]/45 p-5 space-y-4 shadow-xs dark:bg-[#1F2937] dark:border-white/12">
@@ -1041,7 +1046,7 @@ export default function RentalWizardFlow({
 
             {/* SLIDE 5: Abono, Autorizaciones y Deslizamiento para Confirmar */}
             {paso === 5 && (
-              <section className="space-y-3.5 animate-fade-up">
+              <section className="space-y-3.5 animate-fade-in">
                 <RentalVehicleHero vehiculo={vehiculo} compact />
 
                 <div className="rounded-[28px] bg-white border border-[#9CA3AF]/45 p-5 space-y-4 shadow-xs dark:bg-[#1F2937] dark:border-white/12">

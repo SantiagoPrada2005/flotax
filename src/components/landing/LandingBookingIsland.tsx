@@ -1,6 +1,7 @@
 import { useState, type SyntheticEvent } from 'react';
 import { navigate } from 'astro:transitions/client';
 import { MapPin, Calendar, Clock, Search } from 'lucide-react';
+import { Select } from '@/components/ui/Select';
 
 interface CategoryOption {
   id: 'todos' | 'carros' | 'motos';
@@ -119,17 +120,21 @@ export function LandingBookingIsland() {
               </label>
               <div className="h-12 px-4 rounded-full bg-[#F9FAFB] dark:bg-[#111827] dark:border dark:border-white/10 hover:bg-[#F3F4F6] dark:hover:bg-[#111827]/80 focus-within:bg-[#EEF2F6] dark:focus-within:bg-[#111827] transition-colors flex items-center gap-2.5">
                 <MapPin className="w-4 h-4 text-[#4B5563] dark:text-[#9CA3AF] shrink-0" strokeWidth={1.8} />
-                <select
+                <Select
                   id="sede-select"
                   name="sede"
+                  ariaLabel="Punto de entrega"
+                  variant="ghost"
                   value={sede}
-                  onChange={(e) => setSede(e.target.value)}
-                  className="w-full min-h-[44px] bg-transparent text-sm font-semibold text-[#1F2937] dark:text-[#EDEDED] font-[Manrope,system-ui,sans-serif] cursor-pointer truncate"
-                >
-                  <option value="centro" className="bg-white dark:bg-[#1F2937] text-[#111827] dark:text-[#EDEDED]">Patio Central · Aeropuerto</option>
-                  <option value="norte" className="bg-white dark:bg-[#1F2937] text-[#111827] dark:text-[#EDEDED]">Patio Norte · Zona Financiera</option>
-                  <option value="sur" className="bg-white dark:bg-[#1F2937] text-[#111827] dark:text-[#EDEDED]">Patio Sur · Terminal Terrestre</option>
-                </select>
+                  onChange={(val) => setSede(val)}
+                  className="flex-1 min-w-0"
+                  triggerClassName="px-0 py-0 text-sm font-[Manrope,system-ui,sans-serif]"
+                  options={[
+                    { value: 'centro', label: 'Patio Central · Aeropuerto' },
+                    { value: 'norte', label: 'Patio Norte · Zona Financiera' },
+                    { value: 'sur', label: 'Patio Sur · Terminal Terrestre' },
+                  ]}
+                />
               </div>
             </div>
 
@@ -162,17 +167,15 @@ export function LandingBookingIsland() {
                 {/* Time Selector */}
                 <div className="flex items-center gap-1 shrink-0">
                   <Clock className="w-3.5 h-3.5 text-[#6B7280] dark:text-[#9CA3AF] shrink-0" strokeWidth={1.8} />
-                  <select
+                  <Select
                     name="hora_desde"
+                    ariaLabel="Seleccionar hora de recogida"
+                    variant="ghost"
                     value={horaInicio}
-                    onChange={(e) => setHoraInicio(e.target.value)}
-                    className="min-h-[44px] bg-transparent text-xs sm:text-[13px] font-semibold text-[#1F2937] dark:text-[#EDEDED] cursor-pointer"
-                    aria-label="Seleccionar hora de recogida"
-                  >
-                    {HORAS_DISPONIBLES.map((h) => (
-                      <option key={h} value={h} className="bg-white dark:bg-[#1F2937] text-[#111827] dark:text-[#EDEDED]">{h}</option>
-                    ))}
-                  </select>
+                    onChange={(val) => setHoraInicio(val)}
+                    triggerClassName="px-0.5 py-0 text-xs sm:text-[13px]"
+                    options={HORAS_DISPONIBLES.map((h) => ({ value: h, label: h }))}
+                  />
                 </div>
               </div>
             </div>
@@ -206,17 +209,15 @@ export function LandingBookingIsland() {
                 {/* Time Selector */}
                 <div className="flex items-center gap-1 shrink-0">
                   <Clock className="w-3.5 h-3.5 text-[#6B7280] dark:text-[#9CA3AF] shrink-0" strokeWidth={1.8} />
-                  <select
+                  <Select
                     name="hora_hasta"
+                    ariaLabel="Seleccionar hora de devolución"
+                    variant="ghost"
                     value={horaFin}
-                    onChange={(e) => setHoraFin(e.target.value)}
-                    className="min-h-[44px] bg-transparent text-xs sm:text-[13px] font-semibold text-[#1F2937] dark:text-[#EDEDED] cursor-pointer"
-                    aria-label="Seleccionar hora de devolución"
-                  >
-                    {HORAS_DISPONIBLES.map((h) => (
-                      <option key={h} value={h} className="bg-white dark:bg-[#1F2937] text-[#111827] dark:text-[#EDEDED]">{h}</option>
-                    ))}
-                  </select>
+                    onChange={(val) => setHoraFin(val)}
+                    triggerClassName="px-0.5 py-0 text-xs sm:text-[13px]"
+                    options={HORAS_DISPONIBLES.map((h) => ({ value: h, label: h }))}
+                  />
                 </div>
               </div>
             </div>

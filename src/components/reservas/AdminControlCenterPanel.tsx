@@ -110,7 +110,7 @@ function AccordionSection({
         type="button"
         aria-expanded={abierta}
         onClick={() => onToggle(id)}
-        className="w-full min-h-[52px] py-3 px-1 flex items-center justify-between gap-3 text-left cursor-pointer transition-colors hover:bg-[#EDEDED]/35 dark:hover:bg-white/[0.03] rounded-[14px]"
+        className="w-full min-h-[52px] py-3 px-1 flex items-center justify-between gap-3 text-left cursor-pointer transition-colors bg-transparent dark:bg-transparent hover:bg-[#EDEDED]/35 dark:hover:bg-transparent rounded-[14px]"
       >
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#EDEDED] dark:bg-[#111827] text-[#111827] dark:text-[#EDEDED] border border-[#9CA3AF]/25 dark:border-white/10">

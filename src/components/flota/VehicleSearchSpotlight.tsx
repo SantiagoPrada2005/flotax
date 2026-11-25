@@ -68,18 +68,30 @@ export default function VehicleSearchSpotlight({
     >
       <div className="mx-auto w-full max-w-2xl flex-1 flex flex-col min-h-0">
         {/* Barra de Filtros Rápidos */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-3 pt-1 no-scrollbar shrink-0">
+        <div
+          role="tablist"
+          aria-label="Filtrar resultados por categoría"
+          className="flex items-center gap-2 overflow-x-auto pb-3 pt-1 no-scrollbar shrink-0"
+        >
           {CATEGORIAS.map((cat) => {
             const isActive = categoria === cat.id;
             return (
               <button
                 key={cat.id}
                 type="button"
-                onClick={() => setCategoria(cat.id)}
-                className={`ios-press-bounce shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${isActive
-                    ? 'bg-[#111827] text-white shadow-xs'
-                    : 'bg-white border border-[#9CA3AF]/40 text-[#4B5563] hover:text-[#111827]'
-                  }`}
+                role="tab"
+                aria-selected={isActive}
+                aria-pressed={isActive}
+                onClick={() =>
+                  setCategoria((prev) =>
+                    cat.id === 'TODOS' ? 'TODOS' : prev === cat.id ? 'TODOS' : cat.id
+                  )
+                }
+                className={`fx-press shrink-0 min-h-[36px] rounded-full border px-3.5 py-1.5 text-xs font-bold transition-colors cursor-pointer ${
+                  isActive
+                    ? 'bg-[#111827] text-[#EDEDED] border-[#111827] shadow-xs dark:bg-[#EDEDED] dark:text-[#111827] dark:border-[#EDEDED]'
+                    : 'bg-white border-[#9CA3AF]/40 text-[#4B5563] hover:border-[#111827] hover:text-[#111827] dark:bg-[#1F2937] dark:border-white/15 dark:text-[#EDEDED] dark:hover:border-white/40'
+                }`}
               >
                 {cat.label}
               </button>

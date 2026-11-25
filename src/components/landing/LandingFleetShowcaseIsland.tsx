@@ -73,14 +73,14 @@ export default function LandingFleetShowcaseIsland({
       : DEFAULT_PREVIEW_VEHICLES;
   }, [initialVehiculos]);
 
-  // Filtrado reactivo por categoría
+  // Filtrado reactivo por categoría (vista general Todos sin filtrar por destacados)
   const filteredVehicles = useMemo(() => {
     if (selectedCategory === 'TODOS') {
-      const destacados = pool.filter((v) => v.destacado);
-      return (destacados.length >= 3 ? destacados : pool).slice(0, 3);
+      return pool;
     }
-    const matching = pool.filter((v) => v.categoria === selectedCategory);
-    return matching.slice(0, 3);
+    return pool.filter(
+      (v) => (v.categoria || '').trim().toUpperCase() === selectedCategory
+    );
   }, [pool, selectedCategory]);
 
   const formatCop = (val: number) =>

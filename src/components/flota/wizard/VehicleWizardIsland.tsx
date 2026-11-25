@@ -1,4 +1,4 @@
-import { useState, useEffect, useTransition, useRef } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { actions } from 'astro:actions';
 import { navigate } from 'astro:transitions/client';
 import { motion, AnimatePresence, useReducedMotion, type Variants } from 'framer-motion';
@@ -22,21 +22,23 @@ const MOTION_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 const stepVariants: Variants = {
   enter: (direction: number) => ({
-    y: direction >= 0 ? '100%' : '-100%',
-    opacity: 1,
+    y: direction >= 0 ? 18 : -18,
+    opacity: 0,
   }),
   center: {
     y: 0,
     opacity: 1,
     transition: {
-      y: { duration: 0.4, ease: MOTION_EASE },
+      y: { duration: 0.22, ease: MOTION_EASE },
+      opacity: { duration: 0.18 },
     },
   },
   exit: (direction: number) => ({
-    y: direction >= 0 ? '-100%' : '100%',
-    opacity: 1,
+    y: direction >= 0 ? -18 : 18,
+    opacity: 0,
     transition: {
-      y: { duration: 0.4, ease: MOTION_EASE },
+      y: { duration: 0.16, ease: MOTION_EASE },
+      opacity: { duration: 0.14 },
     },
   }),
 };
@@ -137,8 +139,6 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
   const [editandoDesdeConfirmacion, setEditandoDesdeConfirmacion] = useState<boolean>(false);
   const [direction, setDirection] = useState<number>(1);
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
-  const [containerHeight, setContainerHeight] = useState<number | 'auto'>('auto');
-  const containerRef = useRef<HTMLDivElement>(null);
   const shouldReduceMotion = useReducedMotion();
 
   const [data, setData] = useState<VehiculoWizardData>(() => {
@@ -306,13 +306,10 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
   };
 
   const cambiarPaso = (nuevoPaso: WizardStepId, dir: number) => {
-    if (isTransitioning || nuevoPaso === pasoActual) return;
+    if (nuevoPaso === pasoActual) return;
 
-    if (containerRef.current) {
-      setContainerHeight(containerRef.current.offsetHeight);
-    }
     setDirection(dir);
-    setIsTransitioning(true);
+    setIsTransitioning(false);
     setPasoActual(nuevoPaso);
     setPasoMaximoAlcanzado((prev) => Math.max(prev, nuevoPaso));
     if (nuevoPaso === 8) {
@@ -555,45 +552,23 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
         </div>
       )}
 
-      {/* 2. Zona Central Inmersiva con Transición Vertical Continua */}
+      {/* 2. Zona Central Inmersiva con Transición Fluida */}
       <main className="my-auto py-4 w-full">
-        <motion.div
-          ref={containerRef}
-          animate={{ height: containerHeight }}
-          transition={{ duration: 0.4, ease: MOTION_EASE }}
-          className="w-full relative overflow-hidden bg-[#EDEDED] dark:bg-transparent"
-        >
-          <div className="grid grid-cols-1 grid-rows-1 items-start w-full bg-[#EDEDED] dark:bg-transparent">
-            <AnimatePresence mode="sync" custom={direction} initial={false}>
-              <motion.div
-                key={pasoActual}
-                custom={direction}
-                variants={shouldReduceMotion ? reducedVariants : stepVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                ref={(node) => {
-                  if (node && isTransitioning) {
-                    const h = node.offsetHeight;
-                    if (h && h > 0) {
-                      setContainerHeight(h);
-                    }
-                  }
-                }}
-                onAnimationComplete={(definition) => {
-                  if (definition === 'center') {
-                    setIsTransitioning(false);
-                    setContainerHeight('auto');
-                  }
-                }}
-                className="col-start-1 row-start-1 w-full bg-[#EDEDED] dark:bg-transparent"
-                style={{ willChange: 'transform' }}
-              >
-                {renderPaso(pasoActual)}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </motion.div>
+        <div className="w-full relative bg-[#EDEDED] dark:bg-transparent">
+          <AnimatePresence mode="wait" custom={direction} initial={false}>
+            <motion.div
+              key={pasoActual}
+              custom={direction}
+              variants={shouldReduceMotion ? reducedVariants : stepVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              className="w-full bg-[#EDEDED] dark:bg-transparent"
+            >
+              {renderPaso(pasoActual)}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </main>
 
       {/* 3. Zona Inferior de Acciones Principales */}

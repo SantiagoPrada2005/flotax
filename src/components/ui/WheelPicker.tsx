@@ -37,6 +37,7 @@ export function WheelPicker<T extends string | number>({
 }: WheelPickerProps<T>) {
   const containerRef = useRef<HTMLDivElement>(null);
   const snapTimerRef = useRef<number | null>(null);
+  const rafScrollRef = useRef<number | null>(null);
   const isInternalScrollRef = useRef(false);
   const lastEmittedRef = useRef<T>(value);
 
@@ -97,6 +98,9 @@ export function WheelPicker<T extends string | number>({
       if (snapTimerRef.current !== null) {
         window.clearTimeout(snapTimerRef.current);
       }
+      if (rafScrollRef.current !== null) {
+        window.cancelAnimationFrame(rafScrollRef.current);
+      }
     };
   }, []);
 
@@ -138,10 +142,15 @@ export function WheelPicker<T extends string | number>({
       }
     }
 
-    setFloatIndex(rawVirtual);
-
-    const nearest = Math.round(rawVirtual);
-    commitIndex(nearest);
+    if (rafScrollRef.current === null) {
+      rafScrollRef.current = window.requestAnimationFrame(() => {
+        rafScrollRef.current = null;
+        const currEl = containerRef.current;
+        if (currEl) {
+          setFloatIndex(currEl.scrollTop / itemHeight);
+        }
+      });
+    }
 
     if (snapTimerRef.current !== null) {
       window.clearTimeout(snapTimerRef.current);
@@ -154,8 +163,9 @@ export function WheelPicker<T extends string | number>({
       if (Math.abs(targetEl.scrollTop - targetTop) > 0.5) {
         targetEl.scrollTo({ top: targetTop, behavior: 'smooth' });
       }
+      setFloatIndex(finalNearest);
       commitIndex(finalNearest);
-    }, 110);
+    }, 95);
   };
 
   const scrollToVirtualIndex = (virtualIdx: number) => {

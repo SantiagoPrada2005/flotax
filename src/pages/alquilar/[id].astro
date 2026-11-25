@@ -33,24 +33,26 @@ if (!vehiculo || vehiculo.estado === 'FUERA_SERVICIO') {
 }
 
 const { dateString: hoyISO } = resolveClientTimeContext(Astro.request);
+const localId = localCautivo?.id ?? vehiculo.localId ?? undefined;
 
-// Obtener bloques reales de indisponibilidad (reservas activas y órdenes de taller) desde D1
-const bloques = db
-  ? await obtenerBloquesNoDisponiblesD1(db, vehiculo.id, hoyISO, 180)
-  : [];
-
-// Evaluar documentos legales del vehículo (SOAT, RTM)
-const estadoDocumental = db
-  ? await obtenerEstadoDocumentalVehiculoD1(db, vehiculo.id, vehiculo.categoria, hoyISO)
-  : {
-      tieneVencidos: false,
-      faltantesSinCarga: [],
-      vencidos: [],
-      requiereRtm: vehiculo.categoria !== 'PATINETA',
-      exentoPorLey2486: vehiculo.categoria === 'PATINETA',
-      bloqueadoPorDocumentos: false,
-      motivoBloqueo: null,
-    };
+const [bloques, estadoDocumental, localInfo] = await Promise.all([
+  db ? obtenerBloquesNoDisponiblesD1(db, vehiculo.id, hoyISO, 180) : Promise.resolve([]),
+  db
+    ? obtenerEstadoDocumentalVehiculoD1(db, vehiculo.id, vehiculo.categoria, hoyISO)
+    : Promise.resolve({
+        tieneVencidos: false,
+        faltantesSinCarga: [],
+        vencidos: [],
+        requiereRtm: vehiculo.categoria !== 'PATINETA',
+        exentoPorLey2486: vehiculo.categoria === 'PATINETA',
+        bloqueadoPorDocumentos: false,
+        motivoBloqueo: null,
+      }),
+  (async () =>
+    localCautivo ??
+    (localId ? await obtenerLocalPorSlugOId(localId, db) : null) ??
+    (await obtenerLocalCatalogoPorDefecto(db)))(),
+]);
 
 const desdeParam = Astro.url.searchParams.get('desde') ?? undefined;
 const hastaParam = Astro.url.searchParams.get('hasta') ?? undefined;
@@ -77,12 +79,6 @@ const usuarioActual = usuarioLocals
       numeroDocumento: usuarioLocals.numeroDocumento,
     }
   : null;
-
-const localId = localCautivo?.id ?? vehiculo.localId ?? undefined;
-const localInfo =
-  localCautivo ??
-  (localId ? await obtenerLocalPorSlugOId(localId, db) : null) ??
-  (await obtenerLocalCatalogoPorDefecto(db));
 
 const sedeNombre = localInfo.nombre;
 const patioUbicacion: UbicacionPatio = {

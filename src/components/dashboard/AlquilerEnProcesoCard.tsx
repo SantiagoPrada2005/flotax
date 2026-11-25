@@ -364,18 +364,18 @@ export default function AlquilerEnProcesoCard({
                     type="button"
                     onClick={() => toggleContrato(item.id)}
                     aria-expanded={isExpanded}
-                    className="fx-pressable flex w-full items-center gap-3 p-2.5 text-left sm:p-3"
+                    className="fx-pressable flex w-full items-stretch text-left cursor-pointer"
                   >
-                    <div className="flex w-24 sm:w-28 aspect-video shrink-0 items-center justify-center overflow-hidden rounded-[14px] bg-[#111827] p-1.5">
+                    <div className="relative w-28 sm:w-36 self-stretch shrink-0 overflow-hidden">
                       <img
                         src={item.imagenUrl}
                         alt={`Vehículo ${item.placa}`}
                         loading="lazy"
-                        className="h-full w-full object-contain object-center block"
+                        className="h-full w-full object-cover object-center block"
                       />
                     </div>
 
-                    <div className="min-w-0 flex-1 space-y-1.5">
+                    <div className="min-w-0 flex-1 space-y-1.5 p-2.5 sm:p-3.5">
                       <div className="flex items-center justify-between gap-2">
                         <span
                           className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${meta.badgeClass}`}

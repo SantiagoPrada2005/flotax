@@ -7,12 +7,13 @@ export interface RentalVehicleHeroProps {
   compact?: boolean | undefined;
 }
 
-const formatCop = (val: number): string =>
-  new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0,
-  }).format(val);
+const COP_FORMATTER = new Intl.NumberFormat('es-CO', {
+  style: 'currency',
+  currency: 'COP',
+  maximumFractionDigits: 0,
+});
+
+const formatCop = (val: number): string => COP_FORMATTER.format(val);
 
 export default function RentalVehicleHero({
   vehiculo,
@@ -30,35 +31,37 @@ export default function RentalVehicleHero({
 
   if (compact) {
     return (
-      <div className="flex items-center gap-3.5 rounded-[24px] bg-white border border-[#9CA3AF]/45 p-3 shadow-xs dark:bg-[#1F2937] dark:border-white/12">
-        <div className="relative w-24 sm:w-28 aspect-video shrink-0 overflow-hidden rounded-[14px] bg-[#111827] flex items-center justify-center p-1.5">
+      <div className="flex items-stretch overflow-hidden rounded-[24px] bg-white border border-[#9CA3AF]/45 shadow-xs dark:bg-[#1F2937] dark:border-white/12">
+        <div className="relative w-28 sm:w-32 aspect-video shrink-0 overflow-hidden">
           <img
             src={vehiculo.imagenUrl}
             alt={`${vehiculo.marca} ${vehiculo.modelo}`}
-            className="h-full w-full object-contain object-center block"
+            className="h-full w-full object-cover object-center block"
             loading="eager"
           />
         </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="font-mono text-[10px] font-bold tracking-wider text-[#111827] bg-[#EDEDED] border border-[#9CA3AF]/45 px-2 py-0.5 rounded-md dark:bg-[#111827] dark:text-[#EDEDED] dark:border-white/15">
-              {vehiculo.placa}
-            </span>
-            <span className="font-mono text-[10px] font-bold text-[#4B5563] dark:text-[#D1D5DB] truncate">
-              {vehiculo.categoriaEtiqueta} · {vehiculo.anio}
+        <div className="min-w-0 flex-1 flex items-center justify-between gap-2.5 p-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="font-mono text-[10px] font-bold tracking-wider text-[#111827] bg-[#EDEDED] border border-[#9CA3AF]/45 px-2 py-0.5 rounded-md dark:bg-[#111827] dark:text-[#EDEDED] dark:border-white/15">
+                {vehiculo.placa}
+              </span>
+              <span className="font-mono text-[10px] font-bold text-[#4B5563] dark:text-[#D1D5DB] truncate">
+                {vehiculo.categoriaEtiqueta} · {vehiculo.anio}
+              </span>
+            </div>
+            <h2 className="mt-0.5 font-display text-sm sm:text-base font-extrabold tracking-tight text-[#111827] dark:text-[#EDEDED] truncate">
+              {vehiculo.marca} {vehiculo.modelo}
+            </h2>
+          </div>
+          <div className="text-right shrink-0">
+            <p className="font-display text-sm font-black text-[#111827] dark:text-[#EDEDED] tabular-nums">
+              {formatCop(vehiculo.precioDia)}
+            </p>
+            <span className="text-[10px] font-medium text-[#4B5563] dark:text-[#D1D5DB]">
+              / día
             </span>
           </div>
-          <h2 className="mt-0.5 font-display text-sm sm:text-base font-extrabold tracking-tight text-[#111827] dark:text-[#EDEDED] truncate">
-            {vehiculo.marca} {vehiculo.modelo}
-          </h2>
-        </div>
-        <div className="text-right shrink-0 pr-1">
-          <p className="font-display text-sm font-black text-[#111827] dark:text-[#EDEDED] tabular-nums">
-            {formatCop(vehiculo.precioDia)}
-          </p>
-          <span className="text-[10px] font-medium text-[#4B5563] dark:text-[#D1D5DB]">
-            / día
-          </span>
         </div>
       </div>
     );

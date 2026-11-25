@@ -516,14 +516,14 @@ export default function DeliveryLocationSelector({
               <ul
                 id={listboxId}
                 role="listbox"
-                className="max-h-56 overflow-y-auto rounded-[16px] border border-[#9CA3AF]/60 bg-white p-1.5 shadow-lg dark:border-white/15 dark:bg-[#1F2937]"
+                className="flex flex-col gap-1 max-h-56 overflow-y-auto rounded-[16px] border border-[#9CA3AF]/60 bg-white p-1.5 shadow-lg dark:border-white/15 dark:bg-[#1F2937]"
               >
                 {sugerencias.map((sug, idx) => (
                   <li key={sug.id} role="option" aria-selected={idx === indiceActivo}>
                     <button
                       type="button"
                       onClick={() => aplicarSugerencia(sug)}
-                      className={`fx-press flex w-full min-h-[44px] items-start justify-between gap-2.5 rounded-[12px] px-3 py-2 text-left transition-colors cursor-pointer ${
+                      className={`fx-press flex w-full min-h-[38px] items-start justify-between gap-2.5 rounded-[10px] px-3 py-1.5 text-left transition-colors cursor-pointer ${
                         idx === indiceActivo
                           ? 'bg-[#EDEDED] dark:bg-[#111827]'
                           : 'hover:bg-[#EDEDED]/75 dark:hover:bg-[#111827]/70'
