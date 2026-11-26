@@ -1221,6 +1221,38 @@ export function formatearRangoReservaHumano(
   return `${formatearFechaCorta(fechaInicio)} – ${formatearFechaCorta(fechaFin)}`;
 }
 
+/**
+ * Actualiza el rango de filtro del calendario de reservas al tocar una fecha:
+ * - Si ya hay rango `[inicio, fin]` y el usuario vuelve a tocar `fin`, limpia el rango
+ *   conservando únicamente `inicio` (`{ inicio, fin: null }`) para elegir un nuevo cierre.
+ * - Si no hay rango o se toca otra fecha con rango completo, inicia nueva selección en `fechaTocada`.
+ * - Si solo hay `inicio` y se toca el mismo `inicio`, limpia la selección (`{ inicio: null, fin: null }`).
+ * - Si solo hay `inicio` y se toca otra fecha, arma el rango ordenado `[min, max]`.
+ */
+export function actualizarRangoFiltroReservasPorToque(
+  filtroInicioISO: string | null,
+  filtroFinISO: string | null,
+  fechaTocada: string
+): { inicio: string | null; fin: string | null } {
+  if (filtroInicioISO && filtroFinISO !== null && fechaTocada === filtroFinISO) {
+    return { inicio: filtroInicioISO, fin: null };
+  }
+
+  if (!filtroInicioISO || filtroFinISO !== null) {
+    return { inicio: fechaTocada, fin: null };
+  }
+
+  if (fechaTocada === filtroInicioISO) {
+    return { inicio: null, fin: null };
+  }
+
+  if (fechaTocada < filtroInicioISO) {
+    return { inicio: fechaTocada, fin: filtroInicioISO };
+  }
+
+  return { inicio: filtroInicioISO, fin: fechaTocada };
+}
+
 export function obtenerPlantillaChecklistEntrega(
   categoria?: string | null
 ): RespuestaItemChecklistInspeccion[] {

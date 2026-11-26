@@ -1,9 +1,11 @@
+import { Check } from 'lucide-react';
 import type {
   CategoriaVehiculo,
   TransmisionVehiculo,
   CombustibleVehiculo,
 } from '@/lib/flota/types';
 import type { VehiculoWizardData } from './types';
+import { VehicleCategoryIcon, WIZARD_ICON_STROKE } from './wizard-icons';
 
 export interface Step1TipoVehiculoProps {
   data: VehiculoWizardData;
@@ -20,7 +22,6 @@ interface CategoriaCardOption {
   defaultCombustible: CombustibleVehiculo;
   defaultPrecioDia: number;
   defaultGarantia: number;
-  iconoSvg: string;
 }
 
 const OPCIONES_CATEGORIA: CategoriaCardOption[] = [
@@ -34,7 +35,6 @@ const OPCIONES_CATEGORIA: CategoriaCardOption[] = [
     defaultCombustible: 'Gasolina',
     defaultPrecioDia: 180000,
     defaultGarantia: 500000,
-    iconoSvg: 'M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9C2.1 11.1 2 11.5 2 12v4c0 .6.4 1 1 1h2m0 0a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0m10 0a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0',
   },
   {
     id: 'SUV',
@@ -46,7 +46,6 @@ const OPCIONES_CATEGORIA: CategoriaCardOption[] = [
     defaultCombustible: 'Gasolina',
     defaultPrecioDia: 250000,
     defaultGarantia: 800000,
-    iconoSvg: 'M3 14l2-6a2 2 0 0 1 2-1h10a2 2 0 0 1 2 1l2 6M3 14h18M5 18a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0m8 0a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0',
   },
   {
     id: 'MOTO',
@@ -58,7 +57,6 @@ const OPCIONES_CATEGORIA: CategoriaCardOption[] = [
     defaultCombustible: 'Gasolina',
     defaultPrecioDia: 85000,
     defaultGarantia: 400000,
-    iconoSvg: 'M5 16a3 3 0 1 0 6 0 3 3 0 0 0-6 0Zm12 0a3 3 0 1 0 6 0 3 3 0 0 0-6 0Zm-9-5h6l3 5m-9-5-2-3H7',
   },
   {
     id: 'PATINETA',
@@ -70,7 +68,6 @@ const OPCIONES_CATEGORIA: CategoriaCardOption[] = [
     defaultCombustible: 'Eléctrico',
     defaultPrecioDia: 45000,
     defaultGarantia: 200000,
-    iconoSvg: 'M6 18a2 2 0 1 0 4 0 2 2 0 0 0-4 0Zm8 0a2 2 0 1 0 4 0 2 2 0 0 0-4 0ZM8 18h8M9 5l3 9h4',
   },
   {
     id: 'UTILITARIO',
@@ -82,7 +79,6 @@ const OPCIONES_CATEGORIA: CategoriaCardOption[] = [
     defaultCombustible: 'Diésel',
     defaultPrecioDia: 220000,
     defaultGarantia: 700000,
-    iconoSvg: 'M1 3h15v13H1zM16 8h4l3 3v5h-7zM5 19a2 2 0 1 0 4 0 2 2 0 0 0-4 0Zm11 0a2 2 0 1 0 4 0 2 2 0 0 0-4 0Z',
   },
 ];
 
@@ -142,18 +138,11 @@ export default function Step1TipoVehiculo({
                     : 'bg-[#EDEDED] text-[#111827] border-[#9CA3AF]/30 dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15'
                   }`}
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-6 w-6"
-                >
-                  <path d={op.iconoSvg} />
-                </svg>
+                <VehicleCategoryIcon
+                  categoria={op.id}
+                  className="h-[22px] w-[22px]"
+                  strokeWidth={WIZARD_ICON_STROKE}
+                />
               </div>
 
               <div className="min-w-0 flex-1">
@@ -167,7 +156,7 @@ export default function Step1TipoVehiculo({
                         : 'border border-[#9CA3AF]/60 text-transparent dark:border-white/30'
                       }`}
                   >
-                    ✓
+                    {isSelected && <Check className="h-3 w-3" strokeWidth={2.5} aria-hidden="true" />}
                   </span>
                 </div>
                 <p

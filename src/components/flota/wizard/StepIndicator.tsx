@@ -1,5 +1,6 @@
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, X } from 'lucide-react';
 import type { WizardStepId, WizardStepInfo } from './types';
+import { WIZARD_ICON_STROKE } from './wizard-icons';
 
 export interface StepIndicatorProps {
   pasos: WizardStepInfo[];
@@ -37,7 +38,7 @@ export default function StepIndicator({
               aria-label="Volver al paso anterior"
               className="fx-press flex h-9 w-9 items-center justify-center rounded-full border border-[#9CA3AF]/60 bg-white text-[#111827] text-sm font-bold hover:bg-[#EDEDED] transition-colors shadow-xs cursor-pointer disabled:opacity-50 dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20"
             >
-              ←
+              <ArrowLeft className="h-4 w-4" strokeWidth={WIZARD_ICON_STROKE} aria-hidden="true" />
             </button>
           ) : (
             <div className="h-9 w-9" />
@@ -56,7 +57,7 @@ export default function StepIndicator({
               disabled={isTransitioning}
               className="fx-press inline-flex min-h-[36px] items-center gap-1.5 rounded-full border border-[#111827]/35 bg-white px-3.5 py-1.5 font-display text-xs font-bold text-[#111827] shadow-xs transition-colors hover:bg-[#EDEDED] cursor-pointer disabled:opacity-50 dark:border-white/25 dark:bg-[#1F2937] dark:text-[#EDEDED] dark:hover:bg-white/15"
             >
-              <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+              <ArrowLeft className="h-3.5 w-3.5" strokeWidth={WIZARD_ICON_STROKE} aria-hidden="true" />
               <span>Volver a la confirmación</span>
             </button>
           )}
@@ -68,7 +69,7 @@ export default function StepIndicator({
               aria-label="Cerrar y volver al inventario"
               className="fx-press flex h-9 w-9 items-center justify-center rounded-full border border-[#9CA3AF]/60 bg-white text-[#111827] text-sm font-bold hover:bg-[#EDEDED] transition-colors shadow-xs cursor-pointer dark:bg-white/10 dark:text-[#EDEDED] dark:border-white/15 dark:hover:bg-white/20"
             >
-              ✕
+              <X className="h-4 w-4" strokeWidth={WIZARD_ICON_STROKE} aria-hidden="true" />
             </button>
           )}
         </div>

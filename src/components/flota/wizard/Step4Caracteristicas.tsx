@@ -1,5 +1,7 @@
 import { useRef, type ChangeEvent } from 'react';
+import { Fuel, Gauge, Settings2 } from 'lucide-react';
 import type { VehiculoWizardData } from './types';
+import { FUEL_TYPE_ICONS, WIZARD_ICON_STROKE } from './wizard-icons';
 import {
   formatearNumeroConMiles,
   formatearValorMiles,
@@ -58,8 +60,15 @@ export default function Step4Caracteristicas({
         {!isPatineta && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
-                Tipo de caja <span className="text-rose-600 dark:text-rose-400">*</span>
+              <span className="inline-flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
+                <Settings2
+                  className="h-3.5 w-3.5 shrink-0 text-[#4B5563] dark:text-[#9CA3AF]"
+                  strokeWidth={WIZARD_ICON_STROKE}
+                  aria-hidden="true"
+                />
+                <span>
+                  Tipo de caja <span className="text-rose-600 dark:text-rose-400">*</span>
+                </span>
               </span>
               {!data.transmision && (
                 <span className="font-mono text-[11px] text-[#9CA3AF]">
@@ -101,8 +110,15 @@ export default function Step4Caracteristicas({
         {!isPatineta && (
           <div className="space-y-2 border-t border-[#EDEDED] pt-5 dark:border-white/10">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
-                Combustible/Motor <span className="text-rose-600 dark:text-rose-400">*</span>
+              <span className="inline-flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
+                <Fuel
+                  className="h-3.5 w-3.5 shrink-0 text-[#4B5563] dark:text-[#9CA3AF]"
+                  strokeWidth={WIZARD_ICON_STROKE}
+                  aria-hidden="true"
+                />
+                <span>
+                  Combustible/Motor <span className="text-rose-600 dark:text-rose-400">*</span>
+                </span>
               </span>
               {!data.combustible && (
                 <span className="font-mono text-[11px] text-[#9CA3AF]">
@@ -114,19 +130,25 @@ export default function Step4Caracteristicas({
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {OPCIONES_COMBUSTIBLE.map((c) => {
                 const isSelected = data.combustible === c;
+                const FuelIcon = FUEL_TYPE_ICONS[c];
                 return (
                   <button
                     key={c}
                     type="button"
                     aria-pressed={isSelected}
                     onClick={() => onChange({ combustible: c })}
-                    className={`fx-press min-h-[44px] cursor-pointer rounded-2xl border px-2 py-3 text-center font-mono text-xs font-bold transition-colors duration-120 sm:text-sm ${
+                    className={`fx-press inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-1.5 rounded-2xl border px-2 py-3 text-center font-mono text-xs font-bold transition-colors duration-120 sm:text-sm ${
                       isSelected
                         ? 'border-[#111827] bg-[#111827] text-white shadow-xs dark:border-white dark:bg-white dark:text-[#111827]'
                         : 'border-[#9CA3AF]/40 bg-[#EDEDED]/50 text-[#111827] hover:border-[#111827] hover:bg-white dark:border-white/15 dark:bg-[#111827]/70 dark:text-[#EDEDED] dark:hover:border-white/40 dark:hover:bg-[#111827]'
                     }`}
                   >
-                    {c}
+                    <FuelIcon
+                      className="h-3.5 w-3.5 shrink-0"
+                      strokeWidth={WIZARD_ICON_STROKE}
+                      aria-hidden="true"
+                    />
+                    <span>{c}</span>
                   </button>
                 );
               })}
@@ -147,9 +169,16 @@ export default function Step4Caracteristicas({
           <div className="flex items-center justify-between">
             <label
               htmlFor="input-km-hero"
-              className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]"
+              className="inline-flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]"
             >
-              Kilómetros Acumulados <span className="text-rose-600 dark:text-rose-400">*</span>
+              <Gauge
+                className="h-3.5 w-3.5 shrink-0 text-[#4B5563] dark:text-[#9CA3AF]"
+                strokeWidth={WIZARD_ICON_STROKE}
+                aria-hidden="true"
+              />
+              <span>
+                Kilómetros Acumulados <span className="text-rose-600 dark:text-rose-400">*</span>
+              </span>
             </label>
           </div>
 

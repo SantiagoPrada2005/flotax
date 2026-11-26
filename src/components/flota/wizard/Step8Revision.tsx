@@ -1,4 +1,6 @@
+import { Banknote, Camera, Gauge, ImageOff, Pencil, ShieldCheck } from 'lucide-react';
 import type { VehiculoWizardData, WizardStepId } from './types';
+import { VehicleCategoryIcon, WIZARD_ICON_STROKE } from './wizard-icons';
 
 export interface Step8RevisionProps {
   data: VehiculoWizardData;
@@ -34,16 +36,18 @@ export default function Step8Revision({
         {/* Tarjeta 1: Unidad e Identificación */}
         <div className="rounded-[28px] border border-[#9CA3AF]/40 bg-white p-5 sm:p-6 shadow-xs space-y-4 dark:bg-[#1F2937] dark:border-white/10">
           <div className="flex items-center justify-between border-b border-[#EDEDED] dark:border-white/10 pb-3">
-            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
-              01 · Identidad
+            <span className="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
+              <VehicleCategoryIcon categoria={data.categoria} className="h-3.5 w-3.5 shrink-0" />
+              <span>01 · Identidad</span>
             </span>
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => onEditPaso(2)}
-                className="font-mono text-xs font-bold text-[#111827] dark:text-white hover:underline cursor-pointer"
+                className="inline-flex items-center gap-1 font-mono text-xs font-bold text-[#111827] dark:text-white hover:underline cursor-pointer"
               >
-                Editar
+                <Pencil className="h-3 w-3 shrink-0" strokeWidth={WIZARD_ICON_STROKE} aria-hidden="true" />
+                <span>Editar</span>
               </button>
               <button
                 type="button"
@@ -71,15 +75,17 @@ export default function Step8Revision({
         {/* Tarjeta 2: Especificaciones Técnicas */}
         <div className="rounded-[28px] border border-[#9CA3AF]/40 bg-white p-5 sm:p-6 shadow-xs space-y-4 dark:bg-[#1F2937] dark:border-white/10">
           <div className="flex items-center justify-between border-b border-[#EDEDED] dark:border-white/10 pb-3">
-            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
-              02 · Mecánica
+            <span className="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
+              <Gauge className="h-3.5 w-3.5 shrink-0" strokeWidth={WIZARD_ICON_STROKE} aria-hidden="true" />
+              <span>02 · Mecánica</span>
             </span>
             <button
               type="button"
               onClick={() => onEditPaso(4)}
-              className="font-mono text-xs font-bold text-[#111827] dark:text-white hover:underline cursor-pointer"
+              className="inline-flex items-center gap-1 font-mono text-xs font-bold text-[#111827] dark:text-white hover:underline cursor-pointer"
             >
-              Editar
+              <Pencil className="h-3 w-3 shrink-0" strokeWidth={WIZARD_ICON_STROKE} aria-hidden="true" />
+              <span>Editar</span>
             </button>
           </div>
 
@@ -110,15 +116,17 @@ export default function Step8Revision({
         {/* Tarjeta 3: Tarifas de Alquiler */}
         <div className="rounded-[28px] border border-[#9CA3AF]/40 bg-white p-5 sm:p-6 shadow-xs space-y-4 dark:bg-[#1F2937] dark:border-white/10">
           <div className="flex items-center justify-between border-b border-[#EDEDED] dark:border-white/10 pb-3">
-            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
-              03 · Tarifas
+            <span className="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
+              <Banknote className="h-3.5 w-3.5 shrink-0" strokeWidth={WIZARD_ICON_STROKE} aria-hidden="true" />
+              <span>03 · Tarifas</span>
             </span>
             <button
               type="button"
               onClick={() => onEditPaso(5)}
-              className="font-mono text-xs font-bold text-[#111827] dark:text-white hover:underline cursor-pointer"
+              className="inline-flex items-center gap-1 font-mono text-xs font-bold text-[#111827] dark:text-white hover:underline cursor-pointer"
             >
-              Editar
+              <Pencil className="h-3 w-3 shrink-0" strokeWidth={WIZARD_ICON_STROKE} aria-hidden="true" />
+              <span>Editar</span>
             </button>
           </div>
 
@@ -145,15 +153,19 @@ export default function Step8Revision({
         {/* Tarjeta 4: Fotografía Principal (Span 2 cols on desktop if wide) */}
         <div className="md:col-span-2 rounded-[28px] border border-[#9CA3AF]/40 bg-white p-5 sm:p-6 shadow-xs space-y-4 dark:bg-[#1F2937] dark:border-white/10">
           <div className="flex items-center justify-between border-b border-[#EDEDED] dark:border-white/10 pb-3">
-            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
-              04 · Galería Fotográfica ({Math.max(data.galeria?.length ?? 0, data.imagenUrl ? 1 : 0)})
+            <span className="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
+              <Camera className="h-3.5 w-3.5 shrink-0" strokeWidth={WIZARD_ICON_STROKE} aria-hidden="true" />
+              <span>
+                04 · Galería Fotográfica ({Math.max(data.galeria?.length ?? 0, data.imagenUrl ? 1 : 0)})
+              </span>
             </span>
             <button
               type="button"
               onClick={() => onEditPaso(6)}
-              className="font-mono text-xs font-bold text-[#111827] dark:text-white hover:underline cursor-pointer"
+              className="inline-flex items-center gap-1 font-mono text-xs font-bold text-[#111827] dark:text-white hover:underline cursor-pointer"
             >
-              Editar
+              <Pencil className="h-3 w-3 shrink-0" strokeWidth={WIZARD_ICON_STROKE} aria-hidden="true" />
+              <span>Editar</span>
             </button>
           </div>
 
@@ -192,8 +204,9 @@ export default function Step8Revision({
               )}
             </div>
           ) : (
-            <div className="h-32 w-full flex items-center justify-center rounded-2xl bg-[#EDEDED]/40 border border-dashed border-[#9CA3AF]/40 text-[#4B5563] text-xs font-medium dark:bg-white/5 dark:border-white/10 dark:text-[#9CA3AF]">
-              Sin fotografía asignada
+            <div className="h-32 w-full flex items-center justify-center gap-2 rounded-2xl bg-[#EDEDED]/40 border border-dashed border-[#9CA3AF]/40 text-[#4B5563] text-xs font-medium dark:bg-white/5 dark:border-white/10 dark:text-[#9CA3AF]">
+              <ImageOff className="h-4 w-4 shrink-0" strokeWidth={WIZARD_ICON_STROKE} aria-hidden="true" />
+              <span>Sin fotografía asignada</span>
             </div>
           )}
         </div>
@@ -201,15 +214,17 @@ export default function Step8Revision({
         {/* Tarjeta 5: Estado Inicial y Documentación */}
         <div className="rounded-[28px] border border-[#9CA3AF]/40 bg-white p-5 sm:p-6 shadow-xs space-y-4 dark:bg-[#1F2937] dark:border-white/10">
           <div className="flex items-center justify-between border-b border-[#EDEDED] dark:border-white/10 pb-3">
-            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
-              05 · Patio
+            <span className="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#9CA3AF]">
+              <ShieldCheck className="h-3.5 w-3.5 shrink-0" strokeWidth={WIZARD_ICON_STROKE} aria-hidden="true" />
+              <span>05 · Patio</span>
             </span>
             <button
               type="button"
               onClick={() => onEditPaso(7)}
-              className="font-mono text-xs font-bold text-[#111827] dark:text-white hover:underline cursor-pointer"
+              className="inline-flex items-center gap-1 font-mono text-xs font-bold text-[#111827] dark:text-white hover:underline cursor-pointer"
             >
-              Editar
+              <Pencil className="h-3 w-3 shrink-0" strokeWidth={WIZARD_ICON_STROKE} aria-hidden="true" />
+              <span>Editar</span>
             </button>
           </div>
 

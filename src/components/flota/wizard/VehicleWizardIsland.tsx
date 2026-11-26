@@ -2,8 +2,10 @@ import { useState, useEffect, useTransition } from 'react';
 import { actions } from 'astro:actions';
 import { navigate } from 'astro:transitions/client';
 import { motion, AnimatePresence, useReducedMotion, type Variants } from 'framer-motion';
+import { ArrowRight, Check, LoaderCircle, RotateCcw } from 'lucide-react';
 import type { VehiculoItem } from '@/lib/flota/types';
 import type { WizardStepId, WizardStepInfo, VehiculoWizardData } from './types';
+import { WIZARD_ICON_STROKE } from './wizard-icons';
 import StepIndicator from './StepIndicator';
 import Step1TipoVehiculo from './Step1TipoVehiculo';
 import Step2Identificacion from './Step2Identificacion';
@@ -547,9 +549,10 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
             <button
               type="button"
               onClick={handleRestaurarBorrador}
-              className="ios-press-bounce rounded-full bg-white px-4 py-1.5 font-display text-xs font-bold text-[#111827] hover:bg-gray-100 transition cursor-pointer"
+              className="ios-press-bounce inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 font-display text-xs font-bold text-[#111827] hover:bg-gray-100 transition cursor-pointer"
             >
-              Restaurar borrador
+              <RotateCcw className="h-3.5 w-3.5 shrink-0" strokeWidth={WIZARD_ICON_STROKE} aria-hidden="true" />
+              <span>Restaurar borrador</span>
             </button>
             <button
               type="button"
@@ -621,7 +624,7 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
               className="ios-press-bounce flex-1 h-14 rounded-2xl bg-[#111827] hover:bg-[#1F2937] active:scale-[0.99] font-display text-base font-bold text-white shadow-xl transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 dark:bg-white dark:text-[#111827] dark:hover:bg-[#EDEDED]"
             >
               <span>Continuar</span>
-              <span className="font-mono text-sm">→</span>
+              <ArrowRight className="h-4 w-4 shrink-0" strokeWidth={WIZARD_ICON_STROKE} aria-hidden="true" />
             </button>
           ) : (
             <button
@@ -631,9 +634,15 @@ export default function VehicleWizardIsland({ vehiculoInicial }: VehicleWizardIs
               className="ios-press-bounce flex-1 h-14 rounded-2xl bg-[#111827] hover:bg-[#1F2937] active:scale-[0.99] font-display text-base font-bold text-white shadow-xl transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 dark:bg-white dark:text-[#111827] dark:hover:bg-[#EDEDED]"
             >
               {isPending ? (
-                <span className="font-mono text-sm">Guardando en patio...</span>
+                <>
+                  <LoaderCircle className="h-4 w-4 shrink-0 animate-spin" strokeWidth={WIZARD_ICON_STROKE} aria-hidden="true" />
+                  <span className="font-mono text-sm">Guardando en patio...</span>
+                </>
               ) : (
-                <span>{esEdicion ? 'Guardar Cambios' : 'Registrar Unidad en Flota'}</span>
+                <>
+                  <Check className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden="true" />
+                  <span>{esEdicion ? 'Guardar Cambios' : 'Registrar Unidad en Flota'}</span>
+                </>
               )}
             </button>
           )}

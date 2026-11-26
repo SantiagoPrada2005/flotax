@@ -4,7 +4,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ImagePlus,
-  Loader2,
+  LoaderCircle,
   RefreshCw,
   RotateCcw,
   Star,
@@ -497,7 +497,7 @@ export default function PerspectiveGalleryEditor({
           <div>
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1 rounded-full bg-[#111827] px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-[#EDEDED] dark:bg-[#EDEDED] dark:text-[#111827]">
-                <Star className="h-2.5 w-2.5 fill-current" aria-hidden="true" />
+                <Star className="h-2.5 w-2.5 fill-current" strokeWidth={1.75} aria-hidden="true" />
                 <span>Imagen principal · Obligatoria</span>
               </span>
             </div>
@@ -560,7 +560,7 @@ export default function PerspectiveGalleryEditor({
           <div className="relative aspect-video w-full max-w-xl overflow-hidden rounded-2xl border border-[#111827]/25 bg-[#EDEDED]/40 dark:border-white/20 dark:bg-[#111827]">
             {fotoPrincipal.estado === 'cargando' ? (
               <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-[#4B5563] dark:text-[#9CA3AF]">
-                <Loader2 className="h-6 w-6 animate-spin" aria-hidden="true" />
+                <LoaderCircle className="h-6 w-6 animate-spin" strokeWidth={1.75} aria-hidden="true" />
                 <span className="font-mono text-xs">Optimizando imagen principal...</span>
               </div>
             ) : (
@@ -585,7 +585,7 @@ export default function PerspectiveGalleryEditor({
                     aria-label="Ver fotografía lateral ampliada"
                     className="fx-press flex h-9 w-9 items-center justify-center rounded-full bg-[#111827]/80 text-white backdrop-blur-xs hover:bg-[#111827] cursor-pointer"
                   >
-                    <ZoomIn className="h-4 w-4" aria-hidden="true" />
+                    <ZoomIn className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
                   </button>
                   {!soloLectura && permitirEliminarPrincipal && (
                     <button
@@ -594,7 +594,7 @@ export default function PerspectiveGalleryEditor({
                       aria-label="Quitar fotografía lateral principal"
                       className="fx-press flex h-9 w-9 items-center justify-center rounded-full bg-rose-600/90 text-white hover:bg-rose-700 cursor-pointer"
                     >
-                      <Trash2 className="h-4 w-4" aria-hidden="true" />
+                      <Trash2 className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
                     </button>
                   )}
                 </div>
@@ -606,7 +606,7 @@ export default function PerspectiveGalleryEditor({
                       onClick={() => fileInputsRef.current[PERSPECTIVA_PRINCIPAL.zona]?.click()}
                       className="fx-press inline-flex min-h-[36px] items-center gap-1.5 rounded-full bg-[#111827]/85 px-3.5 py-1.5 font-mono text-[11px] font-bold text-white backdrop-blur-xs hover:bg-[#111827] cursor-pointer"
                     >
-                      <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
+                      <RefreshCw className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
                       <span>Cambiar lateral</span>
                     </button>
                     <button
@@ -615,7 +615,7 @@ export default function PerspectiveGalleryEditor({
                       aria-label="Tomar fotografía lateral con cámara"
                       className="fx-press inline-flex min-h-[36px] items-center gap-1 rounded-full bg-[#111827]/85 px-3 py-1.5 font-mono text-[11px] font-bold text-white backdrop-blur-xs hover:bg-[#111827] sm:hidden cursor-pointer"
                     >
-                      <Camera className="h-3.5 w-3.5" aria-hidden="true" />
+                      <Camera className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
                     </button>
                   </div>
                 )}
@@ -631,7 +631,7 @@ export default function PerspectiveGalleryEditor({
                   onClick={() => fileInputsRef.current[PERSPECTIVA_PRINCIPAL.zona]?.click()}
                   className="fx-press inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[#111827] px-5 py-2.5 font-display text-xs font-bold text-white hover:bg-[#1F2937] dark:bg-[#EDEDED] dark:text-[#111827] cursor-pointer"
                 >
-                  <ImagePlus className="h-4 w-4" aria-hidden="true" />
+                  <ImagePlus className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
                   <span>Cargar fotografía lateral (Principal)</span>
                 </button>
                 <button
@@ -639,7 +639,7 @@ export default function PerspectiveGalleryEditor({
                   onClick={() => cameraInputsRef.current[PERSPECTIVA_PRINCIPAL.zona]?.click()}
                   className="fx-press inline-flex min-h-[40px] items-center gap-1.5 rounded-full border border-[#9CA3AF]/45 bg-white px-4 py-1.5 font-mono text-xs font-semibold text-[#111827] sm:hidden dark:border-white/15 dark:bg-[#1F2937] dark:text-[#EDEDED]"
                 >
-                  <Camera className="h-3.5 w-3.5" aria-hidden="true" />
+                  <Camera className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
                   <span>Usar cámara</span>
                 </button>
               </>
@@ -752,7 +752,7 @@ export default function PerspectiveGalleryEditor({
                   <div className="relative aspect-[4/3] overflow-hidden rounded-xl border border-[#9CA3AF]/30 bg-[#EDEDED]/50 dark:border-white/15 dark:bg-[#111827]">
                     {foto.estado === 'cargando' || !foto.url ? (
                       <div className="flex h-full w-full flex-col items-center justify-center gap-1.5 text-[#4B5563] dark:text-[#9CA3AF]">
-                        <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+                        <LoaderCircle className="h-5 w-5 animate-spin" strokeWidth={1.75} aria-hidden="true" />
                         <span className="font-mono text-[10px]">Optimizando...</span>
                       </div>
                     ) : (
@@ -777,7 +777,7 @@ export default function PerspectiveGalleryEditor({
                             aria-label={`Ver ${slot.etiqueta} ampliada`}
                             className="fx-press flex h-8 w-8 items-center justify-center rounded-full bg-[#111827]/80 text-white backdrop-blur-xs hover:bg-[#111827] cursor-pointer"
                           >
-                            <ZoomIn className="h-3.5 w-3.5" aria-hidden="true" />
+                            <ZoomIn className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
                           </button>
                           {!soloLectura && (
                             <button
@@ -786,7 +786,7 @@ export default function PerspectiveGalleryEditor({
                               aria-label={`Eliminar ${slot.etiqueta}`}
                               className="fx-press flex h-8 w-8 items-center justify-center rounded-full bg-rose-600/90 text-white hover:bg-rose-700 cursor-pointer"
                             >
-                              <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                              <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
                             </button>
                           )}
                         </div>
@@ -797,7 +797,7 @@ export default function PerspectiveGalleryEditor({
                             onClick={() => fileInputsRef.current[slot.zona]?.click()}
                             className="fx-press absolute bottom-1.5 right-1.5 inline-flex items-center gap-1 rounded-full bg-[#111827]/80 px-2.5 py-1 font-mono text-[10px] font-bold text-white backdrop-blur-xs hover:bg-[#111827] cursor-pointer"
                           >
-                            <RefreshCw className="h-3 w-3" aria-hidden="true" />
+                            <RefreshCw className="h-3 w-3" strokeWidth={1.75} aria-hidden="true" />
                             <span>Cambiar</span>
                           </button>
                         )}
@@ -813,7 +813,7 @@ export default function PerspectiveGalleryEditor({
                           onClick={() => fileInputsRef.current[slot.zona]?.click()}
                           className="fx-press flex w-full flex-1 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg text-[#111827] transition-colors hover:bg-[#EDEDED]/60 dark:text-[#EDEDED] dark:hover:bg-white/10"
                         >
-                          <ImagePlus className="h-5 w-5" aria-hidden="true" />
+                          <ImagePlus className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
                           <span className="font-mono text-[11px] font-bold">+ Subir foto</span>
                         </button>
                         <button
@@ -822,7 +822,7 @@ export default function PerspectiveGalleryEditor({
                           aria-label={`Tomar ${slot.etiqueta} con cámara`}
                           className="fx-press inline-flex w-full items-center justify-center gap-1 rounded-lg border border-[#9CA3AF]/35 bg-white py-1 font-mono text-[10px] font-semibold text-[#4B5563] sm:hidden dark:border-white/12 dark:bg-[#111827] dark:text-[#9CA3AF]"
                         >
-                          <Camera className="h-3 w-3" aria-hidden="true" />
+                          <Camera className="h-3 w-3" strokeWidth={1.75} aria-hidden="true" />
                           <span>Cámara</span>
                         </button>
                       </>
@@ -927,7 +927,7 @@ export default function PerspectiveGalleryEditor({
             >
               {foto.estado === 'cargando' || !foto.url ? (
                 <div className="flex h-full w-full flex-col items-center justify-center gap-1.5 text-[#4B5563] dark:text-[#9CA3AF]">
-                  <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+                  <LoaderCircle className="h-5 w-5 animate-spin" strokeWidth={1.75} aria-hidden="true" />
                   <span className="font-mono text-[10px]">Optimizando...</span>
                 </div>
               ) : (
@@ -956,7 +956,7 @@ export default function PerspectiveGalleryEditor({
                       aria-label="Ver fotografía ampliada"
                       className="fx-press flex h-7 w-7 items-center justify-center rounded-full bg-[#111827]/75 text-white backdrop-blur-xs hover:bg-[#111827] cursor-pointer"
                     >
-                      <ZoomIn className="h-3.5 w-3.5" aria-hidden="true" />
+                      <ZoomIn className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
                     </button>
                     {!soloLectura && (
                       <button
@@ -965,7 +965,7 @@ export default function PerspectiveGalleryEditor({
                         aria-label="Eliminar fotografía adicional"
                         className="fx-press flex h-7 w-7 items-center justify-center rounded-full bg-rose-600/90 text-white hover:bg-rose-700 cursor-pointer"
                       >
-                        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                        <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
                       </button>
                     )}
                   </div>
@@ -979,7 +979,7 @@ export default function PerspectiveGalleryEditor({
                         aria-label="Mover a la izquierda"
                         className="fx-press flex h-6 w-6 items-center justify-center rounded-full bg-[#111827]/80 text-white disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
                       >
-                        <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
+                        <ChevronLeft className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
                       </button>
                       <button
                         type="button"
@@ -988,7 +988,7 @@ export default function PerspectiveGalleryEditor({
                         aria-label="Mover a la derecha"
                         className="fx-press flex h-6 w-6 items-center justify-center rounded-full bg-[#111827]/80 text-white disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
                       >
-                        <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                        <ChevronRight className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
                       </button>
                     </div>
                   )}
@@ -1006,7 +1006,7 @@ export default function PerspectiveGalleryEditor({
                 }
                 className="fx-press flex w-full flex-1 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl text-[#111827] transition-colors hover:bg-white/70 dark:text-[#EDEDED] dark:hover:bg-white/10"
               >
-                <ImagePlus className="h-5 w-5" aria-hidden="true" />
+                <ImagePlus className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
                 <span className="font-mono text-[11px] font-bold">+ Agregar adicional</span>
               </button>
               <button
@@ -1017,7 +1017,7 @@ export default function PerspectiveGalleryEditor({
                 aria-label="Tomar foto adicional con cámara"
                 className="fx-press inline-flex w-full items-center justify-center gap-1 rounded-lg border border-[#9CA3AF]/35 bg-white/80 py-1 font-mono text-[10px] font-semibold text-[#4B5563] sm:hidden dark:border-white/12 dark:bg-[#111827]/70 dark:text-[#9CA3AF]"
               >
-                <Camera className="h-3 w-3" aria-hidden="true" />
+                <Camera className="h-3 w-3" strokeWidth={1.75} aria-hidden="true" />
                 <span>Cámara</span>
               </button>
             </div>
@@ -1035,7 +1035,7 @@ export default function PerspectiveGalleryEditor({
                 onClick={() => void handleReintentarFallido(item.id)}
                 className="fx-press inline-flex shrink-0 items-center gap-1 rounded-lg border border-rose-500/40 px-2.5 py-1 font-mono text-[11px] font-bold hover:bg-rose-500/15"
               >
-                <RotateCcw className="h-3 w-3" aria-hidden="true" />
+                <RotateCcw className="h-3 w-3" strokeWidth={1.75} aria-hidden="true" />
                 <span>Reintentar</span>
               </button>
             </div>
@@ -1084,7 +1084,7 @@ export default function PerspectiveGalleryEditor({
                     aria-label="Eliminar fotografía"
                     className="fx-press inline-flex items-center gap-1 rounded-full bg-rose-600/90 px-3 py-1 font-mono text-[11px] font-bold text-white hover:bg-rose-700 cursor-pointer"
                   >
-                    <Trash2 className="h-3 w-3" aria-hidden="true" />
+                    <Trash2 className="h-3 w-3" strokeWidth={1.75} aria-hidden="true" />
                     <span>Eliminar</span>
                   </button>
                 )}
@@ -1094,7 +1094,7 @@ export default function PerspectiveGalleryEditor({
                   onClick={() => setLightboxId(null)}
                   className="fx-press flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 cursor-pointer"
                 >
-                  <X className="h-4 w-4" aria-hidden="true" />
+                  <X className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
                 </button>
               </div>
             </div>
@@ -1120,7 +1120,7 @@ export default function PerspectiveGalleryEditor({
                     }}
                     className="fx-press absolute left-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#111827]/80 text-white border border-white/15 hover:bg-[#111827] cursor-pointer"
                   >
-                    <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+                    <ChevronLeft className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
                   </button>
                   <button
                     type="button"
@@ -1132,7 +1132,7 @@ export default function PerspectiveGalleryEditor({
                     }}
                     className="fx-press absolute right-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#111827]/80 text-white border border-white/15 hover:bg-[#111827] cursor-pointer"
                   >
-                    <ChevronRight className="h-5 w-5" aria-hidden="true" />
+                    <ChevronRight className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
                   </button>
                 </>
               )}

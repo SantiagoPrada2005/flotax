@@ -1,5 +1,7 @@
 import { useRef, type ChangeEvent } from 'react';
+import { Banknote, ShieldCheck } from 'lucide-react';
 import type { VehiculoWizardData } from './types';
+import { WIZARD_ICON_STROKE } from './wizard-icons';
 import {
   formatearNumeroConMiles,
   formatearValorMiles,
@@ -80,9 +82,16 @@ export default function Step5Tarifas({
           <div className="flex items-center justify-between">
             <label
               htmlFor="input-precio-dia-hero"
-              className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]"
+              className="inline-flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]"
             >
-              Tarifa Diaria (24 horas) <span className="text-rose-600 dark:text-rose-400">*</span>
+              <Banknote
+                className="h-3.5 w-3.5 shrink-0 text-[#4B5563] dark:text-[#9CA3AF]"
+                strokeWidth={WIZARD_ICON_STROKE}
+                aria-hidden="true"
+              />
+              <span>
+                Tarifa Diaria (24 horas) <span className="text-rose-600 dark:text-rose-400">*</span>
+              </span>
             </label>
             <span className="font-mono text-[11px] font-bold text-[#111827] dark:text-[#EDEDED]">
               {formatearCOP(data.precioDia)} COP / día
@@ -122,9 +131,16 @@ export default function Step5Tarifas({
           <div className="flex items-center justify-between">
             <label
               htmlFor="input-garantia-hero"
-              className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]"
+              className="inline-flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]"
             >
-              Depósito de Garantía (Fianza) <span className="text-rose-600 dark:text-rose-400">*</span>
+              <ShieldCheck
+                className="h-3.5 w-3.5 shrink-0 text-[#4B5563] dark:text-[#9CA3AF]"
+                strokeWidth={WIZARD_ICON_STROKE}
+                aria-hidden="true"
+              />
+              <span>
+                Depósito de Garantía (Fianza) <span className="text-rose-600 dark:text-rose-400">*</span>
+              </span>
             </label>
             <span className="font-mono text-[11px] font-bold text-[#111827] dark:text-[#EDEDED]">
               {formatearCOP(data.depositoGarantia)} COP

@@ -222,6 +222,11 @@ export default function EditorialAvailabilityCalendar({
     }
 
     if (!fechaInicio || faseSeleccion === 'COMPLETO') {
+      if (fechaInicio && fechaFin && fechaFin !== fechaInicio && dia.fechaISO === fechaFin) {
+        onChangeRango(fechaInicio, null);
+        setFaseSeleccion('ELIGIENDO_FIN');
+        return;
+      }
       if (!validarInicioPosible(dia.fechaISO)) {
         return;
       }
@@ -305,7 +310,7 @@ export default function EditorialAvailabilityCalendar({
             key={diasSeleccionados}
             className="animate-zoom-in font-display text-[3.25rem] sm:text-[3.75rem] font-black leading-[0.84] tracking-tighter text-[#111827] dark:text-[#EDEDED] tabular-nums select-none shrink-0"
           >
-            {diasSeleccionados > 0 ? diasSeleccionados : '—'}
+            {diasSeleccionados}
           </span>
 
           <div className="flex flex-col min-w-0">
@@ -513,7 +518,7 @@ export default function EditorialAvailabilityCalendar({
               'bg-[#111827] text-[#EDEDED] font-bold shadow-[0_0_0_2px_rgba(17,24,39,0.85),0_0_14px_rgba(31,41,55,0.45)] dark:bg-[#EDEDED] dark:text-[#111827] dark:shadow-[0_0_0_2px_rgba(237,237,237,0.9),0_0_18px_rgba(237,237,237,0.45)] z-10';
           } else if (esIntermedioTramo) {
             clasesCirculo =
-              'bg-[#4B5563]/28 text-[#111827] font-bold ring-1 ring-[#4B5563]/70 shadow-[0_0_10px_rgba(75,85,99,0.28)] dark:bg-[#4B5563]/65 dark:text-[#EDEDED] dark:ring-[#9CA3AF]/80 dark:shadow-[0_0_12px_rgba(156,163,175,0.35)] z-10';
+              'bg-[#9CA3AF]/35 text-[#111827] font-semibold border border-[#9CA3AF]/60 dark:bg-white/15 dark:text-[#EDEDED] dark:border-white/25 z-10';
           } else if (esDiaSiguienteExcluido) {
             clasesCirculo =
               'bg-transparent text-[#9CA3AF] font-medium border border-dashed border-[#9CA3AF]/60 opacity-60 cursor-not-allowed dark:text-[#9CA3AF]/65 dark:border-white/25';
@@ -613,7 +618,7 @@ export default function EditorialAvailabilityCalendar({
               Inicio / Fin
             </span>
             <span className="inline-flex items-center gap-1">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#4B5563]/35 border border-[#4B5563]/75 dark:bg-[#4B5563]/70 dark:border-[#9CA3AF]/80" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#9CA3AF]/35 border border-[#9CA3AF]/60 dark:bg-white/15 dark:border-white/25" />
               Intermedio
             </span>
             <span className="inline-flex items-center gap-1">

@@ -4,6 +4,7 @@ import { navigate } from 'astro:transitions/client';
 import { Select } from '@/components/ui/Select';
 import {
   ENCABEZADOS_SEMANA_EDITORIAL,
+  actualizarRangoFiltroReservasPorToque,
   calcularDiasInclusivos,
   construirCalendarioSuizoReservas,
   formatearFechaCorta,
@@ -295,26 +296,13 @@ export default function MisReservasHub({
       setMesCursor({ anio: y, mesIndexCero: m - 1 });
     }
 
-    const fechaTocada = celda.fechaISO;
-
-    if (!filtroInicioISO || filtroFinISO !== null) {
-      setFiltroInicioISO(fechaTocada);
-      setFiltroFinISO(null);
-      return;
-    }
-
-    if (fechaTocada === filtroInicioISO) {
-      setFiltroInicioISO(null);
-      setFiltroFinISO(null);
-      return;
-    }
-
-    if (fechaTocada < filtroInicioISO) {
-      setFiltroFinISO(filtroInicioISO);
-      setFiltroInicioISO(fechaTocada);
-    } else {
-      setFiltroFinISO(fechaTocada);
-    }
+    const { inicio, fin } = actualizarRangoFiltroReservasPorToque(
+      filtroInicioISO,
+      filtroFinISO,
+      celda.fechaISO
+    );
+    setFiltroInicioISO(inicio);
+    setFiltroFinISO(fin);
   };
 
   const abrirDetalle = (reserva: ReservaClienteItem) => {
@@ -704,14 +692,18 @@ export default function MisReservasHub({
 
             let clasesCirculo = '';
             if (!celda.esMesActual) {
-              clasesCirculo = enRangoFiltro
-                ? 'bg-[#1F2937]/75 dark:bg-white/20 text-white font-semibold'
-                : 'bg-transparent text-[#9CA3AF]/55 font-normal';
+              clasesCirculo =
+                esInicioFiltro || esFinFiltro
+                  ? 'bg-[#111827]/85 dark:bg-white/85 text-white dark:text-[#111827] font-bold'
+                  : enRangoFiltro
+                    ? 'bg-[#9CA3AF]/22 dark:bg-white/10 text-[#4B5563] dark:text-[#D1D5DB] font-medium'
+                    : 'bg-transparent text-[#9CA3AF]/55 font-normal';
             } else if (esInicioFiltro || esFinFiltro) {
               clasesCirculo =
                 'bg-[#111827] dark:bg-white text-white dark:text-[#111827] font-bold shadow-xs ring-2 ring-[#111827] dark:ring-white ring-offset-1 ring-offset-white dark:ring-offset-[#1F2937] z-10';
             } else if (esIntermedioFiltro) {
-              clasesCirculo = 'bg-[#1F2937] dark:bg-white/30 text-white font-semibold z-10';
+              clasesCirculo =
+                'bg-[#9CA3AF]/30 dark:bg-white/15 text-[#111827] dark:text-[#EDEDED] font-semibold ring-1 ring-[#9CA3AF]/45 dark:ring-white/25 z-10';
             } else if (enAlgunAlquiler) {
               clasesCirculo = celda.enReservaActiva
                 ? 'bg-[#9CA3AF]/60 text-[#111827] dark:bg-white/25 dark:text-[#EDEDED] font-bold ring-1.5 ring-[#4B5563] dark:ring-white/40'
@@ -726,22 +718,6 @@ export default function MisReservasHub({
                 key={celda.fechaISO}
                 className="relative flex items-center justify-center h-10 w-full"
               >
-                {enRangoFiltro &&
-                  filtroInicioISO &&
-                  finFiltroEfectivo &&
-                  filtroInicioISO !== finFiltroEfectivo && (
-                    <div
-                      aria-hidden="true"
-                      className={`absolute inset-y-1 bg-[#111827]/12 dark:bg-white/15 ${
-                        esInicioFiltro
-                          ? 'left-1/2 right-0 rounded-l-full'
-                          : esFinFiltro
-                            ? 'left-0 right-1/2 rounded-r-full'
-                            : 'inset-x-0'
-                      }`}
-                    />
-                  )}
-
                 <button
                   type="button"
                   onClick={() => manejarToqueDia(celda)}
@@ -756,11 +732,13 @@ export default function MisReservasHub({
                     <span
                       aria-hidden="true"
                       className={`h-1.5 w-1.5 rounded-full ${
-                        enRangoFiltro
-                          ? 'bg-white/85'
-                          : tienePendienteEnDia
-                            ? 'bg-[#111827] dark:bg-white'
-                            : 'bg-[#4B5563] dark:text-[#9CA3AF]'
+                        esInicioFiltro || esFinFiltro
+                          ? 'bg-white/85 dark:bg-[#111827]/80'
+                          : esIntermedioFiltro
+                            ? 'bg-[#111827]/75 dark:bg-[#EDEDED]/85'
+                            : tienePendienteEnDia
+                              ? 'bg-[#111827] dark:bg-white'
+                              : 'bg-[#4B5563] dark:bg-[#9CA3AF]'
                       }`}
                     />
                   )}

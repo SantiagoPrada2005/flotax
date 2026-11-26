@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
+import { Tag } from 'lucide-react';
 import type { VehiculoWizardData } from './types';
+import { WIZARD_ICON_STROKE } from './wizard-icons';
 import {
   SUGERENCIAS_VEHICULOS_POR_CATEGORIA,
   separarMarcaYModelo,
@@ -76,9 +78,16 @@ export default function Step3InfoBasica({
           <div className="flex items-center justify-between">
             <label
               htmlFor="input-marca-modelo-hero"
-              className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]"
+              className="inline-flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]"
             >
-              Marca y modelo <span className="text-rose-600 dark:text-rose-400">*</span>
+              <Tag
+                className="h-3.5 w-3.5 shrink-0 text-[#4B5563] dark:text-[#9CA3AF]"
+                strokeWidth={WIZARD_ICON_STROKE}
+                aria-hidden="true"
+              />
+              <span>
+                Marca y modelo <span className="text-rose-600 dark:text-rose-400">*</span>
+              </span>
             </label>
             <span className="font-mono text-[11px] text-[#4B5563] dark:text-[#9CA3AF]">
               Ej: {primeraSugerencia}

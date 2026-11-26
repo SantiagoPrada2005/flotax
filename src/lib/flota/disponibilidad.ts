@@ -460,8 +460,8 @@ export function obtenerUltimoDiaContiguoLibre(
  * Calcula el nuevo rango continuo al tocar `fechaTocada` sobre una selección existente:
  * - Sin selección: inicia en `[fechaTocada, fechaTocada]` (1 día).
  * - Con 1 día `[A, A]`: tocar `A` limpia; tocar otra fecha `B` libre contigua amplía `[min(A,B), max(A,B)]`.
- * - Con rango múltiple `[A, B]` (ej. `20-21-22`):
- *   - Tocar el extremo final `B` recorta a `[A, B - 1]`.
+ * - Con rango múltiple `[A, B]` (ej. `3` a `10`):
+ *   - Tocar el extremo final `B` (`10`) colapsa el rango a `[A, A]` (`3`), quitando `B` y todos los días intermedios anteriores (`4..9`).
  *   - Tocar el extremo inicial `A` recorta a `[A + 1, B]`.
  *   - Tocar un día intermedio `T` (`A < T < B`, ej. `21`) recorta hasta `T` -> `[A, T]` (`20-21`), eliminando solo los días posteriores (`22`).
  *   - Tocar un día inmediatamente adyacente libre (`B + 1` o `A - 1`) amplía el rango en 1 día.
@@ -488,13 +488,13 @@ export function actualizarRangoAlquilerPorToque(params: {
 
   const finActual = fechaFin && fechaFin >= fechaInicio ? fechaFin : fechaInicio;
 
-  // 1. Toque dentro del rango seleccionado -> recorte sin borrar todo el tramo
+  // 1. Toque dentro del rango seleccionado -> recorte o colapso al inicio según corresponda
   if (fechaTocada >= fechaInicio && fechaTocada <= finActual) {
     if (fechaInicio === finActual) {
       return { fechaInicio: null, fechaFin: null };
     }
     if (fechaTocada === finActual) {
-      return { fechaInicio, fechaFin: sumarDiasISO(finActual, -1) };
+      return { fechaInicio, fechaFin: fechaInicio };
     }
     if (fechaTocada === fechaInicio) {
       return { fechaInicio: sumarDiasISO(fechaInicio, 1), fechaFin: finActual };

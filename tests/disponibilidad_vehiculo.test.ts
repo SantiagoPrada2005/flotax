@@ -23,6 +23,7 @@ import {
   type BloqueNoDisponible,
 } from '../src/lib/flota/types.ts';
 import { listarVehiculos } from '../src/lib/flota/repositorio.ts';
+import { actualizarRangoFiltroReservasPorToque } from '../src/lib/flota/reservas-cliente.ts';
 import { resolverEstadoActualVehiculo } from '../src/lib/mantenimientos/repositorio.ts';
 import {
   vehiculos,
@@ -949,7 +950,7 @@ describe('Disponibilidad de Vehículos - FlotaX', () => {
     );
   });
 
-  test('25. actualizarRangoAlquilerPorToque selecciona 1 a 1 o varios días y recorta sin borrar todo el tramo (20-21-22 -> 20-21)', () => {
+  test('25. actualizarRangoAlquilerPorToque selecciona 1 a 1 o varios días y al quitar el fin deja solo el día inicial', () => {
     // 1. Desde 20-21-22, tocar 21 elimina únicamente el 22 y deja 20-21
     assert.deepEqual(
       actualizarRangoAlquilerPorToque({
@@ -962,7 +963,7 @@ describe('Disponibilidad de Vehículos - FlotaX', () => {
       { fechaInicio: '2026-11-20', fechaFin: '2026-11-21' }
     );
 
-    // 2. Tocar el extremo final (22 en 20-21-22) baja 1 día a 20-21
+    // 2. Tocar el extremo final (22 en 20-21-22) deja únicamente el inicio (20)
     assert.deepEqual(
       actualizarRangoAlquilerPorToque({
         fechaInicio: '2026-11-20',
@@ -971,7 +972,74 @@ describe('Disponibilidad de Vehículos - FlotaX', () => {
         vehiculoId: vehiculoIdPrueba,
         hoyISO: hoyPrueba,
       }),
-      { fechaInicio: '2026-11-20', fechaFin: '2026-11-21' }
+      { fechaInicio: '2026-11-20', fechaFin: '2026-11-20' }
+    );
+
+    // 2b. Rango del 3 al 10: al quitar el 10 queda solo el 3 y se quitan todos los anteriores (4..9)
+    const rangoColapsado = actualizarRangoAlquilerPorToque({
+      fechaInicio: '2026-11-03',
+      fechaFin: '2026-11-10',
+      fechaTocada: '2026-11-10',
+      vehiculoId: vehiculoIdPrueba,
+      hoyISO: '2026-11-01',
+    });
+    assert.deepEqual(rangoColapsado, { fechaInicio: '2026-11-03', fechaFin: '2026-11-03' });
+
+    // 2c. Tocar nuevamente el 3 cuando solo queda el 3 limpia la selección a 0 días
+    assert.deepEqual(
+      actualizarRangoAlquilerPorToque({
+        fechaInicio: rangoColapsado.fechaInicio,
+        fechaFin: rangoColapsado.fechaFin,
+        fechaTocada: '2026-11-03',
+        vehiculoId: vehiculoIdPrueba,
+        hoyISO: '2026-11-01',
+      }),
+      { fechaInicio: null, fechaFin: null }
+    );
+
+    // 2d. Ejemplos explícitos de rangos (10..20 -> 10, 10..15 -> 10, 5..8 -> 5) y nueva selección de fin
+    const diezAVeinteColapsado = actualizarRangoAlquilerPorToque({
+      fechaInicio: '2026-11-10',
+      fechaFin: '2026-11-20',
+      fechaTocada: '2026-11-20',
+      vehiculoId: vehiculoIdPrueba,
+      hoyISO: '2026-11-01',
+    });
+    assert.deepEqual(diezAVeinteColapsado, {
+      fechaInicio: '2026-11-10',
+      fechaFin: '2026-11-10',
+    });
+    assert.deepEqual(
+      actualizarRangoAlquilerPorToque({
+        fechaInicio: diezAVeinteColapsado.fechaInicio,
+        fechaFin: diezAVeinteColapsado.fechaFin,
+        fechaTocada: '2026-11-14',
+        vehiculoId: vehiculoIdPrueba,
+        hoyISO: '2026-11-01',
+      }),
+      { fechaInicio: '2026-11-10', fechaFin: '2026-11-14' }
+    );
+
+    assert.deepEqual(
+      actualizarRangoAlquilerPorToque({
+        fechaInicio: '2026-11-10',
+        fechaFin: '2026-11-15',
+        fechaTocada: '2026-11-15',
+        vehiculoId: vehiculoIdPrueba,
+        hoyISO: '2026-11-01',
+      }),
+      { fechaInicio: '2026-11-10', fechaFin: '2026-11-10' }
+    );
+
+    assert.deepEqual(
+      actualizarRangoAlquilerPorToque({
+        fechaInicio: '2026-11-05',
+        fechaFin: '2026-11-08',
+        fechaTocada: '2026-11-08',
+        vehiculoId: vehiculoIdPrueba,
+        hoyISO: '2026-11-01',
+      }),
+      { fechaInicio: '2026-11-05', fechaFin: '2026-11-05' }
     );
 
     // 3. Tocar el extremo inicial (20 en 20-21-22) recorta a 21-22
@@ -1015,6 +1083,44 @@ describe('Disponibilidad de Vehículos - FlotaX', () => {
         hoyISO: hoyPrueba,
       }),
       { fechaInicio: '2026-11-20', fechaFin: '2026-11-22' }
+    );
+  });
+
+  test('26. actualizarRangoFiltroReservasPorToque al quitar el fin conserva solo la fecha inicial y limpia intermedios', () => {
+    // 10 al 20 -> quita 20 -> queda solo 10
+    const colapsado10a20 = actualizarRangoFiltroReservasPorToque(
+      '2026-11-10',
+      '2026-11-20',
+      '2026-11-20'
+    );
+    assert.deepEqual(colapsado10a20, { inicio: '2026-11-10', fin: null });
+
+    // Desde 10, selecciona 14 -> forma rango 10 al 14
+    assert.deepEqual(
+      actualizarRangoFiltroReservasPorToque(
+        colapsado10a20.inicio,
+        colapsado10a20.fin,
+        '2026-11-14'
+      ),
+      { inicio: '2026-11-10', fin: '2026-11-14' }
+    );
+
+    // 10 al 15 -> quita 15 -> queda solo 10
+    assert.deepEqual(
+      actualizarRangoFiltroReservasPorToque('2026-11-10', '2026-11-15', '2026-11-15'),
+      { inicio: '2026-11-10', fin: null }
+    );
+
+    // 5 al 8 -> quita 8 -> queda solo 5
+    assert.deepEqual(
+      actualizarRangoFiltroReservasPorToque('2026-11-05', '2026-11-08', '2026-11-08'),
+      { inicio: '2026-11-05', fin: null }
+    );
+
+    // Tocar nuevamente el inicio único limpia toda la selección
+    assert.deepEqual(
+      actualizarRangoFiltroReservasPorToque('2026-11-10', null, '2026-11-10'),
+      { inicio: null, fin: null }
     );
   });
 

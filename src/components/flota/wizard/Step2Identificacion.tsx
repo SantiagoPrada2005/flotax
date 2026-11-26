@@ -1,6 +1,7 @@
 import { useRef, type ChangeEvent } from 'react';
-import { Check } from 'lucide-react';
+import { Calendar, Check, Hash } from 'lucide-react';
 import type { VehiculoWizardData } from './types';
+import { WIZARD_ICON_STROKE } from './wizard-icons';
 import { WheelPicker } from '@/components/ui/WheelPicker';
 import { formatearPlacaVehiculo } from '@/lib/flota/placa';
 
@@ -71,9 +72,16 @@ export default function Step2Identificacion({
           <div className="flex items-center justify-between">
             <label
               htmlFor="input-placa-hero"
-              className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]"
+              className="inline-flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]"
             >
-              Placa <span className="text-rose-600 dark:text-rose-400">*</span>
+              <Hash
+                className="h-3.5 w-3.5 shrink-0 text-[#4B5563] dark:text-[#9CA3AF]"
+                strokeWidth={WIZARD_ICON_STROKE}
+                aria-hidden="true"
+              />
+              <span>
+                Placa <span className="text-rose-600 dark:text-rose-400">*</span>
+              </span>
             </label>
             <span className="font-mono text-[11px] text-[#4B5563] dark:text-[#9CA3AF]">
               {isPatineta ? 'Identificador Serial / QR' : ''}
@@ -101,7 +109,8 @@ export default function Step2Identificacion({
             {data.placa.length >= 3 && (
               <Check
                 aria-hidden="true"
-                className="pointer-events-none absolute top-1/2 right-4 h-4 w-4 -translate-y-1/2 stroke-[2.5] text-emerald-600 dark:text-emerald-400"
+                strokeWidth={2.25}
+                className="pointer-events-none absolute top-1/2 right-4 h-4 w-4 -translate-y-1/2 text-emerald-600 dark:text-emerald-400"
               />
             )}
           </div>
@@ -116,8 +125,15 @@ export default function Step2Identificacion({
         {/* Entrada 2: Año del Modelo (Wheel Picker vertical estilo iOS) */}
         <div className="space-y-3 border-t border-[#EDEDED] pt-5 dark:border-white/10">
           <div className="flex items-center justify-between">
-            <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
-              Año del Modelo <span className="text-rose-600 dark:text-rose-400">*</span>
+            <span className="inline-flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-[#EDEDED]">
+              <Calendar
+                className="h-3.5 w-3.5 shrink-0 text-[#4B5563] dark:text-[#9CA3AF]"
+                strokeWidth={WIZARD_ICON_STROKE}
+                aria-hidden="true"
+              />
+              <span>
+                Año del Modelo <span className="text-rose-600 dark:text-rose-400">*</span>
+              </span>
             </span>
             <span className="font-mono text-[11px] text-[#4B5563] dark:text-[#9CA3AF]">
               1990 — 2035
